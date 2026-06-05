@@ -1,0 +1,87 @@
+{
+  "version": 1,
+  "updatedAt": "2026-06-05",
+  "categories": [
+    {
+      "id": "darsi",
+      "name": "Китобҳои дарсӣ",
+      "emoji": "🎓",
+      "color1": "#1e40af",
+      "color2": "#3b82f6",
+      "subs": [
+        {
+          "id": "s1",
+          "name": "Синфи 1",
+          "zips": [
+            "https://raw.githubusercontent.com/sharipovip/books/main/sinfi_1_1.zip",
+            "https://raw.githubusercontent.com/sharipovip/books/main/sinfi_1_2.zip"
+          ]
+        },
+        { "id": "s2", "name": "Синфи 2", "zips": [] },
+        { "id": "s3", "name": "Синфи 3", "zips": [] },
+        { "id": "s4", "name": "Синфи 4", "zips": [] },
+        { "id": "s5", "name": "Синфи 5", "zips": [] },
+        { "id": "s6", "name": "Синфи 6", "zips": [] },
+        { "id": "s7", "name": "Синфи 7", "zips": [] },
+        { "id": "s8", "name": "Синфи 8", "zips": [] },
+        { "id": "s9", "name": "Синфи 9", "zips": [] },
+        { "id": "s10", "name": "Синфи 10", "zips": [] },
+        { "id": "s11", "name": "Синфи 11", "zips": [] }
+      ]
+    },
+    {
+      "id": "badei",
+      "name": "Адабиёти бадеӣ",
+      "emoji": "✍️",
+      "color1": "#7c3aed",
+      "color2": "#a855f7",
+      "subs": [
+        { "id": "muosir", "name": "Шоирони муосир", "zips": [] },
+        { "id": "klassik", "name": "Классики форсу-тоҷик", "zips": [] },
+        { "id": "roman", "name": "Романҳо", "zips": [] },
+        { "id": "hikoya", "name": "Ҳикояҳо", "zips": [] }
+      ]
+    },
+    {
+      "id": "bach",
+      "name": "Бачагона",
+      "emoji": "🌟",
+      "color1": "#ea580c",
+      "color2": "#fb923c",
+      "subs": [
+        { "id": "ertak", "name": "Эртакҳо", "zips": [] },
+        { "id": "sherb", "name": "Шеърҳо", "zips": [] },
+        { "id": "tabnatb", "name": "Табиат", "zips": [] }
+      ]
+    },
+    {
+      "id": "sherho",
+      "name": "Шеърҳо",
+      "emoji": "🌸",
+      "color1": "#059669",
+      "color2": "#10b981",
+      "subs": [
+        { "id": "vatan", "name": "Ватан", "zips": [] },
+        { "id": "modar", "name": "Модар", "zips": [] },
+        { "id": "dusti", "name": "Дӯстӣ", "zips": [] },
+        { "id": "tabiat", "name": "Табиат", "zips": [] },
+        { "id": "bahor", "name": "Баҳор", "zips": [] },
+        { "id": "navruz", "name": "Навруз", "zips": [] },
+        { "id": "somoni", "name": "Исмоил Сомонӣ", "zips": [] },
+        { "id": "dshanbe", "name": "Душанбе", "zips": [] }
+      ]
+    },
+    {
+      "id": "tarix",
+      "name": "Таърих ва Фарҳанг",
+      "emoji": "🏛️",
+      "color1": "#b45309",
+      "color2": "#f59e0b",
+      "subs": [
+        { "id": "tarikhi", "name": "Таърихи тоҷик", "zips": [] },
+        { "id": "farhang", "name": "Фарҳанги тоҷик", "zips": [] },
+        { "id": "zindag", "name": "Зиндагинома", "zips": [] }
+      ]
+    }
+  ]
+}
