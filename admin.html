@@ -4,6 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin — Китобхона</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -35,6 +37,7 @@ button,input,textarea,select{font-family:inherit;}
 .btn-primary:hover{background:var(--primary-dark);color:#fff;}
 .btn-success{background:var(--success);color:#fff;border-color:var(--success);}
 .btn-danger{background:var(--danger);color:#fff;border-color:var(--danger);}
+.btn-warning{background:var(--warning);color:#fff;border-color:var(--warning);}
 
 .container{max-width:1280px;margin:0 auto;padding:20px;display:grid;grid-template-columns:300px 1fr;gap:20px;}
 @media(max-width:880px){.container{grid-template-columns:1fr;padding:12px;gap:12px;}}
@@ -68,17 +71,20 @@ button,input,textarea,select{font-family:inherit;}
 .sub-handle{cursor:grab;color:var(--text-muted);}
 .sub-icon{width:30px;height:30px;border-radius:6px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-muted);flex-shrink:0;}
 .sub-icon.has{background:var(--primary-soft);color:var(--primary);border-color:var(--primary);}
+.sub-icon.ready{background:#d1fae5;color:#065f46;border-color:#10b981;}
+[data-theme="dark"] .sub-icon.ready{background:#064e3b;color:#a7f3d0;}
 .sub-info{flex:1;min-width:0;}
 .sub-name{font-weight:700;font-size:13px;}
 .sub-url{font-size:10px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Monaco,monospace;}
 .badge{background:var(--primary);color:#fff;padding:1px 6px;border-radius:8px;font-size:9px;margin-left:5px;font-weight:700;}
+.badge.ready{background:var(--success);}
 
 .empty{text-align:center;padding:50px 20px;color:var(--text-muted);}
 .empty-icon{font-size:48px;margin-bottom:10px;opacity:.6;}
 
 .modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center;padding:20px;}
 .modal-bg.on{display:flex;}
-.modal{background:var(--card);border-radius:14px;width:100%;max-width:500px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
+.modal{background:var(--card);border-radius:14px;width:100%;max-width:520px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
 .modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
 .modal-title{font-size:16px;font-weight:700;}
 .modal-close{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:16px;cursor:pointer;}
@@ -106,6 +112,29 @@ textarea.fc{min-height:60px;resize:vertical;}
 .zip-num{width:26px;background:var(--bg);border:1px solid var(--border);border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--text-muted);}
 .zip-row input{flex:1;padding:8px 10px;border:1px solid var(--border);border-radius:6px;background:var(--bg);color:var(--text);font-family:Monaco,monospace;font-size:11px;outline:none;min-width:0;}
 .zip-del{width:30px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);border-radius:6px;cursor:pointer;}
+
+/* ⭐ PREPARE COVERS WIDGET ⭐ */
+.prepare-card{
+  background:linear-gradient(135deg,var(--primary-soft),var(--bg-2));
+  border:2px solid var(--primary);
+  border-radius:10px;
+  padding:14px;
+  margin-top:10px;
+  margin-bottom:10px;
+}
+.prepare-card.ready{
+  background:linear-gradient(135deg,#d1fae5,#a7f3d0);
+  border-color:#10b981;
+}
+[data-theme="dark"] .prepare-card.ready{background:linear-gradient(135deg,#064e3b,#065f46);}
+.prepare-title{font-weight:700;font-size:13px;margin-bottom:4px;display:flex;align-items:center;gap:6px;}
+.prepare-desc{font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;}
+.prepare-status{font-size:11px;color:var(--text-muted);margin-bottom:8px;}
+.prepare-bar{width:100%;height:6px;background:var(--bg);border-radius:4px;overflow:hidden;border:1px solid var(--border);margin-bottom:8px;display:none;}
+.prepare-bar.on{display:block;}
+.prepare-fill{height:100%;background:var(--primary);border-radius:4px;width:0%;transition:width .3s;}
+.prepare-stage{font-size:11px;color:var(--primary);font-weight:600;margin-bottom:8px;display:none;}
+.prepare-stage.on{display:block;}
 
 .toast-c{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px;}
 .toast{background:#1e293b;color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);max-width:380px;animation:tin .2s;}
@@ -218,7 +247,7 @@ textarea.fc{min-height:60px;resize:vertical;}
   </div>
 </div>
 
-<!-- Sub modal -->
+<!-- Sub modal — С НОВОЙ КНОПКОЙ "ПОДГОТОВИТЬ" -->
 <div class="modal-bg" id="subModal">
   <div class="modal">
     <div class="modal-header">
@@ -232,7 +261,19 @@ textarea.fc{min-height:60px;resize:vertical;}
         <label>Силкаҳои ZIP</label>
         <div id="zipsList" class="zips-list"></div>
         <button class="btn" style="margin-top:8px;width:100%;" onclick="addZip()">➕ Илова кардани силкаи дигар</button>
-        <div class="hint">📌 ZIP бояд PDF-файлҳо дошта бошад.<br>Для GitHub: <code>raw.githubusercontent.com</code></div>
+        <div class="hint">📌 ZIP бояд PDF-файлҳо дошта бошад. Для GitHub: <code>raw.githubusercontent.com</code></div>
+      </div>
+
+      <!-- ⭐ КНОПКА ПОДГОТОВКИ ⭐ -->
+      <div class="prepare-card" id="prepCard">
+        <div class="prepare-title" id="prepTitle">⚡ Тайёр кардани обложкаҳо</div>
+        <div class="prepare-desc">
+          Барои моменталӣ нишон додани китобҳо дар замоне, ки ползвателҳо ба бахш медароянд — як бор ZIP-ро бор кунед ва обложкаҳо ҷой шаванд дар books.json.
+        </div>
+        <div class="prepare-status" id="prepStatus">Ҳолат: ҳоло обложкаҳо тайёр нашудаанд</div>
+        <div class="prepare-bar" id="prepBar"><div class="prepare-fill" id="prepFill"></div></div>
+        <div class="prepare-stage" id="prepStage">Пайвастшавӣ...</div>
+        <button class="btn btn-warning" id="prepBtn" onclick="prepareCovers()" style="width:100%;">⚡ Тайёр кардан</button>
       </div>
     </div>
     <div class="modal-footer">
@@ -262,12 +303,14 @@ textarea.fc{min-height:60px;resize:vertical;}
 <div class="toast-c" id="toastC"></div>
 
 <script>
+pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
 const T=localStorage.getItem('a_theme')||'light';
 document.documentElement.setAttribute('data-theme',T);
 document.getElementById('themeBtn').textContent=T==='dark'?'☀️':'🌙';
 function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('a_theme',n);document.getElementById('themeBtn').textContent=n==='dark'?'☀️':'🌙';}
 
-const A={data:{version:1,updatedAt:null,categories:[]},handle:null,fileName:null,sel:null,modified:false,editCat:null,editSub:null,editSubIn:null};
+const A={data:{version:1,updatedAt:null,categories:[]},handle:null,fileName:null,sel:null,modified:false,editCat:null,editSub:null,editSubIn:null,preparedBooks:null};
 const HAS_FSA=('showOpenFilePicker' in window)&&('showSaveFilePicker' in window);
 
 function toast(m,t='',ms=2500){const c=document.getElementById('toastC');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>{d.style.transition='opacity .2s,transform .2s';d.style.opacity='0';d.style.transform='translateX(20px)';setTimeout(()=>d.remove(),200);},ms);}
@@ -334,7 +377,16 @@ function loadData(d){
   if(Array.isArray(d))A.data={version:1,updatedAt:null,categories:d};
   else if(d&&Array.isArray(d.categories))A.data=d;
   else throw new Error('Бад формат');
-  A.data.categories.forEach(c=>{c.color1=c.color1||'#2563eb';c.color2=c.color2||'#3b82f6';c.emoji=c.emoji||'📚';c.subs=c.subs||[];c.subs.forEach(s=>{if(!Array.isArray(s.zips))s.zips=s.zip?[s.zip]:[];delete s.zip;});});
+  A.data.categories.forEach(c=>{
+    c.color1=c.color1||'#2563eb';c.color2=c.color2||'#3b82f6';
+    c.emoji=c.emoji||'📚';c.subs=c.subs||[];
+    c.subs.forEach(s=>{
+      if(!Array.isArray(s.zips))s.zips=s.zip?[s.zip]:[];
+      delete s.zip;
+      // books — массив подготовленных книг с обложками
+      if(!Array.isArray(s.books))s.books=null;
+    });
+  });
   A.modified=false;A.sel=A.data.categories[0]?.id||null;
   renderAll();updStatus();
 }
@@ -370,10 +422,13 @@ function renderSubs(){
     const ul=document.getElementById('subList');
     c.subs.forEach((s,i)=>{
       const cnt=s.zips.length;
-      const badge=cnt>1?`<span class="badge">${cnt}</span>`:'';
+      const isReady=s.books&&s.books.length>0;
+      const badge=isReady?`<span class="badge ready">✓ ${s.books.length}</span>`:(cnt>1?`<span class="badge">${cnt}</span>`:'');
       const url=cnt?s.zips[0]+(cnt>1?` (+${cnt-1})`:''):'';
+      const iconCls=isReady?'ready':(cnt?'has':'');
+      const iconChr=isReady?'✓':(cnt?'📦':'∅');
       const li=document.createElement('li');li.className='sub-item';li.draggable=true;
-      li.innerHTML=`<span class="sub-handle">⋮⋮</span><div class="sub-icon ${cnt?'has':''}">${cnt?'📦':'∅'}</div><div class="sub-info"><div class="sub-name">${esc(s.name)}${badge}</div><div class="sub-url">${cnt?esc(url):'силка нашудааст'}</div></div><div style="display:flex;gap:3px;"><button class="mini-btn" data-act="test">🔗</button><button class="mini-btn" data-act="ed">✏️</button><button class="mini-btn danger" data-act="del">🗑</button></div>`;
+      li.innerHTML=`<span class="sub-handle">⋮⋮</span><div class="sub-icon ${iconCls}">${iconChr}</div><div class="sub-info"><div class="sub-name">${esc(s.name)}${badge}</div><div class="sub-url">${cnt?esc(url):'силка нашудааст'}</div></div><div style="display:flex;gap:3px;"><button class="mini-btn" data-act="test">🔗</button><button class="mini-btn" data-act="ed">✏️</button><button class="mini-btn danger" data-act="del">🗑</button></div>`;
       li.querySelector('[data-act="test"]').onclick=e=>{e.stopPropagation();testSub(s);};
       li.querySelector('[data-act="ed"]').onclick=e=>{e.stopPropagation();editSub(c.id,s.id);};
       li.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();delSub(c.id,s.id);};
@@ -384,14 +439,14 @@ function renderSubs(){
 }
 function chkBrowser(){
   const w=document.getElementById('browserWarn');if(!w)return;
-  if(!HAS_FSA)w.innerHTML='<div class="warn-card">⚠️ <b>Эзоҳ:</b> Браузер File System Access-ро дастгирӣ намекунад. Истифода кунед <b>Chrome / Edge / Opera</b>. Дар Safari/Firefox метавонед <b>импорт</b> ва <b>юклаб</b>.</div>';
-  else w.innerHTML='<div class="warn-card ok">✓ Браузер File System Access-ро дастгирӣ мекунад. Сабт мустақим хоҳад буд.</div>';
+  if(!HAS_FSA)w.innerHTML='<div class="warn-card">⚠️ <b>Эзоҳ:</b> Браузер File System Access-ро дастгирӣ намекунад. Истифода кунед <b>Chrome / Edge / Opera</b>.</div>';
+  else w.innerHTML='<div class="warn-card ok">✓ Браузер дастгирӣ мекунад. Сабт мустақим хоҳад буд.</div>';
 }
 
 let dragInfo=null;
 function setDrag(el,k,i){
   el.addEventListener('dragstart',e=>{dragInfo={k,i};el.style.opacity='.4';e.dataTransfer.effectAllowed='move';});
-  el.addEventListener('dragend',()=>{el.style.opacity='';document.querySelectorAll('.dt').forEach(x=>x.classList.remove('dt'));dragInfo=null;});
+  el.addEventListener('dragend',()=>{el.style.opacity='';dragInfo=null;});
   el.addEventListener('dragover',e=>{if(!dragInfo||dragInfo.k!==k)return;e.preventDefault();el.style.background='var(--primary-soft)';});
   el.addEventListener('dragleave',()=>{el.style.background='';});
   el.addEventListener('drop',e=>{e.preventDefault();el.style.background='';if(!dragInfo||dragInfo.k!==k)return;
@@ -442,24 +497,137 @@ function addZip(){addZipRow('');}
 function addZipRow(u='',fi){const w=document.getElementById('zipsList');const i=fi!=null?fi:w.children.length;const r=document.createElement('div');r.className='zip-row';r.innerHTML=`<div class="zip-num">${i+1}</div><input type="text" placeholder="https://raw.githubusercontent.com/.../file.zip" value="${esc(u)}"><button class="zip-del">🗑</button>`;r.querySelector('.zip-del').onclick=()=>{r.remove();[...w.children].forEach((x,j)=>x.querySelector('.zip-num').textContent=j+1);if(!w.children.length)addZipRow();};w.appendChild(r);if(fi==null)r.querySelector('input').focus();}
 function getZips(){return [...document.getElementById('zipsList').querySelectorAll('input')].map(x=>x.value.trim()).filter(v=>v);}
 
-function addSub(){if(!A.sel)return;A.editSub=null;A.editSubIn=A.sel;document.getElementById('subModalTitle').textContent='Илова кардани бахш';document.getElementById('sn').value='';document.getElementById('si').value='';document.getElementById('si').disabled=false;renderZipsList([]);document.getElementById('subModal').classList.add('on');setTimeout(()=>document.getElementById('sn').focus(),80);}
-function editSub(cid,sid){const c=A.data.categories.find(x=>x.id===cid);if(!c)return;const s=c.subs.find(x=>x.id===sid);if(!s)return;A.editSub=sid;A.editSubIn=cid;document.getElementById('subModalTitle').textContent='Таҳрир: '+s.name;document.getElementById('sn').value=s.name;document.getElementById('si').value=s.id;document.getElementById('si').disabled=true;renderZipsList(s.zips);document.getElementById('subModal').classList.add('on');}
+function addSub(){if(!A.sel)return;A.editSub=null;A.editSubIn=A.sel;A.preparedBooks=null;document.getElementById('subModalTitle').textContent='Илова кардани бахш';document.getElementById('sn').value='';document.getElementById('si').value='';document.getElementById('si').disabled=false;renderZipsList([]);updatePrepCard(null);document.getElementById('subModal').classList.add('on');setTimeout(()=>document.getElementById('sn').focus(),80);}
+function editSub(cid,sid){const c=A.data.categories.find(x=>x.id===cid);if(!c)return;const s=c.subs.find(x=>x.id===sid);if(!s)return;A.editSub=sid;A.editSubIn=cid;A.preparedBooks=s.books||null;document.getElementById('subModalTitle').textContent='Таҳрир: '+s.name;document.getElementById('sn').value=s.name;document.getElementById('si').value=s.id;document.getElementById('si').disabled=true;renderZipsList(s.zips);updatePrepCard(s.books);document.getElementById('subModal').classList.add('on');}
 function closeSubModal(){document.getElementById('subModal').classList.remove('on');}
+
+function updatePrepCard(books){
+  const card=document.getElementById('prepCard');
+  const status=document.getElementById('prepStatus');
+  const btn=document.getElementById('prepBtn');
+  const title=document.getElementById('prepTitle');
+  if(books&&books.length){
+    card.classList.add('ready');
+    title.textContent=`✅ Тайёр: ${books.length} китоб бо обложкаҳо`;
+    status.innerHTML=`Ҳолат: <b style="color:#10b981;">тайёр</b> · ${books.length} обложка ҷой шудааст. Корбарон моменталӣ хоҳанд дид.`;
+    btn.textContent='🔄 Аз нав тайёр кардан';
+    btn.className='btn';
+  }else{
+    card.classList.remove('ready');
+    title.textContent='⚡ Тайёр кардани обложкаҳо';
+    status.textContent='Ҳолат: ҳоло обложкаҳо тайёр нашудаанд';
+    btn.textContent='⚡ Тайёр кардан';
+    btn.className='btn btn-warning';
+  }
+}
+
+// ⭐ ГЛАВНАЯ ФУНКЦИЯ: ПОДГОТОВКА ОБЛОЖЕК
+async function prepareCovers(){
+  const zips=getZips();
+  if(!zips.length){toast('Аввал силкаи ZIP-ро ворид кунед!','error');return;}
+
+  const btn=document.getElementById('prepBtn');
+  const bar=document.getElementById('prepBar');
+  const fill=document.getElementById('prepFill');
+  const stage=document.getElementById('prepStage');
+  const status=document.getElementById('prepStatus');
+
+  btn.disabled=true;bar.classList.add('on');stage.classList.add('on');
+  btn.textContent='⏳ Иҷро шуда истодааст...';
+
+  try{
+    const allBooks=[];
+
+    // Stage 1: Скачивание + распаковка
+    for(let zi=0;zi<zips.length;zi++){
+      const url=zips[zi];
+      const pref=zips.length>1?`[${zi+1}/${zips.length}] `:'';
+      stage.textContent=`${pref}Бор кардан...`;
+      const resp=await fetch(url);
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const total=+resp.headers.get('Content-Length')||0;
+      const rdr=resp.body.getReader();const chunks=[];let rcv=0;
+      while(true){
+        const {done,value}=await rdr.read();if(done)break;
+        chunks.push(value);rcv+=value.length;
+        if(total){
+          const p=(rcv/total)*40; // download = 40%
+          fill.style.width=p+'%';
+          stage.textContent=`${pref}Бор кардан: ${(rcv/1048576).toFixed(1)}/${(total/1048576).toFixed(1)} MB`;
+        }
+      }
+      const ab=new Uint8Array(rcv);let off=0;for(const c of chunks){ab.set(c,off);off+=c.length;}
+
+      stage.textContent=`${pref}Кушодан...`;fill.style.width='45%';
+      const zip=await JSZip.loadAsync(ab.buffer);
+      const entries=Object.entries(zip.files).filter(([f,o])=>!o.dir&&f.toLowerCase().endsWith('.pdf'));
+      const baseProgress=zi/zips.length*50;
+      const chunkProgress=50/zips.length;
+      let i=0;
+      for(const [fn,fo] of entries){
+        const name=fn.replace(/\.pdf$/i,'').replace(/^.*\//,'').trim();
+        stage.textContent=`${pref}Сохтани обложкаҳо: ${i+1}/${entries.length} · ${name}`;
+        const fp=50+baseProgress+(i/entries.length)*chunkProgress;
+        fill.style.width=fp+'%';
+        try{
+          const buf=await fo.async('arraybuffer');
+          // Generate cover
+          const pdf=await pdfjsLib.getDocument({data:buf,disableAutoFetch:true,disableStream:true}).promise;
+          const p=await pdf.getPage(1);
+          const vp=p.getViewport({scale:0.4});
+          const cv=document.createElement('canvas');
+          cv.width=vp.width;cv.height=vp.height;
+          await p.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+          const dataUrl=cv.toDataURL('image/jpeg',0.6);
+          try{pdf.destroy();}catch(e){}
+          if(!allBooks.find(b=>b.name===name)){
+            allBooks.push({name,cover:dataUrl});
+          }
+        }catch(err){
+          console.warn('Cover fail:',name,err);
+          if(!allBooks.find(b=>b.name===name)){
+            allBooks.push({name});
+          }
+        }
+        i++;
+      }
+    }
+
+    fill.style.width='100%';
+    stage.textContent=`✓ Тайёр: ${allBooks.length} китоб`;
+    A.preparedBooks=allBooks;
+    updatePrepCard(allBooks);
+    btn.disabled=false;
+    toast(`✓ ${allBooks.length} обложка тайёр шуд. Энди "Сабт"-ро пахш кунед.`,'success',4000);
+  }catch(e){
+    console.error(e);
+    stage.textContent='❌ '+e.message;
+    toast('Хатогӣ: '+e.message,'error',4000);
+    btn.disabled=false;
+    btn.textContent='⚡ Тайёр кардан';
+  }
+}
+
 function saveSub(){
   const n=document.getElementById('sn').value.trim(),i=document.getElementById('si').value.trim(),z=getZips();
   if(!n){toast('Ном','error');return;}
   if(!/^[a-zA-Z0-9_]+$/.test(i)){toast('ID','error');return;}
   for(const u of z)if(!/^https?:\/\//.test(u)){toast('URL: '+u,'error');return;}
   const c=A.data.categories.find(x=>x.id===A.editSubIn);if(!c)return;
+  const newData={id:i,name:n,zips:z};
+  if(A.preparedBooks&&A.preparedBooks.length)newData.books=A.preparedBooks;
   if(A.editSub===null){
     if(c.subs.find(s=>s.id===i)){toast('ID мавҷуд','error');return;}
-    c.subs.push({id:i,name:n,zips:z});toast('✓ Илова','success');
+    c.subs.push(newData);toast('✓ Илова','success');
   }else{
     const s=c.subs.find(x=>x.id===A.editSub);if(!s)return;
-    s.name=n;s.zips=z;toast('✓ Тағйир','success');
+    s.name=n;s.zips=z;
+    if(A.preparedBooks!==null)s.books=A.preparedBooks;
+    toast('✓ Тағйир','success');
   }
   closeSubModal();markMod();
 }
+
 function delSub(cid,sid){const c=A.data.categories.find(x=>x.id===cid);if(!c)return;const s=c.subs.find(x=>x.id===sid);if(!s)return;
   confirm2('Хориҷ кардан?',`Бахши <b>«${esc(s.name)}»</b> хориҷ мешавад.`,()=>{c.subs=c.subs.filter(x=>x.id!==sid);markMod();toast('✓ Хориҷ','success');});
 }
@@ -484,7 +652,7 @@ document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){
 
 (function init(){
   updStatus();
-  try{const b=JSON.parse(localStorage.getItem('a_backup')||'');if(b&&b.categories?.length){A.data=b;A.data.categories.forEach(c=>{c.color1=c.color1||'#2563eb';c.color2=c.color2||'#3b82f6';c.emoji=c.emoji||'📚';c.subs=c.subs||[];c.subs.forEach(s=>{if(!Array.isArray(s.zips))s.zips=s.zip?[s.zip]:[];delete s.zip;});});A.fileName='books.json (backup)';A.sel=A.data.categories[0]?.id||null;A.modified=true;renderAll();updStatus();toast('Backup барқарор','warning',4000);return;}}catch(e){}
+  try{const b=JSON.parse(localStorage.getItem('a_backup')||'');if(b&&b.categories?.length){A.data=b;A.data.categories.forEach(c=>{c.color1=c.color1||'#2563eb';c.color2=c.color2||'#3b82f6';c.emoji=c.emoji||'📚';c.subs=c.subs||[];c.subs.forEach(s=>{if(!Array.isArray(s.zips))s.zips=s.zip?[s.zip]:[];delete s.zip;if(!Array.isArray(s.books))s.books=null;});});A.fileName='books.json (backup)';A.sel=A.data.categories[0]?.id||null;A.modified=true;renderAll();updStatus();toast('Backup барқарор','warning',4000);return;}}catch(e){}
   renderAll();chkBrowser();
 })();
 </script>
