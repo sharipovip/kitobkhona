@@ -436,25 +436,103 @@ async function loadSub(id){
   }finally{$('bgProg').classList.remove('on');}
 }
 
+// ⭐ Кодирует путь, сохраняя слэши между папками (для вложенных папок)
+function encPath(p){return p.split('/').map(encodeURIComponent).join('/');}
+
+// ⭐ Кеш найденных путей
+async function getCachedPath(folder){
+  try{const c=await idbG('json','path:'+folder);if(c&&typeof c==='string')return c;}catch(e){}
+  return null;
+}
+async function saveCachedPath(folder,realPath){
+  try{await idbS('json','path:'+folder,realPath);}catch(e){}
+}
+
+// ⭐ Кеш дерева репо (1 час)
+let TREE_PROMISE=null;
+async function loadRepoTree(){
+  if(TREE_PROMISE)return TREE_PROMISE;
+  TREE_PROMISE=(async()=>{
+    try{
+      const c=await idbG('json','tree:'+REPO+':'+BRANCH).catch(()=>null);
+      if(c&&c.ts&&(Date.now()-c.ts)<3600000&&c.folders)return c.folders;
+      const r=await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`);
+      if(!r.ok)return [];
+      const d=await r.json();
+      const folders=(d.tree||[]).filter(x=>x.type==='tree').map(x=>x.path);
+      try{await idbS('json','tree:'+REPO+':'+BRANCH,{folders,ts:Date.now()});}catch(e){}
+      return folders;
+    }catch(e){return [];}finally{setTimeout(()=>{TREE_PROMISE=null;},100);}
+  })();
+  return TREE_PROMISE;
+}
+
+async function tryFetch(path){
+  try{
+    const r=await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(path)}/manifest.json?t=${Date.now()}`,{cache:'no-store'});
+    if(!r.ok)return null;
+    const data=await r.json();
+    if(!Array.isArray(data.books))return null;
+    return data;
+  }catch(e){return null;}
+}
+
 async function fetchManifest(sub,id,silent){
-  const url=`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encodeURIComponent(sub.folder)}/manifest.json?t=${Date.now()}`;
-  const r=await fetch(url,{cache:'no-store'});
-  if(!r.ok){
-    if(r.status===404){
-      throw new Error('manifest.json ёфт нашуд дар папкаи '+sub.folder);
-    }
-    throw new Error('HTTP '+r.status);
+  const folder=sub.folder;
+  let realPath=null,data=null;
+
+  // СТРАТЕГИЯ 1: запомненный путь из кеша
+  const cached=await getCachedPath(folder);
+  if(cached){
+    data=await tryFetch(cached);
+    if(data)realPath=cached;
   }
-  const data=await r.json();
-  if(!Array.isArray(data.books))throw new Error('Бад формат manifest');
+
+  // СТРАТЕГИЯ 2: прямой путь (как написано в books.json)
+  if(!data){
+    data=await tryFetch(folder);
+    if(data)realPath=folder;
+  }
+
+  // СТРАТЕГИЯ 3: умный поиск по дереву репо
+  if(!data){
+    const folders=await loadRepoTree();
+    const target=folder.toLowerCase();
+    const candidates=folders.filter(p=>{
+      const pl=p.toLowerCase();
+      const last=pl.split('/').pop();
+      return last===target||pl===target||pl.endsWith('/'+target);
+    });
+    // Точное совпадение в приоритете
+    candidates.sort((a,b)=>{
+      const al=a.toLowerCase(),bl=b.toLowerCase();
+      const ae=al===target?0:(al.endsWith('/'+target)?1:2);
+      const be=bl===target?0:(bl.endsWith('/'+target)?1:2);
+      return ae-be;
+    });
+    for(const c of candidates){
+      data=await tryFetch(c);
+      if(data){realPath=c;break;}
+    }
+  }
+
+  if(!data){
+    throw new Error('manifest.json ёфт нашуд барои "'+folder+'"');
+  }
+
+  // Запомним найденный путь
+  if(realPath&&realPath!==folder){
+    await saveCachedPath(folder,realPath);
+  }
+
   const books=data.books.map(b=>({
     name:b.name||b.file?.replace(/\.pdf$/i,''),
     file:b.file||(b.name+'.pdf'),
-    url:`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encodeURIComponent(sub.folder)}/${encodeURIComponent(b.file||(b.name+'.pdf'))}`,
+    url:`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(realPath)}/${encodeURIComponent(b.file||(b.name+'.pdf'))}`,
     size:b.size||0
   }));
   S.books.set(id,books);
-  try{await idbS('lists',sub.folder,{books,ts:Date.now()});}catch(e){}
+  try{await idbS('lists',folder,{books,realPath,ts:Date.now()});}catch(e){}
   if(S.sub?.id===id){
     renderSubs();renderBooks(id);
     if(silent)toast('✓ Навсозӣ шуд',1500);
@@ -1004,5 +1082,5 @@ function cancelDl(){if(S.abort)try{S.abort.abort();}catch(e){}hideDl();toast('Б
 
 window.addEventListener('beforeunload',saveProgress);
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a07199e47b3f0a3f',t:'MTc4MDY4NzkyMw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

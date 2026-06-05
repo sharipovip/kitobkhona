@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "updatedAt": "2026-06-05",
+  "updatedAt": "2026-06-06",
   "repo": "sharipovip/books",
   "branch": "main",
   "categories": [
@@ -11,61 +11,17 @@
       "color1": "#1e40af",
       "color2": "#3b82f6",
       "subs": [
-        {
-          "id": "s1",
-          "name": "Синфи 1",
-          "folder": "sinfi_1"
-        },
-        {
-          "id": "s2",
-          "name": "Синфи 2",
-          "folder": "sinfi_2"
-        },
-        {
-          "id": "s3",
-          "name": "Синфи 3",
-          "folder": "sinfi_3"
-        },
-        {
-          "id": "s4",
-          "name": "Синфи 4",
-          "folder": "sinfi_4"
-        },
-        {
-          "id": "s5",
-          "name": "Синфи 5",
-          "folder": "sinfi_5"
-        },
-        {
-          "id": "s6",
-          "name": "Синфи 6",
-          "folder": "sinfi_6"
-        },
-        {
-          "id": "s7",
-          "name": "Синфи 7",
-          "folder": "sinfi_7"
-        },
-        {
-          "id": "s8",
-          "name": "Синфи 8",
-          "folder": "sinfi_8"
-        },
-        {
-          "id": "s9",
-          "name": "Синфи 9",
-          "folder": "sinfi_9"
-        },
-        {
-          "id": "s10",
-          "name": "Синфи 10",
-          "folder": "sinfi_10"
-        },
-        {
-          "id": "s11",
-          "name": "Синфи 11",
-          "folder": "sinfi_11"
-        }
+        { "id": "s1", "name": "Синфи 1", "folder": "sinfi_1" },
+        { "id": "s2", "name": "Синфи 2", "folder": "sinfi_2" },
+        { "id": "s3", "name": "Синфи 3", "folder": "sinfi_3" },
+        { "id": "s4", "name": "Синфи 4", "folder": "sinfi_4" },
+        { "id": "s5", "name": "Синфи 5", "folder": "sinfi_5" },
+        { "id": "s6", "name": "Синфи 6", "folder": "sinfi_6" },
+        { "id": "s7", "name": "Синфи 7", "folder": "sinfi_7" },
+        { "id": "s8", "name": "Синфи 8", "folder": "sinfi_8" },
+        { "id": "s9", "name": "Синфи 9", "folder": "sinfi_9" },
+        { "id": "s10", "name": "Синфи 10", "folder": "sinfi_10" },
+        { "id": "s11", "name": "Синфи 11", "folder": "sinfi_11" }
       ]
     },
     {
@@ -75,26 +31,10 @@
       "color1": "#7c3aed",
       "color2": "#a855f7",
       "subs": [
-        {
-          "id": "muosir",
-          "name": "Шоирони муосир",
-          "folder": "muosir"
-        },
-        {
-          "id": "klassik",
-          "name": "Классики форсу-тоҷик",
-          "folder": "klassik"
-        },
-        {
-          "id": "roman",
-          "name": "Романҳо",
-          "folder": "roman"
-        },
-        {
-          "id": "hikoya",
-          "name": "Ҳикояҳо",
-          "folder": "hikoya"
-        }
+        { "id": "muosir", "name": "Шоирони муосир", "folder": "muosir" },
+        { "id": "klassik", "name": "Классики форсу-тоҷик", "folder": "klassik" },
+        { "id": "roman", "name": "Романҳо", "folder": "roman" },
+        { "id": "hikoya", "name": "Ҳикояҳо", "folder": "hikoya" }
       ]
     },
     {
@@ -104,21 +44,9 @@
       "color1": "#ea580c",
       "color2": "#fb923c",
       "subs": [
-        {
-          "id": "ertak",
-          "name": "Эртакҳо",
-          "folder": "ertak"
-        },
-        {
-          "id": "sherb",
-          "name": "Шеърҳо",
-          "folder": "sherb"
-        },
-        {
-          "id": "tabnatb",
-          "name": "Табиат",
-          "folder": "tabiat_b"
-        }
+        { "id": "ertak", "name": "Эртакҳо", "folder": "ertak" },
+        { "id": "sherb", "name": "Шеърҳо", "folder": "sherb" },
+        { "id": "tabnatb", "name": "Табиат", "folder": "tabiat_b" }
       ]
     },
     {
@@ -128,46 +56,14 @@
       "color1": "#059669",
       "color2": "#10b981",
       "subs": [
-        {
-          "id": "vatan",
-          "name": "Ватан",
-          "folder": "vatan"
-        },
-        {
-          "id": "modar",
-          "name": "Модар",
-          "folder": "modar"
-        },
-        {
-          "id": "dusti",
-          "name": "Дӯстӣ",
-          "folder": "dusti"
-        },
-        {
-          "id": "tabiat",
-          "name": "Табиат",
-          "folder": "tabiat"
-        },
-        {
-          "id": "bahor",
-          "name": "Баҳор",
-          "folder": "bahor"
-        },
-        {
-          "id": "navruz",
-          "name": "Навруз",
-          "folder": "navruz"
-        },
-        {
-          "id": "somoni",
-          "name": "Исмоил Сомонӣ",
-          "folder": "somoni"
-        },
-        {
-          "id": "dshanbe",
-          "name": "Душанбе",
-          "folder": "dushanbe"
-        }
+        { "id": "vatan", "name": "Ватан", "folder": "vatan" },
+        { "id": "modar", "name": "Модар", "folder": "modar" },
+        { "id": "dusti", "name": "Дӯстӣ", "folder": "dusti" },
+        { "id": "tabiat", "name": "Табиат", "folder": "tabiat" },
+        { "id": "bahor", "name": "Баҳор", "folder": "bahor" },
+        { "id": "navruz", "name": "Навруз", "folder": "navruz" },
+        { "id": "somoni", "name": "Исмоил Сомонӣ", "folder": "somoni" },
+        { "id": "dshanbe", "name": "Душанбе", "folder": "dushanbe" }
       ]
     },
     {
@@ -177,21 +73,9 @@
       "color1": "#b45309",
       "color2": "#f59e0b",
       "subs": [
-        {
-          "id": "tarikhi",
-          "name": "Таърихи тоҷик",
-          "folder": "tarikhi"
-        },
-        {
-          "id": "farhang",
-          "name": "Фарҳанги тоҷик",
-          "folder": "farhang"
-        },
-        {
-          "id": "zindag",
-          "name": "Зиндагинома",
-          "folder": "zindag"
-        }
+        { "id": "tarikhi", "name": "Таърихи тоҷик", "folder": "tarikhi" },
+        { "id": "farhang", "name": "Фарҳанги тоҷик", "folder": "farhang" },
+        { "id": "zindag", "name": "Зиндагинома", "folder": "zindag" }
       ]
     }
   ]
