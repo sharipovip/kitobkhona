@@ -6,184 +6,618 @@
 <title>Admin — Китобхона</title>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-:root{
-  --primary:#2563eb;--primary-dark:#1d4ed8;--primary-soft:#eff6ff;
-  --success:#10b981;--danger:#ef4444;--warning:#f59e0b;
-  --bg:#f8fafc;--bg-2:#f1f5f9;--card:#fff;
-  --text:#1e293b;--text-muted:#64748b;--border:#e2e8f0;
-  --radius:10px;--shadow:0 4px 6px -1px rgba(0,0,0,.08);
+:root {
+  --primary: #2563eb;
+  --primary-dark: #1d4ed8;
+  --primary-soft: #eff6ff;
+  --success: #10b981;
+  --success-dark: #059669;
+  --danger: #ef4444;
+  --danger-dark: #dc2626;
+  --warning: #f59e0b;
+  --bg: #f8fafc;
+  --bg-2: #f1f5f9;
+  --card: #ffffff;
+  --text: #1e293b;
+  --text-muted: #64748b;
+  --border: #e2e8f0;
+  --border-strong: #cbd5e1;
+  --radius: 12px;
+  --shadow: 0 4px 6px -1px rgb(0 0 0 / 0.08), 0 2px 4px -2px rgb(0 0 0 / 0.05);
+  --shadow-lg: 0 10px 25px -3px rgb(0 0 0 / 0.10), 0 4px 10px -4px rgb(0 0 0 / 0.05);
 }
-[data-theme="dark"]{--bg:#0b1220;--bg-2:#0f172a;--card:#131c2e;--text:#e2e8f0;--text-muted:#94a3b8;--border:#1e293b;--primary-soft:#1e3a8a40;}
-*{margin:0;padding:0;box-sizing:border-box;}
-body{font-family:'Inter',sans-serif;background:var(--bg);color:var(--text);line-height:1.5;min-height:100vh;}
-button,input,textarea,select{font-family:inherit;}
+[data-theme="dark"] {
+  --primary: #60a5fa;
+  --primary-dark: #3b82f6;
+  --primary-soft: #1e3a8a40;
+  --success: #34d399;
+  --success-dark: #10b981;
+  --danger: #f87171;
+  --danger-dark: #ef4444;
+  --bg: #0b1220;
+  --bg-2: #0f172a;
+  --card: #131c2e;
+  --text: #e2e8f0;
+  --text-muted: #94a3b8;
+  --border: #1e293b;
+  --border-strong: #334155;
+}
 
-.header{background:var(--card);border-bottom:1px solid var(--border);padding:12px 20px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;}
-.logo{display:flex;align-items:center;gap:10px;font-weight:800;font-size:18px;color:var(--primary);}
-.logo-icon{width:36px;height:36px;background:linear-gradient(135deg,var(--primary),#60a5fa);border-radius:8px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;}
-.tag{background:var(--warning);color:#fff;padding:3px 8px;border-radius:4px;font-size:10px;font-weight:700;letter-spacing:1px;}
-.status{display:flex;align-items:center;gap:8px;margin-left:auto;font-size:12px;color:var(--text-muted);flex-wrap:wrap;}
-.dot{width:9px;height:9px;border-radius:50%;background:var(--text-muted);}
-.dot.on{background:var(--success);box-shadow:0 0 0 3px rgba(16,185,129,.18);}
-.dot.mod{background:var(--warning);box-shadow:0 0 0 3px rgba(245,158,11,.18);}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { background: var(--bg); }
+body { font-family: 'Inter', sans-serif; color: var(--text); line-height: 1.5; min-height: 100vh; }
+button, input, select { font-family: inherit; }
 
-.toolbar{background:var(--card);border-bottom:1px solid var(--border);padding:10px 20px;display:flex;gap:6px;flex-wrap:wrap;}
-.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 14px;border-radius:8px;border:1px solid var(--border);background:var(--card);color:var(--text);font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;}
-.btn:hover{border-color:var(--primary);color:var(--primary);}
-.btn:disabled{opacity:.5;cursor:not-allowed;}
-.btn-primary{background:var(--primary);color:#fff;border-color:var(--primary);}
-.btn-primary:hover{background:var(--primary-dark);color:#fff;}
-.btn-success{background:var(--success);color:#fff;border-color:var(--success);}
-.btn-danger{background:var(--danger);color:#fff;border-color:var(--danger);}
-.btn-warning{background:var(--warning);color:#fff;border-color:var(--warning);}
+.header {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 100;
+  box-shadow: var(--shadow);
+}
+.header-inner {
+  max-width: 1280px; margin: 0 auto;
+  padding: 12px 24px;
+  display: flex; align-items: center; gap: 16px;
+  flex-wrap: wrap;
+}
+.logo {
+  display: flex; align-items: center; gap: 12px;
+  color: var(--primary);
+  font-weight: 800; font-size: 20px;
+}
+.logo-icon {
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, var(--primary), #60a5fa);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  color: white; font-size: 20px;
+}
+.logo-tag {
+  background: var(--warning);
+  color: white;
+  padding: 3px 9px;
+  border-radius: 5px;
+  font-size: 11px; font-weight: 700;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.header-status {
+  display: flex; align-items: center; gap: 8px;
+  margin-left: auto;
+  font-size: 13px; color: var(--text-muted);
+  flex-wrap: wrap;
+}
+.status-dot {
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: var(--text-muted);
+}
+.status-dot.connected { background: var(--success); box-shadow: 0 0 0 4px rgba(16,185,129,0.18); }
+.status-dot.modified { background: var(--warning); box-shadow: 0 0 0 4px rgba(245,158,11,0.18); }
+.icon-btn-h {
+  width: 38px; height: 38px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px;
+}
+.icon-btn-h:hover { border-color: var(--primary); color: var(--primary); }
 
-.container{max-width:1280px;margin:0 auto;padding:20px;display:grid;grid-template-columns:300px 1fr;gap:20px;}
-@media(max-width:880px){.container{grid-template-columns:1fr;padding:12px;gap:12px;}}
+.toolbar {
+  background: var(--card);
+  border-bottom: 1px solid var(--border);
+  padding: 12px 24px;
+  position: sticky; top: 0; z-index: 90;
+}
+.toolbar-inner {
+  max-width: 1280px; margin: 0 auto;
+  display: flex; gap: 8px; flex-wrap: wrap;
+  align-items: center;
+}
+.btn {
+  display: inline-flex; align-items: center; gap: 7px;
+  padding: 9px 16px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text);
+  font-size: 13px; font-weight: 600;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.btn:hover { border-color: var(--primary); color: var(--primary); }
+.btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-primary { background: var(--primary); color: white; border-color: var(--primary); }
+.btn-primary:hover { background: var(--primary-dark); color: white; }
+.btn-success { background: var(--success); color: white; border-color: var(--success); }
+.btn-success:hover { background: var(--success-dark); color: white; }
+.btn-danger { background: var(--danger); color: white; border-color: var(--danger); }
+.btn-danger:hover { background: var(--danger-dark); color: white; }
+.tb-divider { width: 1px; height: 22px; background: var(--border); margin: 0 4px; }
 
-.panel{background:var(--card);border-radius:var(--radius);border:1px solid var(--border);box-shadow:var(--shadow);overflow:hidden;}
-.panel-header{padding:14px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.panel-title{font-size:14px;font-weight:700;}
-.panel-body{padding:10px;}
+.container {
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 24px;
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 24px;
+}
+@media (max-width: 920px) {
+  .container { grid-template-columns: 1fr; padding: 16px; gap: 16px; }
+}
 
-.cat-item{display:flex;align-items:center;gap:10px;padding:10px;border-radius:8px;border:1px solid transparent;cursor:pointer;margin-bottom:3px;user-select:none;}
-.cat-item:hover{background:var(--bg-2);}
-.cat-item.on{background:var(--primary-soft);border-color:var(--primary);}
-.cat-handle{cursor:grab;color:var(--text-muted);font-size:13px;}
-.cat-emoji{width:32px;height:32px;border-radius:7px;display:flex;align-items:center;justify-content:center;font-size:18px;background:linear-gradient(135deg,var(--c1,var(--primary)),var(--c2,#60a5fa));flex-shrink:0;}
-.cat-info{flex:1;min-width:0;}
-.cat-name{font-weight:700;font-size:13px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.cat-meta{font-size:10px;color:var(--text-muted);}
-.cat-acts{display:flex;gap:3px;opacity:0;transition:opacity .1s;}
-.cat-item:hover .cat-acts,.cat-item.on .cat-acts{opacity:1;}
-.mini-btn{width:26px;height:26px;border-radius:5px;border:1px solid var(--border);background:var(--card);color:var(--text-muted);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:12px;}
-.mini-btn:hover{border-color:var(--primary);color:var(--primary);}
-.mini-btn.danger:hover{border-color:var(--danger);color:var(--danger);}
+.panel {
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+.panel-header {
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+  gap: 8px;
+}
+.panel-title {
+  font-size: 15px; font-weight: 700;
+  display: flex; align-items: center; gap: 8px;
+}
+.panel-body { padding: 12px; }
 
-.cat-header{padding:16px 18px;background:linear-gradient(135deg,var(--c1,var(--primary)),var(--c2,#60a5fa));color:#fff;display:flex;align-items:center;gap:12px;}
-.cat-header-emoji{font-size:28px;}
-.cat-header-name{font-size:16px;font-weight:700;}
-.cat-header-meta{font-size:11px;opacity:.9;}
+.cat-list { list-style: none; display: flex; flex-direction: column; gap: 4px; }
+.cat-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 12px;
+  border-radius: 10px;
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+}
+.cat-item:hover { background: var(--bg-2); }
+.cat-item.active { background: var(--primary-soft); border-color: var(--primary); }
+.cat-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 14px;
+  user-select: none;
+  flex-shrink: 0;
+}
+.cat-handle:active { cursor: grabbing; }
+.cat-emoji {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  flex-shrink: 0;
+  background: linear-gradient(135deg, var(--c1, var(--primary)), var(--c2, var(--primary-dark)));
+}
+.cat-info { flex: 1; min-width: 0; }
+.cat-name {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.cat-meta { font-size: 11px; color: var(--text-muted); margin-top: 2px; }
+.cat-actions { display: flex; gap: 4px; flex-shrink: 0; opacity: 0; transition: opacity .15s; }
+.cat-item:hover .cat-actions, .cat-item.active .cat-actions { opacity: 1; }
+.mini-btn {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-muted);
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px;
+}
+.mini-btn:hover { border-color: var(--primary); color: var(--primary); }
+.mini-btn.danger:hover { border-color: var(--danger); color: var(--danger); }
 
-.sub-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:8px;border:1px solid var(--border);background:var(--bg);margin-bottom:5px;user-select:none;}
-.sub-handle{cursor:grab;color:var(--text-muted);}
-.sub-icon{width:30px;height:30px;border-radius:6px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;font-size:13px;color:var(--text-muted);flex-shrink:0;}
-.sub-icon.has{background:var(--primary-soft);color:var(--primary);border-color:var(--primary);}
-.sub-info{flex:1;min-width:0;}
-.sub-name{font-weight:700;font-size:13px;}
-.sub-url{font-size:10px;color:var(--text-muted);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-family:Monaco,monospace;}
+.dragging { opacity: 0.4; }
+.drop-target { background: var(--primary-soft) !important; border: 2px dashed var(--primary) !important; }
 
-.empty{text-align:center;padding:50px 20px;color:var(--text-muted);}
-.empty-icon{font-size:48px;margin-bottom:10px;opacity:.6;}
+.empty-panel {
+  text-align: center;
+  padding: 60px 24px;
+  color: var(--text-muted);
+}
+.empty-panel .icon { font-size: 60px; margin-bottom: 16px; opacity: 0.6; }
+.empty-panel h3 { color: var(--text); font-size: 18px; margin-bottom: 8px; }
 
-.modal-bg{display:none;position:fixed;inset:0;background:rgba(0,0,0,.6);backdrop-filter:blur(3px);z-index:100;align-items:center;justify-content:center;padding:20px;}
-.modal-bg.on{display:flex;}
-.modal{background:var(--card);border-radius:14px;width:100%;max-width:560px;max-height:90vh;overflow:hidden;display:flex;flex-direction:column;}
-.modal-header{padding:16px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;}
-.modal-title{font-size:16px;font-weight:700;}
-.modal-close{width:32px;height:32px;border-radius:7px;border:1px solid var(--border);background:var(--bg);color:var(--text-muted);font-size:16px;cursor:pointer;}
-.modal-body{padding:16px 20px;overflow-y:auto;}
-.modal-footer{padding:12px 20px;border-top:1px solid var(--border);display:flex;gap:6px;justify-content:flex-end;background:var(--bg);}
+.cat-header-info {
+  display: flex; align-items: center; gap: 14px;
+  padding: 18px 20px;
+  border-bottom: 1px solid var(--border);
+  background: linear-gradient(135deg, var(--c1, var(--primary)) 0%, var(--c2, var(--primary-dark)) 100%);
+  color: white;
+}
+.cat-header-emoji { font-size: 30px; flex-shrink: 0; }
+.cat-header-name { font-size: 18px; font-weight: 700; }
+.cat-header-meta { font-size: 12px; opacity: 0.9; margin-top: 2px; }
 
-.fg{margin-bottom:14px;}
-.fg label{display:block;margin-bottom:5px;font-weight:600;font-size:12px;}
-.fg .hint{font-size:10px;color:var(--text-muted);margin-top:3px;line-height:1.5;}
-.fc{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:7px;background:var(--bg);color:var(--text);font-size:13px;outline:none;}
-.fc:focus{border-color:var(--primary);background:var(--card);}
-.fc.code{font-family:Monaco,monospace;font-size:11px;}
-.frow{display:grid;grid-template-columns:1fr 1fr;gap:10px;}
-.cwrap{display:flex;align-items:center;gap:6px;}
-.cwrap input[type=color]{width:36px;height:36px;padding:0;border:1px solid var(--border);border-radius:6px;cursor:pointer;background:var(--bg);}
-.cprev{height:50px;border-radius:8px;margin-top:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700;text-shadow:0 2px 4px rgba(0,0,0,.3);}
-.eg{display:grid;grid-template-columns:repeat(8,1fr);gap:3px;max-height:160px;overflow-y:auto;border:1px solid var(--border);border-radius:7px;padding:6px;background:var(--bg);}
-.eb{font-size:18px;padding:5px;border:1px solid transparent;background:transparent;cursor:pointer;border-radius:5px;}
-.eb:hover{background:var(--card);border-color:var(--primary);}
-.eb.on{background:var(--primary-soft);border-color:var(--primary);}
+.subs-list { list-style: none; display: flex; flex-direction: column; gap: 6px; padding: 12px; }
+.sub-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 12px 14px;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  user-select: none;
+}
+.sub-item:hover { border-color: var(--primary); }
+.sub-handle {
+  cursor: grab;
+  color: var(--text-muted);
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.sub-handle:active { cursor: grabbing; }
+.sub-icon {
+  width: 34px; height: 34px;
+  border-radius: 8px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px;
+  color: var(--text-muted);
+  flex-shrink: 0;
+}
+.sub-icon.has-zip { background: var(--primary-soft); color: var(--primary); border-color: var(--primary); }
+.sub-info { flex: 1; min-width: 0; }
+.sub-name { font-weight: 700; font-size: 14px; color: var(--text); }
+.sub-url {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 3px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: 'SF Mono', Monaco, monospace;
+}
+.sub-url.empty { font-style: italic; }
+.sub-actions { display: flex; gap: 4px; flex-shrink: 0; }
 
-.gen-card{background:linear-gradient(135deg,var(--primary-soft),var(--bg-2));border:2px solid var(--primary);border-radius:10px;padding:14px;margin-top:14px;}
-.gen-title{font-weight:700;font-size:13px;margin-bottom:4px;}
-.gen-desc{font-size:11px;color:var(--text-muted);margin-bottom:10px;line-height:1.5;}
-.gen-progress{font-size:11px;color:var(--primary);font-weight:600;margin-top:8px;display:none;}
-.gen-progress.on{display:block;}
-.gen-result{margin-top:10px;padding:10px;background:var(--card);border:1px solid var(--border);border-radius:7px;font-size:12px;display:none;max-height:200px;overflow-y:auto;font-family:Monaco,monospace;font-size:10px;white-space:pre-wrap;word-break:break-all;}
-.gen-result.on{display:block;}
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.7);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.modal-overlay.on { display: flex; }
+.modal {
+  background: var(--card);
+  border-radius: 16px;
+  width: 100%;
+  max-width: 540px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex; flex-direction: column;
+  box-shadow: var(--shadow-lg);
+}
+.modal-header {
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.modal-title { font-size: 18px; font-weight: 700; }
+.modal-close {
+  width: 36px; height: 36px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--bg);
+  color: var(--text-muted);
+  font-size: 18px;
+  cursor: pointer;
+}
+.modal-close:hover { border-color: var(--danger); color: var(--danger); }
+.modal-body { padding: 20px 24px; overflow-y: auto; }
+.modal-footer {
+  padding: 16px 24px;
+  border-top: 1px solid var(--border);
+  display: flex; gap: 8px; justify-content: flex-end;
+  background: var(--bg);
+}
 
-.toast-c{position:fixed;bottom:20px;right:20px;z-index:1000;display:flex;flex-direction:column;gap:6px;}
-.toast{background:#1e293b;color:#fff;padding:11px 16px;border-radius:8px;font-size:13px;box-shadow:var(--shadow);max-width:380px;animation:tin .2s;}
-.toast.success{background:var(--success);}
-.toast.error{background:var(--danger);}
-.toast.warning{background:var(--warning);}
-@keyframes tin{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+.form-group { margin-bottom: 16px; }
+.form-group label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--text);
+}
+.form-group .hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  outline: none;
+}
+.form-control:focus { border-color: var(--primary); background: var(--card); }
+.form-control.code { font-family: 'SF Mono', Monaco, monospace; font-size: 12px; }
+textarea.form-control { min-height: 70px; resize: vertical; }
 
-.json-view{font-family:Monaco,monospace;font-size:11px;background:var(--bg);border:1px solid var(--border);border-radius:7px;padding:10px;max-height:400px;overflow:auto;white-space:pre;}
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.color-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+}
+.color-input-wrap input[type=color] {
+  width: 42px; height: 42px;
+  padding: 0;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  background: var(--bg);
+}
+.color-preview {
+  height: 60px;
+  border-radius: 10px;
+  margin-top: 6px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-weight: 700;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
 
-.welcome{text-align:center;padding:50px 20px;}
-.welcome-icon{font-size:54px;margin-bottom:14px;}
-.welcome h2{font-size:20px;margin-bottom:6px;}
-.welcome p{color:var(--text-muted);font-size:13px;margin-bottom:20px;line-height:1.6;max-width:400px;margin-left:auto;margin-right:auto;}
-.warn-card{background:#fef3c7;border:1px solid var(--warning);color:#78350f;padding:10px 14px;border-radius:7px;margin-top:18px;font-size:12px;line-height:1.5;text-align:left;}
-[data-theme="dark"] .warn-card{background:#422f00;color:#fde68a;}
-.warn-card.ok{background:#dcfce7;border-color:#16a34a;color:#166534;}
+.emoji-grid {
+  display: grid;
+  grid-template-columns: repeat(8, 1fr);
+  gap: 4px;
+  max-height: 180px;
+  overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 8px;
+  background: var(--bg);
+}
+.emoji-btn {
+  font-size: 20px;
+  padding: 6px;
+  border: 1px solid transparent;
+  background: transparent;
+  cursor: pointer;
+  border-radius: 6px;
+}
+.emoji-btn:hover { background: var(--card); border-color: var(--primary); }
+.emoji-btn.on { background: var(--primary-soft); border-color: var(--primary); }
 
-.repo-card{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-bottom:14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;}
-.repo-card label{font-size:11px;font-weight:700;color:var(--text-muted);}
-.repo-card code{background:var(--card);padding:3px 7px;border-radius:4px;font-size:11px;font-family:Monaco,monospace;}
+/* ZIPS LIST (несколько ссылок в одном бахше) */
+.zips-list { display: flex; flex-direction: column; gap: 6px; }
+.zip-row {
+  display: flex; gap: 6px; align-items: stretch;
+}
+.zip-row .zip-num {
+  flex-shrink: 0;
+  width: 30px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+}
+.zip-row input {
+  flex: 1;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 12px;
+  outline: none;
+  min-width: 0;
+}
+.zip-row input:focus { border-color: var(--primary); }
+.zip-row .zip-del {
+  flex-shrink: 0;
+  width: 36px;
+  border: 1px solid var(--border);
+  background: var(--card);
+  color: var(--text-muted);
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+}
+.zip-row .zip-del:hover { border-color: var(--danger); color: var(--danger); }
 
-.steps{background:var(--bg-2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:10px;font-size:11px;line-height:1.6;}
-.steps b{color:var(--primary);}
+.toast-container {
+  position: fixed;
+  bottom: 24px; right: 24px;
+  z-index: 3000;
+  display: flex; flex-direction: column; gap: 8px;
+}
+.toast {
+  background: #1e293b;
+  color: white;
+  padding: 13px 20px;
+  border-radius: 10px;
+  font-size: 14px;
+  font-weight: 500;
+  box-shadow: var(--shadow-lg);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  max-width: 400px;
+  animation: toastIn .25s ease;
+}
+.toast.success { background: var(--success); }
+.toast.error { background: var(--danger); }
+.toast.warning { background: var(--warning); color: white; }
+@keyframes toastIn {
+  from { transform: translateX(100%); opacity: 0; }
+  to { transform: translateX(0); opacity: 1; }
+}
+
+.confirm-text { font-size: 14px; color: var(--text); margin-bottom: 8px; line-height: 1.6; }
+.confirm-warn { font-size: 12px; color: var(--danger); margin-top: 6px; }
+
+.help-card {
+  background: linear-gradient(135deg, var(--primary-soft), var(--bg-2));
+  border: 1px solid var(--primary);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+}
+.help-card .h-title {
+  font-weight: 700; color: var(--primary);
+  margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+
+.preview-section {
+  margin-top: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.preview-section .panel-header {
+  cursor: pointer;
+}
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  padding: 16px;
+}
+.preview-book {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  overflow: hidden;
+}
+.preview-cover {
+  height: 130px;
+  display: flex; align-items: center; justify-content: center;
+  color: white;
+  font-weight: 700;
+  font-size: 12px;
+  padding: 10px;
+  text-align: center;
+  background: linear-gradient(135deg, var(--c1, var(--primary)), var(--c2, var(--primary-dark)));
+}
+.preview-info { padding: 8px 10px; font-size: 11px; color: var(--text-muted); }
+
+.json-view {
+  font-family: 'SF Mono', Monaco, monospace;
+  font-size: 12px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  max-height: 400px;
+  overflow: auto;
+  white-space: pre;
+  color: var(--text);
+}
+
+.welcome {
+  text-align: center;
+  padding: 60px 30px;
+}
+.welcome-icon { font-size: 64px; margin-bottom: 18px; }
+.welcome h2 { font-size: 24px; margin-bottom: 8px; color: var(--text); }
+.welcome p { color: var(--text-muted); font-size: 14px; margin-bottom: 24px; line-height: 1.7; max-width: 460px; margin-left: auto; margin-right: auto; }
+.welcome-actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+
+.browser-warn {
+  background: #fef3c7;
+  border: 1px solid var(--warning);
+  color: #78350f;
+  padding: 12px 16px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+[data-theme="dark"] .browser-warn { background: #422f00; color: #fde68a; }
 </style>
 </head>
 <body>
 
 <header class="header">
-  <div class="logo">
-    <div class="logo-icon">⚙️</div>
-    <span>Китобхона</span>
-    <span class="tag">Admin</span>
-  </div>
-  <div class="status">
-    <span class="dot" id="dot"></span>
-    <span id="statusTxt">books.json пайваст нашудааст</span>
-    <button class="mini-btn" onclick="toggleTheme()" id="themeBtn">🌙</button>
+  <div class="header-inner">
+    <div class="logo">
+      <div class="logo-icon">⚙️</div>
+      <span>Китобхона</span>
+      <span class="logo-tag">Admin</span>
+    </div>
+    <div class="header-status">
+      <span class="status-dot" id="statusDot"></span>
+      <span id="statusText">books.json пайваст нашудааст</span>
+      <button class="icon-btn-h" id="themeBtn" onclick="toggleTheme()" title="Иваз кардани мавзӯъ">🌙</button>
+    </div>
   </div>
 </header>
 
 <div class="toolbar">
-  <button class="btn btn-primary" onclick="openBooksJson()">📂 Кушодан</button>
-  <button class="btn" onclick="reloadFile()" id="btnReload" disabled>🔄 Refresh</button>
-  <button class="btn btn-success" onclick="saveFile()" id="btnSave" disabled>💾 Сабт</button>
-  <button class="btn" onclick="downloadJson()" id="btnDl" disabled>⬇ Юклаб</button>
-  <button class="btn" onclick="importJson()">📥 Импорт</button>
-  <button class="btn btn-warning" onclick="openGenAll()">📝 Сохтани manifest</button>
-  <button class="btn" onclick="addCat()">➕ Категория</button>
-  <button class="btn" onclick="toggleJson()">{} JSON</button>
+  <div class="toolbar-inner">
+    <button class="btn btn-primary" onclick="openBooksJson()" id="btnConnect">📂 Кушодани books.json</button>
+    <button class="btn" onclick="reloadFromFile()" id="btnReload" disabled>🔄 Аз нав хондан</button>
+    <div class="tb-divider"></div>
+    <button class="btn btn-success" onclick="saveToFile()" id="btnSave" disabled>💾 Сабт кардан</button>
+    <button class="btn" onclick="downloadJson()" id="btnDownload" disabled>⬇ Юклаб гирифтан</button>
+    <button class="btn" onclick="importJson()">📥 Импорт аз файл</button>
+    <div class="tb-divider"></div>
+    <button class="btn" onclick="openAddCat()" id="btnAddCat" disabled>➕ Категория</button>
+    <button class="btn" onclick="togglePreview()" id="btnPreview">👁 Preview</button>
+    <button class="btn" onclick="toggleJsonView()">{ } JSON</button>
+  </div>
 </div>
 
-<input type="file" id="fileImp" accept=".json" style="display:none;" onchange="handleImp(event)">
+<input type="file" id="fileImport" accept=".json,application/json" style="display:none;" onchange="handleImportFile(event)">
 
 <div class="container">
   <div class="panel">
     <div class="panel-header">
       <div class="panel-title">📚 Категорияҳо</div>
-      <button class="mini-btn" onclick="addCat()" title="Илова">➕</button>
+      <button class="mini-btn" onclick="openAddCat()" title="Илова" id="addCatMini" disabled>➕</button>
     </div>
     <div class="panel-body">
-      <ul id="catList" style="list-style:none;"></ul>
-      <div id="catEmpty" class="empty" style="padding:30px 10px;">
-        <div class="empty-icon" style="font-size:36px;">📭</div>
-        <p style="font-size:12px;">books.json-ро кушоед</p>
+      <ul class="cat-list" id="catList"></ul>
+      <div id="catListEmpty" class="empty-panel" style="padding:40px 16px;">
+        <div class="icon" style="font-size:42px;">📭</div>
+        <p style="color:var(--text-muted);font-size:13px;">books.json-ро кушоед<br>ё импорт кунед</p>
       </div>
     </div>
   </div>
 
   <div class="panel">
-    <div id="subsPanel">
+    <div id="subsPanelContent">
       <div class="welcome">
         <div class="welcome-icon">📖</div>
         <h2>Хуш омадед!</h2>
-        <p>Барои оғоз <b>books.json</b>-ро кушоед ё нав созед.</p>
-        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-          <button class="btn btn-primary" onclick="openBooksJson()">📂 Кушодан</button>
-          <button class="btn" onclick="newJson()">✨ Нав</button>
+        <p>Барои оғоз ё <b>books.json</b>-и худро кушоед, ё файли наверо созед.</p>
+        <div class="welcome-actions">
+          <button class="btn btn-primary" onclick="openBooksJson()">📂 Кушодан books.json</button>
+          <button class="btn" onclick="createNewJson()">✨ Файли нав сохтан</button>
           <button class="btn" onclick="importJson()">📥 Импорт</button>
         </div>
         <div id="browserWarn"></div>
@@ -192,562 +626,891 @@ button,input,textarea,select{font-family:inherit;}
   </div>
 </div>
 
-<div class="container" id="jsonWrap" style="display:none;">
-  <div class="panel" style="grid-column:1/-1;">
+<div class="container" id="previewWrap" style="display:none;">
+  <div class="preview-section" style="grid-column:1/-1;">
     <div class="panel-header">
-      <div class="panel-title">{} JSON</div>
-      <div><button class="mini-btn" onclick="copyJson()">📋</button> <button class="mini-btn" onclick="toggleJson()">✕</button></div>
+      <div class="panel-title">👁 Пешнамоиш — корбарон ин хелро мебинанд</div>
+      <button class="mini-btn" onclick="togglePreview()">✕</button>
     </div>
-    <div class="panel-body"><pre class="json-view" id="jsonView"></pre></div>
+    <div id="previewContent" class="preview-grid"></div>
   </div>
 </div>
 
-<!-- Cat modal -->
-<div class="modal-bg" id="catModal">
+<div class="container" id="jsonWrap" style="display:none;">
+  <div class="preview-section" style="grid-column:1/-1;">
+    <div class="panel-header">
+      <div class="panel-title">{ } JSON-и хом</div>
+      <div>
+        <button class="mini-btn" onclick="copyJson()" title="Нусха">📋</button>
+        <button class="mini-btn" onclick="toggleJsonView()">✕</button>
+      </div>
+    </div>
+    <div class="panel-body">
+      <pre class="json-view" id="jsonViewContent"></pre>
+    </div>
+  </div>
+</div>
+
+<!-- Category modal -->
+<div class="modal-overlay" id="catModal">
   <div class="modal">
     <div class="modal-header">
       <div class="modal-title" id="catModalTitle">Илова кардани категория</div>
       <button class="modal-close" onclick="closeCatModal()">×</button>
     </div>
     <div class="modal-body">
-      <div class="fg"><label>Ном *</label><input class="fc" id="cn" placeholder="Масалан: Китобҳои дарсӣ"></div>
-      <div class="fg"><label>ID (a-z, 0-9, _) *</label><input class="fc code" id="ci" placeholder="darsi" pattern="[a-zA-Z0-9_]+"></div>
-      <div class="fg"><label>Emoji</label><input class="fc" id="ce" maxlength="2" style="width:70px;font-size:20px;text-align:center;"><div class="eg" id="eg"></div></div>
-      <div class="frow">
-        <div class="fg"><label>Ранг 1</label><div class="cwrap"><input type="color" id="cc1" value="#2563eb"><input class="fc code" id="cc1t" value="#2563eb"></div></div>
-        <div class="fg"><label>Ранг 2</label><div class="cwrap"><input type="color" id="cc2" value="#3b82f6"><input class="fc code" id="cc2t" value="#3b82f6"></div></div>
+      <div class="form-group">
+        <label>Номи категория *</label>
+        <input type="text" class="form-control" id="catName" placeholder="Масалан: Китобҳои дарсӣ">
       </div>
-      <div class="cprev" id="cprev">КАТЕГОРИЯ</div>
+      <div class="form-group">
+        <label>ID (хосият — танҳо лотинӣ, рақам, _) *</label>
+        <input type="text" class="form-control code" id="catId" placeholder="Масалан: darsi" pattern="[a-zA-Z0-9_]+">
+        <div class="hint">Як бор муқаррар мешавад. Барои китобҳои дохилӣ истифода мешавад.</div>
+      </div>
+      <div class="form-group">
+        <label>Emoji</label>
+        <input type="text" class="form-control" id="catEmoji" maxlength="2" style="width:80px;font-size:22px;text-align:center;">
+        <div class="emoji-grid" id="emojiGrid"></div>
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label>Ранги 1 (асосӣ)</label>
+          <div class="color-input-wrap">
+            <input type="color" id="catColor1" value="#2563eb">
+            <input type="text" class="form-control code" id="catColor1Text" value="#2563eb">
+          </div>
+        </div>
+        <div class="form-group">
+          <label>Ранги 2 (gradient)</label>
+          <div class="color-input-wrap">
+            <input type="color" id="catColor2" value="#3b82f6">
+            <input type="text" class="form-control code" id="catColor2Text" value="#3b82f6">
+          </div>
+        </div>
+      </div>
+      <div class="color-preview" id="colorPreview">КАТЕГОРИЯ</div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeCatModal()">Бекор</button>
-      <button class="btn btn-primary" onclick="saveCat()">💾 Сабт</button>
+      <button class="btn btn-primary" onclick="saveCatModal()">💾 Сабт</button>
     </div>
   </div>
 </div>
 
 <!-- Sub modal -->
-<div class="modal-bg" id="subModal">
+<div class="modal-overlay" id="subModal">
   <div class="modal">
     <div class="modal-header">
-      <div class="modal-title" id="subModalTitle">Илова кардани бахш</div>
+      <div class="modal-title" id="subModalTitle">Илова кардани бахш / китоб</div>
       <button class="modal-close" onclick="closeSubModal()">×</button>
     </div>
     <div class="modal-body">
-      <div class="fg"><label>Ном *</label><input class="fc" id="sn" placeholder="Синфи 1"></div>
-      <div class="fg"><label>ID *</label><input class="fc code" id="si" placeholder="s1"></div>
-      <div class="fg">
-        <label>Папка дар GitHub *</label>
-        <input class="fc code" id="sfolder" placeholder="sinfi_1">
-        <div class="hint">📁 Номи папка дар репозитории <code id="repoHint">sharipovip/books</code></div>
+      <div class="form-group">
+        <label>Номи бахш / гурӯҳ *</label>
+        <input type="text" class="form-control" id="subName" placeholder="Масалан: Синфи 1">
+        <div class="hint">Ин ном дар sidebar нишон дода мешавад.</div>
+      </div>
+      <div class="form-group">
+        <label>ID (хосият — танҳо лотинӣ, рақам, _) *</label>
+        <input type="text" class="form-control code" id="subId" placeholder="Масалан: s1" pattern="[a-zA-Z0-9_]+">
+      </div>
+      <div class="form-group">
+        <label>Силкаҳои ZIP-и китобҳо</label>
+        <div id="zipsList" class="zips-list"></div>
+        <button type="button" class="btn" style="margin-top:10px;width:100%;" onclick="addZipRow()">➕ Илова кардани силкаи дигар</button>
+        <div class="hint">📌 Дар ҳар ZIP бояд файлҳои PDF бошанд.<br>
+          Барои GitHub истифода кунед: <code>raw.githubusercontent.com</code>, на <code>github.com</code>.<br>
+          Метавонед якчанд ZIP илова кунед — ҳамаашон як ҷо нишон дода мешаванд.<br>
+          Агар хоҳед, ки бахш холӣ бошад, ҳама ҷойҳоро холӣ гузоред.</div>
       </div>
     </div>
     <div class="modal-footer">
       <button class="btn" onclick="closeSubModal()">Бекор</button>
-      <button class="btn btn-primary" onclick="saveSub()">💾 Сабт</button>
+      <button class="btn btn-primary" onclick="saveSubModal()">💾 Сабт</button>
     </div>
   </div>
 </div>
 
-<!-- ⭐ MANIFEST GENERATOR -->
-<div class="modal-bg" id="genModal">
-  <div class="modal" style="max-width:620px;">
+<!-- Confirm modal -->
+<div class="modal-overlay" id="confirmModal">
+  <div class="modal" style="max-width:420px;">
     <div class="modal-header">
-      <div class="modal-title">📝 Сохтани manifest.json</div>
-      <button class="modal-close" onclick="closeGenModal()">×</button>
+      <div class="modal-title" id="confirmTitle">Тасдиқ кардан</div>
+      <button class="modal-close" onclick="closeConfirm()">×</button>
     </div>
     <div class="modal-body">
-      <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">
-        Программа папкаро дар GitHub скан мекунад ва manifest.json эҷод хоҳад кард. Сонӣ онро дар ҳамон папка ҷой мекунед.
-      </p>
-
-      <div class="repo-card">
-        <div><label>📦 Repo:</label> <code id="genRepo">sharipovip/books</code></div>
-        <div><label>🌿 Branch:</label> <code id="genBranch">main</code></div>
-        <button class="btn" style="margin-left:auto;font-size:11px;padding:5px 10px;" onclick="scanAllFolders()" id="scanAllBtn">🔄 Скан кардани ҳамаи папкаҳо</button>
-      </div>
-
-      <div class="fg">
-        <label>📁 Аз books.json:</label>
-        <select class="fc" id="genFolder" onchange="onSelChange('genFolder')"></select>
-        <div class="hint">Папкаҳои дар <b>books.json</b> зикршуда</div>
-      </div>
-
-      <div style="text-align:center;margin:8px 0;color:var(--text-muted);font-size:11px;font-weight:700;">— Ё —</div>
-
-      <div class="fg">
-        <label>🗂️ Ҳамаи папкаҳои GitHub (бо паҳлуӣ):</label>
-        <select class="fc" id="genFolderAll" onchange="onSelChange('genFolderAll')">
-          <option value="">— Аввал «Скан кардан» зер кунед —</option>
-        </select>
-        <div class="hint" id="allFoldersHint">Бо як зер ҳамаи папкаҳо (то 3 сатҳи чуқурӣ) пайдо мешаванд</div>
-      </div>
-
-      <div style="text-align:center;margin:8px 0;color:var(--text-muted);font-size:11px;font-weight:700;">— Ё —</div>
-
-      <div class="fg">
-        <label>✍️ Худатон роҳи папкаро нависед:</label>
-        <input class="fc code" id="genFolderManual" placeholder="masalan: sinfi_1 ё papka_kalon/zerpapka" oninput="onManualInput()">
-        <div class="hint">Агар папка холӣ бошад ҳам, manifest бо рӯйхати холӣ эҷод мешавад</div>
-      </div>
-
-      <div class="gen-card">
-        <div class="gen-title">⚡ Папкаи интихобшуда:</div>
-        <div class="gen-desc"><code id="selectedFolder" style="color:var(--primary);font-size:14px;font-weight:700;">—</code></div>
-        <button class="btn btn-warning" id="genBtn" onclick="generateManifest()" style="width:100%;">📝 Сохтани manifest</button>
-        <div class="gen-progress" id="genProg"></div>
-        <div class="gen-result" id="genResult"></div>
-      </div>
-
-      <div class="steps">
-        <b>📋 Қадамҳо пас аз сохтан:</b><br>
-        1. Кнопкаи <b>⬇ Юклаб manifest.json</b> зер мекунед<br>
-        2. Файлро дар папкаи <code id="targetFolder">sinfi_1</code> дар GitHub ҷой мекунед<br>
-        3. <b>Commit changes</b> зер мекунед<br>
-        4. Тамом!
-      </div>
-
-      <button class="btn btn-success" id="dlMfBtn" style="display:none;width:100%;margin-top:12px;" onclick="downloadManifest()">⬇ Юклаб гирифтани manifest.json</button>
+      <div class="confirm-text" id="confirmText"></div>
+      <div class="confirm-warn" id="confirmWarn" style="display:none;"></div>
     </div>
     <div class="modal-footer">
-      <button class="btn" onclick="closeGenModal()">Пӯшидан</button>
+      <button class="btn" onclick="closeConfirm()">Бекор</button>
+      <button class="btn btn-danger" id="confirmOkBtn">Бале</button>
     </div>
   </div>
 </div>
 
-<!-- Confirm -->
-<div class="modal-bg" id="cfModal">
-  <div class="modal" style="max-width:380px;">
-    <div class="modal-header">
-      <div class="modal-title" id="cfTitle">Тасдиқ</div>
-      <button class="modal-close" onclick="closeCf()">×</button>
-    </div>
-    <div class="modal-body">
-      <div id="cfText" style="font-size:13px;line-height:1.6;"></div>
-    </div>
-    <div class="modal-footer">
-      <button class="btn" onclick="closeCf()">Бекор</button>
-      <button class="btn btn-danger" id="cfOk">Бале</button>
-    </div>
-  </div>
-</div>
-
-<div class="toast-c" id="toastC"></div>
+<div class="toast-container" id="toastContainer"></div>
 
 <script>
-const T=localStorage.getItem('a_theme')||'light';
-document.documentElement.setAttribute('data-theme',T);
-document.getElementById('themeBtn').textContent=T==='dark'?'☀️':'🌙';
-function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('a_theme',n);document.getElementById('themeBtn').textContent=n==='dark'?'☀️':'🌙';}
-
-const A={data:{version:2,updatedAt:null,repo:'sharipovip/books',branch:'main',categories:[]},handle:null,fileName:null,sel:null,modified:false,editCat:null,editSub:null,editSubIn:null,lastManifest:null,lastFolder:null};
-const HAS_FSA=('showOpenFilePicker' in window)&&('showSaveFilePicker' in window);
-
-function toast(m,t='',ms=2500){const c=document.getElementById('toastC');const d=document.createElement('div');d.className='toast '+t;d.textContent=m;c.appendChild(d);setTimeout(()=>{d.style.transition='opacity .2s,transform .2s';d.style.opacity='0';d.style.transform='translateX(20px)';setTimeout(()=>d.remove(),200);},ms);}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function slug(s){return String(s).toLowerCase().replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').substring(0,30)||'item';}
-
-function updStatus(){
-  const d=document.getElementById('dot'),t=document.getElementById('statusTxt');
-  d.classList.remove('on','mod');
-  if(A.modified){d.classList.add('mod');t.innerHTML=`<b>${A.fileName||'books.json'}</b> · тағйир ёфт`;}
-  else if(A.handle){d.classList.add('on');t.innerHTML=`<b>${A.fileName||'books.json'}</b> · пайваст`;}
-  else if(A.fileName){t.innerHTML=`<b>${A.fileName}</b> · импорт`;}
-  else t.textContent='books.json пайваст нашудааст';
-  document.getElementById('btnSave').disabled=!A.handle;
-  document.getElementById('btnDl').disabled=!A.data.categories.length;
-  document.getElementById('btnReload').disabled=!A.handle;
-  document.getElementById('genRepo').textContent=A.data.repo||'sharipovip/books';
-  document.getElementById('genBranch').textContent=A.data.branch||'main';
-  document.getElementById('repoHint').textContent=A.data.repo||'sharipovip/books';
+const SAVED_THEME = localStorage.getItem('admin_theme') || 'light';
+document.documentElement.setAttribute('data-theme', SAVED_THEME);
+document.getElementById('themeBtn').textContent = SAVED_THEME==='dark'?'☀️':'🌙';
+function toggleTheme(){
+  const cur = document.documentElement.getAttribute('data-theme');
+  const next = cur==='dark'?'light':'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('admin_theme', next);
+  document.getElementById('themeBtn').textContent = next==='dark'?'☀️':'🌙';
 }
-function markMod(){A.modified=true;A.data.updatedAt=new Date().toISOString().slice(0,10);try{localStorage.setItem('a_backup',JSON.stringify(A.data));}catch(e){}updStatus();renderAll();}
+
+const A = {
+  data: { version: 1, updatedAt: null, categories: [] },
+  fileHandle: null,
+  fileName: null,
+  selectedCatId: null,
+  modified: false,
+  editingCat: null,
+  editingSub: null,
+  editingSubInCat: null,
+};
+
+const HAS_FSA = ('showOpenFilePicker' in window) && ('showSaveFilePicker' in window);
+
+function toast(msg, type='', ms=3000){
+  const c = document.getElementById('toastContainer');
+  const t = document.createElement('div');
+  t.className = 'toast '+type;
+  t.innerHTML = `<span>${escapeHTML(msg)}</span>`;
+  c.appendChild(t);
+  setTimeout(()=>{
+    t.style.transition='opacity .25s,transform .25s';
+    t.style.opacity='0';
+    t.style.transform='translateX(20px)';
+    setTimeout(()=>t.remove(),250);
+  }, ms);
+}
+function escapeHTML(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function slugify(s){
+  return String(s).toLowerCase()
+    .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'').substring(0,30) || 'item';
+}
+function updateStatus(){
+  const dot = document.getElementById('statusDot');
+  const text = document.getElementById('statusText');
+  dot.classList.remove('connected','modified');
+  if(A.modified){
+    dot.classList.add('modified');
+    text.innerHTML = `<b>${A.fileName||'books.json'}</b> · тағйир ёфт (сабт лозим)`;
+  } else if(A.fileHandle){
+    dot.classList.add('connected');
+    text.innerHTML = `<b>${A.fileName||'books.json'}</b> · пайваст`;
+  } else if(A.fileName){
+    text.innerHTML = `<b>${A.fileName}</b> · импорт шуд (барои сабт юклаб гиред)`;
+  } else {
+    text.textContent = 'books.json пайваст нашудааст';
+  }
+  document.getElementById('btnSave').disabled = !A.fileHandle;
+  document.getElementById('btnDownload').disabled = !A.data.categories.length;
+  document.getElementById('btnAddCat').disabled = false;
+  document.getElementById('addCatMini').disabled = false;
+  document.getElementById('btnReload').disabled = !A.fileHandle;
+}
+function markModified(){
+  A.modified = true;
+  A.data.updatedAt = new Date().toISOString().slice(0,10);
+  saveLocalBackup();
+  updateStatus();
+  renderAll();
+}
+function saveLocalBackup(){
+  try{ localStorage.setItem('admin_backup', JSON.stringify(A.data)); }catch(e){}
+}
+function loadLocalBackup(){
+  try{
+    const s = localStorage.getItem('admin_backup');
+    if(s) return JSON.parse(s);
+  }catch(e){}
+  return null;
+}
 
 async function openBooksJson(){
   if(HAS_FSA){
     try{
-      const [h]=await window.showOpenFilePicker({types:[{description:'JSON',accept:{'application/json':['.json']}}]});
-      const f=await h.getFile();const t=await f.text();
-      A.handle=h;A.fileName=f.name;loadData(JSON.parse(t));
-      toast('✓ '+f.name,'success');
-    }catch(e){if(e.name!=='AbortError'){toast('Хатогӣ: '+e.message,'error');}}
-  }else importJson();
+      const [handle] = await window.showOpenFilePicker({
+        types: [{description:'JSON', accept:{'application/json':['.json']}}],
+        excludeAcceptAllOption: false,
+        multiple: false,
+      });
+      const file = await handle.getFile();
+      const text = await file.text();
+      const data = JSON.parse(text);
+      A.fileHandle = handle;
+      A.fileName = file.name;
+      loadData(data);
+      toast('✓ '+file.name+' пайваст шуд','success');
+    }catch(e){
+      if(e.name!=='AbortError'){
+        console.error(e);
+        toast('Хатогӣ: '+e.message,'error');
+      }
+    }
+  } else {
+    importJson();
+  }
 }
-async function saveFile(){
-  if(!A.handle){return downloadJson();}
+
+async function saveToFile(){
+  if(!A.fileHandle){
+    toast('Файл пайваст нашудааст. «Юклаб гирифтан» истифода кунед','warning');
+    return downloadJson();
+  }
   try{
-    const p=await A.handle.queryPermission({mode:'readwrite'});
-    if(p!=='granted'){const r=await A.handle.requestPermission({mode:'readwrite'});if(r!=='granted'){toast('Иҷозат рад шуд','error');return;}}
-    const w=await A.handle.createWritable();
-    await w.write(JSON.stringify(A.data,null,2));
-    await w.close();
-    A.modified=false;updStatus();toast('✓ Сабт шуд','success');
-  }catch(e){toast('Хатогӣ: '+e.message,'error');}
+    const perm = await A.fileHandle.queryPermission({mode:'readwrite'});
+    if(perm !== 'granted'){
+      const req = await A.fileHandle.requestPermission({mode:'readwrite'});
+      if(req !== 'granted'){
+        toast('Иҷозати навиштан рад шуд','error');
+        return;
+      }
+    }
+    const writable = await A.fileHandle.createWritable();
+    await writable.write(JSON.stringify(A.data, null, 2));
+    await writable.close();
+    A.modified = false;
+    updateStatus();
+    toast('✓ '+A.fileName+' сабт шуд','success');
+  }catch(e){
+    console.error(e);
+    toast('Хатогии сабт: '+e.message,'error');
+  }
 }
-async function reloadFile(){
-  if(A.modified){confirm2('Тағйиротҳои сабтнашуда!','Идома?',doReload);}else doReload();
+
+async function reloadFromFile(){
+  if(!A.fileHandle) return;
+  if(A.modified){
+    showConfirm(
+      'Тағйиротҳои сабтнашуда ҳастанд',
+      'Тағйиротҳои шумо гум хоҳанд шуд. Идома диҳем?',
+      async ()=>{ await doReload(); }
+    );
+  } else { await doReload(); }
 }
 async function doReload(){
-  try{const f=await A.handle.getFile();loadData(JSON.parse(await f.text()));toast('✓ Аз нав хонда шуд','success');}catch(e){toast('Хатогӣ','error');}
+  try{
+    const file = await A.fileHandle.getFile();
+    const text = await file.text();
+    const data = JSON.parse(text);
+    loadData(data);
+    toast('✓ Аз нав хонда шуд','success');
+  }catch(e){
+    toast('Хатогӣ: '+e.message,'error');
+  }
 }
-function downloadJson(){
-  const t=JSON.stringify(A.data,null,2);
-  const b=new Blob([t],{type:'application/json'});
-  const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download=A.fileName||'books.json';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(u),2000);
-  toast('✓ Юклаб гирифта шуд','success');
-}
-function importJson(){document.getElementById('fileImp').click();}
-function handleImp(e){const f=e.target.files[0];if(!f)return;const r=new FileReader();r.onload=()=>{try{A.handle=null;A.fileName=f.name;loadData(JSON.parse(r.result));toast('✓ Импорт','success');}catch(ex){toast('Хатогии JSON','error');}};r.readAsText(f);e.target.value='';}
-function newJson(){
-  if(A.data.categories.length){confirm2('Категорияҳо мавҷуданд','Файли нав? Тағйиротҳо гум мешаванд.',initNew);}else initNew();
-}
-function initNew(){A.handle=null;A.fileName='books.json';A.data={version:2,updatedAt:new Date().toISOString().slice(0,10),repo:'sharipovip/books',branch:'main',categories:[]};A.modified=true;A.sel=null;renderAll();updStatus();toast('✓ Нав','success');}
 
-function loadData(d){
-  if(Array.isArray(d))A.data={version:2,updatedAt:null,repo:'sharipovip/books',branch:'main',categories:d};
-  else if(d&&Array.isArray(d.categories))A.data=d;
-  else throw new Error('Бад формат');
-  if(!A.data.repo)A.data.repo='sharipovip/books';
-  if(!A.data.branch)A.data.branch='main';
+function downloadJson(){
+  const text = JSON.stringify(A.data, null, 2);
+  const blob = new Blob([text], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = A.fileName || 'books.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(()=>URL.revokeObjectURL(url), 2000);
+  toast('✓ Файл юклаб гирифта шуд','success');
+}
+
+function importJson(){
+  document.getElementById('fileImport').click();
+}
+function handleImportFile(ev){
+  const f = ev.target.files[0];
+  if(!f) return;
+  const r = new FileReader();
+  r.onload = ()=>{
+    try{
+      const data = JSON.parse(r.result);
+      A.fileHandle = null;
+      A.fileName = f.name;
+      loadData(data);
+      toast('✓ '+f.name+' импорт шуд. Барои сабт — «Юклаб гирифтан»','success');
+    }catch(e){
+      toast('Хатогии JSON: '+e.message,'error');
+    }
+  };
+  r.readAsText(f);
+  ev.target.value = '';
+}
+
+function createNewJson(){
+  if(A.data.categories.length){
+    showConfirm(
+      'Категорияҳо мавҷуданд',
+      'Файли холӣ эҷод кардан мехоҳед? Тағйиротҳои кунунӣ гум мешаванд.',
+      ()=>{ initNewData(); }
+    );
+  } else {
+    initNewData();
+  }
+}
+function initNewData(){
+  A.fileHandle = null;
+  A.fileName = 'books.json';
+  A.data = { version:1, updatedAt: new Date().toISOString().slice(0,10), categories: [] };
+  A.modified = true;
+  A.selectedCatId = null;
+  renderAll();
+  updateStatus();
+  toast('✓ Файли нав омода аст. Категория илова кунед.','success');
+}
+
+function loadData(data){
+  if(Array.isArray(data)){
+    A.data = { version:1, updatedAt: null, categories: data };
+  } else if(data && Array.isArray(data.categories)){
+    A.data = data;
+  } else {
+    throw new Error('Формати нодуруст: categories[] лозим аст');
+  }
   A.data.categories.forEach(c=>{
-    c.color1=c.color1||'#2563eb';c.color2=c.color2||'#3b82f6';
-    c.emoji=c.emoji||'📚';c.subs=c.subs||[];
+    c.color1 = c.color1 || c.c1 || '#2563eb';
+    c.color2 = c.color2 || c.c2 || '#3b82f6';
+    c.emoji = c.emoji || '📚';
+    c.subs = c.subs || [];
     c.subs.forEach(s=>{
-      delete s.zips;delete s.zip;delete s.books;
-      if(!s.folder)s.folder=s.id;
+      if(!Array.isArray(s.zips)) s.zips = s.zip ? [s.zip] : [];
+      s.zip = s.zips[0] || null;
     });
   });
-  A.modified=false;A.sel=A.data.categories[0]?.id||null;
-  renderAll();updStatus();
+  A.modified = false;
+  A.selectedCatId = A.data.categories[0]?.id || null;
+  renderAll();
+  updateStatus();
 }
 
-function renderAll(){renderCats();renderSubs();if(document.getElementById('jsonWrap').style.display!=='none')document.getElementById('jsonView').textContent=JSON.stringify(A.data,null,2);}
-function renderCats(){
-  const ul=document.getElementById('catList'),em=document.getElementById('catEmpty');
+function renderAll(){
+  renderCatList();
+  renderSubsPanel();
+  if(document.getElementById('previewWrap').style.display!=='none') renderPreview();
+  if(document.getElementById('jsonWrap').style.display!=='none') renderJsonView();
+}
+
+function renderCatList(){
+  const ul = document.getElementById('catList');
+  const empty = document.getElementById('catListEmpty');
   ul.innerHTML='';
-  if(!A.data.categories.length){em.style.display='block';return;}
-  em.style.display='none';
-  A.data.categories.forEach((c,i)=>{
+  if(!A.data.categories.length){
+    empty.style.display='block';
+    return;
+  }
+  empty.style.display='none';
+  A.data.categories.forEach((c,idx)=>{
     const li=document.createElement('li');
-    li.className='cat-item'+(c.id===A.sel?' on':'');
+    li.className='cat-item'+(c.id===A.selectedCatId?' active':'');
+    li.dataset.id=c.id;
     li.draggable=true;
-    li.innerHTML=`<span class="cat-handle">⋮⋮</span><div class="cat-emoji" style="--c1:${c.color1};--c2:${c.color2};">${c.emoji}</div><div class="cat-info"><div class="cat-name">${esc(c.name)}</div><div class="cat-meta">${c.subs.length} бахш · <code>${c.id}</code></div></div><div class="cat-acts"><button class="mini-btn" data-act="ed">✏️</button><button class="mini-btn danger" data-act="del">🗑</button></div>`;
-    li.onclick=e=>{if(e.target.closest('[data-act]'))return;A.sel=c.id;renderCats();renderSubs();};
-    li.querySelector('[data-act="ed"]').onclick=e=>{e.stopPropagation();editCat(c.id);};
-    li.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();delCat(c.id);};
-    setDrag(li,'cat',i);
+    li.innerHTML=`
+      <span class="cat-handle" title="Кашидан">⋮⋮</span>
+      <div class="cat-emoji" style="--c1:${c.color1};--c2:${c.color2};">${c.emoji||'📚'}</div>
+      <div class="cat-info">
+        <div class="cat-name">${escapeHTML(c.name)}</div>
+        <div class="cat-meta">${c.subs.length} бахш · <code>${c.id}</code></div>
+      </div>
+      <div class="cat-actions">
+        <button class="mini-btn" title="Таҳрир" data-act="edit">✏️</button>
+        <button class="mini-btn danger" title="Хориҷ" data-act="del">🗑</button>
+      </div>`;
+    li.onclick = (e)=>{
+      if(e.target.closest('[data-act]')) return;
+      A.selectedCatId = c.id;
+      renderCatList();
+      renderSubsPanel();
+    };
+    li.querySelector('[data-act="edit"]').onclick = (e)=>{e.stopPropagation(); openEditCat(c.id);};
+    li.querySelector('[data-act="del"]').onclick  = (e)=>{e.stopPropagation(); deleteCat(c.id);};
+    setupDrag(li, 'cat', idx);
     ul.appendChild(li);
   });
 }
-function renderSubs(){
-  const w=document.getElementById('subsPanel');
-  const c=A.data.categories.find(x=>x.id===A.sel);
-  if(!c){
-    if(!A.data.categories.length){w.innerHTML='<div class="welcome"><div class="welcome-icon">📖</div><h2>Хуш омадед!</h2><p>Барои оғоз <b>books.json</b>-ро кушоед ё нав созед.</p><div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;"><button class="btn btn-primary" onclick="openBooksJson()">📂 Кушодан</button><button class="btn" onclick="newJson()">✨ Нав</button><button class="btn" onclick="importJson()">📥 Импорт</button></div><div id="browserWarn"></div></div>';chkBrowser();}
-    else w.innerHTML='<div class="empty"><div class="empty-icon">👈</div><p>Категорияеро интихоб кунед</p></div>';
+
+function renderSubsPanel(){
+  const wrap = document.getElementById('subsPanelContent');
+  const cat = A.data.categories.find(c=>c.id===A.selectedCatId);
+  if(!cat){
+    if(!A.data.categories.length){
+      wrap.innerHTML = `
+        <div class="welcome">
+          <div class="welcome-icon">📖</div>
+          <h2>Хуш омадед!</h2>
+          <p>Барои оғоз ё <b>books.json</b>-и худро кушоед, ё файли наверо созед.</p>
+          <div class="welcome-actions">
+            <button class="btn btn-primary" onclick="openBooksJson()">📂 Кушодан books.json</button>
+            <button class="btn" onclick="createNewJson()">✨ Файли нав сохтан</button>
+            <button class="btn" onclick="importJson()">📥 Импорт</button>
+          </div>
+          <div id="browserWarn"></div>
+        </div>`;
+      checkBrowser();
+    } else {
+      wrap.innerHTML = `<div class="empty-panel"><div class="icon">👈</div><h3>Категорияеро интихоб кунед</h3></div>`;
+    }
     return;
   }
-  w.innerHTML=`<div class="cat-header" style="background:linear-gradient(135deg,${c.color1},${c.color2});"><div class="cat-header-emoji">${c.emoji}</div><div style="flex:1;"><div class="cat-header-name">${esc(c.name)}</div><div class="cat-header-meta">${c.subs.length} бахш · ID: <code>${c.id}</code></div></div><button class="btn" style="background:rgba(255,255,255,.18);color:#fff;border-color:rgba(255,255,255,.3);" onclick="addSub()">➕ Бахш</button></div><div class="panel-body"><ul id="subList" style="list-style:none;"></ul>${!c.subs.length?'<div class="empty"><div class="empty-icon" style="font-size:36px;">📭</div><p style="font-size:12px;">Бахше нест</p></div>':''}</div>`;
-  if(c.subs.length){
-    const ul=document.getElementById('subList');
-    c.subs.forEach((s,i)=>{
-      const has=!!s.folder;
-      const li=document.createElement('li');li.className='sub-item';li.draggable=true;
-      li.innerHTML=`<span class="sub-handle">⋮⋮</span><div class="sub-icon ${has?'has':''}">${has?'📁':'∅'}</div><div class="sub-info"><div class="sub-name">${esc(s.name)}</div><div class="sub-url">${has?'/'+esc(s.folder):'папка нашудааст'}</div></div><div style="display:flex;gap:3px;"><button class="mini-btn" data-act="ed">✏️</button><button class="mini-btn danger" data-act="del">🗑</button></div>`;
-      li.querySelector('[data-act="ed"]').onclick=e=>{e.stopPropagation();editSub(c.id,s.id);};
-      li.querySelector('[data-act="del"]').onclick=e=>{e.stopPropagation();delSub(c.id,s.id);};
-      setDrag(li,'sub',i);
+  wrap.innerHTML = `
+    <div class="cat-header-info" style="--c1:${cat.color1};--c2:${cat.color2};background:linear-gradient(135deg,${cat.color1} 0%,${cat.color2} 100%);">
+      <div class="cat-header-emoji">${cat.emoji||'📚'}</div>
+      <div style="flex:1;">
+        <div class="cat-header-name">${escapeHTML(cat.name)}</div>
+        <div class="cat-header-meta">${cat.subs.length} бахш · ID: <code>${cat.id}</code></div>
+      </div>
+      <button class="btn" style="background:rgba(255,255,255,.18);color:white;border-color:rgba(255,255,255,.3);" onclick="openAddSub()">➕ Бахш</button>
+    </div>
+    <div class="panel-body">
+      <div class="help-card">
+        <div class="h-title">💡 Маслиҳат</div>
+        Бахш — ин гурӯҳи китобҳо (масалан, «Синфи 1»). Метавонед якчанд ZIP-силка дар як бахш илова кунед.
+      </div>
+      <ul class="subs-list" id="subsList"></ul>
+      ${!cat.subs.length ? `<div class="empty-panel"><div class="icon" style="font-size:42px;">📭</div><p style="font-size:13px;">Ҳоло бахше илова нашудааст.<br>Тугмаи «➕ Бахш»-ро пахш кунед.</p></div>` : ''}
+    </div>`;
+  if(cat.subs.length){
+    const ul = document.getElementById('subsList');
+    cat.subs.forEach((sub,idx)=>{
+      const li=document.createElement('li');
+      li.className='sub-item';
+      li.draggable=true;
+      const zipCount = (sub.zips||[]).length;
+      const zipBadge = zipCount>1 ? `<span style="background:var(--primary);color:white;padding:1px 6px;border-radius:8px;font-size:10px;margin-left:6px;font-weight:700;">${zipCount}</span>` : '';
+      const urlPreview = zipCount ? sub.zips[0] + (zipCount>1?` (+${zipCount-1} дигар)`:'') : '';
+      li.innerHTML=`
+        <span class="sub-handle">⋮⋮</span>
+        <div class="sub-icon ${zipCount?'has-zip':''}">${zipCount?'📦':'∅'}</div>
+        <div class="sub-info">
+          <div class="sub-name">${escapeHTML(sub.name)}${zipBadge}</div>
+          <div class="sub-url ${zipCount?'':'empty'}">${zipCount ? escapeHTML(urlPreview) : 'силка нашудааст (бахши холӣ)'}</div>
+        </div>
+        <div class="sub-actions">
+          <button class="mini-btn" title="Тест" data-act="test">🔗</button>
+          <button class="mini-btn" title="Таҳрир" data-act="edit">✏️</button>
+          <button class="mini-btn danger" title="Хориҷ" data-act="del">🗑</button>
+        </div>`;
+      li.querySelector('[data-act="test"]').onclick = (e)=>{e.stopPropagation(); testSub(sub);};
+      li.querySelector('[data-act="edit"]').onclick = (e)=>{e.stopPropagation(); openEditSub(cat.id, sub.id);};
+      li.querySelector('[data-act="del"]').onclick  = (e)=>{e.stopPropagation(); deleteSub(cat.id, sub.id);};
+      setupDrag(li, 'sub', idx);
       ul.appendChild(li);
     });
   }
 }
-function chkBrowser(){
-  const w=document.getElementById('browserWarn');if(!w)return;
-  if(!HAS_FSA)w.innerHTML='<div class="warn-card">⚠️ Браузер File System Access-ро дастгирӣ намекунад. Истифода кунед <b>Chrome / Edge / Opera</b>.</div>';
-  else w.innerHTML='<div class="warn-card ok">✓ Браузер дастгирӣ мекунад.</div>';
+
+function checkBrowser(){
+  const w = document.getElementById('browserWarn');
+  if(!w) return;
+  if(!HAS_FSA){
+    w.innerHTML = `<div class="browser-warn" style="margin-top:20px;text-align:left;">
+      ⚠️ <b>Эзоҳ:</b> Браузери шумо File System Access API-ро дастгирӣ намекунад.<br>
+      <span style="font-size:11px;">Барои корбарии беҳтарин истифода кунед <b>Chrome / Edge / Opera</b>.<br>
+      Дар Safari/Firefox шумо метавонед файлро <b>импорт</b> ва <b>юклаб гиред</b>.</span>
+    </div>`;
+  } else {
+    w.innerHTML = `<div class="browser-warn" style="margin-top:20px;text-align:left;background:#dcfce7;border-color:#16a34a;color:#166534;">
+      ✓ Браузери шумо File System Access-ро дастгирӣ мекунад. Сабт ба файл мустақим хоҳад буд.
+    </div>`;
+  }
 }
 
-let dragInfo=null;
-function setDrag(el,k,i){
-  el.addEventListener('dragstart',e=>{dragInfo={k,i};el.style.opacity='.4';e.dataTransfer.effectAllowed='move';});
-  el.addEventListener('dragend',()=>{el.style.opacity='';dragInfo=null;});
-  el.addEventListener('dragover',e=>{if(!dragInfo||dragInfo.k!==k)return;e.preventDefault();el.style.background='var(--primary-soft)';});
-  el.addEventListener('dragleave',()=>{el.style.background='';});
-  el.addEventListener('drop',e=>{e.preventDefault();el.style.background='';if(!dragInfo||dragInfo.k!==k)return;
-    const from=dragInfo.i,to=i;if(from===to)return;
-    if(k==='cat'){const a=A.data.categories;const[x]=a.splice(from,1);a.splice(to,0,x);}
-    else{const c=A.data.categories.find(x=>x.id===A.sel);if(!c)return;const a=c.subs;const[x]=a.splice(from,1);a.splice(to,0,x);}
-    markMod();
+let dragInfo = null;
+function setupDrag(el, kind, idx){
+  el.addEventListener('dragstart', e=>{
+    dragInfo = {kind, fromIdx: idx, el};
+    el.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/plain', String(idx));
+  });
+  el.addEventListener('dragend', ()=>{
+    el.classList.remove('dragging');
+    document.querySelectorAll('.drop-target').forEach(x=>x.classList.remove('drop-target'));
+    dragInfo = null;
+  });
+  el.addEventListener('dragover', e=>{
+    if(!dragInfo || dragInfo.kind!==kind) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect='move';
+    el.classList.add('drop-target');
+  });
+  el.addEventListener('dragleave', ()=>{ el.classList.remove('drop-target'); });
+  el.addEventListener('drop', e=>{
+    e.preventDefault();
+    el.classList.remove('drop-target');
+    if(!dragInfo || dragInfo.kind!==kind) return;
+    const to = idx;
+    const from = dragInfo.fromIdx;
+    if(from===to) return;
+    if(kind==='cat'){
+      const arr = A.data.categories;
+      const [item] = arr.splice(from,1);
+      arr.splice(to,0,item);
+    } else {
+      const cat = A.data.categories.find(c=>c.id===A.selectedCatId);
+      if(!cat) return;
+      const arr = cat.subs;
+      const [item] = arr.splice(from,1);
+      arr.splice(to,0,item);
+    }
+    markModified();
   });
 }
 
-const EMS=['📚','📖','📕','📗','📘','📙','📔','📓','📒','📑','🎓','✍️','🖋','🖌','📝','🌟','⭐','✨','🌸','🌺','🌷','🌹','🌻','🌼','🌿','🌱','🌳','🏛','🏺','🎭','🎨','🎬','🎵','🎶','🎤','🎯','🎮','⚽','🏀','🌍','🌎','🌏','🗺','📜','📰','📃','📄','🕌','🕋','☪','🏰','🗿','🦋','🐝','🌙','☀️','🌈','🍎','🍇'];
-function addCat(){A.editCat=null;document.getElementById('catModalTitle').textContent='Илова кардани категория';document.getElementById('cn').value='';document.getElementById('ci').value='';document.getElementById('ci').disabled=false;document.getElementById('ce').value='📚';document.getElementById('cc1').value='#2563eb';document.getElementById('cc1t').value='#2563eb';document.getElementById('cc2').value='#3b82f6';document.getElementById('cc2t').value='#3b82f6';renderEmojis('📚');renderCprev();document.getElementById('catModal').classList.add('on');setTimeout(()=>document.getElementById('cn').focus(),80);}
-function editCat(id){const c=A.data.categories.find(x=>x.id===id);if(!c)return;A.editCat=id;document.getElementById('catModalTitle').textContent='Таҳрир: '+c.name;document.getElementById('cn').value=c.name;document.getElementById('ci').value=c.id;document.getElementById('ci').disabled=true;document.getElementById('ce').value=c.emoji;document.getElementById('cc1').value=c.color1;document.getElementById('cc1t').value=c.color1;document.getElementById('cc2').value=c.color2;document.getElementById('cc2t').value=c.color2;renderEmojis(c.emoji);renderCprev();document.getElementById('catModal').classList.add('on');}
-function closeCatModal(){document.getElementById('catModal').classList.remove('on');}
-function renderEmojis(a){const g=document.getElementById('eg');g.innerHTML='';EMS.forEach(e=>{const b=document.createElement('button');b.className='eb'+(e===a?' on':'');b.textContent=e;b.type='button';b.onclick=()=>{document.getElementById('ce').value=e;renderEmojis(e);};g.appendChild(b);});}
-function renderCprev(){const c1=document.getElementById('cc1').value,c2=document.getElementById('cc2').value;document.getElementById('cprev').style.background=`linear-gradient(135deg,${c1},${c2})`;}
-function bindColor(p,t){p.addEventListener('input',()=>{t.value=p.value;renderCprev();});t.addEventListener('input',()=>{if(/^#[0-9a-fA-F]{6}$/.test(t.value)){p.value=t.value;renderCprev();}});}
-window.addEventListener('DOMContentLoaded',()=>{
-  bindColor(document.getElementById('cc1'),document.getElementById('cc1t'));
-  bindColor(document.getElementById('cc2'),document.getElementById('cc2t'));
-  document.getElementById('cn').addEventListener('input',e=>{if(A.editCat===null)document.getElementById('ci').value=slug(e.target.value);});
-  document.getElementById('sn').addEventListener('input',e=>{
-    if(A.editSub===null){
-      const sl=slug(e.target.value);
-      document.getElementById('si').value=sl;
-      if(!document.getElementById('sfolder').value)document.getElementById('sfolder').value=sl;
+const EMOJI_PRESET = ['📚','📖','📕','📗','📘','📙','📔','📓','📒','📑','🎓','✍️','🖋','🖌','📝','🌟','⭐','✨','🌸','🌺','🌷','🌹','🌻','🌼','🌿','🌱','🌳','🏛','🏺','🎭','🎨','🎬','🎵','🎶','🎤','🎯','🎮','⚽','🏀','🌍','🌎','🌏','🗺','📜','📰','📃','📄','🕌','🕋','☪','🏰','🗿','🦋','🐝','🌙','☀️','🌈','🍎','🍇','🥨','🥖'];
+
+function openAddCat(){
+  A.editingCat = null;
+  document.getElementById('catModalTitle').textContent = 'Илова кардани категория';
+  document.getElementById('catName').value = '';
+  document.getElementById('catId').value = '';
+  document.getElementById('catId').disabled = false;
+  document.getElementById('catEmoji').value = '📚';
+  document.getElementById('catColor1').value = '#2563eb';
+  document.getElementById('catColor1Text').value = '#2563eb';
+  document.getElementById('catColor2').value = '#3b82f6';
+  document.getElementById('catColor2Text').value = '#3b82f6';
+  refreshEmojiGrid('📚');
+  refreshColorPreview();
+  document.getElementById('catModal').classList.add('on');
+  setTimeout(()=>document.getElementById('catName').focus(),100);
+}
+function openEditCat(id){
+  const c = A.data.categories.find(x=>x.id===id);
+  if(!c) return;
+  A.editingCat = id;
+  document.getElementById('catModalTitle').textContent = 'Таҳрири категория: '+c.name;
+  document.getElementById('catName').value = c.name;
+  document.getElementById('catId').value = c.id;
+  document.getElementById('catId').disabled = true;
+  document.getElementById('catEmoji').value = c.emoji||'📚';
+  document.getElementById('catColor1').value = c.color1;
+  document.getElementById('catColor1Text').value = c.color1;
+  document.getElementById('catColor2').value = c.color2;
+  document.getElementById('catColor2Text').value = c.color2;
+  refreshEmojiGrid(c.emoji);
+  refreshColorPreview();
+  document.getElementById('catModal').classList.add('on');
+}
+function closeCatModal(){ document.getElementById('catModal').classList.remove('on'); }
+function refreshEmojiGrid(active){
+  const g = document.getElementById('emojiGrid');
+  g.innerHTML='';
+  EMOJI_PRESET.forEach(e=>{
+    const b=document.createElement('button');
+    b.className='emoji-btn'+(e===active?' on':'');
+    b.textContent=e;
+    b.type='button';
+    b.onclick = ()=>{
+      document.getElementById('catEmoji').value = e;
+      refreshEmojiGrid(e);
+    };
+    g.appendChild(b);
+  });
+}
+function refreshColorPreview(){
+  const c1 = document.getElementById('catColor1').value;
+  const c2 = document.getElementById('catColor2').value;
+  const p = document.getElementById('colorPreview');
+  p.style.background = `linear-gradient(135deg,${c1},${c2})`;
+}
+function bindColorSync(picker, text){
+  picker.addEventListener('input', ()=>{ text.value = picker.value; refreshColorPreview(); });
+  text.addEventListener('input', ()=>{
+    if(/^#[0-9a-fA-F]{6}$/.test(text.value)){
+      picker.value = text.value;
+      refreshColorPreview();
     }
+  });
+}
+window.addEventListener('DOMContentLoaded', ()=>{
+  bindColorSync(document.getElementById('catColor1'), document.getElementById('catColor1Text'));
+  bindColorSync(document.getElementById('catColor2'), document.getElementById('catColor2Text'));
+  document.getElementById('catName').addEventListener('input', e=>{
+    if(A.editingCat!==null) return;
+    document.getElementById('catId').value = slugify(e.target.value);
+  });
+  document.getElementById('subName').addEventListener('input', e=>{
+    if(A.editingSub!==null) return;
+    document.getElementById('subId').value = slugify(e.target.value);
   });
 });
 
-function saveCat(){
-  const n=document.getElementById('cn').value.trim(),i=document.getElementById('ci').value.trim(),e=document.getElementById('ce').value.trim()||'📚',c1=document.getElementById('cc1').value,c2=document.getElementById('cc2').value;
-  if(!n){toast('Номро ворид кунед','error');return;}
-  if(!/^[a-zA-Z0-9_]+$/.test(i)){toast('ID-и нодуруст','error');return;}
-  if(A.editCat===null){
-    if(A.data.categories.find(c=>c.id===i)){toast('ID мавҷуд','error');return;}
-    A.data.categories.push({id:i,name:n,emoji:e,color1:c1,color2:c2,subs:[]});A.sel=i;toast('✓ Илова шуд','success');
-  }else{
-    const c=A.data.categories.find(x=>x.id===A.editCat);if(!c)return;
-    c.name=n;c.emoji=e;c.color1=c1;c.color2=c2;toast('✓ Тағйир','success');
+function saveCatModal(){
+  const name = document.getElementById('catName').value.trim();
+  const id = document.getElementById('catId').value.trim();
+  const emoji = document.getElementById('catEmoji').value.trim() || '📚';
+  const color1 = document.getElementById('catColor1').value;
+  const color2 = document.getElementById('catColor2').value;
+  if(!name){ toast('Номро ворид кунед','error'); return; }
+  if(!/^[a-zA-Z0-9_]+$/.test(id)){ toast('ID-и нодуруст. Танҳо a-z, 0-9, _ иҷозат аст','error'); return; }
+  if(A.editingCat===null){
+    if(A.data.categories.find(c=>c.id===id)){
+      toast('Ин ID аллакай ҳаст','error'); return;
+    }
+    const newCat = { id, name, emoji, color1, color2, subs: [] };
+    A.data.categories.push(newCat);
+    A.selectedCatId = id;
+    toast('✓ Категория илова шуд','success');
+  } else {
+    const c = A.data.categories.find(x=>x.id===A.editingCat);
+    if(!c) return;
+    c.name = name; c.emoji = emoji; c.color1 = color1; c.color2 = color2;
+    toast('✓ Тағйир дода шуд','success');
   }
-  closeCatModal();markMod();
+  closeCatModal();
+  markModified();
 }
-function delCat(id){const c=A.data.categories.find(x=>x.id===id);if(!c)return;
-  confirm2('Хориҷ кардан?',`Категорияи <b>«${esc(c.name)}»</b> ва ${c.subs.length} бахш хориҷ мешаванд.`,()=>{
-    A.data.categories=A.data.categories.filter(x=>x.id!==id);
-    if(A.sel===id)A.sel=A.data.categories[0]?.id||null;
-    markMod();toast('✓ Хориҷ','success');
+function deleteCat(id){
+  const c = A.data.categories.find(x=>x.id===id);
+  if(!c) return;
+  showConfirm(
+    'Хориҷ кардани категория?',
+    `Категорияи <b>«${escapeHTML(c.name)}»</b> ва ҳамаи ${c.subs.length} бахши он хориҷ карда мешаванд.`,
+    ()=>{
+      A.data.categories = A.data.categories.filter(x=>x.id!==id);
+      if(A.selectedCatId===id) A.selectedCatId = A.data.categories[0]?.id || null;
+      markModified();
+      toast('✓ Хориҷ шуд','success');
+    },
+    'Ин амалро баргардонда наметавонед!'
+  );
+}
+
+// ───── Multi-ZIP UI ─────
+function renderZipsList(zips){
+  const wrap = document.getElementById('zipsList');
+  wrap.innerHTML = '';
+  if(!zips.length) zips = [''];
+  zips.forEach((url, idx)=>addZipRow(url, idx));
+}
+function addZipRow(url='', forcedIdx){
+  // Если первый аргумент — Event (от onclick), сбросить url
+  if(url && typeof url === 'object' && url.target) url = '';
+  const wrap = document.getElementById('zipsList');
+  const idx = (forcedIdx!=null) ? forcedIdx : wrap.children.length;
+  const row = document.createElement('div');
+  row.className = 'zip-row';
+  row.innerHTML = `
+    <div class="zip-num">${idx+1}</div>
+    <input type="text" placeholder="https://raw.githubusercontent.com/.../file.zip" value="${escapeHTML(url)}">
+    <button class="zip-del" title="Хориҷ кардан">🗑</button>`;
+  row.querySelector('.zip-del').onclick = ()=>{
+    row.remove();
+    [...wrap.children].forEach((r,i)=>{
+      r.querySelector('.zip-num').textContent = i+1;
+    });
+    if(!wrap.children.length) addZipRow();
+  };
+  wrap.appendChild(row);
+  if(forcedIdx==null) row.querySelector('input').focus();
+}
+function getZipsFromList(){
+  const wrap = document.getElementById('zipsList');
+  return [...wrap.querySelectorAll('input')]
+    .map(i=>i.value.trim())
+    .filter(v=>v.length);
+}
+
+function openAddSub(){
+  if(!A.selectedCatId) return;
+  A.editingSub = null;
+  A.editingSubInCat = A.selectedCatId;
+  document.getElementById('subModalTitle').textContent = 'Илова кардани бахш';
+  document.getElementById('subName').value = '';
+  document.getElementById('subId').value = '';
+  document.getElementById('subId').disabled = false;
+  renderZipsList([]);
+  document.getElementById('subModal').classList.add('on');
+  setTimeout(()=>document.getElementById('subName').focus(),100);
+}
+function openEditSub(catId, subId){
+  const cat = A.data.categories.find(c=>c.id===catId);
+  if(!cat) return;
+  const sub = cat.subs.find(s=>s.id===subId);
+  if(!sub) return;
+  A.editingSub = subId;
+  A.editingSubInCat = catId;
+  document.getElementById('subModalTitle').textContent = 'Таҳрир: '+sub.name;
+  document.getElementById('subName').value = sub.name;
+  document.getElementById('subId').value = sub.id;
+  document.getElementById('subId').disabled = true;
+  const zips = (sub.zips && sub.zips.length) ? sub.zips : (sub.zip ? [sub.zip] : []);
+  renderZipsList(zips);
+  document.getElementById('subModal').classList.add('on');
+}
+function closeSubModal(){ document.getElementById('subModal').classList.remove('on'); }
+function saveSubModal(){
+  const name = document.getElementById('subName').value.trim();
+  const id = document.getElementById('subId').value.trim();
+  const zips = getZipsFromList();
+  if(!name){ toast('Номро ворид кунед','error'); return; }
+  if(!/^[a-zA-Z0-9_]+$/.test(id)){ toast('ID-и нодуруст','error'); return; }
+  for(const z of zips){
+    if(!/^https?:\/\//.test(z)){
+      toast('Силка бояд бо http:// ё https:// сар шавад: '+z,'error'); return;
+    }
+  }
+  const cat = A.data.categories.find(c=>c.id===A.editingSubInCat);
+  if(!cat) return;
+  if(A.editingSub===null){
+    if(cat.subs.find(s=>s.id===id)){
+      toast('Ин ID дар ин категория аллакай ҳаст','error'); return;
+    }
+    cat.subs.push({id, name, zips, zip: zips[0]||null});
+    toast('✓ Бахш илова шуд','success');
+  } else {
+    const sub = cat.subs.find(s=>s.id===A.editingSub);
+    if(!sub) return;
+    sub.name = name;
+    sub.zips = zips;
+    sub.zip = zips[0]||null;
+    toast('✓ Тағйир дода шуд','success');
+  }
+  closeSubModal();
+  markModified();
+}
+function deleteSub(catId, subId){
+  const cat = A.data.categories.find(c=>c.id===catId);
+  if(!cat) return;
+  const sub = cat.subs.find(s=>s.id===subId);
+  if(!sub) return;
+  showConfirm(
+    'Хориҷ кардани бахш?',
+    `Бахши <b>«${escapeHTML(sub.name)}»</b> хориҷ карда мешавад.`,
+    ()=>{
+      cat.subs = cat.subs.filter(s=>s.id!==subId);
+      markModified();
+      toast('✓ Хориҷ шуд','success');
+    }
+  );
+}
+async function testSub(sub){
+  const urls = (sub.zips && sub.zips.length) ? sub.zips : (sub.zip ? [sub.zip] : []);
+  if(!urls.length){ toast('Ин бахш силка надорад','warning'); return; }
+  toast(`Санҷидани ${urls.length} силка...`,'',1500);
+  let ok=0, fail=0, totalSize=0;
+  for(const url of urls){
+    try{
+      const r = await fetch(url, {method:'HEAD'});
+      if(r.ok){
+        ok++;
+        const size = +r.headers.get('Content-Length')||0;
+        totalSize += size;
+      } else { fail++; }
+    }catch(e){ fail++; }
+  }
+  if(fail===0){
+    toast(`✓ Ҳамаи ${ok} силка кор мекунанд · ${(totalSize/1048576).toFixed(2)} MB`,'success', 4500);
+  } else if(ok>0){
+    toast(`⚠️ ${ok} кор мекунад, ${fail} хатогӣ`,'warning', 4500);
+  } else {
+    toast(`✗ Ягонтои силка кор намекунад`,'error', 4500);
+  }
+}
+
+function showConfirm(title, text, onOk, warn){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmText').innerHTML = text;
+  const w = document.getElementById('confirmWarn');
+  if(warn){ w.style.display='block'; w.textContent='⚠️ '+warn; }
+  else { w.style.display='none'; }
+  const btn = document.getElementById('confirmOkBtn');
+  btn.onclick = ()=>{ closeConfirm(); onOk(); };
+  document.getElementById('confirmModal').classList.add('on');
+}
+function closeConfirm(){ document.getElementById('confirmModal').classList.remove('on'); }
+
+function togglePreview(){
+  const w = document.getElementById('previewWrap');
+  w.style.display = (w.style.display==='none' ? 'grid' : 'none');
+  if(w.style.display!=='none'){ renderPreview(); w.scrollIntoView({behavior:'smooth'}); }
+}
+function renderPreview(){
+  const wrap = document.getElementById('previewContent');
+  const cat = A.data.categories.find(c=>c.id===A.selectedCatId) || A.data.categories[0];
+  if(!cat){ wrap.innerHTML='<div class="empty-panel"><div class="icon">📭</div><p>Категорияҳо ҳоло нестанд</p></div>'; return; }
+  wrap.innerHTML='';
+  if(!cat.subs.length){
+    wrap.innerHTML = `<div class="empty-panel" style="grid-column:1/-1;"><div class="icon">📭</div><p>Дар категорияи «${escapeHTML(cat.name)}» бахше нест</p></div>`;
+    return;
+  }
+  cat.subs.forEach(sub=>{
+    const zipCount = (sub.zips||[]).length;
+    const card=document.createElement('div');
+    card.className='preview-book';
+    card.innerHTML=`
+      <div class="preview-cover" style="--c1:${cat.color1};--c2:${cat.color2};background:linear-gradient(135deg,${cat.color1},${cat.color2});">
+        ${escapeHTML(sub.name)}
+      </div>
+      <div class="preview-info">${zipCount ? `📦 ${zipCount} силка` : '∅ холӣ'}</div>`;
+    wrap.appendChild(card);
   });
 }
-
-function addSub(){if(!A.sel)return;A.editSub=null;A.editSubIn=A.sel;document.getElementById('subModalTitle').textContent='Илова кардани бахш';document.getElementById('sn').value='';document.getElementById('si').value='';document.getElementById('si').disabled=false;document.getElementById('sfolder').value='';document.getElementById('subModal').classList.add('on');setTimeout(()=>document.getElementById('sn').focus(),80);}
-function editSub(cid,sid){const c=A.data.categories.find(x=>x.id===cid);if(!c)return;const s=c.subs.find(x=>x.id===sid);if(!s)return;A.editSub=sid;A.editSubIn=cid;document.getElementById('subModalTitle').textContent='Таҳрир: '+s.name;document.getElementById('sn').value=s.name;document.getElementById('si').value=s.id;document.getElementById('si').disabled=true;document.getElementById('sfolder').value=s.folder||'';document.getElementById('subModal').classList.add('on');}
-function closeSubModal(){document.getElementById('subModal').classList.remove('on');}
-
-function saveSub(){
-  const n=document.getElementById('sn').value.trim(),i=document.getElementById('si').value.trim(),f=document.getElementById('sfolder').value.trim();
-  if(!n){toast('Ном','error');return;}
-  if(!/^[a-zA-Z0-9_]+$/.test(i)){toast('ID','error');return;}
-  if(!f){toast('Папкаро нависед','error');return;}
-  const c=A.data.categories.find(x=>x.id===A.editSubIn);if(!c)return;
-  if(A.editSub===null){
-    if(c.subs.find(s=>s.id===i)){toast('ID мавҷуд','error');return;}
-    c.subs.push({id:i,name:n,folder:f});toast('✓ Илова','success');
-  }else{
-    const s=c.subs.find(x=>x.id===A.editSub);if(!s)return;
-    s.name=n;s.folder=f;toast('✓ Тағйир','success');
-  }
-  closeSubModal();markMod();
+function toggleJsonView(){
+  const w = document.getElementById('jsonWrap');
+  w.style.display = (w.style.display==='none' ? 'grid' : 'none');
+  if(w.style.display!=='none'){ renderJsonView(); w.scrollIntoView({behavior:'smooth'}); }
 }
-function delSub(cid,sid){const c=A.data.categories.find(x=>x.id===cid);if(!c)return;const s=c.subs.find(x=>x.id===sid);if(!s)return;
-  confirm2('Хориҷ кардан?',`Бахши <b>«${esc(s.name)}»</b> хориҷ мешавад.`,()=>{c.subs=c.subs.filter(x=>x.id!==sid);markMod();toast('✓ Хориҷ','success');});
+function renderJsonView(){
+  document.getElementById('jsonViewContent').textContent = JSON.stringify(A.data, null, 2);
 }
-
-// ⭐ MANIFEST GENERATOR
-function openGenAll(){
-  const sel=document.getElementById('genFolder');
-  sel.innerHTML='';
-  const folders=new Set();
-  A.data.categories.forEach(c=>c.subs.forEach(s=>{if(s.folder)folders.add(s.folder);}));
-  if(!folders.size){
-    sel.innerHTML='<option value="">— Папкаҳо нестанд —</option>';
-  }else{
-    const o0=document.createElement('option');o0.value='';o0.textContent='— Интихоб кунед —';sel.appendChild(o0);
-    [...folders].sort().forEach(f=>{
-      const o=document.createElement('option');o.value=f;o.textContent=f;sel.appendChild(o);
-    });
-  }
-  document.getElementById('genFolderAll').innerHTML='<option value="">— Аввал «Скан кардан» зер кунед —</option>';
-  document.getElementById('genFolderManual').value='';
-  document.getElementById('genResult').classList.remove('on');
-  document.getElementById('genResult').textContent='';
-  document.getElementById('genProg').classList.remove('on');
-  document.getElementById('genProg').textContent='';
-  document.getElementById('dlMfBtn').style.display='none';
-  A.lastManifest=null;A.lastFolder=null;
-  updateSelectedFolder();
-  document.getElementById('genModal').classList.add('on');
-}
-function closeGenModal(){document.getElementById('genModal').classList.remove('on');}
-
-// Получает текущий выбранный путь (приоритет: ручной → genFolderAll → genFolder)
-function getCurrentFolder(){
-  const manual=document.getElementById('genFolderManual').value.trim();
-  if(manual)return manual.replace(/^\/+|\/+$/g,'');
-  const all=document.getElementById('genFolderAll').value;
-  if(all)return all;
-  return document.getElementById('genFolder').value;
-}
-function updateSelectedFolder(){
-  const f=getCurrentFolder()||'—';
-  document.getElementById('selectedFolder').textContent=f;
-  document.getElementById('targetFolder').textContent=f;
-}
-function onSelChange(which){
-  // При выборе из одного селекта — очистим остальные
-  if(which==='genFolder'){
-    document.getElementById('genFolderAll').value='';
-    document.getElementById('genFolderManual').value='';
-  }else if(which==='genFolderAll'){
-    document.getElementById('genFolder').value='';
-    document.getElementById('genFolderManual').value='';
-  }
-  updateSelectedFolder();
-}
-function onManualInput(){
-  if(document.getElementById('genFolderManual').value.trim()){
-    document.getElementById('genFolder').value='';
-    document.getElementById('genFolderAll').value='';
-  }
-  updateSelectedFolder();
-}
-
-// ⭐ Рекурсивный скан всех папок через Git Trees API (1 запрос на всё дерево!)
-async function scanAllFolders(){
-  const btn=document.getElementById('scanAllBtn');
-  const hint=document.getElementById('allFoldersHint');
-  const sel=document.getElementById('genFolderAll');
-  btn.disabled=true;btn.textContent='⏳ Скан...';
-  hint.textContent='Скан кардани ҳамаи папкаҳо...';
+async function copyJson(){
   try{
-    // Git Trees API — recursive=1 даёт всё дерево за 1 запрос
-    const url=`https://api.github.com/repos/${A.data.repo}/git/trees/${A.data.branch}?recursive=1`;
-    const r=await fetch(url);
-    if(!r.ok){
-      if(r.status===403)throw new Error('GitHub API limit. 1 соат сабр кунед.');
-      if(r.status===404)throw new Error('Repo ёфт нашуд: '+A.data.repo);
-      throw new Error('HTTP '+r.status);
-    }
-    const data=await r.json();
-    if(!data.tree)throw new Error('Бад ҷавоб');
-    // Все папки (типа "tree")
-    const folders=data.tree
-      .filter(x=>x.type==='tree')
-      .map(x=>x.path)
-      .sort();
-    sel.innerHTML='';
-    const o0=document.createElement('option');o0.value='';o0.textContent=`— Интихоб кунед (${folders.length} папка) —`;sel.appendChild(o0);
-    folders.forEach(f=>{
-      const o=document.createElement('option');o.value=f;
-      // Отступ для вложенных
-      const depth=f.split('/').length-1;
-      o.textContent='  '.repeat(depth)+(depth?'└─ ':'')+f.split('/').pop()+(depth?` (${f})`:'');
-      sel.appendChild(o);
-    });
-    hint.textContent=`✓ ${folders.length} папка ёфт шуд${data.truncated?' (рӯйхат буридашуда)':''}`;
-    toast(`✓ ${folders.length} папка ёфт шуд`,'success');
-  }catch(e){
-    hint.textContent='❌ '+e.message;
-    toast(e.message,'error');
-  }finally{
-    btn.disabled=false;btn.textContent='🔄 Скан кардани ҳамаи папкаҳо';
+    await navigator.clipboard.writeText(JSON.stringify(A.data, null, 2));
+    toast('✓ Дар нусха гирифта шуд','success');
+  }catch(e){ toast('Хатогии нусха','error'); }
+}
+
+window.addEventListener('beforeunload', e=>{
+  if(A.modified){
+    e.preventDefault();
+    e.returnValue = '';
   }
-}
-
-async function generateManifest(){
-  const folder=getCurrentFolder();
-  if(!folder){toast('Папкаро интихоб ё нависед','error');return;}
-  const btn=document.getElementById('genBtn');
-  const prog=document.getElementById('genProg');
-  const result=document.getElementById('genResult');
-  const dlBtn=document.getElementById('dlMfBtn');
-  btn.disabled=true;prog.classList.add('on');result.classList.remove('on');dlBtn.style.display='none';
-  prog.textContent='🔍 Скан кардани /'+folder+'...';
-  document.getElementById('targetFolder').textContent=folder;
-
-  try{
-    const apiUrl=`https://api.github.com/repos/${A.data.repo}/contents/${folder.split('/').map(encodeURIComponent).join('/')}?ref=${A.data.branch}`;
-    const r=await fetch(apiUrl);
-    let pdfs=[];
-    let folderExists=true;
-
-    if(!r.ok){
-      if(r.status===404){
-        // Папка не существует — это НЕ ошибка, создаём пустой manifest
-        folderExists=false;
-        prog.textContent='⚠️ Папка дар GitHub нест. Manifest бо рӯйхати холӣ эҷод мешавад.';
-      }else if(r.status===403){
-        throw new Error('GitHub API limit. 1 соат сабр кунед.');
-      }else{
-        throw new Error('HTTP '+r.status);
-      }
-    }else{
-      const data=await r.json();
-      if(!Array.isArray(data)){
-        // Если папка содержит только подпапки — это всё равно массив; если это файл — ошибка
-        throw new Error('Ин папка нест, файл аст');
-      }
-      pdfs=data
-        .filter(x=>x.type==='file'&&x.name.toLowerCase().endsWith('.pdf'))
-        .sort((a,b)=>a.name.localeCompare(b.name));
-    }
-
-    const manifest={
-      version:1,
-      updatedAt:new Date().toISOString().slice(0,10),
-      folder,
-      books:pdfs.map(p=>({
-        name:p.name.replace(/\.pdf$/i,''),
-        file:p.name,
-        size:p.size
-      }))
-    };
-    A.lastManifest=manifest;
-    A.lastFolder=folder;
-
-    let preview;
-    if(!pdfs.length){
-      if(folderExists){
-        prog.textContent=`⚠️ Папка холӣ аст (0 PDF). Manifest бо рӯйхати холӣ эҷод шуд.`;
-      }
-      preview=`📂 Папка: ${folder}\n📄 Китоб: 0\n\nManifest холӣ эҷод шуд. Шумо метавонед:\n• Аввал PDF файлҳоро дар папка ҷой кунед, баъд аз нав manifest созед\n• Ё manifest холиро ҳозир юклаб гирифта, дар папка ҷой кунед`;
-    }else{
-      prog.textContent=`✓ Ёфт шуд: ${pdfs.length} PDF`;
-      preview=`✓ ${pdfs.length} китоб ёфт шуд:\n\n`;
-      pdfs.forEach((p,i)=>{
-        preview+=`${i+1}. ${p.name.replace(/\.pdf$/i,'')}\n   (${(p.size/1024).toFixed(0)} KB)\n`;
-      });
-    }
-    result.textContent=preview;
-    result.classList.add('on');
-    dlBtn.style.display='block';
-    btn.disabled=false;
-  }catch(e){
-    prog.textContent='❌ '+e.message;
-    btn.disabled=false;
+});
+document.addEventListener('keydown', e=>{
+  if((e.ctrlKey||e.metaKey) && e.key==='s'){
+    e.preventDefault();
+    if(A.fileHandle) saveToFile();
+    else downloadJson();
   }
-}
-
-function downloadManifest(){
-  if(!A.lastManifest)return;
-  const t=JSON.stringify(A.lastManifest,null,2);
-  const b=new Blob([t],{type:'application/json'});
-  const u=URL.createObjectURL(b);const a=document.createElement('a');
-  a.href=u;a.download='manifest.json';
-  document.body.appendChild(a);a.click();document.body.removeChild(a);
-  setTimeout(()=>URL.revokeObjectURL(u),2000);
-  toast(`✓ manifest.json юклаб шуд. Ҷой кунед дар папкаи ${A.lastFolder}/`,'success',5000);
-}
-
-function confirm2(t,tx,ok){document.getElementById('cfTitle').textContent=t;document.getElementById('cfText').innerHTML=tx;document.getElementById('cfOk').onclick=()=>{closeCf();ok();};document.getElementById('cfModal').classList.add('on');}
-function closeCf(){document.getElementById('cfModal').classList.remove('on');}
-
-function toggleJson(){const w=document.getElementById('jsonWrap');w.style.display=w.style.display==='none'?'grid':'none';if(w.style.display!=='none'){document.getElementById('jsonView').textContent=JSON.stringify(A.data,null,2);w.scrollIntoView({behavior:'smooth'});}}
-async function copyJson(){try{await navigator.clipboard.writeText(JSON.stringify(A.data,null,2));toast('✓ Нусха','success');}catch(e){toast('Хатогӣ','error');}}
-
-window.addEventListener('beforeunload',e=>{if(A.modified){e.preventDefault();e.returnValue='';}});
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();A.handle?saveFile():downloadJson();}if(e.key==='Escape')document.querySelectorAll('.modal-bg.on').forEach(m=>m.classList.remove('on'));});
+  if(e.key==='Escape'){
+    document.querySelectorAll('.modal-overlay.on').forEach(m=>m.classList.remove('on'));
+  }
+});
 
 (function init(){
-  updStatus();
-  try{const b=JSON.parse(localStorage.getItem('a_backup')||'');if(b&&b.categories?.length){A.data=b;loadData(b);A.fileName='books.json (backup)';A.modified=true;updStatus();toast('Backup барқарор','warning',4000);return;}}catch(e){}
-  renderAll();chkBrowser();
+  updateStatus();
+  const bak = loadLocalBackup();
+  if(bak && bak.categories && bak.categories.length){
+    A.data = bak;
+    A.data.categories.forEach(c=>{
+      c.color1 = c.color1 || c.c1 || '#2563eb';
+      c.color2 = c.color2 || c.c2 || '#3b82f6';
+      c.emoji = c.emoji || '📚';
+      c.subs = c.subs || [];
+      c.subs.forEach(s=>{
+        if(!Array.isArray(s.zips)) s.zips = s.zip ? [s.zip] : [];
+        s.zip = s.zips[0] || null;
+      });
+    });
+    A.fileName = 'books.json (backup)';
+    A.selectedCatId = A.data.categories[0]?.id || null;
+    A.modified = true;
+    renderAll();
+    updateStatus();
+    toast('Backup-и охирин барқарор шуд. Барои сабт books.json-ро кушоед.','warning', 5000);
+  } else {
+    renderAll();
+    checkBrowser();
+  }
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0719a63fb9e0a3f',t:'MTc4MDY4Nzk0NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
