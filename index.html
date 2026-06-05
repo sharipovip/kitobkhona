@@ -10,7 +10,6 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
@@ -27,7 +26,6 @@
   --border: #1e293b;
   --hl-yellow: rgba(255, 220, 40, .55);
   --hl-orange: rgba(255, 140, 40, .85);
-  --radius: 12px;
 }
 [data-theme="light"] {
   --primary: #2563eb;
@@ -44,7 +42,6 @@
 
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
 input,textarea{-webkit-user-select:text;user-select:text;}
-/* ⭐ Запрет pull-to-refresh и overscroll */
 html,body{height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;overscroll-behavior-y:contain;}
 body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height:1.5;}
 
@@ -122,7 +119,6 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 .bg-prog.on::after{content:'';position:absolute;left:0;top:0;bottom:0;width:30%;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:bgl 1.2s linear infinite;}
 @keyframes bgl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
 
-/* SUB LOADING (download modal) */
 .dl-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;}
 .dl-overlay.on{display:flex;}
 .dl-modal{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:340px;padding:22px;text-align:center;}
@@ -135,7 +131,6 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 .dl-status{font-size:11px;color:var(--text-muted);margin-top:3px;}
 .dl-cancel{margin-top:14px;padding:9px 18px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;}
 
-/* READER */
 .reader{position:fixed;inset:0;z-index:100;background:#0a0a0a;display:none;flex-direction:column;}
 .reader.on{display:flex;}
 .reader-hdr{background:rgba(20,20,28,.95);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);padding:env(safe-area-inset-top,0) 8px 8px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0;z-index:5;}
@@ -231,7 +226,6 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
   </div>
 </div>
 
-<!-- Download modal -->
 <div class="dl-overlay" id="dlOverlay">
   <div class="dl-modal">
     <div class="dl-icon">📥</div>
@@ -272,7 +266,6 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
   </div>
 </div>
 
-<!-- Jump modal — ИСПРАВЛЕНО! -->
 <div class="modal-bg" id="jumpModal">
   <div class="modal">
     <h3>Гузаштан ба саҳифа</h3>
@@ -288,7 +281,7 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 <div class="toast" id="toast">—</div>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'.replace('pdf.min.js','pdf.worker.min.js');
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -307,21 +300,25 @@ function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;',
 function toast(m,ms=2200){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._);toast._=setTimeout(()=>t.classList.remove('on'),ms);}
 const DPR=Math.min(window.devicePixelRatio||1,2.5);
 
-let CATS=[];
+// ───── State ─────
+let CATS=[],REPO='sharipovip/books',BRANCH='main';
 const S={
   cat:null,sub:null,
-  books:new Map(),     // subId -> [{name, cover?}]
-  blobs:new Map(),     // key -> PDF Blob
-  pdf:null,page:1,pages:0,zoom:1,key:null,light:false,
+  books:new Map(),
+  blobs:new Map(),
+  covers:new Map(),
+  pdf:null,page:1,pages:0,zoom:1,key:null,url:null,light:false,
   findQ:'',findHits:[],findCurr:-1,
   abort:null
 };
 
-const DB='kk_v6';let dbP=null;
-function db(){if(dbP)return dbP;dbP=new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=e=>{const d=e.target.result;['pdfs','json'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
+// ───── IndexedDB ─────
+const DB='kk_v8';let dbP=null;
+function db(){if(dbP)return dbP;dbP=new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=e=>{const d=e.target.result;['pdfs','covers','json','lists'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
 async function idbG(s,k){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(s,'readonly');const r=t.objectStore(s).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
 async function idbS(s,k,v){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(s,'readwrite');t.objectStore(s).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
 
+// ───── Load books.json ─────
 async function loadBooksJson(){
   let cached=null;
   try{cached=await idbG('json','books');}catch(e){}
@@ -353,16 +350,16 @@ async function refreshBooksJson(){
   }catch(e){}
 }
 function parseCats(d){
+  REPO=d.repo||'sharipovip/books';
+  BRANCH=d.branch||'main';
   const arr=d.categories||d;
   arr.forEach(c=>{
     c.c1=c.color1||'#2563eb';c.c2=c.color2||'#3b82f6';c.subs=c.subs||[];
-    c.subs.forEach(s=>{
-      if(!Array.isArray(s.zips))s.zips=s.zip?[s.zip]:[];
-    });
   });
   CATS=arr;
 }
 
+// ───── Cats/Subs UI ─────
 function renderCats(){
   const r=$('catsRow');r.innerHTML='';
   CATS.forEach(c=>{
@@ -379,7 +376,7 @@ function renderSubs(){
   S.cat.subs.forEach(s=>{
     const b=document.createElement('button');
     b.className='sub-chip'+(s.id===S.sub?.id?' on':'');
-    const cnt=(s.books&&s.books.length)||S.books.get(s.id)?.length;
+    const cnt=S.books.get(s.id)?.length;
     b.textContent=s.name+(cnt?` (${cnt})`:'');
     b.onclick=()=>selectSub(s.id);
     r.appendChild(b);
@@ -399,34 +396,71 @@ function selectSub(id){
   loadSub(id);
 }
 
-// ⭐ ГЛАВНАЯ ЛОГИКА: показ книг
+// ⭐ ГЛАВНАЯ ЛОГИКА — читаем manifest.json из папки
 async function loadSub(id){
   const sub=S.cat.subs.find(s=>s.id===id);if(!sub)return;
 
-  // ⭐ Если в books.json уже есть подготовленный список с обложками — мгновенно показываем!
-  if(sub.books&&sub.books.length){
-    S.books.set(id,sub.books);
-    renderBooks(id);
+  if(S.books.has(id)){renderBooks(id);return;}
+  if(!sub.folder){S.books.set(id,[]);renderBooks(id);return;}
+
+  // IDB cache — мгновенно
+  let cachedList=null;
+  try{cachedList=await idbG('lists',sub.folder);}catch(e){}
+  if(cachedList&&cachedList.books){
+    S.books.set(id,cachedList.books);
+    renderSubs();renderBooks(id);
+    if(navigator.onLine)fetchManifest(sub,id,true);
     return;
   }
 
-  // Иначе — нужно скачать ZIP
-  if(!sub.zips.length){
-    S.books.set(id,[]);renderBooks(id);return;
-  }
-  $('grid').innerHTML='<div class="empty"><div class="empty-icon">📦</div><div class="empty-title">Барои нишон додани китобҳо клик кунед</div><button class="modal-btn primary" style="margin-top:14px;max-width:200px;" onclick="downloadAndShow(\''+id+'\')">📥 Бор кардан</button></div>';
-}
-
-async function downloadAndShow(id){
-  const sub=S.cat.subs.find(s=>s.id===id);if(!sub)return;
-  showDl(sub.name);
+  showPlaceholders(6);
+  $('bgProg').classList.add('on');
   try{
-    await fetchZipWithProg(sub);
-    hideDl();
-    if(S.sub?.id===id){renderSubs();renderBooks(id);}
-  }catch(e){hideDl();if(e.name!=='AbortError')toast('Хатогии шабака');}
+    await fetchManifest(sub,id,false);
+  }catch(e){
+    if(S.sub?.id===id){
+      $('grid').innerHTML=`<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Хатогии шабака</div><div class="empty-sub">${esc(e.message||'')}</div><button class="modal-btn primary" style="margin-top:14px;max-width:160px;" onclick="loadSub('${id}')">🔄 Бори дигар</button></div>`;
+    }
+  }finally{$('bgProg').classList.remove('on');}
 }
 
+async function fetchManifest(sub,id,silent){
+  const url=`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encodeURIComponent(sub.folder)}/manifest.json?t=${Date.now()}`;
+  const r=await fetch(url,{cache:'no-store'});
+  if(!r.ok){
+    if(r.status===404){
+      throw new Error('manifest.json ёфт нашуд дар папкаи '+sub.folder);
+    }
+    throw new Error('HTTP '+r.status);
+  }
+  const data=await r.json();
+  if(!Array.isArray(data.books))throw new Error('Бад формат manifest');
+  // Convert relative file -> full URL
+  const books=data.books.map(b=>({
+    name:b.name||b.file?.replace(/\.pdf$/i,''),
+    file:b.file||(b.name+'.pdf'),
+    url:`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encodeURIComponent(sub.folder)}/${encodeURIComponent(b.file||(b.name+'.pdf'))}`,
+    size:b.size||0,
+    cover:b.cover // optional, can be base64 or URL
+  }));
+  S.books.set(id,books);
+  try{await idbS('lists',sub.folder,{books,ts:Date.now()});}catch(e){}
+  if(S.sub?.id===id){
+    renderSubs();renderBooks(id);
+    if(silent)toast('✓ Навсозӣ шуд',1500);
+  }
+}
+
+function showPlaceholders(n){
+  const g=$('grid');g.innerHTML='';
+  for(let i=0;i<n;i++){
+    const d=document.createElement('div');d.className='book';
+    d.innerHTML='<div class="book-cover shimmer"></div><div class="shimmer" style="height:10px;border-radius:3px;margin-top:6px;width:80%;margin-left:auto;margin-right:auto;"></div>';
+    g.appendChild(d);
+  }
+}
+
+// ───── RENDER BOOKS ─────
 function renderBooks(id){
   const g=$('grid');g.innerHTML='';
   const books=S.books.get(id)||[];
@@ -439,47 +473,96 @@ function renderBooks(id){
   books.forEach(b=>{
     const key=id+':'+b.name;
     const d=document.createElement('div');d.className='book';d.dataset.key=key;
+    const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
     const coverHtml=b.cover?`<img src="${b.cover}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`;
     d.innerHTML=`
-      <div class="book-cover" style="--c1:${S.cat.c1};--c2:${S.cat.c2};${b.cover?'padding:0;':''}">${coverHtml}</div>
+      <div class="book-cover" id="${safe}" style="--c1:${S.cat.c1};--c2:${S.cat.c2};${b.cover?'padding:0;':''}">${coverHtml}</div>
       <div class="book-name">${esc(b.name)}</div>
       <div class="book-actions">
         <button class="book-btn read" data-act="read">📖 Хондан</button>
         <button class="book-btn dl" data-act="dl">⬇</button>
       </div>`;
-    d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(key);};
-    d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(key);};
+    d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(b.url,b.name,key);};
+    d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(b.url,b.name);};
     g.appendChild(d);
+    if(!b.cover)setCoverFromCache(b.url,safe);
   });
   renderLastRead();
 }
 
-async function ensureBlob(key){
-  let b=S.blobs.get(key);
-  if(b)return b;
-  try{b=await idbG('pdfs',key);if(b)S.blobs.set(key,b);return b;}catch(e){}
-  return null;
+async function setCoverFromCache(url,safe){
+  if(S.covers.has(url)){setCv(safe,S.covers.get(url));return;}
+  try{
+    const c=await idbG('covers',url);
+    if(c){S.covers.set(url,c);setCv(safe,c);return;}
+  }catch(e){}
+  let blob=S.blobs.get(url);
+  if(!blob){try{blob=await idbG('pdfs',url);if(blob)S.blobs.set(url,blob);}catch(e){}}
+  if(!blob)return;
+  generateCover(url,safe,blob);
+}
+async function generateCover(url,safe,blob){
+  try{
+    const ab=await blob.arrayBuffer();
+    const pdf=await pdfjsLib.getDocument({data:ab,disableAutoFetch:true,disableStream:true}).promise;
+    const p=await pdf.getPage(1);
+    const vp=p.getViewport({scale:0.5});
+    const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+    await p.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
+    const dataUrl=cv.toDataURL('image/jpeg',0.7);
+    S.covers.set(url,dataUrl);
+    try{await idbS('covers',url,dataUrl);}catch(e){}
+    setCv(safe,dataUrl);
+    try{pdf.destroy();}catch(e){}
+  }catch(e){}
+}
+function setCv(safe,url){
+  const el=$(safe);if(!el)return;
+  el.innerHTML=`<img src="${url}" alt="" loading="lazy">`;
+  el.style.padding='0';
 }
 
-async function openBook(key){
-  let blob=await ensureBlob(key);
-  if(!blob){
-    // Нужно скачать
-    const subId=key.split(':')[0];
-    const sub=findSub(subId);
-    if(!sub){toast('Файл нест');return;}
-    showDl(key.split(':').slice(1).join(':'));
-    try{
-      await fetchZipWithProg(sub);
-      hideDl();
-      blob=await ensureBlob(key);
-    }catch(e){hideDl();if(e.name!=='AbortError')toast('Хатогии шабака');return;}
+async function ensureBlob(url,name){
+  let b=S.blobs.get(url);
+  if(b)return b;
+  try{b=await idbG('pdfs',url);if(b){S.blobs.set(url,b);return b;}}catch(e){}
+  showDl(name);
+  try{
+    b=await fetchPdf(url);
+    hideDl();
+    S.blobs.set(url,b);
+    try{await idbS('pdfs',url,b);}catch(e){}
+    return b;
+  }catch(e){
+    hideDl();
+    if(e.name!=='AbortError')toast('Хатогии шабака');
+    return null;
   }
-  if(!blob){toast('Файл нест');return;}
+}
 
+async function fetchPdf(url){
+  const ctrl=new AbortController();S.abort=ctrl;
+  const resp=await fetch(url,{signal:ctrl.signal});
+  if(!resp.ok)throw new Error('HTTP '+resp.status);
+  const total=+resp.headers.get('Content-Length')||0;
+  const rdr=resp.body.getReader();const chunks=[];let rcv=0;
+  while(true){
+    const {done,value}=await rdr.read();if(done)break;
+    chunks.push(value);rcv+=value.length;
+    if(total){const p=Math.round(rcv/total*99);$('dlFill').style.width=p+'%';$('dlPct').textContent=p+'%';$('dlStatus').textContent=`${(rcv/1048576).toFixed(1)}/${(total/1048576).toFixed(1)} MB`;}
+    else $('dlPct').textContent=`${(rcv/1048576).toFixed(1)} MB`;
+  }
+  const ab=new Uint8Array(rcv);let off=0;for(const c of chunks){ab.set(c,off);off+=c.length;}
+  $('dlFill').style.width='100%';$('dlPct').textContent='100%';
+  return new Blob([ab],{type:'application/pdf'});
+}
+
+async function openBook(url,name,key){
+  const blob=await ensureBlob(url,name);
+  if(!blob)return;
   $('reader').classList.add('on');
-  $('rdrTitle').textContent=key.split(':').slice(1).join(':');
-  S.key=key;S.zoom=1;S.light=false;
+  $('rdrTitle').textContent=name;
+  S.key=key||name;S.url=url;S.zoom=1;S.light=false;
   $('rdrArea').classList.remove('light');
   $('lightBtn').textContent='☀️';
   clearFind();
@@ -488,47 +571,38 @@ async function openBook(key){
     const ab=await blob.arrayBuffer();
     S.pdf=await pdfjsLib.getDocument({data:ab}).promise;
     S.pages=S.pdf.numPages;
-    const sp=getProgress(key);
+    const sp=getProgress(S.key);
     S.page=sp?Math.min(sp.page,S.pages):1;
     await renderPage(S.page);
     saveProgress();
     showFoot();
+    if(!S.covers.has(url)){
+      const safe='cv_'+(key||name).replace(/[^a-z0-9]/gi,'_');
+      generateCover(url,safe,blob);
+    }
   }catch(e){toast('Хатогӣ');closeReader();}
 }
-function findSub(id){for(const c of CATS){const s=c.subs.find(x=>x.id===id);if(s)return s;}return null;}
 
 function closeReader(){
   saveProgress();
   $('reader').classList.remove('on');
   if(S.pdf){try{S.pdf.destroy();}catch(e){}S.pdf=null;}
-  S.key=null;closeFind();renderLastRead();
+  S.key=null;S.url=null;closeFind();renderLastRead();
 }
 
-async function downloadBook(key){
-  let blob=await ensureBlob(key);
-  if(!blob){
-    const subId=key.split(':')[0];
-    const sub=findSub(subId);
-    if(!sub){toast('Файл нест');return;}
-    showDl(key.split(':').slice(1).join(':'));
-    try{
-      await fetchZipWithProg(sub);
-      hideDl();
-      blob=await ensureBlob(key);
-    }catch(e){hideDl();if(e.name!=='AbortError')toast('Хатогии шабака');return;}
-  }
-  if(!blob){toast('Файл нест');return;}
-  const name=key.split(':').slice(1).join(':')+'.pdf';
-  const url=URL.createObjectURL(blob);
+async function downloadBook(url,name){
+  const blob=await ensureBlob(url,name);
+  if(!blob)return;
+  const fn=name+'.pdf';
+  const blobUrl=URL.createObjectURL(blob);
   const a=document.createElement('a');
-  a.href=url;a.download=name;a.style.display='none';
+  a.href=blobUrl;a.download=fn;a.style.display='none';
   document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(url);},2000);
-  toast(`✓ Файл «${name}» дар Downloads/ сабт шуд`,3500);
+  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(blobUrl);},2000);
+  toast(`✓ «${fn}» дар Downloads/ сабт шуд`,3500);
 }
-function downloadCurrent(){if(S.key)downloadBook(S.key);}
+function downloadCurrent(){if(S.url){const n=$('rdrTitle').textContent;downloadBook(S.url,n);}}
 
-// ───── PDF RENDER ─────
 const slider=$('slider');
 async function renderPage(n){
   if(!S.pdf)return;
@@ -641,7 +715,6 @@ function toggleFoot(){$('foot').classList.toggle('hide');if(!$('foot').classList
 function changeZoom(d){S.zoom=Math.max(0.5,Math.min(3.5,S.zoom+d));renderPage(S.page);showFoot();}
 function toggleLight(){S.light=!S.light;$('rdrArea').classList.toggle('light',S.light);$('lightBtn').textContent=S.light?'🌙':'☀️';renderPage(S.page);}
 
-// ⭐ JUMP-TO-PAGE — ИСПРАВЛЕНО!
 function openJump(){
   if(!S.pdf||!S.pages){toast('Аввал китобро кушоед');return;}
   $('jumpSub').textContent=`1 — ${S.pages}`;
@@ -651,9 +724,7 @@ function openJump(){
   $('jumpModal').classList.add('on');
   setTimeout(()=>{
     const inp=$('jumpInp');
-    inp.focus();
-    inp.select();
-    // Enter — переход
+    inp.focus();inp.select();
     inp.onkeydown=function(e){
       if(e.key==='Enter'){e.preventDefault();doJump();}
       else if(e.key==='Escape'){e.preventDefault();closeJump();}
@@ -662,16 +733,10 @@ function openJump(){
 }
 function closeJump(){$('jumpModal').classList.remove('on');}
 async function doJump(){
-  const raw=$('jumpInp').value;
-  const v=parseInt(raw,10);
-  if(isNaN(v)||v<1||v>S.pages){
-    toast(`Рақамро аз 1 то ${S.pages} ворид кунед`,3000);
-    return;
-  }
+  const v=parseInt($('jumpInp').value,10);
+  if(isNaN(v)||v<1||v>S.pages){toast(`Рақамро аз 1 то ${S.pages} ворид кунед`,3000);return;}
   closeJump();
-  if(v!==S.page){
-    await renderPage(v);
-  }
+  if(v!==S.page)await renderPage(v);
   showFoot();
 }
 
@@ -752,7 +817,7 @@ function saveProgress(){
   if(!S.key||!S.pages)return;
   try{
     const a=JSON.parse(localStorage.getItem('kk_prog')||'{}');
-    a[S.key]={page:S.page,pages:S.pages,ts:Date.now()};
+    a[S.key]={page:S.page,pages:S.pages,url:S.url,ts:Date.now()};
     localStorage.setItem('kk_prog',JSON.stringify(a));
     let l=JSON.parse(localStorage.getItem('kk_last')||'[]');
     l=l.filter(x=>x!==S.key);l.unshift(S.key);if(l.length>8)l=l.slice(0,8);
@@ -772,12 +837,11 @@ function renderLastRead(){
     for(const c of CATS){const s=c.subs.find(x=>x.id===subId);if(s){cat=c;sub=s;break;}}
     if(!cat)continue;
     const p=prog[k];const pct=(p&&p.pages)?Math.round(p.page/p.pages*100):0;
-    // Find cover from sub.books
-    let cov=null;
-    if(sub.books){const bb=sub.books.find(b=>b.name===name);if(bb&&bb.cover)cov=bb.cover;}
+    const url=p?.url;
+    const cov=url?S.covers.get(url):null;
     const d=document.createElement('div');d.className='lri';
     d.innerHTML=`<div class="lri-cover" style="--c1:${cat.c1};--c2:${cat.c2};">${cov?`<img src="${cov}">`:'📖'}</div><div class="lri-info"><div class="lri-name">${esc(name)}</div><div class="lri-progress"><div class="lri-progress-fill" style="width:${pct}%;"></div></div><div class="lri-meta">${p?p.page+'/'+p.pages:'·'}</div></div>`;
-    d.onclick=()=>openBook(k);
+    d.onclick=()=>{if(url)openBook(url,name,k);};
     wrap.appendChild(d);vis++;
   }
   sec.style.display=vis?'block':'none';
@@ -790,7 +854,7 @@ function doSearch(q){
   if(!q){if(S.sub)renderBooks(S.sub.id);return;}
   const hits=[];
   for(const c of CATS)for(const sub of c.subs){
-    const bs=sub.books||S.books.get(sub.id);if(!bs)continue;
+    const bs=S.books.get(sub.id);if(!bs)continue;
     for(const b of bs)if(b.name.toLowerCase().includes(q))hits.push({c,sub,b});
   }
   $('secTitle').textContent='Натиҷаҳо';$('secSub').textContent=`«${q}» · ${hits.length}`;
@@ -798,58 +862,20 @@ function doSearch(q){
   if(!hits.length){g.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Ёфт нашуд</div></div>';return;}
   hits.forEach(({c,sub,b})=>{
     const key=sub.id+':'+b.name;
-    const d=document.createElement('div');d.className='book';d.dataset.key=key;
+    const d=document.createElement('div');d.className='book';
+    const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
     const coverHtml=b.cover?`<img src="${b.cover}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`;
-    d.innerHTML=`<div class="book-cover" style="--c1:${c.c1};--c2:${c.c2};${b.cover?'padding:0;':''}">${coverHtml}</div><div class="book-name">${esc(b.name)}</div><div class="book-actions"><button class="book-btn read" data-act="read">📖 Хондан</button><button class="book-btn dl" data-act="dl">⬇</button></div>`;
-    d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(key);};
-    d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(key);};
+    d.innerHTML=`<div class="book-cover" id="${safe}" style="--c1:${c.c1};--c2:${c.c2};${b.cover?'padding:0;':''}">${coverHtml}</div><div class="book-name">${esc(b.name)}</div><div class="book-actions"><button class="book-btn read" data-act="read">📖 Хондан</button><button class="book-btn dl" data-act="dl">⬇</button></div>`;
+    d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(b.url,b.name,key);};
+    d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(b.url,b.name);};
     g.appendChild(d);
+    if(!b.cover)setCoverFromCache(b.url,safe);
   });
 }
 
 function showDl(name){$('dlTitle').textContent='Бор кардан';$('dlName').textContent=name;$('dlFill').style.width='0';$('dlPct').textContent='0%';$('dlStatus').textContent='Пайвастшавӣ...';$('dlOverlay').classList.add('on');}
 function hideDl(){$('dlOverlay').classList.remove('on');}
 function cancelDl(){if(S.abort)try{S.abort.abort();}catch(e){}hideDl();toast('Бекор шуд');}
-
-async function fetchZipWithProg(sub){
-  const ctrl=new AbortController();S.abort=ctrl;
-  const allBooks=[];
-  for(let zi=0;zi<sub.zips.length;zi++){
-    const url=sub.zips[zi];const pref=sub.zips.length>1?`[${zi+1}/${sub.zips.length}] `:'';
-    const resp=await fetch(url,{signal:ctrl.signal});
-    if(!resp.ok)throw new Error('HTTP '+resp.status);
-    const total=+resp.headers.get('Content-Length')||0;
-    const rdr=resp.body.getReader();const chunks=[];let rcv=0;
-    while(true){
-      const {done,value}=await rdr.read();if(done)break;
-      chunks.push(value);rcv+=value.length;
-      if(total){const p=Math.round(rcv/total*99);$('dlFill').style.width=p+'%';$('dlPct').textContent=p+'%';$('dlStatus').textContent=`${pref}${(rcv/1048576).toFixed(1)}/${(total/1048576).toFixed(1)} MB`;}
-      else $('dlPct').textContent=`${(rcv/1048576).toFixed(1)} MB`;
-    }
-    const ab=new Uint8Array(rcv);let off=0;for(const c of chunks){ab.set(c,off);off+=c.length;}
-    $('dlStatus').textContent=pref+'Кушодан...';$('dlFill').style.width='100%';
-    const zip=await JSZip.loadAsync(ab.buffer);
-    const entries=Object.entries(zip.files).filter(([f,o])=>!o.dir&&f.toLowerCase().endsWith('.pdf'));
-    let cnt=0;
-    for(const [fn,fo] of entries){
-      const buf=await fo.async('arraybuffer');
-      const name=fn.replace(/\.pdf$/i,'').replace(/^.*\//,'').trim();
-      const blob=new Blob([buf],{type:'application/pdf'});
-      const key=sub.id+':'+name;
-      try{await idbS('pdfs',key,blob);}catch(e){}
-      S.blobs.set(key,blob);
-      if(!allBooks.find(b=>b.name===name))allBooks.push({name});
-      cnt++;$('dlPct').textContent=`${cnt}/${entries.length}`;
-    }
-    // Если в sub.books уже есть подготовленные данные с обложками — оставляем их.
-    // Иначе используем allBooks без обложек.
-    if(!sub.books||!sub.books.length){
-      S.books.set(sub.id,allBooks);
-    }else{
-      S.books.set(sub.id,sub.books);
-    }
-  }
-}
 
 (async()=>{
   if(!await loadBooksJson())return;
