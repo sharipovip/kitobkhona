@@ -429,7 +429,7 @@ async function fetchManifest(sub,id,silent){
   const r=await fetch(url,{cache:'no-store'});
   if(!r.ok){
     if(r.status===404){
-      throw new Error('manifest.json ёфт нашуд дар папкаи '+sub.folder);
+      throw new Error('Айни ҳол китобҳо ёфт нашуданд дар папкаи'+sub.folder);
     }
     throw new Error('HTTP '+r.status);
   }
