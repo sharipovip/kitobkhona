@@ -98,9 +98,13 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 
 .book{cursor:pointer;position:relative;}
 .book:active{transform:scale(.96);}
-.book-cover{position:relative;width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));border-radius:6px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:8px;}
+.book-cover{position:relative;width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));border-radius:6px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:8px;cursor:pointer;}
 .book-cover img{width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;}
 .book-cover-text{color:#fff;font-size:10px;font-weight:700;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.5);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
+.book-cover .cv-load{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(0,0,0,.2);overflow:hidden;display:none;}
+.book-cover.loading .cv-load{display:block;}
+.book-cover .cv-load::after{content:'';position:absolute;left:0;top:0;bottom:0;width:30%;background:rgba(255,255,255,.7);animation:cvl 1s linear infinite;}
+@keyframes cvl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
 .book-name{font-size:10px;color:var(--text);margin-top:5px;text-align:center;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500;}
 .book-actions{display:flex;gap:3px;margin-top:5px;}
 .book-btn{flex:1;padding:5px;border-radius:4px;border:none;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;}
@@ -304,9 +308,14 @@ const DPR=Math.min(window.devicePixelRatio||1,2.5);
 let CATS=[],REPO='sharipovip/books',BRANCH='main';
 const S={
   cat:null,sub:null,
-  books:new Map(),
-  blobs:new Map(),
-  covers:new Map(),
+  books:new Map(),         // subId -> books[]
+  blobs:new Map(),         // url -> Blob (in-memory cache)
+  covers:new Map(),        // url -> dataURL
+  coverPending:new Set(),  // urls being processed
+  coverQueue:[],           // [{url,name,key,catC1,catC2}]
+  coverActive:0,
+  coverMax:2,              // parallel
+  currentSubId:null,
   pdf:null,page:1,pages:0,zoom:1,key:null,url:null,light:false,
   findQ:'',findHits:[],findCurr:-1,
   abort:null
@@ -396,9 +405,12 @@ function selectSub(id){
   loadSub(id);
 }
 
-// ⭐ ГЛАВНАЯ ЛОГИКА — читаем manifest.json из папки
+// ⭐ Читаем manifest.json из папки
 async function loadSub(id){
   const sub=S.cat.subs.find(s=>s.id===id);if(!sub)return;
+  S.currentSubId=id;
+  // При смене бахша — очистим очередь обложек предыдущего
+  S.coverQueue=[];
 
   if(S.books.has(id)){renderBooks(id);return;}
   if(!sub.folder){S.books.set(id,[]);renderBooks(id);return;}
@@ -429,19 +441,17 @@ async function fetchManifest(sub,id,silent){
   const r=await fetch(url,{cache:'no-store'});
   if(!r.ok){
     if(r.status===404){
-      throw new Error('Айни ҳол китобҳо ёфт нашуданд дар папкаи '+sub.folder);
+      throw new Error('manifest.json ёфт нашуд дар папкаи '+sub.folder);
     }
     throw new Error('HTTP '+r.status);
   }
   const data=await r.json();
   if(!Array.isArray(data.books))throw new Error('Бад формат manifest');
-  // Convert relative file -> full URL
   const books=data.books.map(b=>({
     name:b.name||b.file?.replace(/\.pdf$/i,''),
     file:b.file||(b.name+'.pdf'),
     url:`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encodeURIComponent(sub.folder)}/${encodeURIComponent(b.file||(b.name+'.pdf'))}`,
-    size:b.size||0,
-    cover:b.cover // optional, can be base64 or URL
+    size:b.size||0
   }));
   S.books.set(id,books);
   try{await idbS('lists',sub.folder,{books,ts:Date.now()});}catch(e){}
@@ -474,73 +484,137 @@ function renderBooks(id){
     const key=id+':'+b.name;
     const d=document.createElement('div');d.className='book';d.dataset.key=key;
     const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
-    const coverHtml=b.cover?`<img src="${b.cover}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`;
     d.innerHTML=`
-      <div class="book-cover" id="${safe}" style="--c1:${S.cat.c1};--c2:${S.cat.c2};${b.cover?'padding:0;':''}">${coverHtml}</div>
+      <div class="book-cover" id="${safe}" style="--c1:${S.cat.c1};--c2:${S.cat.c2};">
+        <div class="book-cover-text">${esc(b.name)}</div>
+        <div class="cv-load"></div>
+      </div>
       <div class="book-name">${esc(b.name)}</div>
       <div class="book-actions">
         <button class="book-btn read" data-act="read">📖 Хондан</button>
         <button class="book-btn dl" data-act="dl">⬇</button>
       </div>`;
+    // КЛИК ПО ОБЛОЖКЕ = ОТКРЫТЬ КНИГУ
+    d.querySelector('.book-cover').onclick=()=>openBook(b.url,b.name,key);
     d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(b.url,b.name,key);};
     d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(b.url,b.name);};
     g.appendChild(d);
-    if(!b.cover)setCoverFromCache(b.url,safe);
+
+    // Запускаем загрузку обложки в фоне
+    queueCover(b.url,b.name,key,S.cat.c1,S.cat.c2,id);
   });
   renderLastRead();
 }
 
-async function setCoverFromCache(url,safe){
-  if(S.covers.has(url)){setCv(safe,S.covers.get(url));return;}
+// ⭐ ФОНОВАЯ ЗАГРУЗКА ОБЛОЖЕК
+async function queueCover(url,name,key,c1,c2,subId){
+  // Уже есть в памяти?
+  if(S.covers.has(url)){
+    setCoverImg(key,S.covers.get(url));
+    return;
+  }
+  // Есть в IDB?
   try{
     const c=await idbG('covers',url);
-    if(c){S.covers.set(url,c);setCv(safe,c);return;}
+    if(c){
+      S.covers.set(url,c);
+      setCoverImg(key,c);
+      return;
+    }
   }catch(e){}
-  let blob=S.blobs.get(url);
-  if(!blob){try{blob=await idbG('pdfs',url);if(blob)S.blobs.set(url,blob);}catch(e){}}
-  if(!blob)return;
-  generateCover(url,safe,blob);
+  // В очередь
+  if(S.coverPending.has(url))return;
+  S.coverPending.add(url);
+  S.coverQueue.push({url,name,key,c1,c2,subId});
+  processCoverQueue();
 }
-async function generateCover(url,safe,blob){
+
+async function processCoverQueue(){
+  while(S.coverActive<S.coverMax && S.coverQueue.length){
+    const item=S.coverQueue.shift();
+    S.coverActive++;
+    processCover(item).finally(()=>{
+      S.coverActive--;
+      processCoverQueue();
+    });
+  }
+}
+
+async function processCover(item){
+  // Если ушли с бахша — не грузим
+  if(item.subId!==S.currentSubId){
+    S.coverPending.delete(item.url);
+    return;
+  }
+  // Показать индикатор загрузки на этой обложке
+  const el=$(item.key.replace(/[^a-z0-9]/gi,'_'));
+  const cvEl=document.querySelector(`[data-key="${cssEscape(item.key)}"] .book-cover`)||document.getElementById('cv_'+item.key.replace(/[^a-z0-9]/gi,'_'));
+  if(cvEl)cvEl.classList.add('loading');
   try{
+    // Проверяем — может PDF уже скачана для чтения
+    let blob=S.blobs.get(item.url);
+    if(!blob){
+      try{blob=await idbG('pdfs',item.url);if(blob)S.blobs.set(item.url,blob);}catch(e){}
+    }
+    if(!blob){
+      // Скачиваем PDF тихо (без UI, без прогресса)
+      const r=await fetch(item.url);
+      if(!r.ok)throw new Error('HTTP '+r.status);
+      blob=await r.blob();
+      S.blobs.set(item.url,blob);
+      try{await idbS('pdfs',item.url,blob);}catch(e){}
+    }
+    // Генерируем обложку
     const ab=await blob.arrayBuffer();
     const pdf=await pdfjsLib.getDocument({data:ab,disableAutoFetch:true,disableStream:true}).promise;
     const p=await pdf.getPage(1);
-    const vp=p.getViewport({scale:0.5});
-    const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;
+    const vp=p.getViewport({scale:0.6});
+    const cv=document.createElement('canvas');
+    cv.width=vp.width;cv.height=vp.height;
     await p.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-    const dataUrl=cv.toDataURL('image/jpeg',0.7);
-    S.covers.set(url,dataUrl);
-    try{await idbS('covers',url,dataUrl);}catch(e){}
-    setCv(safe,dataUrl);
+    const dataUrl=cv.toDataURL('image/jpeg',0.75);
+    S.covers.set(item.url,dataUrl);
+    try{await idbS('covers',item.url,dataUrl);}catch(e){}
     try{pdf.destroy();}catch(e){}
-  }catch(e){}
-}
-function setCv(safe,url){
-  const el=$(safe);if(!el)return;
-  el.innerHTML=`<img src="${url}" alt="" loading="lazy">`;
-  el.style.padding='0';
+    if(item.subId===S.currentSubId)setCoverImg(item.key,dataUrl);
+  }catch(e){
+    console.warn('Cover failed:',item.name,e);
+  }finally{
+    S.coverPending.delete(item.url);
+    if(cvEl)cvEl.classList.remove('loading');
+  }
 }
 
-async function ensureBlob(url,name){
+function cssEscape(s){return s.replace(/["\\]/g,'\\$&');}
+
+function setCoverImg(key,dataUrl){
+  const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
+  const el=$(safe);if(!el)return;
+  el.innerHTML=`<img src="${dataUrl}" alt="" loading="lazy"><div class="cv-load"></div>`;
+  el.style.padding='0';
+  el.classList.remove('loading');
+}
+
+// ───── PDF загрузка для чтения (с UI прогрессом) ─────
+async function ensureBlob(url,name,showUI){
   let b=S.blobs.get(url);
   if(b)return b;
   try{b=await idbG('pdfs',url);if(b){S.blobs.set(url,b);return b;}}catch(e){}
-  showDl(name);
+  if(showUI)showDl(name);
   try{
-    b=await fetchPdf(url);
-    hideDl();
+    b=await fetchPdf(url,showUI);
+    if(showUI)hideDl();
     S.blobs.set(url,b);
     try{await idbS('pdfs',url,b);}catch(e){}
     return b;
   }catch(e){
-    hideDl();
+    if(showUI)hideDl();
     if(e.name!=='AbortError')toast('Хатогии шабака');
     return null;
   }
 }
 
-async function fetchPdf(url){
+async function fetchPdf(url,showUI){
   const ctrl=new AbortController();S.abort=ctrl;
   const resp=await fetch(url,{signal:ctrl.signal});
   if(!resp.ok)throw new Error('HTTP '+resp.status);
@@ -549,17 +623,25 @@ async function fetchPdf(url){
   while(true){
     const {done,value}=await rdr.read();if(done)break;
     chunks.push(value);rcv+=value.length;
-    if(total){const p=Math.round(rcv/total*99);$('dlFill').style.width=p+'%';$('dlPct').textContent=p+'%';$('dlStatus').textContent=`${(rcv/1048576).toFixed(1)}/${(total/1048576).toFixed(1)} MB`;}
-    else $('dlPct').textContent=`${(rcv/1048576).toFixed(1)} MB`;
+    if(showUI){
+      if(total){const p=Math.round(rcv/total*99);$('dlFill').style.width=p+'%';$('dlPct').textContent=p+'%';$('dlStatus').textContent=`${(rcv/1048576).toFixed(1)}/${(total/1048576).toFixed(1)} MB`;}
+      else $('dlPct').textContent=`${(rcv/1048576).toFixed(1)} MB`;
+    }
   }
   const ab=new Uint8Array(rcv);let off=0;for(const c of chunks){ab.set(c,off);off+=c.length;}
-  $('dlFill').style.width='100%';$('dlPct').textContent='100%';
+  if(showUI){$('dlFill').style.width='100%';$('dlPct').textContent='100%';}
   return new Blob([ab],{type:'application/pdf'});
 }
 
 async function openBook(url,name,key){
-  const blob=await ensureBlob(url,name);
-  if(!blob)return;
+  // Если PDF уже в IDB/кеше — открываем мгновенно без диалога
+  let blob=S.blobs.get(url);
+  if(!blob){try{blob=await idbG('pdfs',url);if(blob)S.blobs.set(url,blob);}catch(e){}}
+  if(!blob){
+    // Покажем диалог загрузки
+    blob=await ensureBlob(url,name,true);
+    if(!blob)return;
+  }
   $('reader').classList.add('on');
   $('rdrTitle').textContent=name;
   S.key=key||name;S.url=url;S.zoom=1;S.light=false;
@@ -576,10 +658,6 @@ async function openBook(url,name,key){
     await renderPage(S.page);
     saveProgress();
     showFoot();
-    if(!S.covers.has(url)){
-      const safe='cv_'+(key||name).replace(/[^a-z0-9]/gi,'_');
-      generateCover(url,safe,blob);
-    }
   }catch(e){toast('Хатогӣ');closeReader();}
 }
 
@@ -590,10 +668,47 @@ function closeReader(){
   S.key=null;S.url=null;closeFind();renderLastRead();
 }
 
+// ⭐ СКАЧИВАНИЕ С ВЫБОРОМ ПАПКИ
+const IS_ANDROID_APP = typeof KitobAndroid !== 'undefined' && KitobAndroid && KitobAndroid.isAndroidApp;
+
 async function downloadBook(url,name){
-  const blob=await ensureBlob(url,name);
-  if(!blob)return;
   const fn=name+'.pdf';
+  // Сначала получим PDF (с диалогом прогресса если нужно)
+  const blob=await ensureBlob(url,name,true);
+  if(!blob)return;
+
+  // Способ 1: Android приложение — нативный диалог выбора папки (SAF)
+  if(IS_ANDROID_APP){
+    try{
+      const reader=new FileReader();
+      reader.onloadend=function(){
+        const b64=reader.result.split(',')[1];
+        KitobAndroid.saveFile(b64,fn,'application/pdf');
+      };
+      reader.readAsDataURL(blob);
+      return;
+    }catch(e){console.warn('Android save failed',e);}
+  }
+
+  // Способ 2: showSaveFilePicker (Chrome/Edge desktop) — диалог "куда сохранить?"
+  if('showSaveFilePicker' in window){
+    try{
+      const handle=await window.showSaveFilePicker({
+        suggestedName:fn,
+        types:[{description:'PDF',accept:{'application/pdf':['.pdf']}}]
+      });
+      const w=await handle.createWritable();
+      await w.write(blob);
+      await w.close();
+      toast(`✓ «${fn}» сабт шуд`,3000);
+      return;
+    }catch(e){
+      if(e.name==='AbortError')return; // пользователь отменил
+      // Иначе fallback
+    }
+  }
+
+  // Способ 3: обычное скачивание (Safari, старые браузеры)
   const blobUrl=URL.createObjectURL(blob);
   const a=document.createElement('a');
   a.href=blobUrl;a.download=fn;a.style.display='none';
@@ -864,12 +979,13 @@ function doSearch(q){
     const key=sub.id+':'+b.name;
     const d=document.createElement('div');d.className='book';
     const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
-    const coverHtml=b.cover?`<img src="${b.cover}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`;
-    d.innerHTML=`<div class="book-cover" id="${safe}" style="--c1:${c.c1};--c2:${c.c2};${b.cover?'padding:0;':''}">${coverHtml}</div><div class="book-name">${esc(b.name)}</div><div class="book-actions"><button class="book-btn read" data-act="read">📖 Хондан</button><button class="book-btn dl" data-act="dl">⬇</button></div>`;
+    const cached=S.covers.get(b.url);
+    const inner=cached?`<img src="${cached}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`;
+    d.innerHTML=`<div class="book-cover" id="${safe}" style="--c1:${c.c1};--c2:${c.c2};${cached?'padding:0;':''}">${inner}<div class="cv-load"></div></div><div class="book-name">${esc(b.name)}</div><div class="book-actions"><button class="book-btn read" data-act="read">📖 Хондан</button><button class="book-btn dl" data-act="dl">⬇</button></div>`;
+    d.querySelector('.book-cover').onclick=()=>openBook(b.url,b.name,key);
     d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(b.url,b.name,key);};
     d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(b.url,b.name);};
     g.appendChild(d);
-    if(!b.cover)setCoverFromCache(b.url,safe);
   });
 }
 

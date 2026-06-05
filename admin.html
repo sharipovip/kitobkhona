@@ -249,32 +249,51 @@ button,input,textarea,select{font-family:inherit;}
   </div>
 </div>
 
-<!-- ⭐ MANIFEST GENERATOR — главная фишка! -->
+<!-- ⭐ MANIFEST GENERATOR -->
 <div class="modal-bg" id="genModal">
-  <div class="modal">
+  <div class="modal" style="max-width:620px;">
     <div class="modal-header">
       <div class="modal-title">📝 Сохтани manifest.json</div>
       <button class="modal-close" onclick="closeGenModal()">×</button>
     </div>
     <div class="modal-body">
       <p style="font-size:13px;color:var(--text-muted);margin-bottom:14px;line-height:1.6;">
-        Программа за сканирует папку дар GitHub ва manifest.json эҷод хоҳад кард. Шумо онро дар ҳамон папкаи GitHub-ро ҷой мекунед.
+        Программа папкаро дар GitHub скан мекунад ва manifest.json эҷод хоҳад кард. Сонӣ онро дар ҳамон папка ҷой мекунед.
       </p>
 
       <div class="repo-card">
         <div><label>📦 Repo:</label> <code id="genRepo">sharipovip/books</code></div>
         <div><label>🌿 Branch:</label> <code id="genBranch">main</code></div>
+        <button class="btn" style="margin-left:auto;font-size:11px;padding:5px 10px;" onclick="scanAllFolders()" id="scanAllBtn">🔄 Скан кардани ҳамаи папкаҳо</button>
       </div>
 
       <div class="fg">
-        <label>📁 Папкаро интихоб кунед *</label>
-        <select class="fc" id="genFolder"></select>
-        <div class="hint">Программа барои ҳамин папка manifest эҷод хоҳад кард.</div>
+        <label>📁 Аз books.json:</label>
+        <select class="fc" id="genFolder" onchange="onSelChange('genFolder')"></select>
+        <div class="hint">Папкаҳои дар <b>books.json</b> зикршуда</div>
+      </div>
+
+      <div style="text-align:center;margin:8px 0;color:var(--text-muted);font-size:11px;font-weight:700;">— Ё —</div>
+
+      <div class="fg">
+        <label>🗂️ Ҳамаи папкаҳои GitHub (бо паҳлуӣ):</label>
+        <select class="fc" id="genFolderAll" onchange="onSelChange('genFolderAll')">
+          <option value="">— Аввал «Скан кардан» зер кунед —</option>
+        </select>
+        <div class="hint" id="allFoldersHint">Бо як зер ҳамаи папкаҳо (то 3 сатҳи чуқурӣ) пайдо мешаванд</div>
+      </div>
+
+      <div style="text-align:center;margin:8px 0;color:var(--text-muted);font-size:11px;font-weight:700;">— Ё —</div>
+
+      <div class="fg">
+        <label>✍️ Худатон роҳи папкаро нависед:</label>
+        <input class="fc code" id="genFolderManual" placeholder="masalan: sinfi_1 ё papka_kalon/zerpapka" oninput="onManualInput()">
+        <div class="hint">Агар папка холӣ бошад ҳам, manifest бо рӯйхати холӣ эҷод мешавад</div>
       </div>
 
       <div class="gen-card">
-        <div class="gen-title">⚡ Сохтани manifest.json</div>
-        <div class="gen-desc">Программа ҳамаи PDF файлҳои папкаро ёфта, manifest.json мегирад.</div>
+        <div class="gen-title">⚡ Папкаи интихобшуда:</div>
+        <div class="gen-desc"><code id="selectedFolder" style="color:var(--primary);font-size:14px;font-weight:700;">—</code></div>
         <button class="btn btn-warning" id="genBtn" onclick="generateManifest()" style="width:100%;">📝 Сохтани manifest</button>
         <div class="gen-progress" id="genProg"></div>
         <div class="gen-result" id="genResult"></div>
@@ -285,7 +304,7 @@ button,input,textarea,select{font-family:inherit;}
         1. Кнопкаи <b>⬇ Юклаб manifest.json</b> зер мекунед<br>
         2. Файлро дар папкаи <code id="targetFolder">sinfi_1</code> дар GitHub ҷой мекунед<br>
         3. <b>Commit changes</b> зер мекунед<br>
-        4. Тамом! Программа моменталӣ дида истодаст.
+        4. Тамом!
       </div>
 
       <button class="btn btn-success" id="dlMfBtn" style="display:none;width:100%;margin-top:12px;" onclick="downloadManifest()">⬇ Юклаб гирифтани manifest.json</button>
@@ -529,61 +548,144 @@ function delSub(cid,sid){const c=A.data.categories.find(x=>x.id===cid);if(!c)ret
   confirm2('Хориҷ кардан?',`Бахши <b>«${esc(s.name)}»</b> хориҷ мешавад.`,()=>{c.subs=c.subs.filter(x=>x.id!==sid);markMod();toast('✓ Хориҷ','success');});
 }
 
-// ⭐ MANIFEST GENERATOR — главное!
+// ⭐ MANIFEST GENERATOR
 function openGenAll(){
-  // Заполняем select со всеми папками
   const sel=document.getElementById('genFolder');
   sel.innerHTML='';
   const folders=new Set();
   A.data.categories.forEach(c=>c.subs.forEach(s=>{if(s.folder)folders.add(s.folder);}));
   if(!folders.size){
-    sel.innerHTML='<option value="">Папкаҳо нестанд — аввал бахш илова кунед</option>';
+    sel.innerHTML='<option value="">— Папкаҳо нестанд —</option>';
   }else{
+    const o0=document.createElement('option');o0.value='';o0.textContent='— Интихоб кунед —';sel.appendChild(o0);
     [...folders].sort().forEach(f=>{
       const o=document.createElement('option');o.value=f;o.textContent=f;sel.appendChild(o);
     });
   }
+  document.getElementById('genFolderAll').innerHTML='<option value="">— Аввал «Скан кардан» зер кунед —</option>';
+  document.getElementById('genFolderManual').value='';
   document.getElementById('genResult').classList.remove('on');
   document.getElementById('genResult').textContent='';
   document.getElementById('genProg').classList.remove('on');
+  document.getElementById('genProg').textContent='';
   document.getElementById('dlMfBtn').style.display='none';
   A.lastManifest=null;A.lastFolder=null;
-  document.getElementById('targetFolder').textContent=sel.value||'sinfi_1';
+  updateSelectedFolder();
   document.getElementById('genModal').classList.add('on');
 }
 function closeGenModal(){document.getElementById('genModal').classList.remove('on');}
 
+// Получает текущий выбранный путь (приоритет: ручной → genFolderAll → genFolder)
+function getCurrentFolder(){
+  const manual=document.getElementById('genFolderManual').value.trim();
+  if(manual)return manual.replace(/^\/+|\/+$/g,'');
+  const all=document.getElementById('genFolderAll').value;
+  if(all)return all;
+  return document.getElementById('genFolder').value;
+}
+function updateSelectedFolder(){
+  const f=getCurrentFolder()||'—';
+  document.getElementById('selectedFolder').textContent=f;
+  document.getElementById('targetFolder').textContent=f;
+}
+function onSelChange(which){
+  // При выборе из одного селекта — очистим остальные
+  if(which==='genFolder'){
+    document.getElementById('genFolderAll').value='';
+    document.getElementById('genFolderManual').value='';
+  }else if(which==='genFolderAll'){
+    document.getElementById('genFolder').value='';
+    document.getElementById('genFolderManual').value='';
+  }
+  updateSelectedFolder();
+}
+function onManualInput(){
+  if(document.getElementById('genFolderManual').value.trim()){
+    document.getElementById('genFolder').value='';
+    document.getElementById('genFolderAll').value='';
+  }
+  updateSelectedFolder();
+}
+
+// ⭐ Рекурсивный скан всех папок через Git Trees API (1 запрос на всё дерево!)
+async function scanAllFolders(){
+  const btn=document.getElementById('scanAllBtn');
+  const hint=document.getElementById('allFoldersHint');
+  const sel=document.getElementById('genFolderAll');
+  btn.disabled=true;btn.textContent='⏳ Скан...';
+  hint.textContent='Скан кардани ҳамаи папкаҳо...';
+  try{
+    // Git Trees API — recursive=1 даёт всё дерево за 1 запрос
+    const url=`https://api.github.com/repos/${A.data.repo}/git/trees/${A.data.branch}?recursive=1`;
+    const r=await fetch(url);
+    if(!r.ok){
+      if(r.status===403)throw new Error('GitHub API limit. 1 соат сабр кунед.');
+      if(r.status===404)throw new Error('Repo ёфт нашуд: '+A.data.repo);
+      throw new Error('HTTP '+r.status);
+    }
+    const data=await r.json();
+    if(!data.tree)throw new Error('Бад ҷавоб');
+    // Все папки (типа "tree")
+    const folders=data.tree
+      .filter(x=>x.type==='tree')
+      .map(x=>x.path)
+      .sort();
+    sel.innerHTML='';
+    const o0=document.createElement('option');o0.value='';o0.textContent=`— Интихоб кунед (${folders.length} папка) —`;sel.appendChild(o0);
+    folders.forEach(f=>{
+      const o=document.createElement('option');o.value=f;
+      // Отступ для вложенных
+      const depth=f.split('/').length-1;
+      o.textContent='  '.repeat(depth)+(depth?'└─ ':'')+f.split('/').pop()+(depth?` (${f})`:'');
+      sel.appendChild(o);
+    });
+    hint.textContent=`✓ ${folders.length} папка ёфт шуд${data.truncated?' (рӯйхат буридашуда)':''}`;
+    toast(`✓ ${folders.length} папка ёфт шуд`,'success');
+  }catch(e){
+    hint.textContent='❌ '+e.message;
+    toast(e.message,'error');
+  }finally{
+    btn.disabled=false;btn.textContent='🔄 Скан кардани ҳамаи папкаҳо';
+  }
+}
+
 async function generateManifest(){
-  const folder=document.getElementById('genFolder').value;
-  if(!folder){toast('Папкаро интихоб кунед','error');return;}
+  const folder=getCurrentFolder();
+  if(!folder){toast('Папкаро интихоб ё нависед','error');return;}
   const btn=document.getElementById('genBtn');
   const prog=document.getElementById('genProg');
   const result=document.getElementById('genResult');
   const dlBtn=document.getElementById('dlMfBtn');
   btn.disabled=true;prog.classList.add('on');result.classList.remove('on');dlBtn.style.display='none';
-  prog.textContent='🔍 Сканировать папкаи /'+folder+'...';
+  prog.textContent='🔍 Скан кардани /'+folder+'...';
   document.getElementById('targetFolder').textContent=folder;
 
   try{
-    const apiUrl=`https://api.github.com/repos/${A.data.repo}/contents/${encodeURIComponent(folder)}?ref=${A.data.branch}`;
+    const apiUrl=`https://api.github.com/repos/${A.data.repo}/contents/${folder.split('/').map(encodeURIComponent).join('/')}?ref=${A.data.branch}`;
     const r=await fetch(apiUrl);
+    let pdfs=[];
+    let folderExists=true;
+
     if(!r.ok){
-      if(r.status===404)throw new Error('Папка ёфт нашуд');
-      if(r.status===403)throw new Error('GitHub API limit. Сабр кунед.');
-      throw new Error('HTTP '+r.status);
+      if(r.status===404){
+        // Папка не существует — это НЕ ошибка, создаём пустой manifest
+        folderExists=false;
+        prog.textContent='⚠️ Папка дар GitHub нест. Manifest бо рӯйхати холӣ эҷод мешавад.';
+      }else if(r.status===403){
+        throw new Error('GitHub API limit. 1 соат сабр кунед.');
+      }else{
+        throw new Error('HTTP '+r.status);
+      }
+    }else{
+      const data=await r.json();
+      if(!Array.isArray(data)){
+        // Если папка содержит только подпапки — это всё равно массив; если это файл — ошибка
+        throw new Error('Ин папка нест, файл аст');
+      }
+      pdfs=data
+        .filter(x=>x.type==='file'&&x.name.toLowerCase().endsWith('.pdf'))
+        .sort((a,b)=>a.name.localeCompare(b.name));
     }
-    const data=await r.json();
-    const pdfs=data
-      .filter(x=>x.type==='file'&&x.name.toLowerCase().endsWith('.pdf'))
-      .sort((a,b)=>a.name.localeCompare(b.name));
-
-    if(!pdfs.length){
-      prog.textContent='⚠️ PDF файлҳо ёфт нашуданд';
-      btn.disabled=false;
-      return;
-    }
-
-    prog.textContent=`✓ Ёфт шуд: ${pdfs.length} PDF`;
 
     const manifest={
       version:1,
@@ -598,10 +700,19 @@ async function generateManifest(){
     A.lastManifest=manifest;
     A.lastFolder=folder;
 
-    let preview=`✓ ${pdfs.length} китоб ёфт шуд:\n\n`;
-    pdfs.forEach((p,i)=>{
-      preview+=`${i+1}. ${p.name.replace(/\.pdf$/i,'')}\n   (${(p.size/1024).toFixed(0)} KB)\n`;
-    });
+    let preview;
+    if(!pdfs.length){
+      if(folderExists){
+        prog.textContent=`⚠️ Папка холӣ аст (0 PDF). Manifest бо рӯйхати холӣ эҷод шуд.`;
+      }
+      preview=`📂 Папка: ${folder}\n📄 Китоб: 0\n\nManifest холӣ эҷод шуд. Шумо метавонед:\n• Аввал PDF файлҳоро дар папка ҷой кунед, баъд аз нав manifest созед\n• Ё manifest холиро ҳозир юклаб гирифта, дар папка ҷой кунед`;
+    }else{
+      prog.textContent=`✓ Ёфт шуд: ${pdfs.length} PDF`;
+      preview=`✓ ${pdfs.length} китоб ёфт шуд:\n\n`;
+      pdfs.forEach((p,i)=>{
+        preview+=`${i+1}. ${p.name.replace(/\.pdf$/i,'')}\n   (${(p.size/1024).toFixed(0)} KB)\n`;
+      });
+    }
     result.textContent=preview;
     result.classList.add('on');
     dlBtn.style.display='block';
