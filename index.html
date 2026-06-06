@@ -123,17 +123,21 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 .bg-prog.on::after{content:'';position:absolute;left:0;top:0;bottom:0;width:30%;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:bgl 1.2s linear infinite;}
 @keyframes bgl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
 
-.dl-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;}
+.dl-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;}
 .dl-overlay.on{display:flex;}
-.dl-modal{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:340px;padding:22px;text-align:center;}
-.dl-icon{font-size:42px;margin-bottom:8px;}
-.dl-title{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text);}
-.dl-name{font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.4;}
-.dl-bar{width:100%;height:8px;background:var(--bg-2);border-radius:5px;overflow:hidden;border:1px solid var(--border);}
-.dl-fill{height:100%;background:linear-gradient(90deg,var(--primary),#60a5fa);border-radius:5px;width:0;transition:width .2s;}
-.dl-pct{font-size:13px;font-weight:700;color:var(--primary);margin-top:8px;}
-.dl-status{font-size:11px;color:var(--text-muted);margin-top:3px;}
-.dl-cancel{margin-top:14px;padding:9px 18px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:8px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;}
+.dl-modal{background:var(--card);border:1px solid var(--border);border-radius:18px;width:100%;max-width:320px;padding:24px 22px;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,.5);}
+.dl-circle{position:relative;width:120px;height:120px;margin:0 auto 14px;}
+.dl-circle svg{transform:rotate(-90deg);width:100%;height:100%;}
+.dl-circle .bg-ring{fill:none;stroke:var(--bg-2);stroke-width:8;}
+.dl-circle .fg-ring{fill:none;stroke:url(#dlGrad);stroke-width:8;stroke-linecap:round;stroke-dasharray:339.292;stroke-dashoffset:339.292;transition:stroke-dashoffset .3s ease;}
+.dl-circle .dl-pct-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--primary);}
+.dl-circle.indeterm .fg-ring{stroke-dasharray:60 280;animation:spin 1.2s linear infinite;}
+@keyframes spin{to{stroke-dashoffset:-339.292;}}
+.dl-title{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text);}
+.dl-name{font-size:12px;color:var(--text-muted);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.dl-status{font-size:11px;color:var(--text-muted);margin-top:2px;min-height:14px;}
+.dl-cancel{margin-top:16px;padding:10px 22px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;width:100%;}
+.dl-cancel:active{background:var(--border);}
 
 .reader{position:fixed;inset:0;z-index:100;background:#0a0a0a;display:none;flex-direction:column;}
 .reader.on{display:flex;}
@@ -232,11 +236,21 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 
 <div class="dl-overlay" id="dlOverlay">
   <div class="dl-modal">
-    <div class="dl-icon">📥</div>
-    <div class="dl-title" id="dlTitle">Бор кардан</div>
+    <div class="dl-circle" id="dlCircle">
+      <svg viewBox="0 0 120 120">
+        <defs>
+          <linearGradient id="dlGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#2563eb"/>
+            <stop offset="100%" stop-color="#60a5fa"/>
+          </linearGradient>
+        </defs>
+        <circle class="bg-ring" cx="60" cy="60" r="54"/>
+        <circle class="fg-ring" id="dlFgRing" cx="60" cy="60" r="54"/>
+      </svg>
+      <div class="dl-pct-c" id="dlPct">0%</div>
+    </div>
+    <div class="dl-title" id="dlTitle">Бор кардан...</div>
     <div class="dl-name" id="dlName">—</div>
-    <div class="dl-bar"><div class="dl-fill" id="dlFill"></div></div>
-    <div class="dl-pct" id="dlPct">0%</div>
     <div class="dl-status" id="dlStatus">Пайвастшавӣ...</div>
     <button class="dl-cancel" onclick="cancelDl()">Бекор</button>
   </div>
@@ -624,23 +638,31 @@ async function processCover(item){
     S.coverPending.delete(item.url);
     return;
   }
-  // Показать индикатор загрузки на этой обложке
-  const el=$(item.key.replace(/[^a-z0-9]/gi,'_'));
-  const cvEl=document.querySelector(`[data-key="${cssEscape(item.key)}"] .book-cover`)||document.getElementById('cv_'+item.key.replace(/[^a-z0-9]/gi,'_'));
+  const cvEl=document.getElementById('cv_'+item.key.replace(/[^a-z0-9]/gi,'_'));
   if(cvEl)cvEl.classList.add('loading');
   try{
     // Проверяем — может PDF уже скачана для чтения
     let blob=S.blobs.get(item.url);
+    if(blob&&!(await isValidPdfBlob(blob))){blob=null;S.blobs.delete(item.url);}
     if(!blob){
-      try{blob=await idbG('pdfs',item.url);if(blob)S.blobs.set(item.url,blob);}catch(e){}
+      try{
+        blob=await idbG('pdfs',item.url);
+        if(blob&&!(await isValidPdfBlob(blob))){
+          blob=null;
+          // Удалим битый
+          try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(item.url);}catch(e){}
+        }
+        if(blob)S.blobs.set(item.url,blob);
+      }catch(e){}
     }
     if(!blob){
-      // Скачиваем PDF тихо (без UI, без прогресса)
-      const r=await fetch(item.url);
+      // Скачиваем PDF тихо (без UI)
+      const r=await fetch(item.url,{cache:'no-store'});
       if(!r.ok)throw new Error('HTTP '+r.status);
       blob=await r.blob();
+      if(!(await isValidPdfBlob(blob)))throw new Error('Invalid PDF');
       S.blobs.set(item.url,blob);
-      try{await idbS('pdfs',item.url,blob);}catch(e){}
+      try{await idbS('pdfs',item.url,blob);}catch(e){console.warn('IDB save cover-pdf failed',e);}
     }
     // Генерируем обложку
     const ab=await blob.arrayBuffer();
@@ -673,53 +695,111 @@ function setCoverImg(key,dataUrl){
   el.classList.remove('loading');
 }
 
-// ───── PDF загрузка для чтения (с UI прогрессом) ─────
+// ───── PDF загрузка для чтения с валидацией ─────
+// Проверка что Blob действительно PDF (минимум 1KB и начинается с %PDF)
+async function isValidPdfBlob(blob){
+  if(!blob||blob.size<1024)return false;
+  try{
+    const head=await blob.slice(0,5).text();
+    return head.startsWith('%PDF-');
+  }catch(e){return false;}
+}
+
 async function ensureBlob(url,name,showUI){
+  // 1) Попробуем из памяти
   let b=S.blobs.get(url);
-  if(b)return b;
-  try{b=await idbG('pdfs',url);if(b){S.blobs.set(url,b);return b;}}catch(e){}
+  if(b&&await isValidPdfBlob(b))return b;
+  if(b)S.blobs.delete(url); // битый — удаляем
+
+  // 2) Попробуем из IndexedDB
+  try{
+    b=await idbG('pdfs',url);
+    if(b&&await isValidPdfBlob(b)){
+      S.blobs.set(url,b);
+      return b;
+    }
+    if(b){
+      // Битый кеш — удалим
+      try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(url);}catch(e){}
+    }
+  }catch(e){}
+
+  // 3) Скачиваем заново
   if(showUI)showDl(name);
   try{
     b=await fetchPdf(url,showUI);
+    if(!(await isValidPdfBlob(b))){
+      if(showUI)hideDl();
+      toast('PDF файли вайроншуда',3000);
+      return null;
+    }
     if(showUI)hideDl();
     S.blobs.set(url,b);
-    try{await idbS('pdfs',url,b);}catch(e){}
+    try{await idbS('pdfs',url,b);}catch(e){console.warn('IDB save failed',e);}
     return b;
   }catch(e){
     if(showUI)hideDl();
-    if(e.name!=='AbortError')toast('Хатогии шабака');
+    if(e.name!=='AbortError'){
+      toast('Хатогии шабака: '+(e.message||''),3000);
+    }
     return null;
   }
 }
 
 async function fetchPdf(url,showUI){
   const ctrl=new AbortController();S.abort=ctrl;
-  const resp=await fetch(url,{signal:ctrl.signal});
+  const resp=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
   if(!resp.ok)throw new Error('HTTP '+resp.status);
   const total=+resp.headers.get('Content-Length')||0;
   const rdr=resp.body.getReader();const chunks=[];let rcv=0;
+
+  if(showUI){
+    if(total){
+      setDlProgress(0);
+      $('dlCircle').classList.remove('indeterm');
+    }else{
+      $('dlCircle').classList.add('indeterm');
+      $('dlPct').textContent='⏳';
+    }
+  }
+
   while(true){
     const {done,value}=await rdr.read();if(done)break;
     chunks.push(value);rcv+=value.length;
     if(showUI){
-      if(total){const p=Math.round(rcv/total*99);$('dlFill').style.width=p+'%';$('dlPct').textContent=p+'%';$('dlStatus').textContent=`${(rcv/1048576).toFixed(1)}/${(total/1048576).toFixed(1)} MB`;}
-      else $('dlPct').textContent=`${(rcv/1048576).toFixed(1)} MB`;
+      if(total){
+        const p=Math.round(rcv/total*100);
+        setDlProgress(p);
+        $('dlStatus').textContent=`${(rcv/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;
+      }else{
+        $('dlStatus').textContent=`${(rcv/1048576).toFixed(1)} MB`;
+      }
     }
   }
   const ab=new Uint8Array(rcv);let off=0;for(const c of chunks){ab.set(c,off);off+=c.length;}
-  if(showUI){$('dlFill').style.width='100%';$('dlPct').textContent='100%';}
+  if(showUI){
+    $('dlCircle').classList.remove('indeterm');
+    setDlProgress(100);
+    $('dlStatus').textContent='Тайёр';
+  }
   return new Blob([ab],{type:'application/pdf'});
 }
 
-async function openBook(url,name,key){
-  // Если PDF уже в IDB/кеше — открываем мгновенно без диалога
-  let blob=S.blobs.get(url);
-  if(!blob){try{blob=await idbG('pdfs',url);if(blob)S.blobs.set(url,blob);}catch(e){}}
-  if(!blob){
-    // Покажем диалог загрузки
-    blob=await ensureBlob(url,name,true);
-    if(!blob)return;
+// Установка прогресса круга (0-100)
+function setDlProgress(pct){
+  const CIRC=2*Math.PI*54; // 339.292
+  const ring=$('dlFgRing');
+  if(ring){
+    const off=CIRC-(pct/100)*CIRC;
+    ring.style.strokeDashoffset=off;
   }
+  $('dlPct').textContent=pct+'%';
+}
+
+async function openBook(url,name,key){
+  // ВСЕГДА через ensureBlob с валидацией (показывает диалог если нужно качать)
+  const blob=await ensureBlob(url,name,true);
+  if(!blob)return;
   $('reader').classList.add('on');
   $('rdrTitle').textContent=name;
   S.key=key||name;S.url=url;S.zoom=1;S.light=false;
@@ -736,7 +816,15 @@ async function openBook(url,name,key){
     await renderPage(S.page);
     saveProgress();
     showFoot();
-  }catch(e){toast('Хатогӣ');closeReader();}
+    // Если ещё нет обложки — пусть фон-генератор её сделает (PDF уже в памяти)
+    if(!S.covers.has(url)){
+      queueCover(url,name,S.key,S.cat?.c1||'#2563eb',S.cat?.c2||'#3b82f6',S.currentSubId);
+    }
+  }catch(e){
+    console.error('Open book error:',e);
+    toast('Хатогии кушодан: '+(e.message||''),3000);
+    closeReader();
+  }
 }
 
 function closeReader(){
@@ -1067,9 +1155,26 @@ function doSearch(q){
   });
 }
 
-function showDl(name){$('dlTitle').textContent='Бор кардан';$('dlName').textContent=name;$('dlFill').style.width='0';$('dlPct').textContent='0%';$('dlStatus').textContent='Пайвастшавӣ...';$('dlOverlay').classList.add('on');}
-function hideDl(){$('dlOverlay').classList.remove('on');}
-function cancelDl(){if(S.abort)try{S.abort.abort();}catch(e){}hideDl();toast('Бекор шуд');}
+function showDl(name){
+  $('dlTitle').textContent='Бор кардани китоб...';
+  $('dlName').textContent=name;
+  $('dlStatus').textContent='Пайвастшавӣ...';
+  $('dlCircle').classList.add('indeterm');
+  $('dlPct').textContent='⏳';
+  // Сброс
+  const ring=$('dlFgRing');
+  if(ring)ring.style.strokeDashoffset=339.292;
+  $('dlOverlay').classList.add('on');
+}
+function hideDl(){
+  $('dlOverlay').classList.remove('on');
+  $('dlCircle').classList.remove('indeterm');
+}
+function cancelDl(){
+  if(S.abort)try{S.abort.abort();}catch(e){}
+  hideDl();
+  toast('Бекор шуд');
+}
 
 (async()=>{
   if(!await loadBooksJson())return;
