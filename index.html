@@ -123,21 +123,20 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
 .bg-prog.on::after{content:'';position:absolute;left:0;top:0;bottom:0;width:30%;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:bgl 1.2s linear infinite;}
 @keyframes bgl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
 
-.dl-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.75);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;}
-.dl-overlay.on{display:flex;}
-.dl-modal{background:var(--card);border:1px solid var(--border);border-radius:18px;width:100%;max-width:320px;padding:24px 22px;text-align:center;box-shadow:0 25px 50px -12px rgba(0,0,0,.5);}
-.dl-circle{position:relative;width:120px;height:120px;margin:0 auto 14px;}
-.dl-circle svg{transform:rotate(-90deg);width:100%;height:100%;}
-.dl-circle .bg-ring{fill:none;stroke:var(--bg-2);stroke-width:8;}
-.dl-circle .fg-ring{fill:none;stroke:url(#dlGrad);stroke-width:8;stroke-linecap:round;stroke-dasharray:339.292;stroke-dashoffset:339.292;transition:stroke-dashoffset .3s ease;}
-.dl-circle .dl-pct-c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:var(--primary);}
-.dl-circle.indeterm .fg-ring{stroke-dasharray:60 280;animation:spin 1.2s linear infinite;}
-@keyframes spin{to{stroke-dashoffset:-339.292;}}
-.dl-title{font-size:15px;font-weight:700;margin-bottom:4px;color:var(--text);}
-.dl-name{font-size:12px;color:var(--text-muted);margin-bottom:8px;line-height:1.4;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
-.dl-status{font-size:11px;color:var(--text-muted);margin-top:2px;min-height:14px;}
-.dl-cancel{margin-top:16px;padding:10px 22px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:9px;cursor:pointer;font-family:inherit;font-size:13px;font-weight:600;width:100%;}
-.dl-cancel:active{background:var(--border);}
+/* ⭐ Круговой прогресс прямо на обложке */
+.book-cover.downloading{position:relative;}
+.book-cover.downloading::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:2;border-radius:6px;}
+.dl-ring-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;}
+.dl-ring{width:54px;height:54px;position:relative;}
+.dl-ring svg{transform:rotate(-90deg);width:100%;height:100%;}
+.dl-ring .bg-ring{fill:none;stroke:rgba(255,255,255,.18);stroke-width:5;}
+.dl-ring .fg-ring{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-dasharray:138.23;stroke-dashoffset:138.23;transition:stroke-dashoffset .25s ease;}
+.dl-ring .dl-pct-mini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
+.dl-ring.indeterm .fg-ring{stroke-dasharray:30 110;animation:spinmini 1s linear infinite;}
+@keyframes spinmini{to{stroke-dashoffset:-138.23;}}
+.dl-mb{font-size:9px;color:#fff;margin-top:4px;text-shadow:0 1px 2px rgba(0,0,0,.6);font-weight:600;}
+.dl-cancel-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:13px;cursor:pointer;z-index:4;pointer-events:auto;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.dl-cancel-x:active{background:rgba(0,0,0,.8);}
 
 .reader{position:fixed;inset:0;z-index:100;background:#0a0a0a;display:none;flex-direction:column;}
 .reader.on{display:flex;}
@@ -234,27 +233,7 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
   </div>
 </div>
 
-<div class="dl-overlay" id="dlOverlay">
-  <div class="dl-modal">
-    <div class="dl-circle" id="dlCircle">
-      <svg viewBox="0 0 120 120">
-        <defs>
-          <linearGradient id="dlGrad" x1="0%" y1="0%" x2="100%" y2="100%">
-            <stop offset="0%" stop-color="#2563eb"/>
-            <stop offset="100%" stop-color="#60a5fa"/>
-          </linearGradient>
-        </defs>
-        <circle class="bg-ring" cx="60" cy="60" r="54"/>
-        <circle class="fg-ring" id="dlFgRing" cx="60" cy="60" r="54"/>
-      </svg>
-      <div class="dl-pct-c" id="dlPct">0%</div>
-    </div>
-    <div class="dl-title" id="dlTitle">Бор кардан...</div>
-    <div class="dl-name" id="dlName">—</div>
-    <div class="dl-status" id="dlStatus">Пайвастшавӣ...</div>
-    <button class="dl-cancel" onclick="cancelDl()">Бекор</button>
-  </div>
-</div>
+
 
 <div class="reader" id="reader">
   <div class="reader-hdr">
@@ -696,22 +675,89 @@ function setCoverImg(key,dataUrl){
 }
 
 // ───── PDF загрузка для чтения с валидацией ─────
-// Проверка что Blob действительно PDF (минимум 1KB и начинается с %PDF)
+// Проверка что Blob действительно PDF (минимум 1KB и начинается с %PDF магических байтов 0x25 0x50 0x44 0x46)
 async function isValidPdfBlob(blob){
   if(!blob||blob.size<1024)return false;
   try{
-    const head=await blob.slice(0,5).text();
-    return head.startsWith('%PDF-');
+    const buf=await blob.slice(0,5).arrayBuffer();
+    const a=new Uint8Array(buf);
+    // %PDF = 0x25 0x50 0x44 0x46
+    return a[0]===0x25 && a[1]===0x50 && a[2]===0x44 && a[3]===0x46;
   }catch(e){return false;}
 }
 
-async function ensureBlob(url,name,showUI){
-  // 1) Попробуем из памяти
+// ⭐ Отслеживание активных загрузок (для прогресса на обложке)
+// url -> {ctrl: AbortController, promise: Promise<Blob>, cover: HTMLElement, autoOpen: boolean}
+const DOWNLOADS=new Map();
+
+// ⭐ Показывает круг загрузки прямо на обложке
+function showCoverProgress(coverEl,name,onCancel){
+  if(!coverEl)return;
+  coverEl.classList.add('downloading');
+  // Удалим старый ring если был
+  coverEl.querySelectorAll('.dl-ring-wrap,.dl-cancel-x').forEach(x=>x.remove());
+  const wrap=document.createElement('div');
+  wrap.className='dl-ring-wrap';
+  wrap.innerHTML=`
+    <div class="dl-ring indeterm">
+      <svg viewBox="0 0 50 50">
+        <circle class="bg-ring" cx="25" cy="25" r="22"/>
+        <circle class="fg-ring" cx="25" cy="25" r="22"/>
+      </svg>
+      <div class="dl-pct-mini">⏳</div>
+    </div>
+    <div class="dl-mb">0 MB</div>
+  `;
+  coverEl.appendChild(wrap);
+  const x=document.createElement('button');
+  x.className='dl-cancel-x';
+  x.innerHTML='✕';
+  x.onclick=(e)=>{e.stopPropagation();if(onCancel)onCancel();};
+  coverEl.appendChild(x);
+}
+function updateCoverProgress(coverEl,pct,rcv,total){
+  if(!coverEl)return;
+  const ring=coverEl.querySelector('.dl-ring');
+  const fg=coverEl.querySelector('.dl-ring .fg-ring');
+  const pctEl=coverEl.querySelector('.dl-pct-mini');
+  const mb=coverEl.querySelector('.dl-mb');
+  if(!ring)return;
+  if(total>0){
+    ring.classList.remove('indeterm');
+    const CIRC=2*Math.PI*22; // 138.23
+    fg.style.strokeDashoffset=CIRC-(pct/100)*CIRC;
+    pctEl.textContent=pct+'%';
+    mb.textContent=`${(rcv/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;
+  }else{
+    pctEl.textContent='⏳';
+    mb.textContent=`${(rcv/1048576).toFixed(1)} MB`;
+  }
+}
+function hideCoverProgress(coverEl){
+  if(!coverEl)return;
+  coverEl.classList.remove('downloading');
+  coverEl.querySelectorAll('.dl-ring-wrap,.dl-cancel-x').forEach(x=>x.remove());
+}
+
+// Находит DOM элемент обложки по url
+function findCoverEl(url){
+  // Идём по всем книгам в текущем рендере
+  if(!S.sub)return null;
+  const books=S.books.get(S.sub.id);
+  if(!books)return null;
+  const b=books.find(x=>x.url===url);
+  if(!b)return null;
+  const key=S.sub.id+':'+b.name;
+  return document.getElementById('cv_'+key.replace(/[^a-z0-9]/gi,'_'));
+}
+
+async function ensureBlob(url,name,showProgress,autoOpen){
+  // 1) Память
   let b=S.blobs.get(url);
   if(b&&await isValidPdfBlob(b))return b;
-  if(b)S.blobs.delete(url); // битый — удаляем
+  if(b)S.blobs.delete(url);
 
-  // 2) Попробуем из IndexedDB
+  // 2) IndexedDB
   try{
     b=await idbG('pdfs',url);
     if(b&&await isValidPdfBlob(b)){
@@ -719,86 +765,90 @@ async function ensureBlob(url,name,showUI){
       return b;
     }
     if(b){
-      // Битый кеш — удалим
       try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(url);}catch(e){}
     }
   }catch(e){}
 
-  // 3) Скачиваем заново
-  if(showUI)showDl(name);
-  try{
-    b=await fetchPdf(url,showUI);
-    if(!(await isValidPdfBlob(b))){
-      if(showUI)hideDl();
-      toast('PDF файли вайроншуда',3000);
+  // 3) Идёт ли уже загрузка этого url?
+  const existing=DOWNLOADS.get(url);
+  if(existing){
+    if(autoOpen)existing.autoOpen=true;
+    return existing.promise;
+  }
+
+  // 4) Стартуем загрузку
+  return startDownload(url,name,showProgress,autoOpen);
+}
+
+function startDownload(url,name,showProgress,autoOpen){
+  const ctrl=new AbortController();
+  const coverEl=showProgress?findCoverEl(url):null;
+
+  const cancel=()=>{
+    try{ctrl.abort();}catch(e){}
+    if(coverEl)hideCoverProgress(coverEl);
+    DOWNLOADS.delete(url);
+    toast('Бекор шуд',1500);
+  };
+
+  if(coverEl)showCoverProgress(coverEl,name,cancel);
+
+  const promise=(async()=>{
+    try{
+      const resp=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
+      if(!resp.ok)throw new Error('HTTP '+resp.status);
+      const total=+resp.headers.get('Content-Length')||0;
+      const rdr=resp.body.getReader();const chunks=[];let rcv=0;
+      while(true){
+        const {done,value}=await rdr.read();if(done)break;
+        chunks.push(value);rcv+=value.length;
+        if(coverEl){
+          const p=total?Math.round(rcv/total*100):0;
+          updateCoverProgress(coverEl,p,rcv,total);
+        }
+      }
+      const arr=new Uint8Array(rcv);let off=0;for(const c of chunks){arr.set(c,off);off+=c.length;}
+      const blob=new Blob([arr],{type:'application/pdf'});
+
+      if(!(await isValidPdfBlob(blob))){
+        if(coverEl)hideCoverProgress(coverEl);
+        DOWNLOADS.delete(url);
+        toast('PDF файли вайроншуда',3000);
+        return null;
+      }
+
+      S.blobs.set(url,blob);
+      try{await idbS('pdfs',url,blob);}catch(e){console.warn('IDB save failed',e);}
+
+      if(coverEl)hideCoverProgress(coverEl);
+      const dl=DOWNLOADS.get(url);
+      DOWNLOADS.delete(url);
+
+      // Если запросили автооткрытие книги после загрузки
+      if(dl&&dl.autoOpen){
+        openBookFromBlob(url,name,dl.key,blob);
+      }
+      // Если обложки нет — сгенерим
+      if(!S.covers.has(url)&&S.currentSubId){
+        queueCover(url,name,(dl?.key)||name,S.cat?.c1||'#2563eb',S.cat?.c2||'#3b82f6',S.currentSubId);
+      }
+      return blob;
+    }catch(e){
+      if(coverEl)hideCoverProgress(coverEl);
+      DOWNLOADS.delete(url);
+      if(e.name==='AbortError')return null;
+      console.warn('Download failed',e);
+      toast('Хатогии шабака: '+(e.message||''),3000);
       return null;
     }
-    if(showUI)hideDl();
-    S.blobs.set(url,b);
-    try{await idbS('pdfs',url,b);}catch(e){console.warn('IDB save failed',e);}
-    return b;
-  }catch(e){
-    if(showUI)hideDl();
-    if(e.name!=='AbortError'){
-      toast('Хатогии шабака: '+(e.message||''),3000);
-    }
-    return null;
-  }
+  })();
+
+  DOWNLOADS.set(url,{ctrl,promise,cover:coverEl,autoOpen:autoOpen===true,key:null});
+  return promise;
 }
 
-async function fetchPdf(url,showUI){
-  const ctrl=new AbortController();S.abort=ctrl;
-  const resp=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
-  if(!resp.ok)throw new Error('HTTP '+resp.status);
-  const total=+resp.headers.get('Content-Length')||0;
-  const rdr=resp.body.getReader();const chunks=[];let rcv=0;
-
-  if(showUI){
-    if(total){
-      setDlProgress(0);
-      $('dlCircle').classList.remove('indeterm');
-    }else{
-      $('dlCircle').classList.add('indeterm');
-      $('dlPct').textContent='⏳';
-    }
-  }
-
-  while(true){
-    const {done,value}=await rdr.read();if(done)break;
-    chunks.push(value);rcv+=value.length;
-    if(showUI){
-      if(total){
-        const p=Math.round(rcv/total*100);
-        setDlProgress(p);
-        $('dlStatus').textContent=`${(rcv/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;
-      }else{
-        $('dlStatus').textContent=`${(rcv/1048576).toFixed(1)} MB`;
-      }
-    }
-  }
-  const ab=new Uint8Array(rcv);let off=0;for(const c of chunks){ab.set(c,off);off+=c.length;}
-  if(showUI){
-    $('dlCircle').classList.remove('indeterm');
-    setDlProgress(100);
-    $('dlStatus').textContent='Тайёр';
-  }
-  return new Blob([ab],{type:'application/pdf'});
-}
-
-// Установка прогресса круга (0-100)
-function setDlProgress(pct){
-  const CIRC=2*Math.PI*54; // 339.292
-  const ring=$('dlFgRing');
-  if(ring){
-    const off=CIRC-(pct/100)*CIRC;
-    ring.style.strokeDashoffset=off;
-  }
-  $('dlPct').textContent=pct+'%';
-}
-
-async function openBook(url,name,key){
-  // ВСЕГДА через ensureBlob с валидацией (показывает диалог если нужно качать)
-  const blob=await ensureBlob(url,name,true);
+// Открывает книгу из готового blob (без диалога)
+async function openBookFromBlob(url,name,key,blob){
   if(!blob)return;
   $('reader').classList.add('on');
   $('rdrTitle').textContent=name;
@@ -816,7 +866,6 @@ async function openBook(url,name,key){
     await renderPage(S.page);
     saveProgress();
     showFoot();
-    // Если ещё нет обложки — пусть фон-генератор её сделает (PDF уже в памяти)
     if(!S.covers.has(url)){
       queueCover(url,name,S.key,S.cat?.c1||'#2563eb',S.cat?.c2||'#3b82f6',S.currentSubId);
     }
@@ -824,6 +873,43 @@ async function openBook(url,name,key){
     console.error('Open book error:',e);
     toast('Хатогии кушодан: '+(e.message||''),3000);
     closeReader();
+  }
+}
+
+async function openBook(url,name,key){
+  // Сначала смотрим — есть ли валидный PDF в кеше?
+  let b=S.blobs.get(url);
+  if(b&&await isValidPdfBlob(b)){
+    return openBookFromBlob(url,name,key,b);
+  }
+  if(b)S.blobs.delete(url);
+  try{
+    b=await idbG('pdfs',url);
+    if(b&&await isValidPdfBlob(b)){
+      S.blobs.set(url,b);
+      return openBookFromBlob(url,name,key,b);
+    }
+    if(b){try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(url);}catch(e){}}
+  }catch(e){}
+
+  // Нет в кеше → запускаем загрузку с прогрессом на обложке
+  // Если уже идёт — просто пометим что нужно открыть
+  const existing=DOWNLOADS.get(url);
+  if(existing){
+    existing.autoOpen=true;
+    existing.key=key;
+    toast('Бор кардан давом дорад...',1500);
+    return;
+  }
+  // Стартуем новую загрузку с автооткрытием
+  const dlObj={autoOpen:true,key};
+  const blob=await startDownload(url,name,true,true);
+  // Если запись о загрузке создалась — обновим key
+  const d=DOWNLOADS.get(url);
+  if(d){d.key=key;}
+  // Если blob уже вернулся (быстро) — откроем
+  if(blob){
+    openBookFromBlob(url,name,key,blob);
   }
 }
 
@@ -1155,25 +1241,11 @@ function doSearch(q){
   });
 }
 
-function showDl(name){
-  $('dlTitle').textContent='Бор кардани китоб...';
-  $('dlName').textContent=name;
-  $('dlStatus').textContent='Пайвастшавӣ...';
-  $('dlCircle').classList.add('indeterm');
-  $('dlPct').textContent='⏳';
-  // Сброс
-  const ring=$('dlFgRing');
-  if(ring)ring.style.strokeDashoffset=339.292;
-  $('dlOverlay').classList.add('on');
-}
-function hideDl(){
-  $('dlOverlay').classList.remove('on');
-  $('dlCircle').classList.remove('indeterm');
-}
+// Старые функции диалога убраны — теперь прогресс на самой обложке
 function cancelDl(){
-  if(S.abort)try{S.abort.abort();}catch(e){}
-  hideDl();
-  toast('Бекор шуд');
+  // Отменяем все активные загрузки (на всякий случай)
+  for(const [url,d] of DOWNLOADS){try{d.ctrl.abort();}catch(e){}}
+  DOWNLOADS.clear();
 }
 
 (async()=>{
