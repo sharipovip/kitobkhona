@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-<meta name="theme-color" content="#0B1220">
+<meta name="theme-color" content="#060D18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>Китобхона</title>
@@ -11,202 +11,591 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
+/* ══════════════════════════════════════════
+   TAJIK PALETTE — VARIABLES
+══════════════════════════════════════════ */
 :root {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-soft: #1e3a8a40;
-  --bg: #0b1220;
-  --bg-2: #0f172a;
-  --card: #131c2e;
-  --card-2: #1a2540;
-  --text: #e2e8f0;
-  --text-muted: #94a3b8;
-  --border: #1e293b;
-  --hl-yellow: rgba(255, 220, 40, .55);
-  --hl-orange: rgba(255, 140, 40, .85);
+  --gold:        #C8962E;
+  --gold-l:      #E2AC42;
+  --gold-dim:    rgba(200,150,46,.14);
+  --teal:        #0D7B7F;
+  --teal-l:      #14A9A0;
+  --bg:          #060D18;
+  --bg2:         #0A1220;
+  --card:        #0F1C2E;
+  --card2:       #162236;
+  --border:      #1C2D44;
+  --text:        #E8D9BE;
+  --textm:       #7A8FA8;
+  --textd:       #3E5572;
+  --shadow:      rgba(0,0,0,.65);
 }
 [data-theme="light"] {
-  --primary: #2563eb;
-  --primary-dark: #1d4ed8;
-  --primary-soft: #eff6ff;
-  --bg: #f8fafc;
-  --bg-2: #f1f5f9;
-  --card: #ffffff;
-  --card-2: #f8fafc;
-  --text: #1e293b;
-  --text-muted: #64748b;
-  --border: #e2e8f0;
+  --gold:   #8B5E0A; --gold-l: #A07020; --gold-dim: rgba(139,94,10,.10);
+  --bg:     #F0E6D0; --bg2:   #E8DCCA; --card:  #FFFDF5; --card2: #F5EDD8;
+  --border: #D4C5A0; --text:  #2C1810; --textm: #8A6830; --textd: #B09060;
+  --shadow: rgba(0,0,0,.18);
+}
+[data-theme="sepia"] {
+  --gold:   #C8962E; --gold-l: #E2AC42; --gold-dim: rgba(200,150,46,.14);
+  --bg:     #1C1208; --bg2:   #251808; --card:  #2E1E0C; --card2: #382510;
+  --border: #4A3018; --text:  #D4B896; --textm: #8A6848; --textd: #5A4030;
+  --shadow: rgba(0,0,0,.75);
 }
 
+/* ══════════════════════════════════════════
+   BASE
+══════════════════════════════════════════ */
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;}
 input,textarea{-webkit-user-select:text;user-select:text;}
-html,body{height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;overscroll-behavior-y:contain;}
+html,body{height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;}
 body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height:1.5;}
 
-#app{display:flex;flex-direction:column;height:100dvh;background:var(--bg);}
+/* Tajik geometric ornament — very subtle */
+body::before{
+  content:'';position:fixed;inset:0;z-index:0;pointer-events:none;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 2L78 40 40 78 2 40Z' fill='none' stroke='%23C8962E' stroke-width='.4' opacity='.09'/%3E%3Cpath d='M40 18L62 40 40 62 18 40Z' fill='none' stroke='%23C8962E' stroke-width='.4' opacity='.07'/%3E%3Ccircle cx='40' cy='40' r='8' fill='none' stroke='%23C8962E' stroke-width='.4' opacity='.06'/%3E%3Ccircle cx='0' cy='0' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3Ccircle cx='80' cy='80' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3Ccircle cx='80' cy='0' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3Ccircle cx='0' cy='80' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3C/svg%3E");
+}
 
-.hdr{background:var(--card);border-bottom:1px solid var(--border);padding:env(safe-area-inset-top,0) 0 0 0;flex-shrink:0;z-index:50;}
-.hdr-row{display:flex;align-items:center;padding:10px 12px;gap:8px;}
-.logo-icon{width:34px;height:34px;border-radius:8px;background:linear-gradient(135deg,var(--primary),#60a5fa);display:flex;align-items:center;justify-content:center;color:#fff;font-size:18px;flex-shrink:0;}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh;}
+
+/* ══════════════════════════════════════════
+   SPLASH — TAJIK STYLE
+══════════════════════════════════════════ */
+.splash{
+  position:fixed;inset:0;z-index:9999;
+  background:radial-gradient(ellipse at 40% 40%, #0D1E35 0%, #060D18 70%);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+}
+.splash.gone{opacity:0;pointer-events:none;transition:opacity .5s ease;}
+.splash-ornament{
+  position:absolute;inset:0;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 2L78 40 40 78 2 40Z' fill='none' stroke='%23C8962E' stroke-width='.6' opacity='.2'/%3E%3Cpath d='M40 18L62 40 40 62 18 40Z' fill='none' stroke='%23C8962E' stroke-width='.6' opacity='.15'/%3E%3Ccircle cx='40' cy='40' r='8' fill='none' stroke='%230D7B7F' stroke-width='.5' opacity='.18'/%3E%3Ccircle cx='0' cy='0' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3Ccircle cx='80' cy='80' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3Ccircle cx='80' cy='0' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3Ccircle cx='0' cy='80' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3C/svg%3E");
+}
+.splash-inner{position:relative;z-index:1;text-align:center;}
+.splash-emblem{
+  width:90px;height:90px;margin:0 auto 22px;
+  background:linear-gradient(135deg,rgba(200,150,46,.18),rgba(13,123,127,.18));
+  border:1.5px solid rgba(200,150,46,.45);
+  border-radius:22px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:44px;
+  box-shadow:0 0 40px rgba(200,150,46,.18);
+  animation:float 3s ease-in-out infinite;
+}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+.splash-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:30px;font-weight:800;letter-spacing:5px;
+  background:linear-gradient(135deg,#E8B84B,#C8962E,#E8B84B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+  background-clip:text;
+}
+.splash-div{
+  width:110px;height:1px;margin:12px auto;
+  background:linear-gradient(90deg,transparent,var(--gold),transparent);
+  opacity:.7;
+}
+.splash-sub{font-size:10px;letter-spacing:3.5px;color:var(--textm);}
+.splash-bar{margin-top:24px;width:100px;height:2px;background:rgba(200,150,46,.2);border-radius:2px;overflow:hidden;}
+.splash-fill{height:100%;background:var(--gold);width:0;animation:fillb 1.5s ease forwards .3s;}
+@keyframes fillb{to{width:100%;}}
+
+/* ══════════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════════ */
+.s-overlay{position:fixed;inset:0;z-index:150;background:rgba(0,0,0,.62);backdrop-filter:blur(5px);display:none;}
+.s-overlay.on{display:block;}
+.s-panel{
+  position:fixed;top:0;left:0;bottom:0;z-index:151;
+  width:min(310px,84vw);
+  background:var(--card);
+  border-right:1px solid var(--border);
+  display:flex;flex-direction:column;
+  transform:translateX(-100%);
+  transition:transform .32s cubic-bezier(.4,0,.2,1);
+  box-shadow:6px 0 30px var(--shadow);
+  padding-top:env(safe-area-inset-top,0);
+}
+.s-panel::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.s-panel.on{transform:translateX(0);}
+.s-hdr{
+  padding:16px;display:flex;align-items:center;justify-content:space-between;
+  border-bottom:1px solid var(--border);
+}
+.s-hdr-title{display:flex;align-items:center;gap:10px;font-size:17px;font-weight:700;color:var(--text);}
+.s-hdr-ico{width:34px;height:34px;border-radius:9px;background:var(--gold-dim);border:1px solid rgba(200,150,46,.25);display:flex;align-items:center;justify-content:center;font-size:18px;}
+.s-close{width:30px;height:30px;border-radius:7px;background:var(--bg2);border:1px solid var(--border);color:var(--textm);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;}
+.s-body{flex:1;overflow-y:auto;padding:12px 0;}
+.s-body::-webkit-scrollbar{display:none;}
+.s-sec{padding:0 14px 14px;}
+.s-sec-title{
+  font-size:10px;font-weight:700;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--gold);padding:6px 0 8px;
+  display:flex;align-items:center;gap:8px;
+}
+.s-sec-title::after{content:'';flex:1;height:1px;background:var(--border);}
+.s-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 11px;background:var(--bg2);border:1px solid var(--border);
+  border-radius:10px;cursor:pointer;margin-bottom:5px;
+  transition:all .18s;
+}
+.s-item:active{transform:scale(.98);border-color:var(--gold);}
+.s-item-ico{font-size:19px;width:26px;text-align:center;flex-shrink:0;}
+.s-item-info{flex:1;min-width:0;}
+.s-item-name{font-size:12px;font-weight:600;color:var(--text);}
+.s-item-sub{font-size:10px;color:var(--textm);margin-top:1px;}
+.s-item-arr{color:var(--textd);font-size:13px;}
+
+/* Theme picker */
+.theme-row{display:flex;gap:6px;margin-top:7px;}
+.theme-btn{
+  flex:1;padding:9px 4px;border-radius:9px;border:1.5px solid var(--border);
+  background:var(--bg2);cursor:pointer;font-family:inherit;
+  font-size:10px;font-weight:700;color:var(--textm);
+  display:flex;flex-direction:column;align-items:center;gap:3px;
+  transition:all .18s;
+}
+.theme-btn span{font-size:18px;}
+.theme-btn.on{border-color:var(--gold);background:var(--gold-dim);color:var(--gold);}
+
+/* Downloaded books */
+.dl-list{margin-top:7px;max-height:200px;overflow-y:auto;}
+.dl-list::-webkit-scrollbar{width:2px;}
+.dl-list::-webkit-scrollbar-thumb{background:var(--border);}
+.dl-item{display:flex;align-items:center;gap:6px;padding:7px 9px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:4px;}
+.dl-item-name{flex:1;font-size:10px;font-weight:600;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.dl-item-size{font-size:9px;color:var(--textm);flex-shrink:0;}
+.dl-item-del{width:24px;height:24px;border-radius:5px;background:rgba(239,68,68,.12);border:1px solid rgba(239,68,68,.25);color:#EF4444;cursor:pointer;font-size:12px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.dl-item-del:active{background:rgba(239,68,68,.25);}
+.dl-clearall{width:100%;padding:8px;background:rgba(239,68,68,.09);border:1px solid rgba(239,68,68,.25);color:#EF4444;border-radius:8px;cursor:pointer;font-size:11px;font-weight:700;font-family:inherit;margin-top:5px;}
+.dl-clearall:active{background:rgba(239,68,68,.2);}
+.s-none{text-align:center;color:var(--textm);font-size:11px;padding:10px 0;}
+.s-version{text-align:center;font-size:10px;color:var(--textd);padding:10px 14px 14px;}
+
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.hdr{
+  background:var(--card);border-bottom:1px solid var(--border);
+  padding:env(safe-area-inset-top,0) 0 0 0;flex-shrink:0;z-index:50;
+  position:relative;
+  box-shadow:0 2px 16px rgba(0,0,0,.28);
+}
+.hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1.5px;background:linear-gradient(90deg,transparent,var(--gold) 35%,var(--teal) 65%,transparent);opacity:.55;}
+.hdr-row{display:flex;align-items:center;padding:9px 11px;gap:7px;}
+.logo-btn{
+  width:36px;height:36px;border-radius:10px;flex-shrink:0;cursor:pointer;
+  background:linear-gradient(135deg,var(--gold-dim),rgba(13,123,127,.12));
+  border:1px solid rgba(200,150,46,.28);
+  display:flex;align-items:center;justify-content:center;font-size:19px;
+  transition:all .18s;
+}
+.logo-btn:active{transform:scale(.92);background:var(--gold-dim);}
 .search-wrap{flex:1;position:relative;}
-.search-wrap input{width:100%;padding:8px 12px 8px 36px;background:var(--bg-2);border:1px solid var(--border);border-radius:20px;color:var(--text);font-size:14px;outline:none;font-family:inherit;}
-.search-wrap input:focus{border-color:var(--primary);}
-.search-icon{position:absolute;left:12px;top:50%;transform:translateY(-50%);color:var(--text-muted);font-size:14px;pointer-events:none;}
-.icon-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border);background:var(--bg-2);color:var(--text);cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0;}
-.icon-btn:active{background:var(--primary-soft);transform:scale(.95);}
+.search-wrap input{
+  width:100%;padding:8px 11px 8px 34px;
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:18px;color:var(--text);font-size:13px;outline:none;font-family:inherit;
+  transition:border-color .2s;
+}
+.search-wrap input:focus{border-color:var(--gold);}
+.search-wrap input::placeholder{color:var(--textd);}
+.search-ico{position:absolute;left:11px;top:50%;transform:translateY(-50%);color:var(--textm);font-size:13px;pointer-events:none;}
+.hdr-btn{
+  width:34px;height:34px;border-radius:8px;border:1px solid var(--border);
+  background:var(--bg2);color:var(--text);cursor:pointer;
+  display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;
+  transition:all .18s;
+}
+.hdr-btn:active{background:var(--gold-dim);border-color:var(--gold);}
 
-.cats-row{display:flex;gap:4px;padding:0 8px 8px;overflow-x:auto;scrollbar-width:none;}
+/* Cats */
+.cats-row{display:flex;padding:0 10px;overflow-x:auto;scrollbar-width:none;border-bottom:none;}
 .cats-row::-webkit-scrollbar{display:none;}
-.cat-chip{padding:8px 14px;background:transparent;border:none;color:var(--text-muted);white-space:nowrap;cursor:pointer;font-size:13px;font-weight:600;border-bottom:2px solid transparent;font-family:inherit;}
-.cat-chip.on{color:var(--primary);border-bottom-color:var(--primary);}
+.cat-chip{
+  padding:9px 14px;background:transparent;border:none;color:var(--textm);
+  white-space:nowrap;cursor:pointer;font-size:12px;font-weight:700;
+  border-bottom:2px solid transparent;font-family:inherit;transition:all .18s;
+}
+.cat-chip.on{color:var(--gold);border-bottom-color:var(--gold);}
 
-.subs-row{display:flex;gap:6px;padding:8px 12px;overflow-x:auto;background:var(--bg);border-bottom:1px solid var(--border);scrollbar-width:none;flex-shrink:0;}
+/* Subs */
+.subs-row{
+  display:flex;gap:5px;padding:8px 11px;overflow-x:auto;
+  background:var(--bg);border-bottom:1px solid var(--border);
+  scrollbar-width:none;flex-shrink:0;
+}
 .subs-row::-webkit-scrollbar{display:none;}
-.sub-chip{padding:6px 14px;background:var(--bg-2);border:1px solid var(--border);color:var(--text);border-radius:16px;white-space:nowrap;cursor:pointer;font-size:12px;font-weight:600;font-family:inherit;}
-.sub-chip.on{background:var(--primary);color:#fff;border-color:var(--primary);}
+.sub-chip{
+  padding:5px 13px;background:var(--card);border:1px solid var(--border);
+  color:var(--text);border-radius:14px;white-space:nowrap;cursor:pointer;
+  font-size:11px;font-weight:700;font-family:inherit;transition:all .18s;
+}
+.sub-chip.on{
+  background:linear-gradient(135deg,var(--gold),#A07020);
+  color:#fff;border-color:var(--gold);
+  box-shadow:0 2px 8px rgba(200,150,46,.3);
+}
+.sub-chip:active{transform:scale(.94);}
 
-.scroll-area{flex:1;overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;padding:12px;padding-bottom:calc(20px + env(safe-area-inset-bottom,0));overscroll-behavior:contain;}
-.scroll-area::-webkit-scrollbar{width:3px;}
+/* Progress bar */
+.bg-prog{height:2px;background:transparent;overflow:hidden;flex-shrink:0;position:relative;}
+.bg-prog.on::after{content:'';position:absolute;left:0;top:0;bottom:0;width:28%;background:linear-gradient(90deg,transparent,var(--gold),transparent);animation:bgl 1.3s linear infinite;}
+@keyframes bgl{0%{transform:translateX(-100%);}100%{transform:translateX(460%);}}
+
+/* ══════════════════════════════════════════
+   SCROLL AREA
+══════════════════════════════════════════ */
+.scroll-area{
+  flex:1;overflow-y:auto;overflow-x:hidden;
+  -webkit-overflow-scrolling:touch;
+  padding:12px 11px;
+  padding-bottom:calc(22px + env(safe-area-inset-bottom,0));
+  overscroll-behavior:contain;
+}
+.scroll-area::-webkit-scrollbar{width:2px;}
 .scroll-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
 
-.last-read{margin-bottom:14px;}
-.last-read-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;padding:0 2px;}
-.last-read-title{font-size:13px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:6px;}
-.last-read-clear{background:none;border:none;color:var(--text-muted);font-size:11px;cursor:pointer;font-family:inherit;text-decoration:underline;}
-.last-read-scroll{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+/* Last read */
+.last-read{margin-bottom:16px;}
+.last-read-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:9px;padding:0 2px;}
+.last-read-title{
+  font-size:12px;font-weight:700;color:var(--text);
+  display:flex;align-items:center;gap:7px;
+}
+.last-read-title::before{content:'';display:inline-block;width:3px;height:13px;background:var(--gold);border-radius:2px;}
+.last-read-clear{background:none;border:none;color:var(--textm);font-size:11px;cursor:pointer;font-family:inherit;}
+.last-read-scroll{display:flex;gap:7px;overflow-x:auto;scrollbar-width:none;padding-bottom:3px;}
 .last-read-scroll::-webkit-scrollbar{display:none;}
-.lri{flex-shrink:0;width:160px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:8px;display:flex;align-items:center;gap:8px;cursor:pointer;}
-.lri:active{transform:scale(.98);}
-.lri-cover{width:38px;height:50px;border-radius:5px;flex-shrink:0;background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));display:flex;align-items:center;justify-content:center;color:#fff;font-size:16px;overflow:hidden;}
+.lri{flex-shrink:0;width:155px;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:7px;display:flex;align-items:center;gap:7px;cursor:pointer;transition:all .18s;}
+.lri:active{transform:scale(.97);}
+.lri-cover{width:36px;height:48px;border-radius:5px;flex-shrink:0;background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));display:flex;align-items:center;justify-content:center;color:#fff;font-size:15px;overflow:hidden;}
 .lri-cover img{width:100%;height:100%;object-fit:cover;}
 .lri-info{flex:1;min-width:0;}
-.lri-name{font-size:11px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.lri-progress{height:3px;background:var(--bg-2);border-radius:2px;margin-top:4px;overflow:hidden;}
-.lri-progress-fill{height:100%;background:var(--primary);border-radius:2px;}
-.lri-meta{font-size:10px;color:var(--text-muted);margin-top:2px;}
+.lri-name{font-size:10px;font-weight:700;color:var(--text);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.lri-prog{height:2.5px;background:var(--bg2);border-radius:2px;margin-top:4px;overflow:hidden;}
+.lri-prog-fill{height:100%;background:var(--gold);border-radius:2px;}
+.lri-meta{font-size:9px;color:var(--textm);margin-top:2px;}
 
-.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 2px;}
-.section-title{font-size:16px;font-weight:700;color:var(--text);}
-.section-sub{font-size:11px;color:var(--text-muted);margin-top:2px;}
+/* Section header */
+.section-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;padding:0 1px;}
+.section-title{font-size:15px;font-weight:700;color:var(--text);}
+.section-bar{display:flex;align-items:center;gap:7px;}
+.section-bar::before{content:'';display:inline-block;width:3px;height:16px;background:linear-gradient(to bottom,var(--gold),var(--teal));border-radius:2px;}
+.section-sub{font-size:10px;color:var(--textm);margin-top:1px;}
 
-.books-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;}
+/* ══════════════════════════════════════════
+   3D BOOK COVERS
+══════════════════════════════════════════ */
+.books-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:18px 10px;}
 @media(min-width:480px){.books-grid{grid-template-columns:repeat(4,1fr);}}
 @media(min-width:680px){.books-grid{grid-template-columns:repeat(5,1fr);}}
 @media(min-width:900px){.books-grid{grid-template-columns:repeat(6,1fr);}}
+.book{display:flex;flex-direction:column;}
 
 .book{cursor:pointer;position:relative;}
-.book:active{transform:scale(.96);}
-.book-cover{position:relative;width:100%;aspect-ratio:3/4;background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));border-radius:6px;overflow:hidden;box-shadow:0 4px 10px rgba(0,0,0,.4);display:flex;align-items:center;justify-content:center;padding:8px;cursor:pointer;}
-.book-cover img{width:100%;height:100%;object-fit:cover;display:block;border-radius:6px;}
-.book-cover-text{color:#fff;font-size:10px;font-weight:700;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.5);display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical;overflow:hidden;}
-.book-cover .cv-load{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(0,0,0,.2);overflow:hidden;display:none;}
+
+/* Book cover wrapper */
+.book-3d-wrap{margin-bottom:3px;}
+.book-3d{
+  position:relative;
+  transition:transform .18s ease;
+}
+.book:active .book-3d{transform:scale(.97);}
+
+/* Book front cover */
+.book-cover{
+  position:relative;width:100%;aspect-ratio:2.8/4;
+  background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));
+  border-radius:6px;overflow:hidden;
+  box-shadow:0 4px 14px rgba(0,0,0,.45),0 1px 0 rgba(255,255,255,.06) inset;
+  display:flex;align-items:center;justify-content:center;padding:7px;cursor:pointer;
+}
+.book-cover img{width:100%;height:100%;object-fit:cover;display:block;border-radius:4px;}
+.book-cover-text{color:#fff;font-size:9px;font-weight:700;text-align:center;text-shadow:0 1px 3px rgba(0,0,0,.55);display:-webkit-box;-webkit-line-clamp:6;-webkit-box-orient:vertical;overflow:hidden;}
+
+/* Spine accent (thin left border) */
+.book-spine{
+  position:absolute;left:0;top:0;width:3px;height:100%;
+  border-radius:6px 0 0 6px;
+  background:linear-gradient(to bottom,rgba(0,0,0,.4),rgba(0,0,0,.15));
+  z-index:2;pointer-events:none;
+}
+
+/* Cache indicator */
+.book-cached-dot{
+  position:absolute;top:5px;right:5px;
+  width:8px;height:8px;border-radius:50%;
+  background:#22C55E;border:1.5px solid rgba(0,0,0,.55);z-index:5;
+  box-shadow:0 0 5px rgba(34,197,94,.6);
+}
+
+/* Loading shimmer on cover */
+.book-cover .cv-load{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(0,0,0,.18);overflow:hidden;display:none;}
 .book-cover.loading .cv-load{display:block;}
-.book-cover .cv-load::after{content:'';position:absolute;left:0;top:0;bottom:0;width:30%;background:rgba(255,255,255,.7);animation:cvl 1s linear infinite;}
+.book-cover .cv-load::after{content:'';position:absolute;left:0;top:0;bottom:0;width:28%;background:rgba(255,255,255,.7);animation:cvl 1s linear infinite;}
 @keyframes cvl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
-.book-name{font-size:10px;color:var(--text);margin-top:5px;text-align:center;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500;}
-.book-actions{display:flex;gap:3px;margin-top:5px;}
-.book-btn{flex:1;padding:5px;border-radius:4px;border:none;font-size:9px;font-weight:700;cursor:pointer;font-family:inherit;}
-.book-btn.read{background:var(--primary);color:#fff;}
-.book-btn.dl{background:var(--bg-2);color:var(--text);border:1px solid var(--border);}
 
-.shimmer{background:linear-gradient(90deg,var(--card) 25%,var(--card-2) 50%,var(--card) 75%);background-size:200% 100%;animation:sh 1.2s infinite;}
-@keyframes sh{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+.book-name{font-size:9.5px;color:var(--text);text-align:center;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500;padding:0 1px;min-height:25px;}
+.book-actions{display:flex;gap:3px;margin-top:6px;}
+.book-btn{flex:1;padding:5px 2px;border-radius:5px;border:none;font-size:8.5px;font-weight:700;cursor:pointer;font-family:inherit;transition:all .15s;white-space:nowrap;}
+.book-btn.read{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;box-shadow:0 2px 6px rgba(200,150,46,.28);}
+.book-btn.read:active{transform:scale(.94);}
+.book-btn.dl{background:var(--bg2);color:var(--text);border:1px solid var(--border);}
+.book-btn.dl:active{transform:scale(.94);}
 
-.empty{grid-column:1/-1;text-align:center;padding:40px 16px;color:var(--text-muted);}
-.empty-icon{font-size:48px;margin-bottom:10px;opacity:.6;}
-.empty-title{font-size:14px;font-weight:700;color:var(--text);margin-bottom:4px;}
-.empty-sub{font-size:12px;}
-
-.bg-prog{height:2px;background:transparent;overflow:hidden;flex-shrink:0;position:relative;}
-.bg-prog.on::after{content:'';position:absolute;left:0;top:0;bottom:0;width:30%;background:linear-gradient(90deg,transparent,var(--primary),transparent);animation:bgl 1.2s linear infinite;}
-@keyframes bgl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
-
-/* ⭐ Круговой прогресс прямо на обложке */
+/* Download progress ring on cover */
 .book-cover.downloading{position:relative;}
-.book-cover.downloading::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.55);z-index:2;border-radius:6px;}
+.book-cover.downloading::before{content:'';position:absolute;inset:0;background:rgba(0,0,0,.62);z-index:2;border-radius:0 5px 5px 0;}
 .dl-ring-wrap{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:3;pointer-events:none;}
-.dl-ring{width:54px;height:54px;position:relative;}
+.dl-ring{width:50px;height:50px;position:relative;}
 .dl-ring svg{transform:rotate(-90deg);width:100%;height:100%;}
 .dl-ring .bg-ring{fill:none;stroke:rgba(255,255,255,.18);stroke-width:5;}
-.dl-ring .fg-ring{fill:none;stroke:#fff;stroke-width:5;stroke-linecap:round;stroke-dasharray:138.23;stroke-dashoffset:138.23;transition:stroke-dashoffset .25s ease;}
-.dl-ring .dl-pct-mini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:800;color:#fff;text-shadow:0 1px 2px rgba(0,0,0,.6);}
-.dl-ring.indeterm .fg-ring{stroke-dasharray:30 110;animation:spinmini 1s linear infinite;}
-@keyframes spinmini{to{stroke-dashoffset:-138.23;}}
-.dl-mb{font-size:9px;color:#fff;margin-top:4px;text-shadow:0 1px 2px rgba(0,0,0,.6);font-weight:600;}
-.dl-cancel-x{position:absolute;top:4px;right:4px;width:22px;height:22px;border-radius:50%;background:rgba(0,0,0,.55);color:#fff;border:none;font-size:13px;cursor:pointer;z-index:4;pointer-events:auto;display:flex;align-items:center;justify-content:center;font-weight:700;}
-.dl-cancel-x:active{background:rgba(0,0,0,.8);}
+.dl-ring .fg-ring{fill:none;stroke:var(--gold);stroke-width:5;stroke-linecap:round;stroke-dasharray:138.2;stroke-dashoffset:138.2;transition:stroke-dashoffset .25s ease;}
+.dl-ring .dl-pct-mini{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;color:#fff;}
+.dl-ring.indeterm .fg-ring{stroke-dasharray:34 104;animation:spinmini 1s linear infinite;}
+@keyframes spinmini{to{stroke-dashoffset:-138.2;}}
+.dl-mb{font-size:8px;color:rgba(255,255,255,.88);margin-top:3px;font-weight:600;}
+.dl-cancel-x{position:absolute;top:4px;right:4px;width:20px;height:20px;border-radius:50%;background:rgba(0,0,0,.62);color:#fff;border:none;font-size:11px;cursor:pointer;z-index:4;pointer-events:auto;display:flex;align-items:center;justify-content:center;}
+.dl-cancel-x:active{background:rgba(0,0,0,.85);}
 
-.reader{position:fixed;inset:0;z-index:100;background:#0a0a0a;display:none;flex-direction:column;}
+/* Shimmer placeholder */
+.shimmer{background:linear-gradient(90deg,var(--card) 25%,var(--card2) 50%,var(--card) 75%);background-size:200% 100%;animation:sh 1.3s infinite;}
+@keyframes sh{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+
+/* Empty state */
+.empty{grid-column:1/-1;text-align:center;padding:44px 16px;color:var(--textm);}
+.empty-icon{font-size:44px;margin-bottom:10px;opacity:.6;}
+.empty-title{font-size:13px;font-weight:700;color:var(--text);margin-bottom:4px;}
+.empty-sub{font-size:11px;}
+
+/* ══════════════════════════════════════════
+   READER
+══════════════════════════════════════════ */
+.reader{position:fixed;inset:0;z-index:100;background:#080808;display:none;flex-direction:column;animation:rdrIn .35s cubic-bezier(.4,0,.2,1);}
 .reader.on{display:flex;}
-.reader-hdr{background:rgba(20,20,28,.95);backdrop-filter:blur(10px);border-bottom:1px solid rgba(255,255,255,.08);padding:env(safe-area-inset-top,0) 8px 8px 8px;display:flex;align-items:center;gap:6px;flex-shrink:0;z-index:5;}
-.reader-hdr .r-btn{width:36px;height:36px;border-radius:9px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.12);color:#fff;cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.reader-hdr .r-btn:active{background:rgba(255,255,255,.15);}
-.reader-title{flex:1;color:#ddd;font-size:13px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
-.reader-area{flex:1;overflow:hidden;background:#1a1a1a;position:relative;touch-action:none;}
-.reader-area.light{background:#e8e0d4;}
+@keyframes rdrIn{from{transform:translateX(100%);opacity:0;}to{transform:translateX(0);opacity:1;}}
+
+.reader-hdr{
+  position:relative;
+  background:rgba(8,10,18,.97);backdrop-filter:blur(12px);
+  border-bottom:1px solid rgba(255,255,255,.07);
+  padding:env(safe-area-inset-top,0) 7px 7px 7px;
+  display:flex;align-items:center;gap:5px;flex-shrink:0;z-index:5;
+}
+.reader-hdr::after{content:'';position:absolute;bottom:-1px;left:0;right:0;height:1px;background:linear-gradient(90deg,transparent,var(--gold),transparent);opacity:.35;}
+.r-btn{
+  width:33px;height:33px;border-radius:8px;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.11);
+  color:#ccc;cursor:pointer;font-size:14px;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:all .15s;
+}
+.r-btn:active{background:rgba(200,150,46,.2);border-color:var(--gold);color:var(--gold);}
+.r-btn.tts-on{background:rgba(200,150,46,.18);border-color:var(--gold);color:var(--gold);}
+.reader-title{flex:1;color:#ddd;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+
+.reader-area{flex:1;overflow:hidden;background:#111;position:relative;touch-action:none;}
+.reader-area.light{background:#e8ddd0;}
+.reader-area.sepia{background:#2a1c0e;}
+.reader-area.sepia canvas{filter:sepia(.3) brightness(.92);}
+
 .slider{position:absolute;inset:0;display:flex;will-change:transform;}
 .slide{flex-shrink:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:4px;}
-.slide canvas{max-width:100%;max-height:100%;background:#fff;box-shadow:0 10px 30px rgba(0,0,0,.7);}
+.slide canvas{max-width:100%;max-height:100%;background:#fff;box-shadow:0 8px 28px rgba(0,0,0,.65);}
 .tap-l,.tap-r{position:absolute;top:0;bottom:0;width:25%;z-index:2;cursor:pointer;}
 .tap-l{left:0;}.tap-r{right:0;}
 .hl-layer{position:absolute;pointer-events:none;z-index:3;}
-.hl-box{position:absolute;background:var(--hl-yellow);border-radius:1px;}
-.hl-box.curr{background:var(--hl-orange);outline:2px solid #ff8c28;outline-offset:-1px;}
-.reader-foot{position:absolute;left:50%;bottom:calc(14px + env(safe-area-inset-bottom,0));transform:translateX(-50%);background:rgba(15,15,20,.92);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.1);border-radius:24px;padding:6px 8px;display:flex;align-items:center;gap:4px;z-index:6;transition:opacity .25s,transform .25s;}
-.reader-foot.hide{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(20px);}
-.page-info{font-size:12px;color:#fff;padding:6px 12px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);border-radius:16px;font-weight:600;cursor:pointer;min-width:60px;text-align:center;font-family:inherit;}
-.z-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
-.find-bar{position:absolute;top:calc(60px + env(safe-area-inset-top,0));left:8px;right:8px;background:rgba(20,20,28,.96);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.15);border-radius:12px;padding:8px;display:none;align-items:center;gap:6px;z-index:7;}
+.hl-box{position:absolute;background:rgba(255,220,40,.55);border-radius:1px;}
+.hl-box.curr{background:rgba(255,140,40,.85);outline:2px solid #ff8c28;outline-offset:-1px;}
+
+/* Find bar */
+.find-bar{
+  position:absolute;top:calc(54px + env(safe-area-inset-top,0));
+  left:7px;right:7px;
+  background:rgba(8,10,18,.97);backdrop-filter:blur(12px);
+  border:1px solid rgba(200,150,46,.28);border-radius:11px;padding:7px;
+  display:none;align-items:center;gap:5px;z-index:7;
+}
 .find-bar.on{display:flex;}
-.find-bar input{flex:1;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:6px;padding:7px 10px;font-size:13px;outline:none;font-family:inherit;min-width:0;}
-.find-count{font-size:11px;color:#bbb;min-width:50px;text-align:center;font-weight:600;}
-.find-btn{width:30px;height:30px;border-radius:6px;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:13px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
+.find-bar input{flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);color:#fff;border-radius:6px;padding:6px 9px;font-size:12px;outline:none;font-family:inherit;min-width:0;}
+.find-bar input:focus{border-color:rgba(200,150,46,.45);}
+.find-count{font-size:10px;color:#bbb;min-width:44px;text-align:center;font-weight:700;}
+.find-btn{width:28px;height:28px;border-radius:6px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);color:#fff;font-size:12px;cursor:pointer;flex-shrink:0;display:flex;align-items:center;justify-content:center;}
 .find-btn:disabled{opacity:.3;}
+.find-btn:active{background:rgba(200,150,46,.2);border-color:var(--gold);}
 
-.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.7);backdrop-filter:blur(4px);display:none;align-items:center;justify-content:center;padding:20px;}
+/* TTS bar */
+.tts-bar{
+  position:absolute;bottom:calc(68px + env(safe-area-inset-bottom,0));left:50%;transform:translateX(-50%);
+  background:rgba(8,10,18,.97);backdrop-filter:blur(12px);
+  border:1px solid rgba(200,150,46,.28);border-radius:22px;
+  padding:7px 11px;display:none;align-items:center;gap:7px;z-index:7;
+  min-width:210px;box-shadow:0 4px 18px var(--shadow);
+}
+.tts-bar.on{display:flex;}
+.tts-play-btn{width:34px;height:34px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold-l));border:none;color:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.tts-play-btn:active{transform:scale(.9);}
+.tts-info{flex:1;min-width:0;}
+.tts-lbl{font-size:9px;color:rgba(255,255,255,.55);}
+.tts-rate{font-size:11px;font-weight:700;color:var(--gold);}
+.tts-ctrls{display:flex;gap:4px;}
+.tts-c{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);color:#ccc;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
+.tts-c:active{background:rgba(200,150,46,.2);color:var(--gold);}
+.tts-x{width:22px;height:22px;border-radius:50%;background:rgba(239,68,68,.18);border:1px solid rgba(239,68,68,.28);color:#EF4444;font-size:11px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* Reader footer */
+.reader-foot{
+  position:absolute;left:50%;bottom:calc(13px + env(safe-area-inset-bottom,0));
+  transform:translateX(-50%);
+  background:rgba(8,10,18,.96);backdrop-filter:blur(12px);
+  border:1px solid rgba(200,150,46,.2);border-radius:22px;
+  padding:5px 7px;display:flex;align-items:center;gap:4px;z-index:6;
+  transition:opacity .25s,transform .25s;
+  box-shadow:0 4px 18px var(--shadow);
+}
+.reader-foot.hide{opacity:0;pointer-events:none;transform:translateX(-50%) translateY(18px);}
+.page-info{font-size:11px;color:#fff;padding:5px 11px;background:rgba(200,150,46,.1);border:1px solid rgba(200,150,46,.18);border-radius:14px;font-weight:700;cursor:pointer;min-width:62px;text-align:center;font-family:inherit;}
+.z-btn{width:28px;height:28px;border-radius:50%;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);color:#ccc;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;font-weight:700;}
+.z-btn:active{background:rgba(200,150,46,.2);color:var(--gold);}
+
+/* ══════════════════════════════════════════
+   MODALS
+══════════════════════════════════════════ */
+.modal-bg{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.72);backdrop-filter:blur(6px);display:none;align-items:center;justify-content:center;padding:20px;}
 .modal-bg.on{display:flex;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;width:100%;max-width:340px;padding:22px;text-align:center;}
-.modal h3{font-size:15px;font-weight:700;margin-bottom:6px;color:var(--text);}
-.modal-sub{font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.4;}
-.modal-actions{display:flex;gap:8px;margin-top:14px;}
-.modal-btn{flex:1;padding:9px;border-radius:8px;background:var(--bg-2);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:13px;font-weight:600;cursor:pointer;}
-.modal-btn.primary{background:var(--primary);color:#fff;border-color:var(--primary);}
-.jump-input{width:100%;padding:12px;background:var(--bg-2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-size:20px;font-weight:700;text-align:center;outline:none;font-family:inherit;}
+.modal{
+  background:var(--card);border:1px solid var(--border);
+  border-radius:14px;width:100%;max-width:330px;padding:22px;text-align:center;
+  position:relative;overflow:hidden;
+  box-shadow:0 20px 50px var(--shadow);
+}
+.modal::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.modal h3{font-size:15px;font-weight:700;margin-bottom:5px;color:var(--text);}
+.modal-sub{font-size:11px;color:var(--textm);margin-bottom:14px;line-height:1.5;}
+.modal-actions{display:flex;gap:7px;margin-top:12px;}
+.modal-btn{flex:1;padding:9px;border-radius:9px;background:var(--bg2);color:var(--text);border:1px solid var(--border);font-family:inherit;font-size:12px;font-weight:700;cursor:pointer;transition:all .15s;}
+.modal-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold-l));color:#fff;border-color:var(--gold);}
+.modal-btn:active{transform:scale(.97);}
+.jump-input{width:100%;padding:12px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;color:var(--text);font-size:20px;font-weight:700;text-align:center;outline:none;font-family:inherit;}
+.jump-input:focus{border-color:var(--gold);}
 
-.splash{position:fixed;inset:0;z-index:9999;background:linear-gradient(135deg,#1e40af,#3b82f6,#0ea5e9);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;}
-.splash.gone{opacity:0;pointer-events:none;transition:opacity .4s;}
-.splash-logo{width:74px;height:74px;background:rgba(255,255,255,.18);border-radius:18px;display:flex;align-items:center;justify-content:center;font-size:38px;margin-bottom:18px;animation:float 2.5s ease-in-out infinite;}
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-8px);}}
-.splash h1{font-size:24px;letter-spacing:3px;font-weight:800;margin-bottom:4px;}
-.splash p{font-size:11px;opacity:.85;letter-spacing:2px;}
-.splash-bar{margin-top:22px;width:100px;height:2px;background:rgba(255,255,255,.2);border-radius:2px;overflow:hidden;}
-.splash-fill{height:100%;background:#fff;width:0;animation:fillb 1.4s ease forwards .2s;}
-@keyframes fillb{to{width:100%;}}
+/* Voice list */
+.voice-list{max-height:230px;overflow-y:auto;margin-bottom:6px;text-align:left;}
+.voice-list::-webkit-scrollbar{width:2px;}
+.voice-list::-webkit-scrollbar-thumb{background:var(--border);}
+.voice-item{display:flex;align-items:center;gap:8px;padding:9px 10px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;margin-bottom:4px;cursor:pointer;transition:all .15s;}
+.voice-item.on{border-color:var(--gold);background:var(--gold-dim);}
+.voice-item:active{transform:scale(.98);}
+.voice-name{font-size:11px;font-weight:600;color:var(--text);}
+.voice-lang{font-size:9px;color:var(--textm);}
 
-.toast{position:fixed;bottom:calc(80px + env(safe-area-inset-bottom,0));left:50%;transform:translateX(-50%) translateY(15px);background:#1e293b;color:#fff;padding:10px 20px;border-radius:22px;font-size:13px;z-index:300;opacity:0;pointer-events:none;box-shadow:0 8px 24px rgba(0,0,0,.5);max-width:90%;text-align:center;}
+/* ══════════════════════════════════════════
+   TOAST
+══════════════════════════════════════════ */
+.toast{
+  position:fixed;bottom:calc(78px + env(safe-area-inset-bottom,0));
+  left:50%;transform:translateX(-50%) translateY(14px);
+  background:rgba(12,18,30,.97);border:1px solid rgba(200,150,46,.28);
+  color:var(--text);padding:9px 18px;border-radius:20px;font-size:12px;
+  z-index:300;opacity:0;pointer-events:none;
+  box-shadow:0 6px 22px var(--shadow);max-width:90%;text-align:center;
+  backdrop-filter:blur(10px);
+}
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);transition:opacity .2s,transform .2s;}
 </style>
 </head>
 <body>
 
+<!-- ═══ SPLASH ═══ -->
 <div class="splash" id="splash">
-  <div class="splash-logo">📚</div>
-  <h1>КИТОБХОНА</h1>
-  <p>ГАНҶИНАИ ДОНИШ</p>
-  <div class="splash-bar"><div class="splash-fill"></div></div>
+  <div class="splash-ornament"></div>
+  <div class="splash-inner">
+    <div class="splash-emblem">📚</div>
+    <div class="splash-title">КИТОБХОНА</div>
+    <div class="splash-div"></div>
+    <div class="splash-sub">ГАНҶИНАИ ДОНИШ</div>
+    <div class="splash-bar"><div class="splash-fill"></div></div>
+  </div>
 </div>
 
+<!-- ═══ SETTINGS ═══ -->
+<div class="s-overlay" id="sOverlay" onclick="closeSettings()"></div>
+<div class="s-panel" id="sPanel">
+  <div class="s-hdr">
+    <div class="s-hdr-title"><div class="s-hdr-ico">⚙️</div>Танзимот</div>
+    <button class="s-close" onclick="closeSettings()">✕</button>
+  </div>
+  <div class="s-body">
+
+    <!-- Theme -->
+    <div class="s-sec">
+      <div class="s-sec-title">🎨 Намуди барнома</div>
+      <div class="theme-row">
+        <button class="theme-btn" data-theme="dark"  onclick="setTheme('dark')"><span>🌙</span>Торик</button>
+        <button class="theme-btn" data-theme="light" onclick="setTheme('light')"><span>☀️</span>Равшан</button>
+        <button class="theme-btn" data-theme="sepia" onclick="setTheme('sepia')"><span>📖</span>Сепия</button>
+      </div>
+    </div>
+
+    <!-- Downloads -->
+    <div class="s-sec">
+      <div class="s-sec-title">💾 Китобҳои захирашуда</div>
+      <div class="dl-list" id="dlList"><div class="s-none">⏳ Боркунӣ...</div></div>
+      <button class="dl-clearall" onclick="clearAllCache()">🗑 Ҳамаро нест кардан</button>
+    </div>
+
+    <!-- Contact -->
+    <div class="s-sec">
+      <div class="s-sec-title">📬 Тамос</div>
+      <div class="s-item" onclick="window.open('https://sharipovip.github.io/kitobkhona/','_blank')">
+        <div class="s-item-ico">🌐</div>
+        <div class="s-item-info">
+          <div class="s-item-name">Вебсайт</div>
+          <div class="s-item-sub">sharipovip.github.io/kitobkhona</div>
+        </div>
+        <div class="s-item-arr">›</div>
+      </div>
+      <div class="s-item" onclick="window.open('https://github.com/sharipovip','_blank')">
+        <div class="s-item-ico">🐙</div>
+        <div class="s-item-info">
+          <div class="s-item-name">GitHub</div>
+          <div class="s-item-sub">sharipovip</div>
+        </div>
+        <div class="s-item-arr">›</div>
+      </div>
+    </div>
+
+    <!-- About -->
+    <div class="s-sec">
+      <div class="s-sec-title">ℹ️ Дар бора</div>
+      <div class="s-item" style="cursor:default;">
+        <div class="s-item-ico">📚</div>
+        <div class="s-item-info">
+          <div class="s-item-name">Китобхона · v3.5</div>
+          <div class="s-item-sub">© 2025 Шарипов Парвиз Исмоилович</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="s-version">МТМУ №45 · Ноҳияи Дангара · Тоҷикистон</div>
+  </div>
+</div>
+
+<!-- ═══ APP ═══ -->
 <div id="app">
   <div class="hdr">
     <div class="hdr-row">
-      <div class="logo-icon">📚</div>
+      <button class="logo-btn" onclick="openSettings()" title="Танзимот">📚</button>
       <div class="search-wrap">
-        <span class="search-icon">🔍</span>
+        <span class="search-ico">🔍</span>
         <input type="text" id="search" placeholder="Ҷустуҷӯ..." inputmode="search">
       </div>
-      <button class="icon-btn" id="themeBtn" onclick="toggleTheme()">🌙</button>
+      <button class="hdr-btn" id="themeBtn" onclick="cycleTheme()">🌙</button>
     </div>
     <div class="cats-row" id="catsRow"></div>
   </div>
@@ -214,18 +603,21 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
   <div class="bg-prog" id="bgProg"></div>
 
   <div class="scroll-area" id="scrollArea">
+    <!-- Last read -->
     <div class="last-read" id="lastRead" style="display:none;">
       <div class="last-read-head">
-        <div class="last-read-title">🕘 Охирин хонда</div>
+        <div class="last-read-title">Охирин хонда</div>
         <button class="last-read-clear" onclick="clearLastRead()">Тоза кардан</button>
       </div>
       <div class="last-read-scroll" id="lastReadScroll"></div>
     </div>
 
     <div class="section-head">
-      <div>
-        <div class="section-title" id="secTitle">—</div>
-        <div class="section-sub" id="secSub"></div>
+      <div class="section-bar">
+        <div>
+          <div class="section-title" id="secTitle">—</div>
+          <div class="section-sub" id="secSub"></div>
+        </div>
       </div>
     </div>
 
@@ -233,21 +625,23 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
   </div>
 </div>
 
-
-
+<!-- ═══ READER ═══ -->
 <div class="reader" id="reader">
   <div class="reader-hdr">
-    <button class="r-btn" onclick="closeReader()">←</button>
+    <button class="r-btn" onclick="closeReader()" title="Бозгашт">←</button>
     <div class="reader-title" id="rdrTitle">—</div>
-    <button class="r-btn" onclick="toggleFind()">🔍</button>
-    <button class="r-btn" id="lightBtn" onclick="toggleLight()">☀️</button>
-    <button class="r-btn" onclick="downloadCurrent()">⬇</button>
+    <button class="r-btn" onclick="copyPageText()" title="Нусхаи матн">📋</button>
+    <button class="r-btn" id="ttsBtn" onclick="ttsToggle()" title="Хондани садо">🔊</button>
+    <button class="r-btn" onclick="toggleFind()" title="Ҷустуҷӯ">🔍</button>
+    <button class="r-btn" id="lightBtn" onclick="cycleReaderBg()" title="Тема">☀️</button>
+    <button class="r-btn" onclick="downloadCurrent()" title="Юклаб гирифтан">⬇</button>
   </div>
   <div class="reader-area" id="rdrArea">
     <div class="slider" id="slider"></div>
     <div class="hl-layer" id="hlLayer"></div>
     <div class="tap-l" id="tapL"></div>
     <div class="tap-r" id="tapR"></div>
+    <!-- Find bar -->
     <div class="find-bar" id="findBar">
       <input type="text" id="findInp" placeholder="Калима..." inputmode="search">
       <span class="find-count" id="findCnt">0/0</span>
@@ -255,14 +649,29 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
       <button class="find-btn" onclick="findStep(1)">↓</button>
       <button class="find-btn" onclick="closeFind()">✕</button>
     </div>
+    <!-- TTS bar -->
+    <div class="tts-bar" id="ttsBar">
+      <button class="tts-play-btn" id="ttsPlayBtn" onclick="ttsPauseResume()">⏸</button>
+      <div class="tts-info">
+        <div class="tts-lbl">Хондани садо</div>
+        <div class="tts-rate" id="ttsRateLabel">1×</div>
+      </div>
+      <div class="tts-ctrls">
+        <button class="tts-c" onclick="ttsChangeRate(-.25)">🐢</button>
+        <button class="tts-c" onclick="ttsChangeRate(.25)">🐇</button>
+        <button class="tts-c" onclick="openVoiceModal()" title="Овоз">🎤</button>
+      </div>
+      <button class="tts-x" onclick="ttsStop()">✕</button>
+    </div>
   </div>
   <div class="reader-foot" id="foot">
-    <button class="z-btn" onclick="changeZoom(-0.2)">−</button>
+    <button class="z-btn" onclick="changeZoom(-.2)">−</button>
     <button class="page-info" id="pageInfo" onclick="openJump()">— / —</button>
-    <button class="z-btn" onclick="changeZoom(0.2)">+</button>
+    <button class="z-btn" onclick="changeZoom(.2)">+</button>
   </div>
 </div>
 
+<!-- ═══ MODALS ═══ -->
 <div class="modal-bg" id="jumpModal">
   <div class="modal">
     <h3>Гузаштан ба саҳифа</h3>
@@ -275,989 +684,1387 @@ body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height
   </div>
 </div>
 
-<div class="toast" id="toast">—</div>
+<div class="modal-bg" id="voiceModal">
+  <div class="modal">
+    <h3>🎤 Интихоби овоз</h3>
+    <div class="modal-sub">Яке аз овозҳоро интихоб кунед</div>
+    <div class="voice-list" id="voiceList"></div>
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="closeVoiceModal()">Тайёр</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
 
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js'.replace('pdf.min.js','pdf.worker.min.js');
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+pdfjsLib.GlobalWorkerOptions.workerSrc =
+  'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
+if ('serviceWorker' in navigator)
+  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+
+// Splash → remove after 1.2s
+setTimeout(() => {
+  const s = document.getElementById('splash');
+  s.classList.add('gone');
+  setTimeout(() => s.remove(), 520);
+}, 1200);
+
+/* ══════════════════════════════════════════
+   UTILS
+══════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"']/g, c =>
+  ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
+const DPR = Math.min(window.devicePixelRatio || 1, 2.5);
+
+function toast(m, ms = 2200) {
+  const t = $('toast');
+  t.textContent = m;
+  t.classList.add('on');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.remove('on'), ms);
+}
+
+/* ══════════════════════════════════════════
+   THEME
+══════════════════════════════════════════ */
+const THEMES = ['dark', 'light', 'sepia'];
+const THEME_ICONS = { dark: '🌙', light: '☀️', sepia: '📖' };
+const THEME_META  = { dark: '#060D18', light: '#F0E6D0', sepia: '#1C1208' };
+
+function applyTheme(t) {
+  document.documentElement.setAttribute('data-theme', t);
+  localStorage.setItem('kk_theme', t);
+  const btn = $('themeBtn');
+  if (btn) btn.textContent = THEME_ICONS[t] || '🌙';
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.content = THEME_META[t] || '#060D18';
+  document.querySelectorAll('.theme-btn').forEach(b =>
+    b.classList.toggle('on', b.dataset.theme === t));
+}
+function cycleTheme() {
+  const cur = document.documentElement.getAttribute('data-theme');
+  applyTheme(THEMES[(THEMES.indexOf(cur) + 1) % THEMES.length]);
+}
+function setTheme(t) { applyTheme(t); }
+applyTheme(localStorage.getItem('kk_theme') || 'dark');
+
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
+let CATS = [], REPO = 'sharipovip/books', BRANCH = 'main';
+const S = {
+  cat: null, sub: null,
+  books:        new Map(),   // subId → books[]
+  blobs:        new Map(),   // url → Blob
+  covers:       new Map(),   // url → dataURL
+  cachedUrls:   new Set(),   // urls stored in IDB pdfs
+  coverPending: new Set(),
+  coverQueue:   [],
+  coverActive:  0,
+  coverMax:     2,
+  currentSubId: null,
+  pdf: null, page: 1, pages: 0, zoom: 1, key: null, url: null,
+  rdrBg: 'dark',             // dark | light | sepia
+  findQ: '', findHits: [], findCurr: -1,
+};
+
+/* ══════════════════════════════════════════
+   INDEXEDDB
+══════════════════════════════════════════ */
+const DB_NAME = 'kk_v8';
+let _dbP = null;
+function db() {
+  if (_dbP) return _dbP;
+  _dbP = new Promise((res, rej) => {
+    const r = indexedDB.open(DB_NAME, 1);
+    r.onupgradeneeded = e => {
+      const d = e.target.result;
+      ['pdfs','covers','json','lists'].forEach(n => {
+        if (!d.objectStoreNames.contains(n)) d.createObjectStore(n);
+      });
+    };
+    r.onsuccess  = () => res(r.result);
+    r.onerror    = () => rej(r.error);
+  });
+  return _dbP;
+}
+async function idbG(store, key) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const r = d.transaction(store,'readonly').objectStore(store).get(key);
+    r.onsuccess = () => res(r.result);
+    r.onerror   = () => rej(r.error);
+  });
+}
+async function idbS(store, key, val) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const t = d.transaction(store,'readwrite');
+    t.objectStore(store).put(val, key);
+    t.oncomplete = () => res();
+    t.onerror    = () => rej(t.error);
+  });
+}
+async function idbDel(store, key) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const t = d.transaction(store,'readwrite');
+    t.objectStore(store).delete(key);
+    t.oncomplete = () => res();
+    t.onerror    = () => rej(t.error);
+  });
+}
+async function idbKeys(store) {
+  const d = await db();
+  return new Promise((res, rej) => {
+    const r = d.transaction(store,'readonly').objectStore(store).getAllKeys();
+    r.onsuccess = () => res(r.result || []);
+    r.onerror   = () => rej(r.error);
   });
 }
 
-setTimeout(()=>{const s=document.getElementById('splash');s.classList.add('gone');setTimeout(()=>s.remove(),420);},900);
-const T=localStorage.getItem('kk_theme')||'dark';
-document.documentElement.setAttribute('data-theme',T);
-document.getElementById('themeBtn').textContent=T==='dark'?'🌙':'☀️';
-function toggleTheme(){const c=document.documentElement.getAttribute('data-theme');const n=c==='dark'?'light':'dark';document.documentElement.setAttribute('data-theme',n);localStorage.setItem('kk_theme',n);document.getElementById('themeBtn').textContent=n==='dark'?'🌙':'☀️';}
-
-function $(id){return document.getElementById(id);}
-function esc(s){return String(s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-function toast(m,ms=2200){const t=$('toast');t.textContent=m;t.classList.add('on');clearTimeout(toast._);toast._=setTimeout(()=>t.classList.remove('on'),ms);}
-const DPR=Math.min(window.devicePixelRatio||1,2.5);
-
-// ───── State ─────
-let CATS=[],REPO='sharipovip/books',BRANCH='main';
-const S={
-  cat:null,sub:null,
-  books:new Map(),         // subId -> books[]
-  blobs:new Map(),         // url -> Blob (in-memory cache)
-  covers:new Map(),        // url -> dataURL
-  coverPending:new Set(),  // urls being processed
-  coverQueue:[],           // [{url,name,key,catC1,catC2}]
-  coverActive:0,
-  coverMax:2,              // parallel
-  currentSubId:null,
-  pdf:null,page:1,pages:0,zoom:1,key:null,url:null,light:false,
-  findQ:'',findHits:[],findCurr:-1,
-  abort:null
-};
-
-// ───── IndexedDB ─────
-const DB='kk_v8';let dbP=null;
-function db(){if(dbP)return dbP;dbP=new Promise((res,rej)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=e=>{const d=e.target.result;['pdfs','covers','json','lists'].forEach(n=>{if(!d.objectStoreNames.contains(n))d.createObjectStore(n);});};r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});return dbP;}
-async function idbG(s,k){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(s,'readonly');const r=t.objectStore(s).get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);});}
-async function idbS(s,k,v){const d=await db();return new Promise((res,rej)=>{const t=d.transaction(s,'readwrite');t.objectStore(s).put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error);});}
-
-// ───── Load books.json ─────
-async function loadBooksJson(){
-  let cached=null;
-  try{cached=await idbG('json','books');}catch(e){}
-  if(cached){parseCats(cached);refreshBooksJson();return true;}
-  try{
-    const r=await fetch('books.json?t='+Date.now(),{cache:'no-store'});
-    if(!r.ok)throw 0;
-    const d=await r.json();
+/* ══════════════════════════════════════════
+   BOOKS.JSON
+══════════════════════════════════════════ */
+async function loadBooksJson() {
+  let cached = null;
+  try { cached = await idbG('json', 'books'); } catch(e) {}
+  if (cached) { parseCats(cached); refreshBooksJson(); return true; }
+  try {
+    const r = await fetch('books.json?t=' + Date.now(), { cache:'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const d = await r.json();
     parseCats(d);
-    try{await idbS('json','books',d);}catch(e){}
+    idbS('json','books',d).catch(() => {});
     return true;
-  }catch(e){
-    $('grid').innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Интернет лозим</div></div>';
+  } catch(e) {
+    $('grid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Интернет лозим</div><div class="empty-sub">${esc(e.message||'')}</div></div>`;
     return false;
   }
 }
-async function refreshBooksJson(){
-  try{
-    const r=await fetch('books.json?t='+Date.now(),{cache:'no-store'});
-    if(!r.ok)return;
-    const d=await r.json();
-    const oldStr=JSON.stringify(CATS);
+async function refreshBooksJson() {
+  try {
+    const r = await fetch('books.json?t=' + Date.now(), { cache:'no-store' });
+    if (!r.ok) return;
+    const d = await r.json();
+    const old = JSON.stringify(CATS);
     parseCats(d);
-    if(oldStr!==JSON.stringify(CATS)){
-      try{await idbS('json','books',d);}catch(e){}
-      renderCats();renderSubs();
-      if(S.sub)loadSub(S.sub.id);
+    if (old !== JSON.stringify(CATS)) {
+      idbS('json','books',d).catch(() => {});
+      renderCats(); renderSubs();
+      if (S.sub) loadSub(S.sub.id);
     }
-  }catch(e){}
+  } catch(e) {}
 }
-function parseCats(d){
-  REPO=d.repo||'sharipovip/books';
-  BRANCH=d.branch||'main';
-  const arr=d.categories||d;
-  arr.forEach(c=>{
-    c.c1=c.color1||'#2563eb';c.c2=c.color2||'#3b82f6';c.subs=c.subs||[];
+function parseCats(d) {
+  REPO   = d.repo   || 'sharipovip/books';
+  BRANCH = d.branch || 'main';
+  const arr = d.categories || d;
+  arr.forEach(c => {
+    c.c1   = c.color1 || '#2563eb';
+    c.c2   = c.color2 || '#3b82f6';
+    c.subs = c.subs  || [];
   });
-  CATS=arr;
+  CATS = arr;
 }
 
-// ───── Cats/Subs UI ─────
-function renderCats(){
-  const r=$('catsRow');r.innerHTML='';
-  CATS.forEach(c=>{
-    const b=document.createElement('button');
-    b.className='cat-chip'+(c.id===S.cat?.id?' on':'');
-    b.textContent=(c.emoji||'')+' '+c.name;
-    b.onclick=()=>selectCat(c.id);
+/* ══════════════════════════════════════════
+   CATEGORIES / SUBS UI
+══════════════════════════════════════════ */
+function renderCats() {
+  const r = $('catsRow'); r.innerHTML = '';
+  CATS.forEach(c => {
+    const b = document.createElement('button');
+    b.className = 'cat-chip' + (c.id === S.cat?.id ? ' on' : '');
+    b.textContent = (c.emoji || '') + ' ' + c.name;
+    b.onclick = () => selectCat(c.id);
     r.appendChild(b);
   });
 }
-function renderSubs(){
-  const r=$('subsRow');r.innerHTML='';
-  if(!S.cat)return;
-  S.cat.subs.forEach(s=>{
-    const b=document.createElement('button');
-    b.className='sub-chip'+(s.id===S.sub?.id?' on':'');
-    const cnt=S.books.get(s.id)?.length;
-    b.textContent=s.name+(cnt?` (${cnt})`:'');
-    b.onclick=()=>selectSub(s.id);
+function renderSubs() {
+  const r = $('subsRow'); r.innerHTML = '';
+  if (!S.cat) return;
+  S.cat.subs.forEach(s => {
+    const b = document.createElement('button');
+    b.className = 'sub-chip' + (s.id === S.sub?.id ? ' on' : '');
+    const cnt = S.books.get(s.id)?.length;
+    b.textContent = s.name + (cnt ? ` (${cnt})` : '');
+    b.onclick = () => selectSub(s.id);
     r.appendChild(b);
   });
 }
-function selectCat(id){
-  const c=CATS.find(x=>x.id===id);if(!c)return;
-  S.cat=c;S.sub=c.subs[0]||null;
-  renderCats();renderSubs();
-  $('secTitle').textContent=c.name;$('secSub').textContent=S.sub?.name||'';
-  if(S.sub)loadSub(S.sub.id);else $('grid').innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Бахше нест</div></div>';
+function selectCat(id) {
+  const c = CATS.find(x => x.id === id); if (!c) return;
+  S.cat = c; S.sub = c.subs[0] || null;
+  renderCats(); renderSubs();
+  $('secTitle').textContent = c.name;
+  $('secSub').textContent   = S.sub?.name || '';
+  if (S.sub) loadSub(S.sub.id);
+  else $('grid').innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Бахше нест</div></div>';
 }
-function selectSub(id){
-  const s=S.cat?.subs.find(x=>x.id===id);if(!s)return;
-  S.sub=s;renderSubs();
-  $('secSub').textContent=s.name;
+function selectSub(id) {
+  const s = S.cat?.subs.find(x => x.id === id); if (!s) return;
+  S.sub = s; renderSubs();
+  $('secSub').textContent = s.name;
   loadSub(id);
 }
 
-// ⭐ Читаем manifest.json из папки
-async function loadSub(id){
-  const sub=S.cat.subs.find(s=>s.id===id);if(!sub)return;
-  S.currentSubId=id;
-  // При смене бахша — очистим очередь обложек предыдущего
-  S.coverQueue=[];
+/* ══════════════════════════════════════════
+   LOAD SUB — MANIFEST
+══════════════════════════════════════════ */
+async function loadSub(id) {
+  const sub = S.cat.subs.find(s => s.id === id); if (!sub) return;
+  S.currentSubId = id;
+  S.coverQueue   = [];
 
-  if(S.books.has(id)){renderBooks(id);return;}
-  if(!sub.folder){S.books.set(id,[]);renderBooks(id);return;}
+  if (S.books.has(id)) { renderBooks(id); return; }
+  if (!sub.folder)     { S.books.set(id, []); renderBooks(id); return; }
 
-  // IDB cache — мгновенно
-  let cachedList=null;
-  try{cachedList=await idbG('lists',sub.folder);}catch(e){}
-  if(cachedList&&cachedList.books){
-    S.books.set(id,cachedList.books);
-    renderSubs();renderBooks(id);
-    if(navigator.onLine)fetchManifest(sub,id,true);
+  // IDB instant cache
+  let cached = null;
+  try { cached = await idbG('lists', sub.folder); } catch(e) {}
+  if (cached?.books) {
+    S.books.set(id, cached.books);
+    renderSubs(); renderBooks(id);
+    if (navigator.onLine) fetchManifest(sub, id, true);
     return;
   }
 
   showPlaceholders(6);
   $('bgProg').classList.add('on');
-  try{
-    await fetchManifest(sub,id,false);
-  }catch(e){
-    if(S.sub?.id===id){
-      $('grid').innerHTML=`<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Хатогии шабака</div><div class="empty-sub">${esc(e.message||'')}</div><button class="modal-btn primary" style="margin-top:14px;max-width:160px;" onclick="loadSub('${id}')">🔄 Бори дигар</button></div>`;
-    }
-  }finally{$('bgProg').classList.remove('on');}
+  try { await fetchManifest(sub, id, false); }
+  catch(e) {
+    if (S.sub?.id === id)
+      $('grid').innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Хатогии шабака</div><div class="empty-sub">${esc(e.message||'')}</div><button class="modal-btn primary" style="margin-top:14px;max-width:160px;" onclick="loadSub('${id}')">🔄 Бори дигар</button></div>`;
+  }
+  finally { $('bgProg').classList.remove('on'); }
 }
 
-// ⭐ Кодирует путь, сохраняя слэши между папками (для вложенных папок)
-function encPath(p){return p.split('/').map(encodeURIComponent).join('/');}
+function encPath(p) { return p.split('/').map(encodeURIComponent).join('/'); }
 
-// ⭐ Кеш найденных путей
-async function getCachedPath(folder){
-  try{const c=await idbG('json','path:'+folder);if(c&&typeof c==='string')return c;}catch(e){}
+async function getCachedPath(folder) {
+  try { const c = await idbG('json','path:'+folder); if (c && typeof c==='string') return c; } catch(e) {}
   return null;
 }
-async function saveCachedPath(folder,realPath){
-  try{await idbS('json','path:'+folder,realPath);}catch(e){}
+async function saveCachedPath(folder, realPath) {
+  try { await idbS('json','path:'+folder, realPath); } catch(e) {}
 }
 
-// ⭐ Кеш дерева репо (1 час)
-let TREE_PROMISE=null;
-async function loadRepoTree(){
-  if(TREE_PROMISE)return TREE_PROMISE;
-  TREE_PROMISE=(async()=>{
-    try{
-      const c=await idbG('json','tree:'+REPO+':'+BRANCH).catch(()=>null);
-      if(c&&c.ts&&(Date.now()-c.ts)<3600000&&c.folders)return c.folders;
-      const r=await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`);
-      if(!r.ok)return [];
-      const d=await r.json();
-      const folders=(d.tree||[]).filter(x=>x.type==='tree').map(x=>x.path);
-      try{await idbS('json','tree:'+REPO+':'+BRANCH,{folders,ts:Date.now()});}catch(e){}
-      return folders;
-    }catch(e){return [];}finally{setTimeout(()=>{TREE_PROMISE=null;},100);}
-  })();
-  return TREE_PROMISE;
-}
+let TREE_P = null;
+async function loadRepoTree() {
+  if (TREE_P) return TREE_P;
+  TREE_P = (async () => {
+  if (!await loadBooksJson()) return;
+  S.cat = CATS[0];
+  S.sub = CATS[0]?.subs[0] || null;
+  renderCats(); renderSubs();
+  $('secTitle').textContent = S.cat?.name || '';
+  $('secSub').textContent   = S.sub?.name || '';
+  renderLastRead();
+  if (S.sub) loadSub(S.sub.id);
+})();
 
-async function tryFetch(path){
-  try{
-    const r=await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(path)}/manifest.json?t=${Date.now()}`,{cache:'no-store'});
-    if(!r.ok)return null;
-    const data=await r.json();
-    if(!Array.isArray(data.books))return null;
-    return data;
-  }catch(e){return null;}
-}
-
-async function fetchManifest(sub,id,silent){
-  const folder=sub.folder;
-  let realPath=null,data=null;
-
-  // СТРАТЕГИЯ 1: запомненный путь из кеша
-  const cached=await getCachedPath(folder);
-  if(cached){
-    data=await tryFetch(cached);
-    if(data)realPath=cached;
-  }
-
-  // СТРАТЕГИЯ 2: прямой путь (как написано в books.json)
-  if(!data){
-    data=await tryFetch(folder);
-    if(data)realPath=folder;
-  }
-
-  // СТРАТЕГИЯ 3: умный поиск по дереву репо
-  if(!data){
-    const folders=await loadRepoTree();
-    const target=folder.toLowerCase();
-    const candidates=folders.filter(p=>{
-      const pl=p.toLowerCase();
-      const last=pl.split('/').pop();
-      return last===target||pl===target||pl.endsWith('/'+target);
-    });
-    // Точное совпадение в приоритете
-    candidates.sort((a,b)=>{
-      const al=a.toLowerCase(),bl=b.toLowerCase();
-      const ae=al===target?0:(al.endsWith('/'+target)?1:2);
-      const be=bl===target?0:(bl.endsWith('/'+target)?1:2);
-      return ae-be;
-    });
-    for(const c of candidates){
-      data=await tryFetch(c);
-      if(data){realPath=c;break;}
+// Auto-generate covers for visible books (one at a time, with delay)
+async function autoGenerateCovers() {
+  if (!S.currentSubId) return;
+  const books = S.books.get(S.currentSubId) || [];
+  const queue = books.filter(b => !S.covers.has(b.url) && !S.coverPending.has(b.url));
+  if (!queue.length) return;
+  const NUM_WORKERS = 2;
+  const workers = [];
+  async function worker() {
+    while (queue.length > 0) {
+      const b = queue.shift();
+      if (!b) break;
+      const key = S.currentSubId + ':' + b.name;
+      try {
+        await fastCover(b.url, b.name, key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
+      } catch(e) { console.warn('Cover gen:', e); }
+      await new Promise(r => setTimeout(r, 150));
     }
   }
+  for (let i = 0; i < NUM_WORKERS; i++) workers.push(worker());
+  await Promise.all(workers);
+}
+  return TREE_P;
+}
 
-  if(!data){
-    throw new Error('manifest.json ёфт нашуд барои "'+folder+'"');
+async function tryFetch(path) {
+  try {
+    const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(path)}/manifest.json?t=${Date.now()}`,
+      { cache:'no-store' });
+    if (!r.ok) return null;
+    const data = await r.json();
+    if (!Array.isArray(data.books)) return null;
+    return data;
+  } catch(e) { return null; }
+}
+
+async function fetchManifest(sub, id, silent) {
+  const folder = sub.folder;
+  let realPath = null, data = null;
+
+  // Strategy 1: cached path
+  const cached = await getCachedPath(folder);
+  if (cached) { data = await tryFetch(cached); if (data) realPath = cached; }
+
+  // Strategy 2: direct path
+  if (!data) { data = await tryFetch(folder); if (data) realPath = folder; }
+
+  // Strategy 3: scan repo tree
+  if (!data) {
+    const folders = await loadRepoTree();
+    const target  = folder.toLowerCase();
+    const cands   = folders.filter(p => {
+      const pl = p.toLowerCase(), last = pl.split('/').pop();
+      return last === target || pl === target || pl.endsWith('/' + target);
+    }).sort((a, b) => {
+      const al = a.toLowerCase(), bl = b.toLowerCase();
+      const ae = al===target?0:(al.endsWith('/'+target)?1:2);
+      const be = bl===target?0:(bl.endsWith('/'+target)?1:2);
+      return ae - be;
+    });
+    for (const c of cands) { data = await tryFetch(c); if (data) { realPath = c; break; } }
   }
 
-  // Запомним найденный путь
-  if(realPath&&realPath!==folder){
-    await saveCachedPath(folder,realPath);
-  }
+  if (!data) throw new Error('manifest.json ёфт нашуд барои "' + folder + '"');
+  if (realPath && realPath !== folder) await saveCachedPath(folder, realPath);
 
-  const books=data.books.map(b=>({
-    name:b.name||b.file?.replace(/\.pdf$/i,''),
-    file:b.file||(b.name+'.pdf'),
-    url:`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(realPath)}/${encodeURIComponent(b.file||(b.name+'.pdf'))}`,
-    size:b.size||0
+  const books = data.books.map(b => ({
+    name: b.name || b.file?.replace(/\.pdf$/i, ''),
+    file: b.file || (b.name + '.pdf'),
+    url:  `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(realPath)}/${encodeURIComponent(b.file || (b.name + '.pdf'))}`,
+    size: b.size || 0,
   }));
-  S.books.set(id,books);
-  try{await idbS('lists',folder,{books,realPath,ts:Date.now()});}catch(e){}
-  if(S.sub?.id===id){
-    renderSubs();renderBooks(id);
-    if(silent)toast('✓ Навсозӣ шуд',1500);
+  S.books.set(id, books);
+  idbS('lists', folder, { books, realPath, ts: Date.now() }).catch(() => {});
+  if (S.sub?.id === id) {
+    renderSubs(); renderBooks(id);
+    if (silent) toast('✓ Навсозӣ шуд', 1500);
   }
 }
 
-function showPlaceholders(n){
-  const g=$('grid');g.innerHTML='';
-  for(let i=0;i<n;i++){
-    const d=document.createElement('div');d.className='book';
-    d.innerHTML='<div class="book-cover shimmer"></div><div class="shimmer" style="height:10px;border-radius:3px;margin-top:6px;width:80%;margin-left:auto;margin-right:auto;"></div>';
+function showPlaceholders(n) {
+  const g = $('grid'); g.innerHTML = '';
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div'); d.className = 'book';
+    d.innerHTML = '<div class="book-3d-wrap"><div class="book-3d"><div class="book-cover shimmer" style="border-radius:0 7px 7px 0;"></div></div></div><div class="shimmer" style="height:9px;border-radius:3px;margin-top:7px;width:78%;margin-left:auto;margin-right:auto;"></div>';
     g.appendChild(d);
   }
 }
 
-// ───── RENDER BOOKS ─────
-function renderBooks(id){
-  const g=$('grid');g.innerHTML='';
-  const books=S.books.get(id)||[];
-  $('secTitle').textContent=S.cat.name;
-  $('secSub').textContent=`${S.sub.name} · ${books.length} китоб`;
-  if(!books.length){
-    g.innerHTML='<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Китобе нест</div></div>';
+/* ══════════════════════════════════════════
+   CACHE CHECK
+══════════════════════════════════════════ */
+
+
+/* ══════════════════════════════════════════
+   RENDER BOOKS (3D style)
+══════════════════════════════════════════ */
+async function renderBooks(id) {
+  const g = $('grid'); g.innerHTML = '';
+  const books = S.books.get(id) || [];
+  $('secTitle').textContent = S.cat.name;
+  $('secSub').textContent   = `${S.sub.name} · ${books.length} китоб`;
+
+  if (!books.length) {
+    g.innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Китобе нест</div></div>';
     return;
   }
-  books.forEach(b=>{
-    const key=id+':'+b.name;
-    const d=document.createElement('div');d.className='book';d.dataset.key=key;
-    const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
-    d.innerHTML=`
-      <div class="book-cover" id="${safe}" style="--c1:${S.cat.c1};--c2:${S.cat.c2};">
-        <div class="book-cover-text">${esc(b.name)}</div>
-        <div class="cv-load"></div>
+
+  books.forEach(b => {
+    const key  = id + ':' + b.name;
+    const safe = 'cv_' + key.replace(/[^a-z0-9]/gi, '_');
+    const cov  = S.covers.get(b.url);
+    const isCached = S.cachedUrls.has(b.url) || S.blobs.has(b.url);
+
+    const spineStyle = `background:linear-gradient(to right,rgba(0,0,0,.6),${S.cat.c1}99);`;
+    const d = document.createElement('div');
+    d.className = 'book'; d.dataset.key = key;
+    d.innerHTML = `
+      <div class="book-3d-wrap">
+        <div class="book-3d" id="bk_${safe}">
+          <div class="book-spine" style="${spineStyle}"></div>
+          <div class="book-cover" id="${safe}" style="--c1:${S.cat.c1};--c2:${S.cat.c2};${cov?'padding:0;':''}">
+            ${cov ? `<img src="${cov}" alt="" loading="lazy">` : `<div class="book-cover-text">${esc(b.name)}</div>`}
+            <div class="cv-load"></div>
+            ${isCached ? '<div class="book-cached-dot"></div>' : ''}
+          </div>
+        </div>
       </div>
       <div class="book-name">${esc(b.name)}</div>
       <div class="book-actions">
         <button class="book-btn read" data-act="read">📖 Хондан</button>
-        <button class="book-btn dl" data-act="dl">⬇</button>
+        <button class="book-btn dl"   data-act="dl">⬇</button>
       </div>`;
-    // КЛИК ПО ОБЛОЖКЕ = ОТКРЫТЬ КНИГУ
-    d.querySelector('.book-cover').onclick=()=>openBook(b.url,b.name,key);
-    d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(b.url,b.name,key);};
-    d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(b.url,b.name);};
-    g.appendChild(d);
 
-    // Запускаем загрузку обложки в фоне
-    queueCover(b.url,b.name,key,S.cat.c1,S.cat.c2,id);
+    d.querySelector('.book-cover').onclick = () => openBook(b.url, b.name, key);
+    d.querySelector('[data-act="read"]').onclick = e => { e.stopPropagation(); openBook(b.url, b.name, key); };
+    d.querySelector('[data-act="dl"]').onclick   = e => { e.stopPropagation(); downloadBook(b.url, b.name); };
+    g.appendChild(d);
   });
+
   renderLastRead();
+  // Start silent cover generation for all books in this sub
+  autoGenerateCovers();
 }
 
-// ⭐ ФОНОВАЯ ЗАГРУЗКА ОБЛОЖЕК
-async function queueCover(url,name,key,c1,c2,subId){
-  // Уже есть в памяти?
-  if(S.covers.has(url)){
-    setCoverImg(key,S.covers.get(url));
-    return;
-  }
-  // Есть в IDB?
-  try{
-    const c=await idbG('covers',url);
-    if(c){
-      S.covers.set(url,c);
-      setCoverImg(key,c);
+/* ══════════════════════════════════════════
+   COVER SYSTEM — ⚡ RANGE REQUEST (300KB)
+══════════════════════════════════════════ */
+
+
+// Download full PDF with progress on cover, then generate cover
+async function fastCover(url, name, key, c1, c2, subId) {
+  if (S.covers.has(url) || S.coverPending.has(url)) return;
+  S.coverPending.add(url);
+  const safe = 'cv_' + key.replace(/[^a-z0-9]/gi, '_');
+
+  try {
+    // 1. IDB cover cache
+    const cached = await idbG('covers', url).catch(() => null);
+    if (cached) { S.covers.set(url, cached); setCoverImg(key, cached); return; }
+
+    // 2. Full blob available
+    let blob = S.blobs.get(url) || await idbG('pdfs', url).catch(() => null);
+    if (blob && await isValidPdfBlob(blob)) {
+      await renderCoverFromBlob(url, key, blob);
       return;
     }
-  }catch(e){}
-  // В очередь
-  if(S.coverPending.has(url))return;
-  S.coverPending.add(url);
-  S.coverQueue.push({url,name,key,c1,c2,subId});
-  processCoverQueue();
-}
 
-async function processCoverQueue(){
-  while(S.coverActive<S.coverMax && S.coverQueue.length){
-    const item=S.coverQueue.shift();
-    S.coverActive++;
-    processCover(item).finally(()=>{
-      S.coverActive--;
-      processCoverQueue();
-    });
-  }
-}
-
-async function processCover(item){
-  // Если ушли с бахша — не грузим
-  if(item.subId!==S.currentSubId){
-    S.coverPending.delete(item.url);
-    return;
-  }
-  const cvEl=document.getElementById('cv_'+item.key.replace(/[^a-z0-9]/gi,'_'));
-  if(cvEl)cvEl.classList.add('loading');
-  try{
-    // Проверяем — может PDF уже скачана для чтения
-    let blob=S.blobs.get(item.url);
-    if(blob&&!(await isValidPdfBlob(blob))){blob=null;S.blobs.delete(item.url);}
-    if(!blob){
-      try{
-        blob=await idbG('pdfs',item.url);
-        if(blob&&!(await isValidPdfBlob(blob))){
-          blob=null;
-          // Удалим битый
-          try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(item.url);}catch(e){}
+    // 3. Download in chunks (300KB and 600KB attempts) - SILENT, no progress visible
+    const CHUNK_300 = 307200;  // 300 KB
+    const CHUNK_600 = 614400;  // 600 KB
+    const MAX_ATTEMPTS = 2;
+    
+    let coverFound = false;
+    for (let attempt = 0; attempt < MAX_ATTEMPTS && !coverFound; attempt++) {
+      const maxBytes = attempt === 0 ? CHUNK_300 : CHUNK_600;
+      try {
+        const resp = await fetch(url, { cache: 'no-store' });
+        if (!resp.ok) throw new Error('HTTP ' + resp.status);
+        const rdr = resp.body.getReader();
+        const chunks = [];
+        let totalRead = 0;
+        
+        while (totalRead < maxBytes) {
+          const { done, value } = await rdr.read();
+          if (done) break;
+          chunks.push(value);
+          totalRead += value.length;
         }
-        if(blob)S.blobs.set(item.url,blob);
-      }catch(e){}
+        
+        // Try to abort reader if we got enough data
+        try { rdr.cancel(); } catch(e) {}
+        
+        // Create partial blob
+        const arr = new Uint8Array(totalRead);
+        let offset = 0;
+        for (const chunk of chunks) {
+          arr.set(chunk, offset);
+          offset += chunk.length;
+        }
+        
+        const partialBlob = new Blob([arr], { type: 'application/pdf' });
+        if (!await isValidPdfBlob(partialBlob)) continue;
+        
+        // Try to render from partial blob
+        try {
+          const ab = await partialBlob.arrayBuffer();
+          const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+          const page = await pdf.getPage(1);
+          if (page) {
+            // Success - render cover from partial
+            const vp = page.getViewport({ scale: 0.6 });
+            const cv = document.createElement('canvas');
+            cv.width = vp.width;
+            cv.height = vp.height;
+            await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+            const dataUrl = cv.toDataURL('image/jpeg', 0.75);
+            S.covers.set(url, dataUrl);
+            idbS('covers', url, dataUrl).catch(() => {});
+            setCoverImg(key, dataUrl);
+            pdf.destroy();
+            coverFound = true;
+          }
+        } catch(e) {
+          // Partial didn't work, continue to next attempt
+        }
+      } catch(e) {
+        console.warn('Cover attempt', attempt + 1, 'failed:', e.message);
+      }
     }
-    if(!blob){
-      // Скачиваем PDF тихо (без UI)
-      const r=await fetch(item.url,{cache:'no-store'});
-      if(!r.ok)throw new Error('HTTP '+r.status);
-      blob=await r.blob();
-      if(!(await isValidPdfBlob(blob)))throw new Error('Invalid PDF');
-      S.blobs.set(item.url,blob);
-      try{await idbS('pdfs',item.url,blob);}catch(e){console.warn('IDB save cover-pdf failed',e);}
-    }
-    // Генерируем обложку
-    const ab=await blob.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:ab,disableAutoFetch:true,disableStream:true}).promise;
-    const p=await pdf.getPage(1);
-    const vp=p.getViewport({scale:0.6});
-    const cv=document.createElement('canvas');
-    cv.width=vp.width;cv.height=vp.height;
-    await p.render({canvasContext:cv.getContext('2d'),viewport:vp}).promise;
-    const dataUrl=cv.toDataURL('image/jpeg',0.75);
-    S.covers.set(item.url,dataUrl);
-    try{await idbS('covers',item.url,dataUrl);}catch(e){}
-    try{pdf.destroy();}catch(e){}
-    if(item.subId===S.currentSubId)setCoverImg(item.key,dataUrl);
-  }catch(e){
-    console.warn('Cover failed:',item.name,e);
-  }finally{
-    S.coverPending.delete(item.url);
-    if(cvEl)cvEl.classList.remove('loading');
+
+  } catch(e) {
+    console.warn('Cover generation failed:', name, e?.message || e);
+  } finally {
+    S.coverPending.delete(url);
   }
 }
 
-function cssEscape(s){return s.replace(/["\\]/g,'\\$&');}
+async function renderCoverFromBlob(url, key, blob) {
+  const ab = await blob.arrayBuffer();
+  const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+  const page = await pdf.getPage(1);
+  const vp = page.getViewport({ scale: 0.6 });
+  const cv = document.createElement('canvas');
+  cv.width = vp.width; cv.height = vp.height;
+  await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+  const dataUrl = cv.toDataURL('image/jpeg', 0.75);
+  pdf.destroy();
+  S.covers.set(url, dataUrl);
+  idbS('covers', url, dataUrl).catch(() => {});
+  setCoverImg(key, dataUrl);
+}
 
-function setCoverImg(key,dataUrl){
-  const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
-  const el=$(safe);if(!el)return;
-  el.innerHTML=`<img src="${dataUrl}" alt="" loading="lazy"><div class="cv-load"></div>`;
-  el.style.padding='0';
+
+
+function setCoverImg(key, dataUrl) {
+  const safe = 'cv_' + key.replace(/[^a-z0-9]/gi, '_');
+  const el = document.getElementById(safe); if (!el) return;
+  const dot = el.querySelector('.book-cached-dot')?.outerHTML || '';
+  el.innerHTML = `<img src="${dataUrl}" alt="" loading="lazy">${dot}<div class="cv-load"></div>`;
+  el.style.padding = '0';
   el.classList.remove('loading');
 }
 
-// ───── PDF загрузка для чтения с валидацией ─────
-// Проверка что Blob действительно PDF (минимум 1KB и начинается с %PDF магических байтов 0x25 0x50 0x44 0x46)
-async function isValidPdfBlob(blob){
-  if(!blob||blob.size<1024)return false;
-  try{
-    const buf=await blob.slice(0,5).arrayBuffer();
-    const a=new Uint8Array(buf);
-    // %PDF = 0x25 0x50 0x44 0x46
-    return a[0]===0x25 && a[1]===0x50 && a[2]===0x44 && a[3]===0x46;
-  }catch(e){return false;}
+/* ══════════════════════════════════════════
+   PDF VALIDATION
+══════════════════════════════════════════ */
+async function isValidPdfBlob(blob) {
+  if (!blob || blob.size < 1024) return false;
+  try {
+    const buf = await blob.slice(0, 5).arrayBuffer();
+    const a   = new Uint8Array(buf);
+    return a[0]===0x25 && a[1]===0x50 && a[2]===0x44 && a[3]===0x46; // %PDF
+  } catch(e) { return false; }
 }
 
-// ⭐ Отслеживание активных загрузок (для прогресса на обложке)
-// url -> {ctrl: AbortController, promise: Promise<Blob>, cover: HTMLElement, autoOpen: boolean}
-const DOWNLOADS=new Map();
+/* ══════════════════════════════════════════
+   DOWNLOAD TRACKING
+══════════════════════════════════════════ */
+const DOWNLOADS = new Map();
 
-// ⭐ Показывает круг загрузки прямо на обложке
-function showCoverProgress(coverEl,name,onCancel){
-  if(!coverEl)return;
+function findCoverEl(url) {
+  if (!S.sub) return null;
+  const books = S.books.get(S.sub.id); if (!books) return null;
+  const b = books.find(x => x.url === url); if (!b) return null;
+  const key = S.sub.id + ':' + b.name;
+  return document.getElementById('cv_' + key.replace(/[^a-z0-9]/gi, '_'));
+}
+
+function showCoverProgress(coverEl, onCancel) {
+  if (!coverEl) return;
   coverEl.classList.add('downloading');
-  // Удалим старый ring если был
-  coverEl.querySelectorAll('.dl-ring-wrap,.dl-cancel-x').forEach(x=>x.remove());
-  const wrap=document.createElement('div');
-  wrap.className='dl-ring-wrap';
-  wrap.innerHTML=`
-    <div class="dl-ring indeterm">
-      <svg viewBox="0 0 50 50">
-        <circle class="bg-ring" cx="25" cy="25" r="22"/>
-        <circle class="fg-ring" cx="25" cy="25" r="22"/>
-      </svg>
-      <div class="dl-pct-mini">⏳</div>
-    </div>
-    <div class="dl-mb">0 MB</div>
-  `;
-  coverEl.appendChild(wrap);
-  const x=document.createElement('button');
-  x.className='dl-cancel-x';
-  x.innerHTML='✕';
-  x.onclick=(e)=>{e.stopPropagation();if(onCancel)onCancel();};
+  coverEl.querySelectorAll('.dl-ring-wrap,.dl-cancel-x').forEach(x => x.remove());
+  const w = document.createElement('div');
+  w.className = 'dl-ring-wrap';
+  w.innerHTML = `<div class="dl-ring indeterm"><svg viewBox="0 0 50 50"><circle class="bg-ring" cx="25" cy="25" r="22"/><circle class="fg-ring" cx="25" cy="25" r="22"/></svg><div class="dl-pct-mini">⏳</div></div><div class="dl-mb">0 MB</div>`;
+  coverEl.appendChild(w);
+  const x = document.createElement('button');
+  x.className = 'dl-cancel-x'; x.textContent = '✕';
+  x.onclick = e => { e.stopPropagation(); if (onCancel) onCancel(); };
   coverEl.appendChild(x);
 }
-function updateCoverProgress(coverEl,pct,rcv,total){
-  if(!coverEl)return;
-  const ring=coverEl.querySelector('.dl-ring');
-  const fg=coverEl.querySelector('.dl-ring .fg-ring');
-  const pctEl=coverEl.querySelector('.dl-pct-mini');
-  const mb=coverEl.querySelector('.dl-mb');
-  if(!ring)return;
-  if(total>0){
+function updateCoverProgress(coverEl, pct, rcv, total) {
+  if (!coverEl) return;
+  const ring = coverEl.querySelector('.dl-ring');
+  const fg   = coverEl.querySelector('.fg-ring');
+  const pctEl= coverEl.querySelector('.dl-pct-mini');
+  const mb   = coverEl.querySelector('.dl-mb');
+  if (!ring) return;
+  const CIRC = 2 * Math.PI * 22; // 138.23
+  if (total > 0) {
     ring.classList.remove('indeterm');
-    const CIRC=2*Math.PI*22; // 138.23
-    fg.style.strokeDashoffset=CIRC-(pct/100)*CIRC;
-    pctEl.textContent=pct+'%';
-    mb.textContent=`${(rcv/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;
-  }else{
-    pctEl.textContent='⏳';
-    mb.textContent=`${(rcv/1048576).toFixed(1)} MB`;
+    fg.style.strokeDashoffset = CIRC - (pct / 100) * CIRC;
+    pctEl.textContent = pct + '%';
+    mb.textContent    = `${(rcv/1048576).toFixed(1)} / ${(total/1048576).toFixed(1)} MB`;
+  } else {
+    pctEl.textContent = '⏳';
+    mb.textContent    = `${(rcv/1048576).toFixed(1)} MB`;
   }
 }
-function hideCoverProgress(coverEl){
-  if(!coverEl)return;
+function hideCoverProgress(coverEl) {
+  if (!coverEl) return;
   coverEl.classList.remove('downloading');
-  coverEl.querySelectorAll('.dl-ring-wrap,.dl-cancel-x').forEach(x=>x.remove());
+  coverEl.querySelectorAll('.dl-ring-wrap,.dl-cancel-x').forEach(x => x.remove());
 }
 
-// Находит DOM элемент обложки по url
-function findCoverEl(url){
-  // Идём по всем книгам в текущем рендере
-  if(!S.sub)return null;
-  const books=S.books.get(S.sub.id);
-  if(!books)return null;
-  const b=books.find(x=>x.url===url);
-  if(!b)return null;
-  const key=S.sub.id+':'+b.name;
-  return document.getElementById('cv_'+key.replace(/[^a-z0-9]/gi,'_'));
+function addCachedDot(key) {
+  const safe = 'cv_' + key.replace(/[^a-z0-9]/gi, '_');
+  const el = document.getElementById(safe);
+  if (!el || el.querySelector('.book-cached-dot')) return;
+  const dot = document.createElement('div');
+  dot.className = 'book-cached-dot';
+  el.appendChild(dot);
 }
 
-async function ensureBlob(url,name,showProgress,autoOpen){
-  // 1) Память
-  let b=S.blobs.get(url);
-  if(b&&await isValidPdfBlob(b))return b;
-  if(b)S.blobs.delete(url);
-
-  // 2) IndexedDB
-  try{
-    b=await idbG('pdfs',url);
-    if(b&&await isValidPdfBlob(b)){
-      S.blobs.set(url,b);
-      return b;
-    }
-    if(b){
-      try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(url);}catch(e){}
-    }
-  }catch(e){}
-
-  // 3) Идёт ли уже загрузка этого url?
-  const existing=DOWNLOADS.get(url);
-  if(existing){
-    if(autoOpen)existing.autoOpen=true;
-    return existing.promise;
-  }
-
-  // 4) Стартуем загрузку
-  return startDownload(url,name,showProgress,autoOpen);
-}
-
-function startDownload(url,name,showProgress,autoOpen){
-  const ctrl=new AbortController();
-  const coverEl=showProgress?findCoverEl(url):null;
-
-  const cancel=()=>{
-    try{ctrl.abort();}catch(e){}
-    if(coverEl)hideCoverProgress(coverEl);
+function startDownload(url, name, key, showProgress, autoOpen) {
+  const ctrl    = new AbortController();
+  const coverEl = showProgress ? findCoverEl(url) : null;
+  const cancel  = () => {
+    try { ctrl.abort(); } catch(e) {}
+    hideCoverProgress(coverEl);
     DOWNLOADS.delete(url);
-    toast('Бекор шуд',1500);
+    toast('Бекор шуд', 1500);
   };
+  if (coverEl) showCoverProgress(coverEl, cancel);
 
-  if(coverEl)showCoverProgress(coverEl,name,cancel);
-
-  const promise=(async()=>{
-    try{
-      const resp=await fetch(url,{signal:ctrl.signal,cache:'no-store'});
-      if(!resp.ok)throw new Error('HTTP '+resp.status);
-      const total=+resp.headers.get('Content-Length')||0;
-      const rdr=resp.body.getReader();const chunks=[];let rcv=0;
-      while(true){
-        const {done,value}=await rdr.read();if(done)break;
-        chunks.push(value);rcv+=value.length;
-        if(coverEl){
-          const p=total?Math.round(rcv/total*100):0;
-          updateCoverProgress(coverEl,p,rcv,total);
-        }
+  const promise = (async () => {
+    try {
+      const resp = await fetch(url, { signal: ctrl.signal, cache:'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const total = +resp.headers.get('Content-Length') || 0;
+      const rdr   = resp.body.getReader();
+      const chunks= []; let rcv = 0;
+      while (true) {
+        const { done, value } = await rdr.read(); if (done) break;
+        chunks.push(value); rcv += value.length;
+        if (coverEl) updateCoverProgress(coverEl, total ? Math.round(rcv/total*100) : 0, rcv, total);
       }
-      const arr=new Uint8Array(rcv);let off=0;for(const c of chunks){arr.set(c,off);off+=c.length;}
-      const blob=new Blob([arr],{type:'application/pdf'});
+      const arr = new Uint8Array(rcv); let off = 0;
+      for (const c of chunks) { arr.set(c, off); off += c.length; }
+      const blob = new Blob([arr], { type:'application/pdf' });
+      if (!await isValidPdfBlob(blob)) throw new Error('Файли вайроншуда');
 
-      if(!(await isValidPdfBlob(blob))){
-        if(coverEl)hideCoverProgress(coverEl);
-        DOWNLOADS.delete(url);
-        toast('PDF файли вайроншуда',3000);
-        return null;
-      }
-
-      S.blobs.set(url,blob);
-      try{await idbS('pdfs',url,blob);}catch(e){console.warn('IDB save failed',e);}
-
-      if(coverEl)hideCoverProgress(coverEl);
-      const dl=DOWNLOADS.get(url);
+      S.blobs.set(url, blob);
+      S.cachedUrls.add(url);
+      idbS('pdfs', url, blob).catch(() => {});
+      hideCoverProgress(coverEl);
+      const dl = DOWNLOADS.get(url);
       DOWNLOADS.delete(url);
-
-      // Если запросили автооткрытие книги после загрузки
-      if(dl&&dl.autoOpen){
-        openBookFromBlob(url,name,dl.key,blob);
-      }
-      // Если обложки нет — сгенерим
-      if(!S.covers.has(url)&&S.currentSubId){
-        queueCover(url,name,(dl?.key)||name,S.cat?.c1||'#2563eb',S.cat?.c2||'#3b82f6',S.currentSubId);
-      }
+      addCachedDot(dl?.key || key || name);
+      if (dl?.autoOpen) openBookFromBlob(url, name, dl.key || key, blob);
+      if (!S.covers.has(url) && S.currentSubId)
+        fastCover(url, name, dl?.key || key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
       return blob;
-    }catch(e){
-      if(coverEl)hideCoverProgress(coverEl);
+    } catch(e) {
+      hideCoverProgress(coverEl);
       DOWNLOADS.delete(url);
-      if(e.name==='AbortError')return null;
-      console.warn('Download failed',e);
-      toast('Хатогии шабака: '+(e.message||''),3000);
+      if (e.name !== 'AbortError') toast('Хатогии шабака: ' + (e.message||''), 3000);
       return null;
     }
   })();
 
-  DOWNLOADS.set(url,{ctrl,promise,cover:coverEl,autoOpen:autoOpen===true,key:null});
+  DOWNLOADS.set(url, { ctrl, promise, autoOpen: autoOpen === true, key: key || name });
   return promise;
 }
 
-// Открывает книгу из готового blob (без диалога)
-async function openBookFromBlob(url,name,key,blob){
-  if(!blob)return;
+/* ══════════════════════════════════════════
+   OPEN BOOK — ⚡ INSTANT VIA URL STREAMING
+══════════════════════════════════════════ */
+async function openBook(url, name, key) {
+  // 1. In-memory blob — instant open
+  let blob = S.blobs.get(url);
+  if (blob && !await isValidPdfBlob(blob)) { blob = null; S.blobs.delete(url); }
+  if (blob) return openBookFromBlob(url, name, key, blob);
+
+  // 2. IDB blob — instant open
+  try {
+    blob = await idbG('pdfs', url);
+    if (blob && !await isValidPdfBlob(blob)) { blob = null; idbDel('pdfs', url).catch(() => {}); }
+    if (blob) { S.blobs.set(url, blob); S.cachedUrls.add(url); return openBookFromBlob(url, name, key, blob); }
+  } catch(e) {}
+
+  // 3. Already downloading — wait for it
+  const ex = DOWNLOADS.get(url);
+  if (ex) { ex.autoOpen = true; ex.key = key; toast('Бор кардан давом дорад...', 1500); return; }
+
+  // 4. Open immediately via URL streaming
+  openBookFromUrl(url, name, key);
+  // Background download for cache + cover
+  bgDownload(url, name, key);
+}
+
+async function openBookFromUrl(url, name, key) {
   $('reader').classList.add('on');
-  $('rdrTitle').textContent=name;
-  S.key=key||name;S.url=url;S.zoom=1;S.light=false;
-  $('rdrArea').classList.remove('light');
-  $('lightBtn').textContent='☀️';
-  clearFind();
-  try{
-    if(S.pdf){try{S.pdf.destroy();}catch(e){}S.pdf=null;}
-    const ab=await blob.arrayBuffer();
-    S.pdf=await pdfjsLib.getDocument({data:ab}).promise;
-    S.pages=S.pdf.numPages;
-    const sp=getProgress(S.key);
-    S.page=sp?Math.min(sp.page,S.pages):1;
+  $('rdrTitle').textContent = name;
+  S.key = key || name; S.url = url; S.zoom = 1;
+  resetReaderBg(); clearFind(); ttsStop();
+
+  try {
+    if (S.pdf) { try { S.pdf.destroy(); } catch(e) {} S.pdf = null; }
+    toast('⏳ Кушода истодааст...', 2000);
+    // pdf.js loads pages on demand via range requests
+    S.pdf = await pdfjsLib.getDocument({
+      url,
+      rangeChunkSize: 65536,
+      disableStream: false,
+      disableRange:  false,
+    }).promise;
+    S.pages = S.pdf.numPages;
+    const sp = getProgress(S.key);
+    S.page   = sp ? Math.min(sp.page, S.pages) : 1;
     await renderPage(S.page);
-    saveProgress();
-    showFoot();
-    if(!S.covers.has(url)){
-      queueCover(url,name,S.key,S.cat?.c1||'#2563eb',S.cat?.c2||'#3b82f6',S.currentSubId);
-    }
-  }catch(e){
-    console.error('Open book error:',e);
-    toast('Хатогии кушодан: '+(e.message||''),3000);
+    saveProgress(); showFoot();
+  } catch(e) {
+    console.error('OpenUrl error:', e);
+    toast('Хатогии кушодан: ' + (e.message || ''), 3000);
     closeReader();
   }
 }
 
-async function openBook(url,name,key){
-  // Сначала смотрим — есть ли валидный PDF в кеше?
-  let b=S.blobs.get(url);
-  if(b&&await isValidPdfBlob(b)){
-    return openBookFromBlob(url,name,key,b);
-  }
-  if(b)S.blobs.delete(url);
-  try{
-    b=await idbG('pdfs',url);
-    if(b&&await isValidPdfBlob(b)){
-      S.blobs.set(url,b);
-      return openBookFromBlob(url,name,key,b);
-    }
-    if(b){try{const d=await db();const t=d.transaction('pdfs','readwrite');t.objectStore('pdfs').delete(url);}catch(e){}}
-  }catch(e){}
 
-  // Нет в кеше → запускаем загрузку с прогрессом на обложке
-  // Если уже идёт — просто пометим что нужно открыть
-  const existing=DOWNLOADS.get(url);
-  if(existing){
-    existing.autoOpen=true;
-    existing.key=key;
-    toast('Бор кардан давом дорад...',1500);
-    return;
-  }
-  // Стартуем новую загрузку с автооткрытием
-  const dlObj={autoOpen:true,key};
-  const blob=await startDownload(url,name,true,true);
-  // Если запись о загрузке создалась — обновим key
-  const d=DOWNLOADS.get(url);
-  if(d){d.key=key;}
-  // Если blob уже вернулся (быстро) — откроем
-  if(blob){
-    openBookFromBlob(url,name,key,blob);
+// Background download — shows progress in reader footer
+async function bgDownload(url, name, key) {
+  if (DOWNLOADS.has(url)) return;
+  const ctrl = new AbortController();
+  const promise = (async () => {
+    try {
+      const resp = await fetch(url, { signal: ctrl.signal, cache:'no-store' });
+      if (!resp.ok) throw new Error('HTTP ' + resp.status);
+      const total = +resp.headers.get('Content-Length') || 0;
+      const rdr = resp.body.getReader();
+      const chunks = []; let rcv = 0;
+      while (true) {
+        const { done, value } = await rdr.read(); if (done) break;
+        chunks.push(value); rcv += value.length;
+        // Update footer with download progress
+        if ($('reader').classList.contains('on') && S.url === url) {
+          const pct = total ? Math.round(rcv/total*100) : 0;
+          $('pageInfo').textContent = `${S.page}/${S.pages} · ⬇${pct}%`;
+        }
+      }
+      const arr = new Uint8Array(rcv); let off = 0;
+      for (const c of chunks) { arr.set(c, off); off += c.length; }
+      const blob = new Blob([arr], { type:'application/pdf' });
+      if (!await isValidPdfBlob(blob)) throw new Error('Файли вайроншуда');
+      S.blobs.set(url, blob); S.cachedUrls.add(url);
+      idbS('pdfs', url, blob).catch(() => {});
+      // Generate cover from full PDF (if not already generating)
+      if (!S.covers.has(url) && !S.coverPending.has(url)) {
+        fastCover(url, name, key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
+      }
+      // Update footer back to normal
+      if ($('reader').classList.contains('on') && S.url === url) {
+        $('pageInfo').textContent = `${S.page} / ${S.pages}`;
+      }
+      return blob;
+    } catch(e) {
+      if (e.name !== 'AbortError') console.warn('BG download failed:', e.message);
+      return null;
+    } finally {
+      DOWNLOADS.delete(url);
+    }
+  })();
+  DOWNLOADS.set(url, { ctrl, promise, autoOpen: false, key: key || name });
+}
+
+async function openBookFromBlob(url, name, key, blob) {
+  if (!blob) return;
+  $('reader').classList.add('on');
+  $('rdrTitle').textContent = name;
+  S.key = key || name; S.url = url; S.zoom = 1;
+  resetReaderBg(); clearFind(); ttsStop();
+
+  try {
+    if (S.pdf) { try { S.pdf.destroy(); } catch(e) {} S.pdf = null; }
+    const ab = await blob.arrayBuffer();
+    S.pdf    = await pdfjsLib.getDocument({ data: ab }).promise;
+    S.pages  = S.pdf.numPages;
+    const sp = getProgress(S.key);
+    S.page   = sp ? Math.min(sp.page, S.pages) : 1;
+    await renderPage(S.page);
+    saveProgress(); showFoot();
+    if (!S.covers.has(url) && S.currentSubId)
+      fastCover(url, name, S.key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
+  } catch(e) {
+    console.error('OpenBlob error:', e);
+    toast('Хатогии кушодан: ' + (e.message || ''), 3000);
+    closeReader();
   }
 }
 
-function closeReader(){
-  saveProgress();
+function closeReader() {
+  saveProgress(); ttsStop();
   $('reader').classList.remove('on');
-  if(S.pdf){try{S.pdf.destroy();}catch(e){}S.pdf=null;}
-  S.key=null;S.url=null;closeFind();renderLastRead();
+  if (S.pdf) { try { S.pdf.destroy(); } catch(e) {} S.pdf = null; }
+  S.key = null; S.url = null;
+  closeFind(); renderLastRead();
 }
 
-// ⭐ СКАЧИВАНИЕ С ВЫБОРОМ ПАПКИ
-const IS_ANDROID_APP = typeof KitobAndroid !== 'undefined' && KitobAndroid && KitobAndroid.isAndroidApp;
+/* ══════════════════════════════════════════
+   DOWNLOAD FOR USER
+══════════════════════════════════════════ */
+const IS_ANDROID = typeof KitobAndroid !== 'undefined' && KitobAndroid?.isAndroidApp;
 
-async function downloadBook(url,name){
-  const fn=name+'.pdf';
-  // Сначала получим PDF (с диалогом прогресса если нужно)
-  const blob=await ensureBlob(url,name,true);
-  if(!blob)return;
-
-  // Способ 1: Android приложение — нативный диалог выбора папки (SAF)
-  if(IS_ANDROID_APP){
-    try{
-      const reader=new FileReader();
-      reader.onloadend=function(){
-        const b64=reader.result.split(',')[1];
-        KitobAndroid.saveFile(b64,fn,'application/pdf');
-      };
-      reader.readAsDataURL(blob);
-      return;
-    }catch(e){console.warn('Android save failed',e);}
+async function downloadBook(url, name) {
+  const fn = name + '.pdf';
+  let blob = S.blobs.get(url) || await idbG('pdfs', url).catch(() => null);
+  if (blob && !await isValidPdfBlob(blob)) blob = null;
+  if (!blob) {
+    if (DOWNLOADS.has(url)) { toast('Бор кардан давом дорад...', 1500); return; }
+    toast('⬇ Юклаб гирифтан...', 2000);
+    blob = await startDownload(url, name, name, true, false);
   }
-
-  // Способ 2: showSaveFilePicker (Chrome/Edge desktop) — диалог "куда сохранить?"
-  if('showSaveFilePicker' in window){
-    try{
-      const handle=await window.showSaveFilePicker({
-        suggestedName:fn,
-        types:[{description:'PDF',accept:{'application/pdf':['.pdf']}}]
-      });
-      const w=await handle.createWritable();
-      await w.write(blob);
-      await w.close();
-      toast(`✓ «${fn}» сабт шуд`,3000);
-      return;
-    }catch(e){
-      if(e.name==='AbortError')return; // пользователь отменил
-      // Иначе fallback
-    }
-  }
-
-  // Способ 3: обычное скачивание (Safari, старые браузеры)
-  const blobUrl=URL.createObjectURL(blob);
-  const a=document.createElement('a');
-  a.href=blobUrl;a.download=fn;a.style.display='none';
-  document.body.appendChild(a);a.click();
-  setTimeout(()=>{document.body.removeChild(a);URL.revokeObjectURL(blobUrl);},2000);
-  toast(`✓ «${fn}» дар Downloads/ сабт шуд`,3500);
+  if (!blob) return;
+  saveBlobToUser(blob, fn);
 }
-function downloadCurrent(){if(S.url){const n=$('rdrTitle').textContent;downloadBook(S.url,n);}}
+function downloadCurrent() {
+  if (S.url) downloadBook(S.url, $('rdrTitle').textContent);
+}
+async function saveBlobToUser(blob, fn) {
+  if (IS_ANDROID) {
+    try {
+      const reader = new FileReader();
+      reader.onloadend = () => KitobAndroid.saveFile(reader.result.split(',')[1], fn, 'application/pdf');
+      reader.readAsDataURL(blob); return;
+    } catch(e) {}
+  }
+  if ('showSaveFilePicker' in window) {
+    try {
+      const h = await window.showSaveFilePicker({ suggestedName: fn, types:[{description:'PDF',accept:{'application/pdf':['.pdf']}}] });
+      const w = await h.createWritable();
+      await w.write(blob); await w.close();
+      toast(`✓ «${fn}» сабт шуд`, 3000); return;
+    } catch(e) { if (e.name === 'AbortError') return; }
+  }
+  const u = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = u; a.download = fn; a.style.display = 'none';
+  document.body.appendChild(a); a.click();
+  setTimeout(() => { document.body.removeChild(a); URL.revokeObjectURL(u); }, 2000);
+  toast(`✓ «${fn}» юклаб гирифта шуд`, 3000);
+}
 
-const slider=$('slider');
-async function renderPage(n){
-  if(!S.pdf)return;
-  const area=$('rdrArea');
-  const p=await S.pdf.getPage(n);
-  const aw=area.clientWidth-8,ah=area.clientHeight-8;
-  const nat=p.getViewport({scale:1});
-  const fit=Math.min(aw/nat.width,ah/nat.height)*S.zoom;
-  const scale=fit*DPR;
-  const vp=p.getViewport({scale});
-  const cv=document.createElement('canvas');
-  cv.width=vp.width;cv.height=vp.height;
-  cv.style.width=(vp.width/DPR)+'px';
-  cv.style.height=(vp.height/DPR)+'px';
-  const ctx=cv.getContext('2d',{alpha:false});
-  if(S.light){ctx.fillStyle='#fff';ctx.fillRect(0,0,vp.width,vp.height);}
-  await p.render({canvasContext:ctx,viewport:vp}).promise;
-  slider.innerHTML='';
-  const sl=document.createElement('div');sl.className='slide';
-  sl.appendChild(cv);
-  slider.appendChild(sl);
-  slider.style.transform='translateX(0)';
-  S.page=n;
-  $('pageInfo').textContent=`${n} / ${S.pages}`;
-  if(S.findQ)renderFindHl(n);
+/* ══════════════════════════════════════════
+   RENDER PAGE
+══════════════════════════════════════════ */
+const slider = $('slider');
+
+async function renderPage(n) {
+  if (!S.pdf) return;
+  const area = $('rdrArea');
+  const p    = await S.pdf.getPage(n);
+  const aw   = area.clientWidth - 8;
+  const ah   = area.clientHeight - 8;
+  const nat  = p.getViewport({ scale: 1 });
+  const fit  = Math.min(aw / nat.width, ah / nat.height) * S.zoom;
+  const vp   = p.getViewport({ scale: fit * DPR });
+  const cv   = document.createElement('canvas');
+  cv.width   = vp.width; cv.height = vp.height;
+  cv.style.width  = (vp.width  / DPR) + 'px';
+  cv.style.height = (vp.height / DPR) + 'px';
+  const ctx  = cv.getContext('2d', { alpha: false });
+  // Reader background fills transparent PDF regions
+  const fills = { dark:'#1a1a1a', light:'#fff', sepia:'#f5e6c0' };
+  ctx.fillStyle = fills[S.rdrBg] || '#1a1a1a';
+  ctx.fillRect(0, 0, vp.width, vp.height);
+  await p.render({ canvasContext: ctx, viewport: vp }).promise;
+  slider.innerHTML = '';
+  const sl = document.createElement('div'); sl.className = 'slide';
+  sl.appendChild(cv); slider.appendChild(sl);
+  slider.style.transform = 'translateX(0)';
+  S.page = n;
+  $('pageInfo').textContent = `${n} / ${S.pages}`;
+  if (S.findQ) renderFindHl(n);
   saveProgress();
 }
 
-function turnPage(dir){
-  const np=S.page+dir;
-  if(np<1||np>S.pages)return;
-  animateSlide(dir).then(()=>renderPage(np));
+function turnPage(dir) {
+  const np = S.page + dir;
+  if (np < 1 || np > S.pages) return;
+  animateSlide(dir).then(() => renderPage(np));
 }
-async function animateSlide(dir){
-  if(!slider.firstChild)return;
-  const w=$('rdrArea').clientWidth;
-  return new Promise(res=>{
-    slider.style.transition='transform .28s ease-out';
-    slider.style.transform=`translateX(${-dir*w}px)`;
-    setTimeout(()=>{slider.style.transition='';res();},290);
+async function animateSlide(dir) {
+  if (!slider.firstChild) return;
+  const w = $('rdrArea').clientWidth;
+  return new Promise(res => {
+    slider.style.transition = 'transform .24s cubic-bezier(.4,0,.2,1)';
+    slider.style.transform  = `translateX(${-dir * w}px)`;
+    setTimeout(() => { slider.style.transition = ''; res(); }, 260);
   });
 }
 
-(function initGestures(){
-  const area=$('rdrArea');
-  let sx=0,sy=0,dragging=false,t0=0,moved=false;
-  area.addEventListener('touchstart',e=>{
-    if(e.touches.length!==1)return;
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;t0=Date.now();moved=false;dragging=true;
-    slider.style.transition='';
-  },{passive:true});
-  area.addEventListener('touchmove',e=>{
-    if(!dragging||e.touches.length!==1)return;
-    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
-    if(Math.abs(dx)>8||Math.abs(dy)>8)moved=true;
-    if(Math.abs(dx)>Math.abs(dy)){
-      slider.style.transform=`translateX(${dx}px)`;
-    }
-  },{passive:true});
-  area.addEventListener('touchend',e=>{
-    if(!dragging)return;dragging=false;
+/* Reader background cycle */
+const RDR_BGS = ['dark','light','sepia'];
+const RDR_ICONS = { dark:'☀️', light:'🌙', sepia:'📖' };
+function resetReaderBg() {
+  S.rdrBg = 'dark';
+  $('rdrArea').className = 'reader-area';
+  $('lightBtn').textContent = '☀️';
+}
+function cycleReaderBg() {
+  S.rdrBg = RDR_BGS[(RDR_BGS.indexOf(S.rdrBg) + 1) % RDR_BGS.length];
+  $('lightBtn').textContent = RDR_ICONS[S.rdrBg];
+  const area = $('rdrArea');
+  area.className = 'reader-area' + (S.rdrBg !== 'dark' ? ' ' + S.rdrBg : '');
+  if (S.pdf) renderPage(S.page);
+}
+
+/* ══════════════════════════════════════════
+   GESTURES
+══════════════════════════════════════════ */
+(function initGestures() {
+  const area = $('rdrArea');
+  let sx=0, sy=0, dragging=false, t0=0, moved=false;
+
+  area.addEventListener('touchstart', e => {
+    if (e.touches.length !== 1) return;
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+    t0=Date.now(); moved=false; dragging=true;
+    slider.style.transition = '';
+  }, { passive:true });
+
+  area.addEventListener('touchmove', e => {
+    if (!dragging || e.touches.length !== 1) return;
+    const dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy;
+    if (Math.abs(dx)>8||Math.abs(dy)>8) moved = true;
+    if (Math.abs(dx)>Math.abs(dy)) slider.style.transform = `translateX(${dx}px)`;
+  }, { passive:true });
+
+  area.addEventListener('touchend', e => {
+    if (!dragging) return; dragging=false;
     const t=e.changedTouches[0];
-    const dx=t.clientX-sx,dy=t.clientY-sy;
-    const dt=Date.now()-t0;
-    const w=area.clientWidth;
-    if(!moved && dt<280){
-      if(t.clientX<w*0.25)turnPage(-1);
-      else if(t.clientX>w*0.75)turnPage(1);
+    const dx=t.clientX-sx, dt=Date.now()-t0, w=area.clientWidth;
+    if (!moved && dt<280) {
+      if (t.clientX<w*.25) turnPage(-1);
+      else if (t.clientX>w*.75) turnPage(1);
       else toggleFoot();
-      slider.style.transform='translateX(0)';return;
+      slider.style.transform='translateX(0)'; return;
     }
-    if(Math.abs(dx)>w*0.25 || (Math.abs(dx)>50 && dt<300)){
-      if(dx<0 && S.page<S.pages){turnPage(1);return;}
-      if(dx>0 && S.page>1){turnPage(-1);return;}
+    if (Math.abs(dx)>w*.25 || (Math.abs(dx)>50&&dt<300)) {
+      if (dx<0&&S.page<S.pages) { turnPage(1); return; }
+      if (dx>0&&S.page>1)       { turnPage(-1);return; }
     }
     slider.style.transition='transform .2s ease-out';
     slider.style.transform='translateX(0)';
-  },{passive:true});
+  }, { passive:true });
+
   let md=false;
-  area.addEventListener('mousedown',e=>{md=true;sx=e.clientX;sy=e.clientY;t0=Date.now();moved=false;});
-  window.addEventListener('mousemove',e=>{if(!md)return;const dx=e.clientX-sx;if(Math.abs(dx)>5)moved=true;slider.style.transform=`translateX(${dx}px)`;});
-  window.addEventListener('mouseup',e=>{
-    if(!md)return;md=false;
-    const dx=e.clientX-sx,dt=Date.now()-t0;const w=area.clientWidth;
-    if(!moved&&dt<280){
-      if(e.clientX-area.getBoundingClientRect().left<w*0.25)turnPage(-1);
-      else if(e.clientX-area.getBoundingClientRect().left>w*0.75)turnPage(1);
-      else toggleFoot();
-      slider.style.transform='translateX(0)';return;
+  area.addEventListener('mousedown', e => { md=true; sx=e.clientX; sy=e.clientY; t0=Date.now(); moved=false; });
+  window.addEventListener('mousemove', e => { if(!md)return; if(Math.abs(e.clientX-sx)>5)moved=true; slider.style.transform=`translateX(${e.clientX-sx}px)`; });
+  window.addEventListener('mouseup',   e => {
+    if (!md) return; md=false;
+    const dx=e.clientX-sx, dt=Date.now()-t0, w=area.clientWidth;
+    if (!moved&&dt<280) {
+      const lx = e.clientX - area.getBoundingClientRect().left;
+      if (lx<w*.25) turnPage(-1); else if(lx>w*.75) turnPage(1); else toggleFoot();
+      slider.style.transform='translateX(0)'; return;
     }
-    if(Math.abs(dx)>w*0.25){
-      if(dx<0&&S.page<S.pages)return turnPage(1);
-      if(dx>0&&S.page>1)return turnPage(-1);
+    if (Math.abs(dx)>w*.25) {
+      if (dx<0&&S.page<S.pages) return turnPage(1);
+      if (dx>0&&S.page>1)       return turnPage(-1);
     }
-    slider.style.transition='transform .2s';slider.style.transform='translateX(0)';
+    slider.style.transition='transform .2s'; slider.style.transform='translateX(0)';
   });
-  window.addEventListener('resize',()=>{if(S.pdf&&$('reader').classList.contains('on'))renderPage(S.page);});
-  document.addEventListener('keydown',e=>{
-    if(!$('reader').classList.contains('on'))return;
-    if(e.target.tagName==='INPUT')return;
-    if(e.key==='ArrowRight')turnPage(1);
-    else if(e.key==='ArrowLeft')turnPage(-1);
-    else if(e.key==='Escape')closeReader();
+
+  window.addEventListener('resize', () => { if (S.pdf && $('reader').classList.contains('on')) renderPage(S.page); });
+  document.addEventListener('keydown', e => {
+    if (!$('reader').classList.contains('on')) return;
+    if (e.target.tagName==='INPUT') return;
+    if (e.key==='ArrowRight') turnPage(1);
+    else if (e.key==='ArrowLeft') turnPage(-1);
+    else if (e.key==='Escape') { if ($('findBar').classList.contains('on')) closeFind(); else closeReader(); }
   });
 })();
 
-let footTimer;
-function showFoot(){$('foot').classList.remove('hide');clearTimeout(footTimer);footTimer=setTimeout(()=>$('foot').classList.add('hide'),3500);}
-function toggleFoot(){$('foot').classList.toggle('hide');if(!$('foot').classList.contains('hide'))showFoot();}
-function changeZoom(d){S.zoom=Math.max(0.5,Math.min(3.5,S.zoom+d));renderPage(S.page);showFoot();}
-function toggleLight(){S.light=!S.light;$('rdrArea').classList.toggle('light',S.light);$('lightBtn').textContent=S.light?'🌙':'☀️';renderPage(S.page);}
+/* ══════════════════════════════════════════
+   FOOTER
+══════════════════════════════════════════ */
+let footTmr;
+function showFoot() { $('foot').classList.remove('hide'); clearTimeout(footTmr); footTmr=setTimeout(()=>$('foot').classList.add('hide'),3500); }
+function toggleFoot() { $('foot').classList.toggle('hide'); if(!$('foot').classList.contains('hide'))showFoot(); }
+function changeZoom(d) { S.zoom=Math.max(.5,Math.min(3.5,S.zoom+d)); renderPage(S.page); showFoot(); }
 
-function openJump(){
-  if(!S.pdf||!S.pages){toast('Аввал китобро кушоед');return;}
-  $('jumpSub').textContent=`1 — ${S.pages}`;
-  $('jumpInp').value=S.page;
-  $('jumpInp').max=S.pages;
-  $('jumpInp').min=1;
+/* ══════════════════════════════════════════
+   JUMP TO PAGE
+══════════════════════════════════════════ */
+function openJump() {
+  if (!S.pdf) return;
+  $('jumpSub').textContent = `1 — ${S.pages}`;
+  $('jumpInp').value = S.page; $('jumpInp').max = S.pages; $('jumpInp').min = 1;
   $('jumpModal').classList.add('on');
-  setTimeout(()=>{
-    const inp=$('jumpInp');
-    inp.focus();inp.select();
-    inp.onkeydown=function(e){
-      if(e.key==='Enter'){e.preventDefault();doJump();}
-      else if(e.key==='Escape'){e.preventDefault();closeJump();}
+  setTimeout(() => {
+    const inp = $('jumpInp'); inp.focus(); inp.select();
+    inp.onkeydown = e => {
+      if (e.key==='Enter')  { e.preventDefault(); doJump();   }
+      if (e.key==='Escape') { e.preventDefault(); closeJump();}
     };
-  },100);
+  }, 100);
 }
-function closeJump(){$('jumpModal').classList.remove('on');}
-async function doJump(){
-  const v=parseInt($('jumpInp').value,10);
-  if(isNaN(v)||v<1||v>S.pages){toast(`Рақамро аз 1 то ${S.pages} ворид кунед`,3000);return;}
+function closeJump() { $('jumpModal').classList.remove('on'); }
+async function doJump() {
+  const v = parseInt($('jumpInp').value, 10);
+  if (isNaN(v) || v<1 || v>S.pages) { toast(`1 — ${S.pages}`, 2000); return; }
   closeJump();
-  if(v!==S.page)await renderPage(v);
+  if (v !== S.page) await renderPage(v);
   showFoot();
 }
 
-let findT;
-function toggleFind(){const b=$('findBar');if(b.classList.contains('on'))closeFind();else openFind();}
-function openFind(){$('findBar').classList.add('on');setTimeout(()=>$('findInp').focus(),80);}
-function closeFind(){$('findBar').classList.remove('on');}
-function clearFind(){S.findQ='';S.findHits=[];S.findCurr=-1;$('findCnt').textContent='0/0';$('findInp').value='';$('hlLayer').innerHTML='';}
-$('findInp')?.addEventListener('input',e=>{clearTimeout(findT);findT=setTimeout(()=>runFind(e.target.value.trim()),300);});
+/* ══════════════════════════════════════════
+   FIND IN PDF
+══════════════════════════════════════════ */
+let findDeb;
+function toggleFind() { $('findBar').classList.contains('on') ? closeFind() : openFind(); }
+function openFind()   { $('findBar').classList.add('on'); setTimeout(()=>$('findInp').focus(),80); }
+function closeFind()  { $('findBar').classList.remove('on'); clearFind(); }
+function clearFind()  {
+  S.findQ=''; S.findHits=[]; S.findCurr=-1;
+  $('findCnt').textContent='0/0'; $('findInp').value=''; $('hlLayer').innerHTML='';
+}
+$('findInp')?.addEventListener('input', e => {
+  clearTimeout(findDeb); findDeb = setTimeout(()=>runFind(e.target.value.trim()),300);
+});
 
-async function runFind(q){
-  $('hlLayer').innerHTML='';
-  if(!q||!S.pdf){clearFind();return;}
-  S.findQ=q;$('findCnt').textContent='...';
-  const lq=q.toLowerCase();const hits=[];
-  for(let p=1;p<=S.pages;p++){
-    try{
-      const pg=await S.pdf.getPage(p);
-      const tc=await pg.getTextContent();
-      tc.items.forEach((it,idx)=>{
-        if(!it.str)return;
-        const s=it.str.toLowerCase();let f=0;
-        while((f=s.indexOf(lq,f))!==-1){hits.push({page:p,itemIdx:idx,charStart:f,charEnd:f+lq.length});f+=lq.length;}
+async function runFind(q) {
+  $('hlLayer').innerHTML = '';
+  if (!q || !S.pdf) { clearFind(); return; }
+  S.findQ = q; $('findCnt').textContent = '...';
+  const lq = q.toLowerCase(); const hits = [];
+  for (let pg = 1; pg <= S.pages; pg++) {
+    try {
+      const page = await S.pdf.getPage(pg);
+      const tc   = await page.getTextContent();
+      tc.items.forEach((it, idx) => {
+        if (!it.str) return;
+        const s = it.str.toLowerCase(); let f = 0;
+        while ((f = s.indexOf(lq, f)) !== -1) {
+          hits.push({ page: pg, itemIdx: idx, charStart: f, charEnd: f+lq.length }); f += lq.length;
+        }
       });
-      if(p%5===0)$('findCnt').textContent=`…${hits.length}`;
-    }catch(e){}
+      if (pg % 5 === 0) $('findCnt').textContent = `…${hits.length}`;
+    } catch(e) {}
   }
-  S.findHits=hits;
-  if(!hits.length){$('findCnt').textContent='0/0';toast('Ёфт нашуд');return;}
-  let i=hits.findIndex(h=>h.page===S.page);if(i<0)i=0;
+  S.findHits = hits;
+  if (!hits.length) { $('findCnt').textContent = '0/0'; toast('Ёфт нашуд'); return; }
+  let i = hits.findIndex(h => h.page === S.page); if (i<0) i=0;
   await goHit(i);
 }
-async function goHit(i){
-  if(!S.findHits.length)return;
-  i=(i+S.findHits.length)%S.findHits.length;S.findCurr=i;
-  const h=S.findHits[i];
-  $('findCnt').textContent=`${i+1}/${S.findHits.length}`;
-  if(S.page!==h.page)await renderPage(h.page);
+async function goHit(i) {
+  if (!S.findHits.length) return;
+  i = (i + S.findHits.length) % S.findHits.length; S.findCurr = i;
+  const h = S.findHits[i];
+  $('findCnt').textContent = `${i+1}/${S.findHits.length}`;
+  if (S.page !== h.page) await renderPage(h.page);
   renderFindHl(h.page);
 }
-async function findStep(d){if(S.findHits.length)await goHit(S.findCurr+d);}
-async function renderFindHl(pn){
-  const l=$('hlLayer');l.innerHTML='';
-  if(!S.findQ)return;
-  try{
-    const p=await S.pdf.getPage(pn);
-    const tc=await p.getTextContent();
-    const area=$('rdrArea');
-    const cv=slider.querySelector('canvas');if(!cv)return;
-    const aw=area.clientWidth-8,ah=area.clientHeight-8;
-    const nat=p.getViewport({scale:1});
-    const fit=Math.min(aw/nat.width,ah/nat.height)*S.zoom;
-    const vp=p.getViewport({scale:fit});
-    const r=cv.getBoundingClientRect(),pr=area.getBoundingClientRect();
-    l.style.left=(r.left-pr.left)+'px';l.style.top=(r.top-pr.top)+'px';
-    l.style.width=r.width+'px';l.style.height=r.height+'px';
-    const hits=S.findHits.filter(h=>h.page===pn);
-    hits.forEach(h=>{
-      const it=tc.items[h.itemIdx];if(!it)return;
-      const lq=S.findQ.toLowerCase();const s=it.str.toLowerCase();
-      if(s.indexOf(lq,h.charStart)!==h.charStart)return;
-      const tx=pdfjsLib.Util.transform(vp.transform,it.transform);
-      const fs=Math.hypot(tx[2],tx[3]);
-      const tw=it.width*fit,x=tx[4],y=tx[5]-fs;
-      const fr=h.charStart/Math.max(1,it.str.length);
-      const wfr=(h.charEnd-h.charStart)/Math.max(1,it.str.length);
-      const b=document.createElement('div');b.className='hl-box';
-      if(S.findHits[S.findCurr]===h)b.classList.add('curr');
-      b.style.left=(x+fr*tw)+'px';b.style.top=y+'px';
-      b.style.width=(tw*wfr)+'px';b.style.height=(fs*1.18)+'px';
+async function findStep(d) { if (S.findHits.length) await goHit(S.findCurr + d); }
+
+async function renderFindHl(pn) {
+  const l = $('hlLayer'); l.innerHTML = '';
+  if (!S.findQ || !S.pdf) return;
+  try {
+    const p    = await S.pdf.getPage(pn);
+    const tc   = await p.getTextContent();
+    const area = $('rdrArea');
+    const cv   = slider.querySelector('canvas'); if (!cv) return;
+    const aw   = area.clientWidth-8, ah = area.clientHeight-8;
+    const nat  = p.getViewport({scale:1});
+    const fit  = Math.min(aw/nat.width, ah/nat.height) * S.zoom;
+    const vp   = p.getViewport({scale:fit});
+    const r=cv.getBoundingClientRect(), pr=area.getBoundingClientRect();
+    l.style.left=(r.left-pr.left)+'px'; l.style.top=(r.top-pr.top)+'px';
+    l.style.width=r.width+'px'; l.style.height=r.height+'px';
+    const hits = S.findHits.filter(h => h.page===pn);
+    hits.forEach(h => {
+      const it = tc.items[h.itemIdx]; if (!it) return;
+      const lq = S.findQ.toLowerCase(), s = it.str.toLowerCase();
+      if (s.indexOf(lq, h.charStart) !== h.charStart) return;
+      const tx = pdfjsLib.Util.transform(vp.transform, it.transform);
+      const fs = Math.hypot(tx[2],tx[3]);
+      const tw = it.width*fit, x=tx[4], y=tx[5]-fs;
+      const fr = h.charStart/Math.max(1,it.str.length);
+      const wf = (h.charEnd-h.charStart)/Math.max(1,it.str.length);
+      const b  = document.createElement('div'); b.className='hl-box';
+      if (S.findHits[S.findCurr]===h) b.classList.add('curr');
+      b.style.left=(x+fr*tw)+'px'; b.style.top=y+'px';
+      b.style.width=(tw*wf)+'px';  b.style.height=(fs*1.18)+'px';
       l.appendChild(b);
     });
-  }catch(e){}
+  } catch(e) {}
 }
 
-function getProgress(k){try{const a=JSON.parse(localStorage.getItem('kk_prog')||'{}');return a[k];}catch(e){return null;}}
-function saveProgress(){
-  if(!S.key||!S.pages)return;
-  try{
-    const a=JSON.parse(localStorage.getItem('kk_prog')||'{}');
-    a[S.key]={page:S.page,pages:S.pages,url:S.url,ts:Date.now()};
-    localStorage.setItem('kk_prog',JSON.stringify(a));
-    let l=JSON.parse(localStorage.getItem('kk_last')||'[]');
-    l=l.filter(x=>x!==S.key);l.unshift(S.key);if(l.length>8)l=l.slice(0,8);
-    localStorage.setItem('kk_last',JSON.stringify(l));
-  }catch(e){}
+/* ══════════════════════════════════════════
+   COPY PAGE TEXT
+══════════════════════════════════════════ */
+async function copyPageText() {
+  if (!S.pdf || !S.page) { toast('Аввал китобро кушоед'); return; }
+  try {
+    const page = await S.pdf.getPage(S.page);
+    const tc   = await page.getTextContent();
+    const text = tc.items.map(i => i.str).join(' ').replace(/\s+/g,' ').trim();
+    if (!text) { toast('Матн ёфт нашуд'); return; }
+    await navigator.clipboard.writeText(text);
+    toast('✓ Матни саҳифа нусха гирифта шуд', 2500);
+  } catch(e) { toast('Нусха гирифтан мумкин нашуд', 2000); }
 }
-function renderLastRead(){
-  const sec=$('lastRead');const wrap=$('lastReadScroll');
-  let l=[];try{l=JSON.parse(localStorage.getItem('kk_last')||'[]');}catch(e){}
-  if(!l.length){sec.style.display='none';return;}
-  const prog=(()=>{try{return JSON.parse(localStorage.getItem('kk_prog')||'{}');}catch(e){return {};}})();
-  wrap.innerHTML='';let vis=0;
-  for(const k of l){
-    const i=k.indexOf(':');if(i<0)continue;
-    const subId=k.slice(0,i),name=k.slice(i+1);
-    let cat=null,sub=null;
-    for(const c of CATS){const s=c.subs.find(x=>x.id===subId);if(s){cat=c;sub=s;break;}}
-    if(!cat)continue;
-    const p=prog[k];const pct=(p&&p.pages)?Math.round(p.page/p.pages*100):0;
-    const url=p?.url;
-    const cov=url?S.covers.get(url):null;
-    const d=document.createElement('div');d.className='lri';
-    d.innerHTML=`<div class="lri-cover" style="--c1:${cat.c1};--c2:${cat.c2};">${cov?`<img src="${cov}">`:'📖'}</div><div class="lri-info"><div class="lri-name">${esc(name)}</div><div class="lri-progress"><div class="lri-progress-fill" style="width:${pct}%;"></div></div><div class="lri-meta">${p?p.page+'/'+p.pages:'·'}</div></div>`;
-    d.onclick=()=>{if(url)openBook(url,name,k);};
-    wrap.appendChild(d);vis++;
-  }
-  sec.style.display=vis?'block':'none';
-}
-function clearLastRead(){if(confirm('Тоза кардан?')){localStorage.removeItem('kk_last');localStorage.removeItem('kk_prog');renderLastRead();}}
 
-let gST;
-$('search').addEventListener('input',e=>{clearTimeout(gST);gST=setTimeout(()=>doSearch(e.target.value.trim().toLowerCase()),200);});
-function doSearch(q){
-  if(!q){if(S.sub)renderBooks(S.sub.id);return;}
-  const hits=[];
-  for(const c of CATS)for(const sub of c.subs){
-    const bs=S.books.get(sub.id);if(!bs)continue;
-    for(const b of bs)if(b.name.toLowerCase().includes(q))hits.push({c,sub,b});
+/* ══════════════════════════════════════════
+   TEXT-TO-SPEECH
+══════════════════════════════════════════ */
+const TTS = {
+  active: false, paused: false,
+  voices: [], voiceIdx: 0, rate: 1.0,
+  synth: window.speechSynthesis || null,
+};
+function loadVoices() {
+  if (!TTS.synth) return;
+  TTS.voices = TTS.synth.getVoices();
+  const pref = TTS.voices.findIndex(v => v.lang.startsWith('ru') || v.lang.startsWith('tg'));
+  if (pref >= 0) TTS.voiceIdx = pref;
+}
+if (TTS.synth) { TTS.synth.onvoiceschanged = loadVoices; loadVoices(); }
+
+function ttsToggle() {
+  if (!TTS.synth) { toast('Браузер садоро дастгирӣ намекунад'); return; }
+  if (TTS.active) {
+    $('ttsBar').classList.toggle('on');
+  } else {
+    ttsStart();
   }
-  $('secTitle').textContent='Натиҷаҳо';$('secSub').textContent=`«${q}» · ${hits.length}`;
-  const g=$('grid');g.innerHTML='';
-  if(!hits.length){g.innerHTML='<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Ёфт нашуд</div></div>';return;}
-  hits.forEach(({c,sub,b})=>{
-    const key=sub.id+':'+b.name;
-    const d=document.createElement('div');d.className='book';
-    const safe='cv_'+key.replace(/[^a-z0-9]/gi,'_');
-    const cached=S.covers.get(b.url);
-    const inner=cached?`<img src="${cached}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`;
-    d.innerHTML=`<div class="book-cover" id="${safe}" style="--c1:${c.c1};--c2:${c.c2};${cached?'padding:0;':''}">${inner}<div class="cv-load"></div></div><div class="book-name">${esc(b.name)}</div><div class="book-actions"><button class="book-btn read" data-act="read">📖 Хондан</button><button class="book-btn dl" data-act="dl">⬇</button></div>`;
-    d.querySelector('.book-cover').onclick=()=>openBook(b.url,b.name,key);
-    d.querySelector('[data-act="read"]').onclick=e=>{e.stopPropagation();openBook(b.url,b.name,key);};
-    d.querySelector('[data-act="dl"]').onclick=e=>{e.stopPropagation();downloadBook(b.url,b.name);};
+}
+
+async function ttsStart() {
+  if (!S.pdf || !S.page) { toast('Аввал китобро кушоед'); return; }
+  if (!TTS.synth) return;
+  TTS.synth.cancel();
+  try {
+    const page = await S.pdf.getPage(S.page);
+    const tc   = await page.getTextContent();
+    const text = tc.items.map(i => i.str).join(' ').trim();
+    if (!text) { toast('Матн барои хондан ёфт нашуд'); return; }
+    const utt  = new SpeechSynthesisUtterance(text);
+    if (TTS.voices[TTS.voiceIdx]) utt.voice = TTS.voices[TTS.voiceIdx];
+    utt.rate = TTS.rate;
+    utt.lang = TTS.voices[TTS.voiceIdx]?.lang || 'ru-RU';
+    utt.onstart = () => { TTS.active=true; TTS.paused=false; updateTTSUI(); };
+    utt.onend   = () => { TTS.active=false;TTS.paused=false; updateTTSUI(); };
+    utt.onerror = e  => { TTS.active=false; updateTTSUI(); if(e.error!=='interrupted') toast('Хатои садо'); };
+    TTS.synth.speak(utt);
+    $('ttsBar').classList.add('on');
+    $('ttsBtn').classList.add('tts-on');
+  } catch(e) { toast('Хатои хондан: ' + (e.message||'')); }
+}
+
+function ttsPauseResume() {
+  if (!TTS.synth) return;
+  if (TTS.synth.speaking && !TTS.synth.paused) { TTS.synth.pause();  TTS.paused=true;  }
+  else if (TTS.synth.paused)                   { TTS.synth.resume(); TTS.paused=false; }
+  updateTTSUI();
+}
+function ttsStop() {
+  if (!TTS.synth) return;
+  TTS.synth.cancel();
+  TTS.active=false; TTS.paused=false;
+  $('ttsBar')?.classList.remove('on');
+  $('ttsBtn')?.classList.remove('tts-on');
+  updateTTSUI();
+}
+function ttsChangeRate(delta) {
+  TTS.rate = Math.round(Math.max(.5, Math.min(2.0, TTS.rate+delta)) * 4) / 4;
+  $('ttsRateLabel').textContent = TTS.rate + '×';
+  if (TTS.synth?.speaking) ttsStart();
+}
+function updateTTSUI() {
+  const btn = $('ttsPlayBtn');
+  if (btn) btn.textContent = TTS.paused ? '▶' : '⏸';
+  $('ttsBtn')?.classList.toggle('tts-on', TTS.active);
+}
+
+function openVoiceModal() {
+  loadVoices();
+  const list = $('voiceList'); list.innerHTML = '';
+  if (!TTS.voices.length) {
+    list.innerHTML = '<div style="text-align:center;color:var(--textm);font-size:11px;padding:10px;">Овоз ёфт нашуд</div>';
+  } else {
+    TTS.voices.forEach((v, i) => {
+      const d = document.createElement('div');
+      d.className = 'voice-item' + (i===TTS.voiceIdx?' on':'');
+      d.innerHTML = `<div><div class="voice-name">${esc(v.name)}</div><div class="voice-lang">${esc(v.lang)}</div></div>`;
+      d.onclick = () => {
+        TTS.voiceIdx = i;
+        list.querySelectorAll('.voice-item').forEach((el,j)=>el.classList.toggle('on',j===i));
+      };
+      list.appendChild(d);
+    });
+  }
+  $('voiceModal').classList.add('on');
+}
+function closeVoiceModal() { $('voiceModal').classList.remove('on'); }
+
+/* ══════════════════════════════════════════
+   SETTINGS PANEL
+══════════════════════════════════════════ */
+function openSettings() {
+  $('sOverlay').classList.add('on');
+  $('sPanel').classList.add('on');
+  renderDlList();
+  // Sync theme buttons
+  const cur = document.documentElement.getAttribute('data-theme');
+  document.querySelectorAll('.theme-btn').forEach(b => b.classList.toggle('on', b.dataset.theme===cur));
+}
+function closeSettings() {
+  $('sOverlay').classList.remove('on');
+  $('sPanel').classList.remove('on');
+}
+
+async function renderDlList() {
+  const container = $('dlList'); if (!container) return;
+  container.innerHTML = '<div class="s-none">⏳ Юклаб истодааст...</div>';
+  try {
+    const keys = await idbKeys('pdfs');
+    if (!keys.length) { container.innerHTML = '<div class="s-none">Китобе захира нашудааст</div>'; return; }
+    container.innerHTML = '';
+    for (const key of keys) {
+      const blob = await idbG('pdfs', key).catch(() => null);
+      const name = decodeURIComponent(key.split('/').pop()).replace(/\.pdf$/i, '');
+      const size = blob ? `${(blob.size/1048576).toFixed(1)} MB` : '?';
+      const d    = document.createElement('div'); d.className = 'dl-item';
+      d.innerHTML = `<div class="dl-item-name" title="${esc(name)}">${esc(name)}</div><div class="dl-item-size">${size}</div><button class="dl-item-del">🗑</button>`;
+      d.querySelector('.dl-item-del').onclick = async () => {
+        await idbDel('pdfs',   key).catch(() => {});
+        await idbDel('covers', key).catch(() => {});
+        S.blobs.delete(key); S.covers.delete(key); S.cachedUrls.delete(key);
+        d.remove();
+        // Remove cached dot from all matching book cards
+        document.querySelectorAll('.book-cached-dot').forEach(dot => {
+          const cover = dot.closest('.book-cover');
+          if (cover && document.getElementById(cover.id)?.style.getPropertyValue('--c1')) {
+            // Check if this cover matches by looking at nearest book data
+          }
+          // Simpler: remove all dots for this key from rendered cards
+        });
+        S.covers.delete(key);
+        document.querySelectorAll(`[id$="${key.split('/').pop().replace(/\.pdf$/i,'').replace(/[^a-z0-9]/gi,'_')}"] .book-cached-dot`).forEach(d=>d.remove());
+        toast('🗑 Нест карда шуд', 1500);
+        if (!container.querySelector('.dl-item')) container.innerHTML = '<div class="s-none">Китобе захира нашудааст</div>';
+      };
+      container.appendChild(d);
+    }
+  } catch(e) { container.innerHTML = '<div class="s-none">Хатогӣ ҳангоми юклаш</div>'; }
+}
+
+async function clearAllCache() {
+  if (!confirm('Ҳамаи китобҳои захиравӣ нест карда шаванд?')) return;
+  try {
+    const d = await db();
+    await new Promise((res, rej) => {
+      const t = d.transaction(['pdfs','covers'],'readwrite');
+      t.objectStore('pdfs').clear();
+      t.objectStore('covers').clear();
+      t.oncomplete = () => res(); t.onerror = () => rej(t.error);
+    });
+    S.blobs.clear(); S.covers.clear(); S.cachedUrls.clear();
+    document.querySelectorAll('.book-cached-dot').forEach(d => d.remove());
+    toast('✓ Ҳамаи китобҳо нест карда шуд', 2500);
+    renderDlList();
+  } catch(e) { toast('Хатогӣ: ' + e.message, 2000); }
+}
+
+/* ══════════════════════════════════════════
+   PROGRESS
+══════════════════════════════════════════ */
+function getProgress(k) {
+  try { return JSON.parse(localStorage.getItem('kk_prog')||'{}')[k] || null; }
+  catch(e) { return null; }
+}
+function saveProgress() {
+  if (!S.key || !S.pages) return;
+  try {
+    const a = JSON.parse(localStorage.getItem('kk_prog')||'{}');
+    a[S.key] = { page: S.page, pages: S.pages, url: S.url, ts: Date.now() };
+    localStorage.setItem('kk_prog', JSON.stringify(a));
+    let l = JSON.parse(localStorage.getItem('kk_last')||'[]');
+    l = l.filter(x => x!==S.key); l.unshift(S.key);
+    if (l.length > 8) l = l.slice(0, 8);
+    localStorage.setItem('kk_last', JSON.stringify(l));
+  } catch(e) {}
+}
+
+/* ══════════════════════════════════════════
+   LAST READ
+══════════════════════════════════════════ */
+function renderLastRead() {
+  const sec  = $('lastRead');
+  const wrap = $('lastReadScroll');
+  let l = []; try { l = JSON.parse(localStorage.getItem('kk_last')||'[]'); } catch(e) {}
+  if (!l.length) { sec.style.display='none'; return; }
+  const prog = (() => { try { return JSON.parse(localStorage.getItem('kk_prog')||'{}'); } catch(e) { return {}; } })();
+  wrap.innerHTML = ''; let vis = 0;
+  for (const k of l) {
+    const i = k.indexOf(':'); if (i<0) continue;
+    const subId = k.slice(0,i), name = k.slice(i+1);
+    let cat = null;
+    for (const c of CATS) { if (c.subs.find(x=>x.id===subId)) { cat=c; break; } }
+    if (!cat) continue;
+    const p   = prog[k];
+    const pct = (p?.pages) ? Math.round(p.page/p.pages*100) : 0;
+    const url = p?.url;
+    const cov = url ? S.covers.get(url) : null;
+    const d   = document.createElement('div'); d.className = 'lri';
+    d.innerHTML = `<div class="lri-cover" style="--c1:${cat.c1};--c2:${cat.c2};">${cov?`<img src="${cov}">`:'📖'}</div><div class="lri-info"><div class="lri-name">${esc(name)}</div><div class="lri-prog"><div class="lri-prog-fill" style="width:${pct}%;"></div></div><div class="lri-meta">${p?p.page+'/'+p.pages:'·'}</div></div>`;
+    d.onclick = () => { if (url) openBook(url, name, k); };
+    wrap.appendChild(d); vis++;
+  }
+  sec.style.display = vis ? 'block' : 'none';
+}
+function clearLastRead() {
+  if (!confirm('Таърихи хондан тоза карда шавад?')) return;
+  localStorage.removeItem('kk_last');
+  localStorage.removeItem('kk_prog');
+  renderLastRead();
+  // Start silent cover generation for all books in this sub
+  autoGenerateCovers();
+}
+
+/* ══════════════════════════════════════════
+   SEARCH
+══════════════════════════════════════════ */
+let searchTmr;
+$('search').addEventListener('input', e => {
+  clearTimeout(searchTmr);
+  searchTmr = setTimeout(() => doSearch(e.target.value.trim().toLowerCase()), 200);
+});
+function doSearch(q) {
+  if (!q) { if (S.sub) renderBooks(S.sub.id); return; }
+  const hits = [];
+  for (const c of CATS) for (const sub of c.subs) {
+    const bs = S.books.get(sub.id); if (!bs) continue;
+    for (const b of bs) if (b.name.toLowerCase().includes(q)) hits.push({ c, sub, b });
+  }
+  $('secTitle').textContent = 'Натиҷаҳо';
+  $('secSub').textContent   = `«${q}» · ${hits.length}`;
+  const g = $('grid'); g.innerHTML = '';
+  if (!hits.length) {
+    g.innerHTML = '<div class="empty"><div class="empty-icon">🔍</div><div class="empty-title">Ёфт нашуд</div></div>'; return;
+  }
+  hits.forEach(({ c, sub, b }) => {
+    const key  = sub.id + ':' + b.name;
+    const safe = 'cv_' + key.replace(/[^a-z0-9]/gi,'_');
+    const cov  = S.covers.get(b.url);
+    const d    = document.createElement('div'); d.className = 'book';
+    const spine= `background:linear-gradient(to right,rgba(0,0,0,.6),${c.c1}99);`;
+    d.innerHTML = `<div class="book-3d-wrap"><div class="book-3d"><div class="book-spine" style="${spine}"></div><div class="book-cover" id="${safe}" style="--c1:${c.c1};--c2:${c.c2};${cov?'padding:0;':''}">${cov?`<img src="${cov}" alt="" loading="lazy">`:`<div class="book-cover-text">${esc(b.name)}</div>`}<div class="cv-load"></div></div></div></div><div class="book-name">${esc(b.name)}</div><div class="book-actions"><button class="book-btn read" data-act="read">📖 Хондан</button><button class="book-btn dl" data-act="dl">⬇</button></div>`;
+    d.querySelector('.book-cover').onclick   = () => openBook(b.url, b.name, key);
+    d.querySelector('[data-act="read"]').onclick = e => { e.stopPropagation(); openBook(b.url, b.name, key); };
+    d.querySelector('[data-act="dl"]').onclick   = e => { e.stopPropagation(); downloadBook(b.url, b.name); };
     g.appendChild(d);
   });
 }
 
-// Старые функции диалога убраны — теперь прогресс на самой обложке
-function cancelDl(){
-  // Отменяем все активные загрузки (на всякий случай)
-  for(const [url,d] of DOWNLOADS){try{d.ctrl.abort();}catch(e){}}
-  DOWNLOADS.clear();
-}
-
-(async()=>{
-  if(!await loadBooksJson())return;
-  S.cat=CATS[0];S.sub=CATS[0].subs[0];
-  renderCats();renderSubs();
-  $('secTitle').textContent=S.cat.name;$('secSub').textContent=S.sub?.name||'';
+/* ══════════════════════════════════════════
+   INIT
+══════════════════════════════════════════ */
+(async () => {
+  if (!await loadBooksJson()) return;
+  S.cat = CATS[0];
+  S.sub = CATS[0]?.subs[0] || null;
+  renderCats(); renderSubs();
+  $('secTitle').textContent = S.cat?.name || '';
+  $('secSub').textContent   = S.sub?.name || '';
   renderLastRead();
-  if(S.sub)loadSub(S.sub.id);
+  if (S.sub) loadSub(S.sub.id);
 })();
 
-window.addEventListener('beforeunload',saveProgress);
+// Auto-generate covers for visible books (one at a time, with delay)
+window.addEventListener('beforeunload', saveProgress);
 </script>
 </body>
 </html>
