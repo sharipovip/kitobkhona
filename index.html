@@ -99,8 +99,8 @@ body::before{
   opacity:.7;
 }
 .splash-sub{font-size:10px;letter-spacing:3.5px;color:var(--textm);}
-.splash-bar{margin-top:24px;width:120px;height:3px;background:rgba(200,150,46,.25);border-radius:1px;overflow:hidden;box-shadow:0 0 8px rgba(200,150,46,.15);}
-.splash-fill{height:100%;background:linear-gradient(90deg, transparent, var(--gold), var(--gold), transparent);width:0;animation:fillBar 1.8s ease-out forwards .2s;}
+.splash-bar{margin-top:24px;width:140px;height:3px;background:rgba(200,150,46,.18);border-radius:2px;overflow:hidden;box-shadow:0 0 8px rgba(200,150,46,.12);}
+.splash-fill{height:100%;background:var(--gold);width:0;border-radius:2px;animation:fillBar 1.1s cubic-bezier(.4,0,.2,1) forwards .15s;}
 @keyframes fillBar{0%{width:0;}100%{width:100%;}}
 
 /* ══════════════════════════════════════════
@@ -704,25 +704,15 @@ body::before{
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-// Safety timeout: remove splash after 5 seconds no matter what
-setTimeout(() => {
-  const splash = document.getElementById('splash');
-  if (splash && splash.parentElement) {
-    splash.classList.add('gone');
-    setTimeout(() => {
-      if (splash.parentElement) splash.remove();
-    }, 550);
-  }
-}, 5000);
-
 if ('serviceWorker' in navigator)
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
-// Splash → remove after 1.2s
+// Splash → remove after 1.2s (single timer, guaranteed)
 setTimeout(() => {
   const s = document.getElementById('splash');
+  if (!s) return;
   s.classList.add('gone');
-  setTimeout(() => s.remove(), 520);
+  setTimeout(() => { try { s.remove(); } catch(e){} }, 520);
 }, 1200);
 
 /* ══════════════════════════════════════════
@@ -838,6 +828,38 @@ async function idbKeys(store) {
     r.onsuccess = () => res(r.result || []);
     r.onerror   = () => rej(r.error);
   });
+}
+
+/* ══════════════════════════════════════════
+   LRU CACHE — keep max 20 PDFs (auto-delete oldest)
+══════════════════════════════════════════ */
+const MAX_CACHED_PDFS = 20;
+function touchLRU(url) {
+  try {
+    const raw = localStorage.getItem('kk_lru') || '[]';
+    const arr = JSON.parse(raw).filter(u => u !== url);
+    arr.push(url);
+    localStorage.setItem('kk_lru', JSON.stringify(arr));
+  } catch(e) {}
+}
+async function enforceCacheLimit() {
+  try {
+    const raw = localStorage.getItem('kk_lru') || '[]';
+    let arr = JSON.parse(raw);
+    const keys = await idbKeys('pdfs').catch(() => []);
+    // sync: remove from LRU keys that aren't in IDB
+    arr = arr.filter(u => keys.includes(u));
+    // add missing keys to start of LRU (old)
+    for (const k of keys) if (!arr.includes(k)) arr.unshift(k);
+    // delete oldest while over limit
+    while (arr.length > MAX_CACHED_PDFS) {
+      const old = arr.shift();
+      await idbDel('pdfs', old).catch(() => {});
+      S.blobs.delete(old);
+      S.cachedUrls.delete(old);
+    }
+    localStorage.setItem('kk_lru', JSON.stringify(arr));
+  } catch(e) { console.warn('LRU enforce:', e); }
 }
 
 /* ══════════════════════════════════════════
@@ -996,15 +1018,16 @@ let TREE_P = null;
 async function loadRepoTree() {
   if (TREE_P) return TREE_P;
   TREE_P = (async () => {
-  if (!await loadBooksJson()) return;
-  S.cat = CATS[0];
-  S.sub = CATS[0]?.subs[0] || null;
-  renderCats(); renderSubs();
-  $('secTitle').textContent = S.cat?.name || '';
-  $('secSub').textContent   = S.sub?.name || '';
-  renderLastRead();
-  if (S.sub) loadSub(S.sub.id);
-})();
+    try {
+      const r = await fetch(`https://api.github.com/repos/${REPO}/git/trees/${BRANCH}?recursive=1`, { cache: 'no-store' });
+      if (!r.ok) return [];
+      const d = await r.json();
+      if (!Array.isArray(d.tree)) return [];
+      return d.tree.filter(t => t.type === 'tree').map(t => t.path);
+    } catch(e) { return []; }
+  })();
+  return TREE_P;
+}
 
 // Auto-generate covers for visible books (one at a time, with delay)
 async function autoGenerateCovers() {
@@ -1032,7 +1055,7 @@ async function autoGenerateCovers() {
 
 async function tryFetch(path) {
   try {
-    const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(path)}/manifest.json?t=${Date.now()}`,
+    const r = await fetch(`https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${encPath(path)}/manifest.json`,
       { cache:'no-store' });
     if (!r.ok) return null;
     const data = await r.json();
@@ -1074,7 +1097,7 @@ async function fetchManifest(sub, id, silent) {
   const books = data.books.map(b => ({
     name: b.name || b.file?.replace(/\.pdf$/i, ''),
     file: b.file || (b.name + '.pdf'),
-    url:  `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(realPath)}/${encodeURIComponent(b.file || (b.name + '.pdf'))}`,
+    url:  `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${encPath(realPath)}/${encodeURIComponent(b.file || (b.name + '.pdf'))}`,
     size: b.size || 0,
   }));
   S.books.set(id, books);
@@ -1147,7 +1170,7 @@ async function renderBooks(id) {
 
   renderLastRead();
   // Start silent cover generation for all books in this sub
-  autoGenerateCovers();
+  setTimeout(autoGenerateCovers, 250);
 }
 
 /* ══════════════════════════════════════════
@@ -1155,130 +1178,72 @@ async function renderBooks(id) {
 ══════════════════════════════════════════ */
 
 
-// Download full PDF with progress on cover, then generate cover
+// ⚡ FAST COVER — Range request via jsDelivr CDN (200KB only, NOT full file)
 async function fastCover(url, name, key, c1, c2, subId) {
   if (S.covers.has(url) || S.coverPending.has(url)) return;
+  if (subId && subId !== S.currentSubId) return; // user moved away
   S.coverPending.add(url);
-  const safe = 'cv_' + key.replace(/[^a-z0-9]/gi, '_');
 
   try {
     // 1. IDB cover cache
     const cached = await idbG('covers', url).catch(() => null);
     if (cached) { S.covers.set(url, cached); setCoverImg(key, cached); return; }
 
-    // 2. Full blob available
+    // 2. Full blob already cached
     let blob = S.blobs.get(url) || await idbG('pdfs', url).catch(() => null);
     if (blob && await isValidPdfBlob(blob)) {
       await renderCoverFromBlob(url, key, blob);
       return;
     }
 
-    // 3. Download in chunks (300KB and 600KB attempts) - SILENT, no progress visible
-    const CHUNK_300 = 307200;  // 300 KB
-    const CHUNK_600 = 614400;  // 600 KB
-    const MAX_ATTEMPTS = 2;
-    
-    let coverFound = false;
-    for (let attempt = 0; attempt < MAX_ATTEMPTS && !coverFound; attempt++) {
-      const maxBytes = attempt === 0 ? CHUNK_300 : CHUNK_600;
+    // 3. Range request — try 200KB, then 500KB, then 1MB
+    const RANGES = [204800, 524288, 1048576]; // 200KB → 500KB → 1MB
+    let rendered = false;
+
+    for (const sz of RANGES) {
+      if (rendered) break;
+      if (subId && subId !== S.currentSubId) break;
       try {
-        const resp = await fetch(url, { cache: 'no-store' }).catch(e => {
-          console.warn('Fetch error:', e.message);
-          return null;
+        const resp = await fetch(url, {
+          headers: { 'Range': `bytes=0-${sz - 1}` },
+          cache: 'force-cache'
         });
-        if (!resp || !resp.ok) {
-          console.warn('HTTP error:', resp?.status);
-          continue;
-        }
-        if (!resp.body) {
-          console.warn('No response body - using arrayBuffer fallback');
-          const buf = await resp.arrayBuffer();
-          const arr = new Uint8Array(buf);
-          if (!await isValidPdfBlob(new Blob([arr], { type: 'application/pdf' }))) continue;
-          try {
-            const pdf = await pdfjsLib.getDocument({ data: arr }).promise;
-            const page = await pdf.getPage(1);
-            if (page) {
-              const vp = page.getViewport({ scale: 0.6 });
-              const cv = document.createElement('canvas');
-              cv.width = vp.width;
-              cv.height = vp.height;
-              await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
-              const dataUrl = cv.toDataURL('image/jpeg', 0.75);
-              S.covers.set(url, dataUrl);
-              idbS('covers', url, dataUrl).catch(() => {});
-              setCoverImg(key, dataUrl);
-              pdf.destroy();
-              coverFound = true;
-            }
-          } catch(e) {
-            console.warn('Render fallback failed:', e.message);
-          }
-          continue;
-        }
-        const rdr = resp.body.getReader();
-        const chunks = [];
-        let totalRead = 0;
-        
-        while (totalRead < maxBytes) {
-          try {
-            const { done, value } = await rdr.read();
-            if (done) break;
-            if (value && value.length > 0) {
-              chunks.push(value);
-              totalRead += value.length;
-            }
-          } catch(e) {
-            console.warn('Reader error:', e.message);
-            break;
-          }
-        }
-        
-        // Try to abort reader if we got enough data
-        try { rdr.cancel(); } catch(e) {}
-        
-        if (chunks.length === 0) continue;
-        
-        // Create partial blob
-        const arr = new Uint8Array(totalRead);
-        let offset = 0;
-        for (const chunk of chunks) {
-          arr.set(chunk, offset);
-          offset += chunk.length;
-        }
-        
-        const partialBlob = new Blob([arr], { type: 'application/pdf' });
-        if (!await isValidPdfBlob(partialBlob)) continue;
-        
-        // Try to render from partial blob
+        if (!resp.ok && resp.status !== 206) continue;
+        const buf = await resp.arrayBuffer();
+        const arr = new Uint8Array(buf);
+        if (arr.length < 1024) continue;
+        // Check %PDF header
+        if (!(arr[0]===0x25 && arr[1]===0x50 && arr[2]===0x44 && arr[3]===0x46)) continue;
+
         try {
-          const ab = await partialBlob.arrayBuffer();
-          const pdf = await pdfjsLib.getDocument({ data: ab }).promise;
+          const pdf = await pdfjsLib.getDocument({
+            data: arr,
+            disableAutoFetch: true,
+            disableStream: true,
+            stopAtErrors: false,
+          }).promise;
           const page = await pdf.getPage(1);
-          if (page) {
-            // Success - render cover from partial
-            const vp = page.getViewport({ scale: 0.6 });
-            const cv = document.createElement('canvas');
-            cv.width = vp.width;
-            cv.height = vp.height;
-            await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
-            const dataUrl = cv.toDataURL('image/jpeg', 0.75);
-            S.covers.set(url, dataUrl);
-            idbS('covers', url, dataUrl).catch(() => {});
-            setCoverImg(key, dataUrl);
-            pdf.destroy();
-            coverFound = true;
-          }
+          const vp = page.getViewport({ scale: 0.55 });
+          const cv = document.createElement('canvas');
+          cv.width = vp.width; cv.height = vp.height;
+          await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
+          const dataUrl = cv.toDataURL('image/jpeg', 0.72);
+          S.covers.set(url, dataUrl);
+          idbS('covers', url, dataUrl).catch(() => {});
+          if (!subId || subId === S.currentSubId) setCoverImg(key, dataUrl);
+          try { pdf.destroy(); } catch(e) {}
+          rendered = true;
         } catch(e) {
-          // Partial didn't work, continue to next attempt
+          // partial wasn't enough — try larger range
         }
       } catch(e) {
-        console.warn('Cover attempt', attempt + 1, 'failed:', e.message);
+        console.warn('Range fetch failed:', e?.message);
       }
     }
 
+    // 4. If all ranges failed → keep gradient cover (no download of full file)
   } catch(e) {
-    console.warn('Cover generation failed:', name, e?.message || e);
+    console.warn('Cover failed:', name, e?.message || e);
   } finally {
     S.coverPending.delete(url);
   }
@@ -1411,7 +1376,7 @@ function startDownload(url, name, key, showProgress, autoOpen) {
 
       S.blobs.set(url, blob);
       S.cachedUrls.add(url);
-      idbS('pdfs', url, blob).catch(() => {});
+      idbS('pdfs', url, blob).then(() => { touchLRU(url); enforceCacheLimit(); }).catch(() => {});
       hideCoverProgress(coverEl);
       const dl = DOWNLOADS.get(url);
       DOWNLOADS.delete(url);
@@ -1439,13 +1404,13 @@ async function openBook(url, name, key) {
   // 1. In-memory blob — instant open
   let blob = S.blobs.get(url);
   if (blob && !await isValidPdfBlob(blob)) { blob = null; S.blobs.delete(url); }
-  if (blob) return openBookFromBlob(url, name, key, blob);
+  if (blob) { touchLRU(url); return openBookFromBlob(url, name, key, blob); }
 
   // 2. IDB blob — instant open
   try {
     blob = await idbG('pdfs', url);
     if (blob && !await isValidPdfBlob(blob)) { blob = null; idbDel('pdfs', url).catch(() => {}); }
-    if (blob) { S.blobs.set(url, blob); S.cachedUrls.add(url); return openBookFromBlob(url, name, key, blob); }
+    if (blob) { S.blobs.set(url, blob); S.cachedUrls.add(url); touchLRU(url); return openBookFromBlob(url, name, key, blob); }
   } catch(e) {}
 
   // 3. Already downloading — wait for it
@@ -1512,7 +1477,7 @@ async function bgDownload(url, name, key) {
       const blob = new Blob([arr], { type:'application/pdf' });
       if (!await isValidPdfBlob(blob)) throw new Error('Файли вайроншуда');
       S.blobs.set(url, blob); S.cachedUrls.add(url);
-      idbS('pdfs', url, blob).catch(() => {});
+      idbS('pdfs', url, blob).then(() => { touchLRU(url); enforceCacheLimit(); }).catch(() => {});
       // Generate cover from full PDF (if not already generating)
       if (!S.covers.has(url) && !S.coverPending.has(url)) {
         fastCover(url, name, key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
@@ -2087,7 +2052,7 @@ function clearLastRead() {
   localStorage.removeItem('kk_prog');
   renderLastRead();
   // Start silent cover generation for all books in this sub
-  autoGenerateCovers();
+  setTimeout(autoGenerateCovers, 250);
 }
 
 /* ══════════════════════════════════════════
@@ -2165,7 +2130,8 @@ function doSearch(q) {
     
     if (typeof renderLastRead !== 'undefined') renderLastRead();
     if (S.sub && typeof loadSub !== 'undefined') loadSub(S.sub.id);
-    
+    // cleanup old cached files (keep last 20 PDFs)
+    setTimeout(() => { try { enforceCacheLimit(); } catch(e){} }, 2500);
   } catch(e) {
     console.error('Init error:', e);
     const splash = document.getElementById('splash');
@@ -2179,5 +2145,5 @@ function doSearch(q) {
 // Auto-generate covers for visible books (one at a time, with delay)
 window.addEventListener('beforeunload', saveProgress);
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0802c74e9fb24b1',t:'MTc4MDg0MDcyNw=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
