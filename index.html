@@ -704,6 +704,17 @@ body::before{
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
+// Safety timeout: remove splash after 5 seconds no matter what
+setTimeout(() => {
+  const splash = document.getElementById('splash');
+  if (splash && splash.parentElement) {
+    splash.classList.add('gone');
+    setTimeout(() => {
+      if (splash.parentElement) splash.remove();
+    }, 550);
+  }
+}, 5000);
+
 if ('serviceWorker' in navigator)
   window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
 
@@ -834,17 +845,25 @@ async function idbKeys(store) {
 ══════════════════════════════════════════ */
 async function loadBooksJson() {
   let cached = null;
-  try { cached = await idbG('json', 'books'); } catch(e) {}
-  if (cached) { parseCats(cached); refreshBooksJson(); return true; }
+  try { cached = await idbG('json', 'books'); } catch(e) { console.warn('IDB load error:', e); }
+  if (cached && typeof cached === 'object') { 
+    try { parseCats(cached); refreshBooksJson(); return true; }
+    catch(e) { console.warn('Parse cached error:', e); }
+  }
   try {
     const r = await fetch('books.json?t=' + Date.now(), { cache:'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const d = await r.json();
+    if (!d || typeof d !== 'object') throw new Error('Invalid JSON format');
     parseCats(d);
     idbS('json','books',d).catch(() => {});
     return true;
   } catch(e) {
-    $('grid').innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Интернет лозим</div><div class="empty-sub">${esc(e.message||'')}</div></div>`;
+    console.error('LoadBooksJson error:', e);
+    const grid = document.getElementById('grid');
+    if (grid) {
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Интернет лозим</div><div class="empty-sub">${esc(e.message||'Хатогии номаълум')}</div></div>`;
+    }
     return false;
   }
 }
@@ -863,15 +882,32 @@ async function refreshBooksJson() {
   } catch(e) {}
 }
 function parseCats(d) {
-  REPO   = d.repo   || 'sharipovip/books';
-  BRANCH = d.branch || 'main';
-  const arr = d.categories || d;
-  arr.forEach(c => {
-    c.c1   = c.color1 || '#2563eb';
-    c.c2   = c.color2 || '#3b82f6';
-    c.subs = c.subs  || [];
-  });
-  CATS = arr;
+  if (!d || typeof d !== 'object') {
+    console.warn('Invalid categories data:', d);
+    CATS = [];
+    return;
+  }
+  try {
+    REPO   = d.repo   || 'sharipovip/books';
+    BRANCH = d.branch || 'main';
+    const arr = Array.isArray(d.categories) ? d.categories : (Array.isArray(d) ? d : []);
+    if (!Array.isArray(arr) || arr.length === 0) {
+      console.warn('No categories found in data');
+      CATS = [];
+      return;
+    }
+    arr.forEach(c => {
+      if (c && typeof c === 'object') {
+        c.c1   = c.color1 || '#2563eb';
+        c.c2   = c.color2 || '#3b82f6';
+        c.subs = Array.isArray(c.subs) ? c.subs : [];
+      }
+    });
+    CATS = arr;
+  } catch(e) {
+    console.error('Parse categories error:', e);
+    CATS = [];
+  }
 }
 
 /* ══════════════════════════════════════════
@@ -2093,14 +2129,51 @@ function doSearch(q) {
    INIT
 ══════════════════════════════════════════ */
 (async () => {
-  if (!await loadBooksJson()) return;
-  S.cat = CATS[0];
-  S.sub = CATS[0]?.subs[0] || null;
-  renderCats(); renderSubs();
-  $('secTitle').textContent = S.cat?.name || '';
-  $('secSub').textContent   = S.sub?.name || '';
-  renderLastRead();
-  if (S.sub) loadSub(S.sub.id);
+  try {
+    const loaded = await loadBooksJson();
+    if (!loaded) {
+      console.error('Failed to load books JSON');
+      // Remove splash even on error
+      const splash = document.getElementById('splash');
+      if (splash) {
+        splash.classList.add('gone');
+        setTimeout(() => splash.remove(), 550);
+      }
+      return;
+    }
+    
+    if (!Array.isArray(CATS) || CATS.length === 0) {
+      console.error('No categories loaded');
+      const splash = document.getElementById('splash');
+      if (splash) {
+        splash.classList.add('gone');
+        setTimeout(() => splash.remove(), 550);
+      }
+      return;
+    }
+    
+    S.cat = CATS[0];
+    S.sub = CATS[0]?.subs?.[0] || null;
+    
+    if (typeof renderCats !== 'undefined') renderCats();
+    if (typeof renderSubs !== 'undefined') renderSubs();
+    
+    const secTitle = document.getElementById('secTitle');
+    const secSub = document.getElementById('secSub');
+    if (secTitle) secTitle.textContent = S.cat?.name || '';
+    if (secSub) secSub.textContent = S.sub?.name || '';
+    
+    if (typeof renderLastRead !== 'undefined') renderLastRead();
+    if (S.sub && typeof loadSub !== 'undefined') loadSub(S.sub.id);
+    
+  } catch(e) {
+    console.error('Init error:', e);
+    const splash = document.getElementById('splash');
+    if (splash) {
+      splash.classList.add('gone');
+      setTimeout(() => splash.remove(), 550);
+    }
+  }
 })();
 
 // Auto-generate covers for visible books (one at a time, with delay)
