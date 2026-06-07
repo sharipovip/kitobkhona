@@ -6,7 +6,11 @@
 <meta name="theme-color" content="#060D18">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>Китобхона</title>
+<meta name="apple-mobile-web-app-title" content="Китобхона">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="application-name" content="Китобхона">
+<meta name="description" content="Китобхонаи электронии тоҷикӣ — ганҷинаи дониш">
+<title>Китобхона · Манбаи дониш</title>
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -52,6 +56,78 @@
 input,textarea{-webkit-user-select:text;user-select:text;}
 html,body{height:100%;overflow:hidden;background:var(--bg);overscroll-behavior:none;}
 body{font-family:'Inter',sans-serif;color:var(--text);font-size:14px;line-height:1.5;}
+
+/* ══════════════════════════════════════════
+   STARRY NIGHT BACKGROUND (canvas + CSS fallback, only dark theme)
+══════════════════════════════════════════ */
+.stars-bg{
+  position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;
+  background:
+    radial-gradient(ellipse at 30% 10%, rgba(40,70,120,.35) 0%, transparent 55%),
+    radial-gradient(ellipse at 80% 80%, rgba(80,30,100,.25) 0%, transparent 50%),
+    radial-gradient(ellipse at 50% 0%, #0c1d36 0%, #060D18 55%, #02050B 100%);
+}
+[data-theme="light"] .stars-bg, [data-theme="sepia"] .stars-bg{display:none;}
+.stars-canvas{position:absolute;inset:0;width:100%;height:100%;display:block;}
+/* CSS fallback (always rendered behind canvas) */
+.stars-css{position:absolute;inset:0;
+  background-image:
+    radial-gradient(1.6px 1.6px at 12% 18%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 28% 42%, #ffe7a8, transparent),
+    radial-gradient(1px 1px at 45% 12%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 62% 68%, #b8d4ff, transparent),
+    radial-gradient(1px 1px at 78% 22%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 88% 80%, #fff5d6, transparent),
+    radial-gradient(1px 1px at 8% 78%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 35% 88%, #cce0ff, transparent),
+    radial-gradient(1px 1px at 52% 52%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 70% 38%, #fff, transparent),
+    radial-gradient(1px 1px at 18% 58%, #fff, transparent),
+    radial-gradient(1.4px 1.4px at 92% 48%, #ffe7a8, transparent),
+    radial-gradient(.8px .8px at 5% 30%, #fff, transparent),
+    radial-gradient(.8px .8px at 25% 70%, #fff, transparent),
+    radial-gradient(.8px .8px at 58% 28%, #fff, transparent),
+    radial-gradient(.8px .8px at 82% 62%, #fff, transparent),
+    radial-gradient(.8px .8px at 38% 18%, #fff, transparent),
+    radial-gradient(.8px .8px at 72% 92%, #fff, transparent);
+  background-size:520px 520px;
+  background-repeat:repeat;
+  opacity:.85;
+  animation:cssTwinkle 3.2s ease-in-out infinite alternate;
+}
+.stars-css::after{content:'';position:absolute;inset:0;
+  background-image:
+    radial-gradient(1px 1px at 15% 35%, #fff, transparent),
+    radial-gradient(1.2px 1.2px at 48% 65%, #fff5d6, transparent),
+    radial-gradient(1px 1px at 75% 15%, #b8d4ff, transparent),
+    radial-gradient(1.4px 1.4px at 30% 85%, #fff, transparent),
+    radial-gradient(.8px .8px at 90% 55%, #fff, transparent),
+    radial-gradient(1px 1px at 60% 40%, #fff, transparent);
+  background-size:380px 380px;
+  background-repeat:repeat;
+  background-position:160px 80px;
+  opacity:.7;
+  animation:cssTwinkle 4.5s ease-in-out infinite alternate-reverse;
+}
+@keyframes cssTwinkle{0%{opacity:.45;}100%{opacity:1;}}
+#app{position:relative;z-index:1;}
+
+/* Skeleton placeholders for home cards */
+.sk-card{flex:0 0 110px;display:flex;flex-direction:column;gap:6px;animation:skFade .25s ease both;}
+.sk-cov{width:100%;aspect-ratio:.72;border-radius:6px;background:linear-gradient(110deg,var(--bg2) 30%,rgba(255,255,255,.06) 50%,var(--bg2) 70%);background-size:200% 100%;animation:sk 1.5s ease-in-out infinite;}
+.sk-line{height:9px;border-radius:3px;background:linear-gradient(110deg,var(--bg2) 30%,rgba(255,255,255,.06) 50%,var(--bg2) 70%);background-size:200% 100%;animation:sk 1.5s ease-in-out infinite;width:78%;margin:0 auto;}
+@keyframes sk{0%{background-position:200% 0;}100%{background-position:-200% 0;}}
+@keyframes skFade{from{opacity:0;}to{opacity:1;}}
+
+/* Smooth card appearance (no flicker) */
+.home-card,.book{animation:cardIn .28s ease both;}
+@keyframes cardIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* Offline lock — uncached books look dimmed with lock badge */
+.book.offline-locked .book-cover,
+.book.offline-locked .book-3d,
+.home-card.offline-locked .home-card-cov{opacity:.55;filter:grayscale(.4);}
+.book-lock{position:absolute;top:5px;right:5px;background:rgba(0,0,0,.7);color:#fff;font-size:11px;width:22px;height:22px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:4;backdrop-filter:blur(2px);}
 
 /* Tajik geometric ornament — very subtle */
 body::before{
@@ -99,8 +175,8 @@ body::before{
   opacity:.7;
 }
 .splash-sub{font-size:10px;letter-spacing:3.5px;color:var(--textm);}
-.splash-bar{margin-top:24px;width:140px;height:3px;background:rgba(200,150,46,.18);border-radius:2px;overflow:hidden;box-shadow:0 0 8px rgba(200,150,46,.12);}
-.splash-fill{height:100%;background:var(--gold);width:0;border-radius:2px;animation:fillBar 1.1s cubic-bezier(.4,0,.2,1) forwards .15s;}
+.splash-bar{margin:24px auto 0;width:110px;max-width:110px;height:3px;background:rgba(200,150,46,.20);border-radius:2px;overflow:hidden;box-shadow:0 0 8px rgba(200,150,46,.12);position:relative;}
+.splash-fill{display:block;height:100%;width:0;background:var(--gold);border-radius:2px;animation:fillBar 1.1s cubic-bezier(.4,0,.2,1) forwards .15s;}
 @keyframes fillBar{0%{width:0;}100%{width:100%;}}
 
 /* ══════════════════════════════════════════
@@ -142,6 +218,7 @@ body::before{
   padding:10px 11px;background:var(--bg2);border:1px solid var(--border);
   border-radius:10px;cursor:pointer;margin-bottom:5px;
   transition:all .18s;
+  text-decoration:none;color:inherit;
 }
 .s-item:active{transform:scale(.98);border-color:var(--gold);}
 .s-item-ico{font-size:19px;width:26px;text-align:center;flex-shrink:0;}
@@ -299,6 +376,120 @@ body::before{
 
 .book{cursor:pointer;position:relative;}
 
+/* ══════════════════════════════════════════
+   LEFT NAV (categories drawer)
+══════════════════════════════════════════ */
+.nav-ov{position:fixed;inset:0;z-index:140;background:rgba(0,0,0,.6);backdrop-filter:blur(4px);display:none;}
+.nav-ov.on{display:block;animation:fadeIn .2s ease;}
+@keyframes fadeIn{from{opacity:0;}to{opacity:1;}}
+.nav-pnl{
+  position:fixed;top:0;left:0;bottom:0;z-index:141;
+  width:min(290px,82vw);
+  background:var(--card);border-right:1px solid var(--border);
+  transform:translateX(-105%);transition:transform .28s cubic-bezier(.4,0,.2,1);
+  display:flex;flex-direction:column;
+  box-shadow:8px 0 32px rgba(0,0,0,.5);
+}
+.nav-pnl::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,var(--gold),var(--teal));}
+.nav-pnl.on{transform:translateX(0);}
+.nav-hdr{display:flex;align-items:center;justify-content:space-between;padding:16px 14px 10px;border-bottom:1px solid var(--border);}
+.nav-title{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:800;letter-spacing:2px;background:linear-gradient(135deg,#E8B84B,#C8962E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;}
+.nav-close{width:32px;height:32px;border-radius:8px;background:var(--bg2);border:1px solid var(--border);color:var(--textm);cursor:pointer;font-size:16px;}
+.nav-body{flex:1;overflow-y:auto;padding:10px;}
+.nav-body::-webkit-scrollbar{width:3px;}
+.nav-body::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.nav-home{
+  display:flex;align-items:center;gap:10px;padding:11px 12px;
+  background:linear-gradient(135deg,rgba(200,150,46,.18),rgba(13,123,127,.10));
+  border:1px solid rgba(200,150,46,.35);border-radius:11px;
+  margin-bottom:12px;cursor:pointer;font-weight:600;color:var(--text);
+  transition:all .15s;font-family:inherit;width:100%;font-size:13px;
+}
+.nav-home.on{background:linear-gradient(135deg,rgba(200,150,46,.32),rgba(13,123,127,.18));border-color:var(--gold);}
+.nav-home:active{transform:scale(.98);}
+.nav-cat{
+  display:flex;align-items:center;gap:10px;padding:10px 11px;
+  background:var(--bg2);border:1px solid var(--border);border-radius:10px;
+  margin-bottom:5px;cursor:pointer;font-family:inherit;width:100%;text-align:left;
+  color:var(--text);font-size:12.5px;font-weight:500;transition:all .15s;
+}
+.nav-cat:active{transform:scale(.98);}
+.nav-cat.on{background:linear-gradient(135deg,rgba(200,150,46,.18),rgba(13,123,127,.08));border-color:var(--gold);color:var(--gold-l);}
+.nav-cat-ico{font-size:17px;flex-shrink:0;}
+.nav-cat-name{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.nav-cat-count{font-size:10px;color:var(--textm);background:var(--bg);padding:2px 6px;border-radius:8px;}
+.nav-cat-new{font-size:9px;color:#fff;background:#E63946;padding:2px 6px;border-radius:7px;font-weight:700;letter-spacing:.5px;}
+.nav-foot{padding:10px 14px;border-top:1px solid var(--border);font-size:10px;color:var(--textd);text-align:center;}
+
+/* ══════════════════════════════════════════
+   HOME PAGE (sections)
+══════════════════════════════════════════ */
+.home-sec{margin-bottom:24px;}
+.home-sec-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;padding:0 2px;}
+.home-sec-title{font-size:15px;font-weight:700;color:var(--text);display:flex;align-items:center;gap:7px;}
+.home-sec-title::before{content:'';display:inline-block;width:3px;height:14px;background:var(--gold);border-radius:2px;}
+.home-sec-more{background:none;border:none;color:var(--gold);font-size:11px;cursor:pointer;font-family:inherit;font-weight:600;}
+.home-scroll{display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;scroll-snap-type:x mandatory;}
+.home-scroll::-webkit-scrollbar{display:none;}
+.home-card{
+  flex:0 0 110px;scroll-snap-align:start;cursor:pointer;
+  display:flex;flex-direction:column;gap:6px;position:relative;
+  animation:slideUp .35s ease both;
+}
+@keyframes slideUp{from{opacity:0;transform:translateY(12px);}to{opacity:1;transform:translateY(0);}}
+.home-card-cov{
+  position:relative;width:100%;aspect-ratio:.72;border-radius:6px;overflow:hidden;
+  background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));
+  display:flex;align-items:center;justify-content:center;color:#fff;
+  font-size:9.5px;font-weight:700;text-align:center;padding:8px;
+  box-shadow:0 3px 12px rgba(0,0,0,.35);
+  transition:transform .2s;
+}
+.home-card:active .home-card-cov{transform:scale(.96);}
+.home-card-cov img{width:100%;height:100%;object-fit:cover;display:block;}
+.home-card-name{font-size:10px;color:var(--text);text-align:center;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500;}
+.home-card-meta{font-size:9px;color:var(--textm);text-align:center;}
+.home-card-new{position:absolute;top:5px;right:5px;background:#E63946;color:#fff;font-size:8px;padding:2px 5px;border-radius:5px;font-weight:700;letter-spacing:.5px;z-index:2;box-shadow:0 2px 6px rgba(230,57,70,.5);}
+.home-card-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.4);}
+.home-card-prog-fill{height:100%;background:var(--gold);}
+.home-card-fav{position:absolute;top:5px;left:5px;background:rgba(0,0,0,.5);color:#FFD700;font-size:11px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;}
+.home-cat-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
+.home-cat-row::-webkit-scrollbar{display:none;}
+.home-cat-tile{
+  flex:0 0 130px;padding:14px 12px;border-radius:12px;cursor:pointer;
+  background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));
+  color:#fff;display:flex;flex-direction:column;gap:4px;
+  box-shadow:0 4px 14px rgba(0,0,0,.3);
+  transition:transform .2s;
+  border:none;font-family:inherit;text-align:left;
+}
+.home-cat-tile:active{transform:scale(.95);}
+.home-cat-tile-ico{font-size:24px;}
+.home-cat-tile-name{font-size:12px;font-weight:700;}
+.home-cat-tile-count{font-size:10px;opacity:.85;}
+.home-empty{padding:20px;text-align:center;color:var(--textm);font-size:11.5px;}
+.home-greet{
+  font-family:'Cormorant Garamond',serif;font-size:24px;font-weight:700;
+  background:linear-gradient(135deg,#E8B84B,#C8962E,#E8B84B);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;
+  margin-bottom:4px;letter-spacing:1px;
+}
+.home-subgreet{font-size:11px;color:var(--textm);letter-spacing:1.5px;margin-bottom:18px;}
+
+/* Hamburger button */
+.menu-btn{
+  width:38px;height:38px;border-radius:9px;
+  background:var(--bg2);border:1px solid var(--border);
+  color:var(--text);font-size:18px;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;
+  transition:all .15s;flex-shrink:0;
+}
+.menu-btn:active{transform:scale(.92);border-color:var(--gold);}
+
+/* NEW badge on category tab */
+.cat-btn{position:relative;}
+.cat-btn-new{position:absolute;top:-3px;right:-3px;background:#E63946;color:#fff;font-size:8px;padding:1px 4px;border-radius:5px;font-weight:700;letter-spacing:.5px;box-shadow:0 1px 4px rgba(230,57,70,.5);}
+
 /* Book cover wrapper */
 .book-3d-wrap{margin-bottom:3px;}
 .book-3d{
@@ -335,10 +526,10 @@ body::before{
 }
 
 /* Loading shimmer on cover */
-.book-cover .cv-load{position:absolute;bottom:0;left:0;right:0;height:2px;background:rgba(0,0,0,.18);overflow:hidden;display:none;}
+.book-cover .cv-load{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.25);overflow:hidden;display:none;border-radius:0 0 4px 4px;}
 .book-cover.loading .cv-load{display:block;}
-.book-cover .cv-load::after{content:'';position:absolute;left:0;top:0;bottom:0;width:28%;background:rgba(255,255,255,.7);animation:cvl 1s linear infinite;}
-@keyframes cvl{0%{transform:translateX(-100%);}100%{transform:translateX(450%);}}
+.book-cover .cv-load::after{content:'';position:absolute;left:0;top:0;bottom:0;width:100%;background:linear-gradient(90deg,transparent,var(--gold),var(--gold),transparent);animation:cvl 1.4s ease-in-out infinite;}
+@keyframes cvl{0%{transform:translateX(-100%);}100%{transform:translateX(100%);}}
 
 .book-name{font-size:9.5px;color:var(--text);text-align:center;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-weight:500;padding:0 1px;min-height:25px;}
 .book-actions{display:flex;gap:3px;margin-top:6px;}
@@ -399,10 +590,35 @@ body::before{
 .r-btn.tts-on{background:rgba(200,150,46,.18);border-color:var(--gold);color:var(--gold);}
 .reader-title{flex:1;color:#ddd;font-size:12px;font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
 
-.reader-area{flex:1;overflow:hidden;background:#111;position:relative;touch-action:none;}
+.reader-area{flex:1;overflow:hidden;background:#0a0a0a;position:relative;touch-action:none;}
+.reader-area.dark canvas{filter:invert(.92) hue-rotate(180deg) contrast(1.05) brightness(.95);}
 .reader-area.light{background:#e8ddd0;}
+.reader-area.light canvas{filter:contrast(1.05);}
 .reader-area.sepia{background:#2a1c0e;}
-.reader-area.sepia canvas{filter:sepia(.3) brightness(.92);}
+.reader-area.sepia canvas{filter:sepia(.3) brightness(.92) contrast(1.02);}
+
+/* Bookmarks list */
+.bm-list{max-height:50vh;overflow-y:auto;margin:10px 0;display:flex;flex-direction:column;gap:6px;}
+.bm-list::-webkit-scrollbar{width:3px;}
+.bm-list::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px;}
+.bm-item{display:flex;align-items:center;gap:10px;padding:10px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:9px;cursor:pointer;transition:all .15s;}
+.bm-item:active{transform:scale(.98);border-color:var(--gold);}
+.bm-item-num{font-size:13px;font-weight:700;color:var(--gold);min-width:36px;text-align:center;background:rgba(200,150,46,.1);padding:5px 8px;border-radius:7px;}
+.bm-item-info{flex:1;min-width:0;}
+.bm-item-name{font-size:12px;color:var(--text);font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.bm-item-sub{font-size:10px;color:var(--textm);overflow:hidden;text-overflow:ellipsis;white-space:nowrap;margin-top:2px;}
+.bm-item-del{width:28px;height:28px;background:rgba(230,57,70,.1);border:1px solid rgba(230,57,70,.3);border-radius:6px;color:#E63946;cursor:pointer;font-size:13px;}
+.bm-empty{padding:18px;text-align:center;color:var(--textm);font-size:12px;}
+
+/* FTS */
+.fts-search{display:flex;gap:7px;margin:8px 0 4px;}
+.fts-search input{flex:1;padding:9px 11px;background:var(--bg2);border:1px solid var(--border);border-radius:8px;color:var(--text);font-family:inherit;font-size:13px;}
+.fts-search input:focus{outline:none;border-color:var(--gold);}
+.fts-status{font-size:11px;color:var(--textm);padding:4px 2px 6px;}
+
+/* Progress on book cover (catalog) */
+.book-cover-prog{position:absolute;bottom:0;left:0;right:0;height:3px;background:rgba(0,0,0,.4);z-index:3;}
+.book-cover-prog-fill{height:100%;background:var(--gold);transition:width .3s;}
 
 .slider{position:absolute;inset:0;display:flex;will-change:transform;}
 .slide{flex-shrink:0;width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:4px;}
@@ -511,6 +727,12 @@ body::before{
 </head>
 <body>
 
+<!-- ═══ STARRY BACKGROUND ═══ -->
+<div class="stars-bg" aria-hidden="true">
+  <div class="stars-css"></div>
+  <canvas class="stars-canvas" id="starsCv"></canvas>
+</div>
+
 <!-- ═══ SPLASH ═══ -->
 <div class="splash" id="splash">
   <div class="splash-ornament"></div>
@@ -542,6 +764,15 @@ body::before{
       </div>
     </div>
 
+    <!-- Install PWA -->
+    <div class="s-sec" id="pwaSec" style="display:none;">
+      <div class="s-sec-title">📱 Барномаро насб кардан</div>
+      <button class="dl-clearall" id="installBtn" style="background:var(--gold);color:#000;font-weight:700;" onclick="installPWA()">📥 Ҳамчун барнома насб кардан</button>
+      <div id="iosHint" style="display:none;font-size:11px;color:var(--textm);padding:8px 4px;line-height:1.5;">
+        Дар iPhone/iPad: пахш кунед <b>Share</b> ⎙ → <b>«Add to Home Screen»</b> ➕
+      </div>
+    </div>
+
     <!-- Downloads -->
     <div class="s-sec">
       <div class="s-sec-title">💾 Китобҳои захирашуда</div>
@@ -552,76 +783,127 @@ body::before{
     <!-- Contact -->
     <div class="s-sec">
       <div class="s-sec-title">📬 Тамос</div>
-      <div class="s-item" onclick="window.open('https://sharipovip.github.io/kitobkhona/','_blank')">
-        <div class="s-item-ico">🌐</div>
+      <a class="s-item" href="tel:+992907972295">
+        <div class="s-item-ico">📱</div>
         <div class="s-item-info">
-          <div class="s-item-name">Вебсайт</div>
-          <div class="s-item-sub">sharipovip.github.io/kitobkhona</div>
+          <div class="s-item-name">Занг задан</div>
+          <div class="s-item-sub">+992 907 972 295</div>
         </div>
         <div class="s-item-arr">›</div>
-      </div>
-      <div class="s-item" onclick="window.open('https://github.com/sharipovip','_blank')">
-        <div class="s-item-ico">🐙</div>
+      </a>
+      <a class="s-item" href="https://wa.me/992907972295" target="_blank" rel="noopener">
+        <div class="s-item-ico" style="background:rgba(37,211,102,.18);color:#25D366;">💬</div>
         <div class="s-item-info">
-          <div class="s-item-name">GitHub</div>
-          <div class="s-item-sub">sharipovip</div>
+          <div class="s-item-name">WhatsApp</div>
+          <div class="s-item-sub">+992 907 972 295</div>
         </div>
         <div class="s-item-arr">›</div>
-      </div>
+      </a>
     </div>
 
     <!-- About -->
     <div class="s-sec">
-      <div class="s-sec-title">ℹ️ Дар бора</div>
-      <div class="s-item" style="cursor:default;">
+      <div class="s-sec-title">ℹ️ Маълумот дар бораи барнома</div>
+      <div class="s-item" onclick="openAbout()">
         <div class="s-item-ico">📚</div>
         <div class="s-item-info">
-          <div class="s-item-name">Китобхона · v3.5</div>
-          <div class="s-item-sub">© 2025 Шарипов Парвиз Исмоилович</div>
+          <div class="s-item-name">Китобхона · v1.0</div>
+          <div class="s-item-sub">© 2026 Парвиз Шарипов</div>
         </div>
+        <div class="s-item-arr">›</div>
       </div>
     </div>
 
-    <div class="s-version">МТМУ №45 · Ноҳияи Дангара · Тоҷикистон</div>
+    <div class="s-version" style="font-family:'Cormorant Garamond',serif;font-size:14px;letter-spacing:2px;font-weight:700;background:linear-gradient(135deg,#E8B84B,#C8962E);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">МАНБАИ ДОНИШ</div>
   </div>
 </div>
+
+<!-- ═══ LEFT NAV (categories) ═══ -->
+<div class="nav-ov" id="navOv" onclick="closeNav()"></div>
+<nav class="nav-pnl" id="navPnl">
+  <div class="nav-hdr">
+    <div class="nav-title">КИТОБХОНА</div>
+    <button class="nav-close" onclick="closeNav()" aria-label="Пӯшидан">✕</button>
+  </div>
+  <div class="nav-body">
+    <button class="nav-home on" id="navHome" onclick="goHome()">🏠 Саҳифаи аввал</button>
+    <div id="navCats"></div>
+  </div>
+  <div class="nav-foot">© 2026 Парвиз Шарипов · v1.0</div>
+</nav>
 
 <!-- ═══ APP ═══ -->
 <div id="app">
   <div class="hdr">
     <div class="hdr-row">
-      <button class="logo-btn" onclick="openSettings()" title="Танзимот">📚</button>
+      <button class="menu-btn" id="navTrigger" onclick="navTriggerClick()" aria-label="Меню">☰</button>
       <div class="search-wrap">
         <span class="search-ico">🔍</span>
         <input type="text" id="search" placeholder="Ҷустуҷӯ..." inputmode="search">
       </div>
       <button class="hdr-btn" id="themeBtn" onclick="cycleTheme()">🌙</button>
+      <button class="menu-btn" onclick="openSettings()" aria-label="Танзимот" style="font-size:16px;">⚙️</button>
     </div>
-    <div class="cats-row" id="catsRow"></div>
+    <div class="cats-row" id="catsRow" style="display:none;"></div>
   </div>
-  <div class="subs-row" id="subsRow"></div>
+  <div class="subs-row" id="subsRow" style="display:none;"></div>
   <div class="bg-prog" id="bgProg"></div>
 
   <div class="scroll-area" id="scrollArea">
-    <!-- Last read -->
-    <div class="last-read" id="lastRead" style="display:none;">
-      <div class="last-read-head">
-        <div class="last-read-title">Охирин хонда</div>
-        <button class="last-read-clear" onclick="clearLastRead()">Тоза кардан</button>
+    <!-- HOME VIEW -->
+    <div id="homeView">
+      <div class="home-sec" id="homeLastSec" style="display:none;">
+        <div class="home-sec-head">
+          <div class="home-sec-title">📖 Таърихи китобҳои хондашудаи шумо</div>
+          <button class="home-sec-more" onclick="clearLastRead()">Тоза</button>
+        </div>
+        <div class="home-scroll" id="homeLast"></div>
       </div>
-      <div class="last-read-scroll" id="lastReadScroll"></div>
+
+      <div class="home-sec">
+        <div class="home-sec-head">
+          <div class="home-sec-title">📂 Категорияҳо</div>
+        </div>
+        <div class="home-cat-row" id="homeCatRow"></div>
+      </div>
+
+      <div class="home-sec" id="homeNewSec" style="display:none;">
+        <div class="home-sec-head">
+          <div class="home-sec-title">🆕 Навтарин китобҳо</div>
+        </div>
+        <div class="home-scroll" id="homeNew"></div>
+      </div>
+
+      <div class="home-sec" id="homeTopSec" style="display:none;">
+        <div class="home-sec-head">
+          <div class="home-sec-title">🔥 Беҳтарин хондашудаҳо</div>
+        </div>
+        <div class="home-scroll" id="homeTop"></div>
+      </div>
+
+      <div class="home-sec" id="homeFavSec" style="display:none;">
+        <div class="home-sec-head">
+          <div class="home-sec-title">❤️ Дӯстдоштаҳо</div>
+        </div>
+        <div class="home-scroll" id="homeFav"></div>
+      </div>
+
+      <div class="home-empty" id="homeLoading" style="display:none;">Интизор шавед...</div>
     </div>
 
-    <div class="section-head">
-      <div class="section-bar">
-        <div>
-          <div class="section-title" id="secTitle">—</div>
-          <div class="section-sub" id="secSub"></div>
+    <!-- CATALOG VIEW -->
+    <div id="catalogView" style="display:none;">
+      <div class="section-head">
+        <div class="section-bar">
+          <div>
+            <div class="section-title" id="secTitle">—</div>
+            <div class="section-sub" id="secSub"></div>
+          </div>
         </div>
       </div>
-    </div>
 
-    <div class="books-grid" id="grid"></div>
+      <div class="books-grid" id="grid"></div>
+    </div>
   </div>
 </div>
 
@@ -632,9 +914,14 @@ body::before{
     <div class="reader-title" id="rdrTitle">—</div>
     <button class="r-btn" onclick="copyPageText()" title="Нусхаи матн">📋</button>
     <button class="r-btn" id="ttsBtn" onclick="ttsToggle()" title="Хондани садо">🔊</button>
-    <button class="r-btn" onclick="toggleFind()" title="Ҷустуҷӯ">🔍</button>
+    <button class="r-btn" onclick="toggleFind()" title="Ҷустуҷӯ дар саҳифа">🔍</button>
+    <button class="r-btn" onclick="openFTS()" title="Ҷустуҷӯ дар тамоми китоб">🔎</button>
     <button class="r-btn" id="lightBtn" onclick="cycleReaderBg()" title="Тема">☀️</button>
-    <button class="r-btn" onclick="downloadCurrent()" title="Юклаб гирифтан">⬇</button>
+    <button class="r-btn" id="favBtn" onclick="toggleFavCurrent()" title="Дӯстдошта">🤍</button>
+    <button class="r-btn" id="bmBtn" onclick="toggleBookmark()" title="Хатчуб">🔖</button>
+    <button class="r-btn" onclick="openBookmarks()" title="Хатчубҳо">📑</button>
+    <button class="r-btn" onclick="shareBook()" title="Мубодила">📤</button>
+    <button class="r-btn" onclick="downloadCurrent()" title="Гирифтан">⬇</button>
   </div>
   <div class="reader-area" id="rdrArea">
     <div class="slider" id="slider"></div>
@@ -695,6 +982,47 @@ body::before{
   </div>
 </div>
 
+<!-- Bookmarks modal -->
+<div class="modal-bg" id="bmModal">
+  <div class="modal">
+    <h3>🔖 Хатчубҳо</h3>
+    <div class="modal-sub" id="bmSub">Саҳифаҳои нишонагузошташуда</div>
+    <div class="bm-list" id="bmList"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeBookmarks()">Пӯшидан</button>
+    </div>
+  </div>
+</div>
+
+<!-- About / README modal -->
+<div class="modal-bg" id="aboutModal">
+  <div class="modal" style="max-height:85vh;display:flex;flex-direction:column;">
+    <h3>📚 Дар бораи барнома</h3>
+    <div class="about-body" id="aboutBody" style="flex:1;overflow-y:auto;font-size:13px;line-height:1.6;color:var(--text);padding:8px 4px;text-align:left;">
+      ⏳ Боркунӣ...
+    </div>
+    <div class="modal-actions">
+      <button class="modal-btn primary" onclick="closeAbout()">Пӯшидан</button>
+    </div>
+  </div>
+</div>
+
+<!-- Full-text search modal -->
+<div class="modal-bg" id="ftsModal">
+  <div class="modal">
+    <h3>🔍 Ҷустуҷӯ дар тамоми китоб</h3>
+    <div class="fts-search">
+      <input type="text" id="ftsInp" placeholder="Калима ё ибора..." inputmode="search">
+      <button class="modal-btn primary" onclick="runFTS()">🔍</button>
+    </div>
+    <div class="fts-status" id="ftsStatus"></div>
+    <div class="bm-list" id="ftsList"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeFTS()">Пӯшидан</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script>
@@ -704,8 +1032,187 @@ body::before{
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
-if ('serviceWorker' in navigator)
-  window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(() => {}));
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('sw.js').then(reg => {
+      // Listen for updates
+      reg.addEventListener('updatefound', () => {
+        const nw = reg.installing;
+        if (!nw) return;
+        nw.addEventListener('statechange', () => {
+          if (nw.state === 'installed' && navigator.serviceWorker.controller) {
+            // A new SW is ready — it will take over thanks to skipWaiting+claim
+          }
+        });
+      });
+    }).catch(() => {});
+    // Reload once when a new SW takes control
+    let reloading = false;
+    navigator.serviceWorker.addEventListener('controllerchange', () => {
+      if (reloading) return; reloading = true;
+      location.reload();
+    });
+  });
+}
+
+/* ══════════════════════════════════════════
+   REALISTIC STARS — twinkle + shooting stars
+══════════════════════════════════════════ */
+(function initStars(){
+  const cv = document.getElementById('starsCv');
+  if (!cv) return;
+  let ctx;
+  try { ctx = cv.getContext('2d', { alpha: true }); } catch(e) { return; }
+  if (!ctx) return;
+  let W = 0, H = 0, DPR = Math.min(window.devicePixelRatio || 1, 2);
+  let stars = [], shoot = null, raf = null, running = true;
+  const COLORS = ['255,255,255','220,235,255','255,240,210','255,220,180','200,220,255'];
+
+  function resize() {
+    W = window.innerWidth; H = window.innerHeight;
+    cv.width = W * DPR; cv.height = H * DPR;
+    cv.style.width = W + 'px'; cv.style.height = H + 'px';
+    ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+    // Stars density — fewer on small screens for battery
+    const density = Math.min(1, (W * H) / 800000); // 0..1
+    const count = Math.floor(80 + 120 * density);
+    stars = [];
+    for (let i = 0; i < count; i++) stars.push(makeStar());
+  }
+  function makeStar() {
+    const r = Math.random();
+    const big = r > 0.92;     // 8% big
+    const med = r > 0.7;      // 22% medium
+    return {
+      x: Math.random() * W,
+      y: Math.random() * H,
+      r: big ? 1.6 + Math.random()*0.8 : (med ? 0.9 + Math.random()*0.5 : 0.4 + Math.random()*0.4),
+      baseA: big ? 0.7 + Math.random()*0.3 : (med ? 0.45 + Math.random()*0.35 : 0.2 + Math.random()*0.3),
+      a: 0,
+      phase: Math.random() * Math.PI * 2,
+      speed: 0.4 + Math.random() * 1.8,            // twinkle speed
+      color: COLORS[Math.floor(Math.random() * COLORS.length)],
+      cross: big && Math.random() > 0.5,           // big stars get cross flare
+    };
+  }
+  function spawnShoot() {
+    const fromLeft = Math.random() > 0.5;
+    shoot = {
+      x: fromLeft ? -20 : W + 20,
+      y: Math.random() * H * 0.5,
+      vx: (fromLeft ? 1 : -1) * (5 + Math.random() * 3),
+      vy: 1.5 + Math.random() * 1.5,
+      life: 1,
+      tail: [],
+    };
+  }
+  let lastShoot = performance.now();
+  function loop(t) {
+    if (!running) return;
+    ctx.clearRect(0, 0, W, H);
+    // Stars
+    for (const s of stars) {
+      s.phase += 0.016 * s.speed;
+      const tw = (Math.sin(s.phase) + 1) / 2; // 0..1
+      s.a = s.baseA * (0.4 + 0.6 * tw);
+      // Glow
+      const grad = ctx.createRadialGradient(s.x, s.y, 0, s.x, s.y, s.r * 6);
+      grad.addColorStop(0, `rgba(${s.color},${s.a})`);
+      grad.addColorStop(0.4, `rgba(${s.color},${s.a*0.3})`);
+      grad.addColorStop(1, `rgba(${s.color},0)`);
+      ctx.fillStyle = grad;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 6, 0, Math.PI*2); ctx.fill();
+      // Core
+      ctx.fillStyle = `rgba(${s.color},${Math.min(1, s.a*1.6)})`;
+      ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2); ctx.fill();
+      // Cross flare for big stars at peak twinkle
+      if (s.cross && tw > 0.85) {
+        const len = s.r * 8 * tw;
+        ctx.strokeStyle = `rgba(${s.color},${s.a*0.5})`;
+        ctx.lineWidth = 0.6;
+        ctx.beginPath();
+        ctx.moveTo(s.x - len, s.y); ctx.lineTo(s.x + len, s.y);
+        ctx.moveTo(s.x, s.y - len); ctx.lineTo(s.x, s.y + len);
+        ctx.stroke();
+      }
+    }
+    // Shooting star
+    if (!shoot && t - lastShoot > 8000 + Math.random() * 12000) {
+      spawnShoot(); lastShoot = t;
+    }
+    if (shoot) {
+      shoot.tail.unshift({ x: shoot.x, y: shoot.y });
+      if (shoot.tail.length > 18) shoot.tail.pop();
+      shoot.x += shoot.vx; shoot.y += shoot.vy;
+      shoot.life -= 0.012;
+      // Tail
+      for (let i = 0; i < shoot.tail.length; i++) {
+        const p = shoot.tail[i];
+        const a = (1 - i/shoot.tail.length) * shoot.life * 0.9;
+        ctx.fillStyle = `rgba(255,255,255,${a})`;
+        ctx.beginPath(); ctx.arc(p.x, p.y, (1 - i/shoot.tail.length) * 1.6, 0, Math.PI*2); ctx.fill();
+      }
+      if (shoot.life <= 0 || shoot.x < -50 || shoot.x > W + 50 || shoot.y > H + 50) shoot = null;
+    }
+    raf = requestAnimationFrame(loop);
+  }
+  // Pause when tab not visible (save battery)
+  document.addEventListener('visibilitychange', () => {
+    running = !document.hidden;
+    if (running && !raf) raf = requestAnimationFrame(loop);
+    else if (!running && raf) { cancelAnimationFrame(raf); raf = null; }
+  });
+  let _rTo;
+  window.addEventListener('resize', () => { clearTimeout(_rTo); _rTo = setTimeout(resize, 120); });
+  resize(); raf = requestAnimationFrame(loop);
+})();
+
+/* ══════════════════════════════════════════
+   PWA INSTALL
+══════════════════════════════════════════ */
+let deferredInstallPrompt = null;
+window.addEventListener('beforeinstallprompt', (e) => {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  const sec = document.getElementById('pwaSec');
+  const btn = document.getElementById('installBtn');
+  if (sec) sec.style.display = '';
+  if (btn) btn.style.display = '';
+});
+window.addEventListener('appinstalled', () => {
+  deferredInstallPrompt = null;
+  const sec = document.getElementById('pwaSec');
+  if (sec) sec.style.display = 'none';
+  if (typeof toast === 'function') toast('✓ Барнома насб шуд', 2500);
+});
+async function installPWA() {
+  if (deferredInstallPrompt) {
+    deferredInstallPrompt.prompt();
+    const r = await deferredInstallPrompt.userChoice;
+    if (r.outcome === 'accepted') {
+      deferredInstallPrompt = null;
+      const sec = document.getElementById('pwaSec');
+      if (sec) sec.style.display = 'none';
+    }
+  } else {
+    // iOS — нет beforeinstallprompt, показываем инструкцию
+    const hint = document.getElementById('iosHint');
+    if (hint) hint.style.display = 'block';
+  }
+}
+// On iOS Safari (where beforeinstallprompt doesn't fire), show iOS hint section
+setTimeout(() => {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+  const standalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
+  if (isIOS && !standalone) {
+    const sec = document.getElementById('pwaSec');
+    const btn = document.getElementById('installBtn');
+    const hint = document.getElementById('iosHint');
+    if (sec) sec.style.display = '';
+    if (btn) btn.style.display = 'none';
+    if (hint) hint.style.display = 'block';
+  }
+}, 1500);
 
 // Splash → remove after 1.2s (single timer, guaranteed)
 setTimeout(() => {
@@ -770,10 +1277,50 @@ const S = {
   coverActive:  0,
   coverMax:     2,
   currentSubId: null,
+  view: 'home',              // 'home' | 'catalog'
   pdf: null, page: 1, pages: 0, zoom: 1, key: null, url: null,
   rdrBg: 'dark',             // dark | light | sepia
   findQ: '', findHits: [], findCurr: -1,
 };
+
+/* NEW marker threshold — 7 days */
+const NEW_DAYS = 7;
+function isBookNew(b) {
+  if (!b) return false;
+  const ts = b.addedAt || b.ts || 0;
+  if (!ts) return false;
+  return (Date.now() - ts) < NEW_DAYS * 86400000;
+}
+
+/* Open count for "top read" */
+function bumpOpenCount(url) {
+  try {
+    const c = JSON.parse(localStorage.getItem('kk_opens')||'{}');
+    c[url] = (c[url]||0) + 1;
+    localStorage.setItem('kk_opens', JSON.stringify(c));
+  } catch(e) {}
+}
+function getOpenCounts() {
+  try { return JSON.parse(localStorage.getItem('kk_opens')||'{}'); } catch(e) { return {}; }
+}
+
+/* Favorites */
+function isFav(url) {
+  try { return (JSON.parse(localStorage.getItem('kk_favs')||'[]')).includes(url); } catch(e) { return false; }
+}
+function toggleFav(url) {
+  try {
+    let f = JSON.parse(localStorage.getItem('kk_favs')||'[]');
+    if (f.includes(url)) f = f.filter(x=>x!==url);
+    else f.unshift(url);
+    if (f.length > 50) f = f.slice(0,50);
+    localStorage.setItem('kk_favs', JSON.stringify(f));
+    return f.includes(url);
+  } catch(e) { return false; }
+}
+function getFavs() {
+  try { return JSON.parse(localStorage.getItem('kk_favs')||'[]'); } catch(e) { return []; }
+}
 
 /* ══════════════════════════════════════════
    INDEXEDDB
@@ -884,7 +1431,8 @@ async function loadBooksJson() {
     console.error('LoadBooksJson error:', e);
     const grid = document.getElementById('grid');
     if (grid) {
-      grid.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Интернет лозим</div><div class="empty-sub">${esc(e.message||'Хатогии номаълум')}</div></div>`;
+      const offline = !navigator.onLine;
+      grid.innerHTML = `<div class="empty"><div class="empty-icon">${offline?'📡':'⚠️'}</div><div class="empty-title">${offline?'Интернет нест':'Хатогӣ дар шабака'}</div><div class="empty-sub">${esc(offline?'Лутфан пайвасти интернетро тафтиш кунед':(e.message||'Кӯшиш кунед бори дигар'))}</div></div>`;
     }
     return false;
   }
@@ -899,7 +1447,11 @@ async function refreshBooksJson() {
     if (old !== JSON.stringify(CATS)) {
       idbS('json','books',d).catch(() => {});
       renderCats(); renderSubs();
-      if (S.sub) loadSub(S.sub.id);
+      if (typeof renderNavCats === 'function') renderNavCats();
+      // Only refresh catalog if it's currently shown
+      if (S.view === 'catalog' && S.sub) loadSub(S.sub.id);
+      // Refresh home sections
+      if (S.view === 'home' && typeof renderHome === 'function') renderHome();
     }
   } catch(e) {}
 }
@@ -960,11 +1512,14 @@ function renderSubs() {
 function selectCat(id) {
   const c = CATS.find(x => x.id === id); if (!c) return;
   S.cat = c; S.sub = c.subs[0] || null;
-  renderCats(); renderSubs();
+  showCatalog();
+  renderCats(); renderSubs(); renderNavCats();
   $('secTitle').textContent = c.name;
   $('secSub').textContent   = S.sub?.name || '';
   if (S.sub) loadSub(S.sub.id);
   else $('grid').innerHTML = '<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Бахше нест</div></div>';
+  closeNav();
+  $('scrollArea')?.scrollTo({top:0,behavior:'smooth'});
 }
 function selectSub(id) {
   const s = S.cat?.subs.find(x => x.id === id); if (!s) return;
@@ -972,6 +1527,245 @@ function selectSub(id) {
   $('secSub').textContent = s.name;
   loadSub(id);
 }
+
+/* ══════════════════════════════════════════
+   LEFT NAV DRAWER + VIEW SWITCH
+══════════════════════════════════════════ */
+function openNav()  { $('navPnl')?.classList.add('on'); $('navOv')?.classList.add('on'); renderNavCats(); }
+function navTriggerClick() {
+  // From catalog → back to home; from home → open menu
+  if (S.view === 'catalog') goHome();
+  else openNav();
+}
+function closeNav() { $('navPnl')?.classList.remove('on'); $('navOv')?.classList.remove('on'); }
+function goHome() {
+  S.view = 'home';
+  $('homeView').style.display = '';
+  $('catalogView').style.display = 'none';
+  $('catsRow').style.display = 'none';
+  $('subsRow').style.display = 'none';
+  $('navHome')?.classList.add('on');
+  const tr = $('navTrigger'); if (tr) { tr.textContent='☰'; tr.title='Меню'; }
+  renderNavCats();
+  renderHome();
+  closeNav();
+  $('scrollArea')?.scrollTo({top:0,behavior:'smooth'});
+}
+function showCatalog() {
+  S.view = 'catalog';
+  $('homeView').style.display = 'none';
+  $('catalogView').style.display = '';
+  $('catsRow').style.display = '';
+  $('subsRow').style.display = '';
+  $('navHome')?.classList.remove('on');
+  const tr = $('navTrigger'); if (tr) { tr.textContent='←'; tr.title='Бозгашт ба саҳифаи аввал'; }
+}
+function renderNavCats() {
+  const wrap = $('navCats'); if (!wrap) return;
+  wrap.innerHTML = '';
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'nav-cat' + (S.view==='catalog' && c.id===S.cat?.id ? ' on' : '');
+    let subCount = 0; c.subs.forEach(s => { subCount += (S.books.get(s.id)?.length || 0); });
+    const hasNew = anyNewInCat(c);
+    btn.innerHTML = `<span class="nav-cat-ico">${esc(c.emoji||'📂')}</span><span class="nav-cat-name">${esc(c.name)}</span>${hasNew?'<span class="nav-cat-new">NEW</span>':''}${subCount?`<span class="nav-cat-count">${subCount}</span>`:''}`;
+    btn.onclick = () => selectCat(c.id);
+    wrap.appendChild(btn);
+  });
+}
+function anyNewInCat(c) {
+  for (const s of c.subs) {
+    const books = S.books.get(s.id) || [];
+    if (books.some(isBookNew)) return true;
+  }
+  return false;
+}
+
+/* ══════════════════════════════════════════
+   HOME PAGE RENDER
+══════════════════════════════════════════ */
+function renderHome() {
+  if (S.view !== 'home') return;
+  const loadEl = $('homeLoading'); if (loadEl) loadEl.style.display = CATS.length ? 'none' : '';
+  renderHomeCats();
+  renderHomeLast();
+  renderHomeNew();
+  renderHomeTop();
+  renderHomeFav();
+}
+
+function renderHomeCats() {
+  const wrap = $('homeCatRow'); if (!wrap) return;
+  wrap.innerHTML = '';
+  CATS.forEach(c => {
+    const btn = document.createElement('button');
+    btn.className = 'home-cat-tile';
+    btn.style.setProperty('--c1', c.c1 || '#2563eb');
+    btn.style.setProperty('--c2', c.c2 || '#3b82f6');
+    btn.style.background = `linear-gradient(135deg, ${c.c1||'#2563eb'}, ${c.c2||'#3b82f6'})`;
+    let subCount = 0; c.subs.forEach(s => { subCount += (S.books.get(s.id)?.length || 0); });
+    btn.innerHTML = `<div class="home-cat-tile-ico">${esc(c.emoji||'📂')}</div><div class="home-cat-tile-name">${esc(c.name)}</div><div class="home-cat-tile-count">${c.subs.length} бахш${subCount?' · '+subCount+' китоб':''}</div>`;
+    btn.onclick = () => selectCat(c.id);
+    wrap.appendChild(btn);
+  });
+}
+
+function makeHomeCard(b, cat, opts={}) {
+  const key = (opts.subId || cat.subs[0]?.id || '') + ':' + b.name;
+  const cov = S.covers.get(b.url) || b.cover;
+  const d = document.createElement('div');
+  d.className = 'home-card';
+  const isNew = isBookNew(b);
+  const fav = isFav(b.url);
+  const prog = opts.progress;
+  const isCached = S.cachedUrls.has(b.url) || S.blobs.has(b.url);
+  const locked = !navigator.onLine && !isCached;
+  if (locked) d.classList.add('offline-locked');
+  d.innerHTML = `
+    <div class="home-card-cov" style="--c1:${cat.c1||'#2563eb'};--c2:${cat.c2||'#3b82f6'};">
+      ${cov?`<img src="${esc(cov)}" alt="" loading="lazy" onerror="this.style.display='none';">`:`<div style="padding:6px;">${esc(b.name)}</div>`}
+      ${locked?'<div class="book-lock" title="Барои хондан интернет лозим">🔒</div>':''}
+      ${isNew && !locked?'<div class="home-card-new">NEW</div>':''}
+      ${fav?'<div class="home-card-fav">★</div>':''}
+      ${prog?`<div class="home-card-prog"><div class="home-card-prog-fill" style="width:${prog}%;"></div></div>`:''}
+    </div>
+    <div class="home-card-name">${esc(b.name)}</div>
+    ${opts.meta?`<div class="home-card-meta">${esc(opts.meta)}</div>`:''}
+  `;
+  d.onclick = () => openBook(b.url, b.name, key);
+  return d;
+}
+
+function findBookByUrl(url) {
+  for (const c of CATS) {
+    for (const s of c.subs) {
+      const books = S.books.get(s.id) || [];
+      const b = books.find(x => x.url === url);
+      if (b) return { book: b, cat: c, sub: s };
+    }
+  }
+  return null;
+}
+
+/* Make skeleton placeholder cards */
+function makeSkeletons(n) {
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < n; i++) {
+    const d = document.createElement('div'); d.className = 'sk-card';
+    d.innerHTML = '<div class="sk-cov"></div><div class="sk-line"></div>';
+    frag.appendChild(d);
+  }
+  return frag;
+}
+/* How many subs have loaded books */
+function loadedSubsCount() {
+  let n = 0;
+  for (const c of CATS) for (const s of c.subs) if (S.books.has(s.id)) n++;
+  return n;
+}
+function totalSubsCount() {
+  let n = 0;
+  for (const c of CATS) n += c.subs.length;
+  return n;
+}
+function isStillLoading() {
+  const total = totalSubsCount();
+  if (!total) return true;
+  return loadedSubsCount() < total;
+}
+
+function renderHomeLast() {
+  const wrap = $('homeLast'); const sec = $('homeLastSec');
+  if (!wrap || !sec) return;
+  let last = []; try { last = JSON.parse(localStorage.getItem('kk_last')||'[]'); } catch(e) {}
+  const prog = (() => { try { return JSON.parse(localStorage.getItem('kk_prog')||'{}'); } catch(e) { return {}; } })();
+  wrap.innerHTML = ''; let vis = 0;
+  for (const k of last) {
+    const p = prog[k]; if (!p?.url) continue;
+    const found = findBookByUrl(p.url);
+    if (!found) continue;
+    const pct = p.pages ? Math.round(p.page/p.pages*100) : 0;
+    const card = makeHomeCard(found.book, found.cat, { subId: found.sub.id, progress: pct, meta: `${p.page}/${p.pages}` });
+    wrap.appendChild(card); vis++;
+    if (vis >= 10) break;
+  }
+  // If user has history but books not loaded yet → keep skeletons
+  if (!vis && last.length && isStillLoading()) {
+    wrap.appendChild(makeSkeletons(Math.min(4, last.length)));
+    sec.style.display = '';
+  } else {
+    sec.style.display = vis ? '' : 'none';
+  }
+}
+
+function renderHomeNew() {
+  const wrap = $('homeNew'); const sec = $('homeNewSec');
+  if (!wrap || !sec) return;
+  const items = [];
+  for (const c of CATS) for (const s of c.subs) {
+    const books = S.books.get(s.id) || [];
+    for (const b of books) if (isBookNew(b)) items.push({ b, c, s });
+  }
+  items.sort((a,b) => (b.b.addedAt||0) - (a.b.addedAt||0));
+  wrap.innerHTML = '';
+  items.slice(0, 12).forEach(({b,c,s}) => wrap.appendChild(makeHomeCard(b, c, { subId: s.id })));
+  if (items.length) { sec.style.display = ''; return; }
+  // Still loading → show skeleton frame to keep layout stable
+  if (isStillLoading()) {
+    wrap.appendChild(makeSkeletons(5));
+    sec.style.display = '';
+  } else {
+    sec.style.display = 'none';
+  }
+}
+
+function renderHomeTop() {
+  const wrap = $('homeTop'); const sec = $('homeTopSec');
+  if (!wrap || !sec) return;
+  const counts = getOpenCounts();
+  const items = [];
+  for (const c of CATS) for (const s of c.subs) {
+    const books = S.books.get(s.id) || [];
+    for (const b of books) {
+      const cnt = counts[b.url] || 0;
+      if (cnt > 0) items.push({ b, c, s, cnt });
+    }
+  }
+  items.sort((a,b) => b.cnt - a.cnt);
+  wrap.innerHTML = '';
+  items.slice(0, 10).forEach(({b,c,s,cnt}) => wrap.appendChild(makeHomeCard(b, c, { subId: s.id, meta: `${cnt}× хонда шуд` })));
+  if (items.length) { sec.style.display = ''; return; }
+  // Has open counts but books not loaded → skeleton
+  if (Object.keys(counts).length && isStillLoading()) {
+    wrap.appendChild(makeSkeletons(4));
+    sec.style.display = '';
+  } else {
+    sec.style.display = 'none';
+  }
+}
+
+function renderHomeFav() {
+  const wrap = $('homeFav'); const sec = $('homeFavSec');
+  if (!wrap || !sec) return;
+  const favs = getFavs();
+  wrap.innerHTML = '';
+  let vis = 0;
+  for (const url of favs) {
+    const f = findBookByUrl(url); if (!f) continue;
+    wrap.appendChild(makeHomeCard(f.book, f.cat, { subId: f.sub.id }));
+    vis++;
+    if (vis >= 12) break;
+  }
+  if (vis) { sec.style.display = ''; return; }
+  if (favs.length && isStillLoading()) {
+    wrap.appendChild(makeSkeletons(Math.min(4, favs.length)));
+    sec.style.display = '';
+  } else {
+    sec.style.display = 'none';
+  }
+}
+
+
 
 /* ══════════════════════════════════════════
    LOAD SUB — MANIFEST
@@ -998,8 +1792,16 @@ async function loadSub(id) {
   $('bgProg').classList.add('on');
   try { await fetchManifest(sub, id, false); }
   catch(e) {
-    if (S.sub?.id === id)
-      $('grid').innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Хатогии шабака</div><div class="empty-sub">${esc(e.message||'')}</div><button class="modal-btn primary" style="margin-top:14px;max-width:160px;" onclick="loadSub('${id}')">🔄 Бори дигар</button></div>`;
+    if (S.sub?.id !== id) return;
+    const g = $('grid');
+    if (e.isEmpty) {
+      // Folder exists but no books yet
+      g.innerHTML = `<div class="empty"><div class="empty-icon">📭</div><div class="empty-title">Ҳоло китоб нест</div><div class="empty-sub">Дар "${esc(e.folderName||sub.name)}" ҳанӯз китобе бор карда нашудааст</div></div>`;
+    } else if (!navigator.onLine) {
+      g.innerHTML = `<div class="empty"><div class="empty-icon">📡</div><div class="empty-title">Интернет нест</div><div class="empty-sub">Лутфан пайвасти интернетро тафтиш кунед</div><button class="modal-btn primary" style="margin-top:14px;max-width:160px;" onclick="loadSub('${id}')">🔄 Бори дигар</button></div>`;
+    } else {
+      g.innerHTML = `<div class="empty"><div class="empty-icon">⚠️</div><div class="empty-title">Хатогӣ дар шабака</div><div class="empty-sub">${esc(e.message||'Кӯшиш кунед бори дигар')}</div><button class="modal-btn primary" style="margin-top:14px;max-width:160px;" onclick="loadSub('${id}')">🔄 Бори дигар</button></div>`;
+    }
   }
   finally { $('bgProg').classList.remove('on'); }
 }
@@ -1055,7 +1857,7 @@ async function autoGenerateCovers() {
 
 async function tryFetch(path) {
   try {
-    const r = await fetch(`https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${encPath(path)}/manifest.json`,
+    const r = await fetch(`https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(path)}/manifest.json?t=${Date.now()}`,
       { cache:'no-store' });
     if (!r.ok) return null;
     const data = await r.json();
@@ -1091,26 +1893,46 @@ async function fetchManifest(sub, id, silent) {
     for (const c of cands) { data = await tryFetch(c); if (data) { realPath = c; break; } }
   }
 
-  if (!data) throw new Error('manifest.json ёфт нашуд барои "' + folder + '"');
+  if (!data) {
+    const err = new Error('EMPTY_FOLDER');
+    err.folderName = sub.name || folder;
+    err.isEmpty = true;
+    throw err;
+  }
   if (realPath && realPath !== folder) await saveCachedPath(folder, realPath);
+
+  // Track first-seen times for NEW badges
+  let seen = {};
+  try { seen = JSON.parse(localStorage.getItem('kk_seen')||'{}'); } catch(e) {}
+  const now = Date.now();
+  let seenChanged = false;
 
   const books = data.books.map(b => {
     const file = b.file || (b.name + '.pdf');
     const fileJpg = file.replace(/\.pdf$/i, '.jpg');
+    const url = `https://raw.githubusercontent.com/${REPO}/${BRANCH}/${encPath(realPath)}/${encodeURIComponent(file)}`;
+    if (!seen[url]) { seen[url] = now; seenChanged = true; }
     return {
       name: b.name || b.file?.replace(/\.pdf$/i, ''),
       file: file,
-      url:  `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/${encPath(realPath)}/${encodeURIComponent(file)}`,
-      cover: `https://cdn.jsdelivr.net/gh/${REPO}@${BRANCH}/covers/${encPath(realPath)}/${encodeURIComponent(fileJpg)}`,
+      url:  url,
+      cover: `https://raw.githubusercontent.com/${REPO}/${BRANCH}/covers/${encPath(realPath)}/${encodeURIComponent(fileJpg)}`,
       size: b.size || 0,
+      addedAt: b.addedAt || seen[url] || 0,
     };
   });
+  if (seenChanged) { try { localStorage.setItem('kk_seen', JSON.stringify(seen)); } catch(e) {} }
   S.books.set(id, books);
   idbS('lists', folder, { books, realPath, ts: Date.now() }).catch(() => {});
-  if (S.sub?.id === id) {
+  // Update catalog only if visible AND matches current sub
+  if (S.view === 'catalog' && S.sub?.id === id) {
     renderSubs(); renderBooks(id);
     if (silent) toast('✓ Навсозӣ шуд', 1500);
   }
+  // Update home if visible
+  if (S.view === 'home') renderHome();
+  // Always refresh nav category counts/NEW badges
+  if (typeof renderNavCats === 'function') renderNavCats();
 }
 
 function showPlaceholders(n) {
@@ -1141,15 +1963,23 @@ async function renderBooks(id) {
     return;
   }
 
+  const allProg = (() => { try { return JSON.parse(localStorage.getItem('kk_prog')||'{}'); } catch(e) { return {}; } })();
+  const offline = !navigator.onLine;
   books.forEach(b => {
     const key  = id + ':' + b.name;
     const safe = 'cv_' + key.replace(/[^a-z0-9]/gi, '_');
     const cov  = S.covers.get(b.url);
     const isCached = S.cachedUrls.has(b.url) || S.blobs.has(b.url);
+    const p = allProg[key];
+    const pct = (p && p.pages) ? Math.round(p.page / p.pages * 100) : 0;
+    const isNew = isBookNew(b);
+    const fav = isFav(b.url);
+    const locked = offline && !isCached;
 
     const spineStyle = `background:linear-gradient(to right,rgba(0,0,0,.6),${S.cat.c1}99);`;
     const d = document.createElement('div');
-    d.className = 'book'; d.dataset.key = key;
+    d.className = 'book' + (locked ? ' offline-locked' : '');
+    d.dataset.key = key;
     d.innerHTML = `
       <div class="book-3d-wrap">
         <div class="book-3d" id="bk_${safe}">
@@ -1157,7 +1987,11 @@ async function renderBooks(id) {
           <div class="book-cover" id="${safe}" style="--c1:${S.cat.c1};--c2:${S.cat.c2};${cov?'padding:0;':''}">
             ${cov ? `<img src="${cov}" alt="" loading="lazy">` : `<div class="book-cover-text">${esc(b.name)}</div>`}
             <div class="cv-load"></div>
+            ${locked ? '<div class="book-lock" title="Барои хондан интернет лозим">🔒</div>' : ''}
+            ${isNew && !locked ? '<div class="home-card-new" style="position:absolute;top:5px;right:5px;z-index:3;">NEW</div>' : ''}
+            ${fav ? '<div class="home-card-fav" style="position:absolute;top:5px;left:5px;z-index:3;">★</div>' : ''}
             ${isCached ? '<div class="book-cached-dot"></div>' : ''}
+            ${pct>0 ? `<div class="book-cover-prog"><div class="book-cover-prog-fill" style="width:${pct}%;"></div></div>` : ''}
           </div>
         </div>
       </div>
@@ -1223,52 +2057,7 @@ async function fastCover(url, name, key, c1, c2, subId, coverUrl) {
       return;
     }
 
-    // 4. Range request — try 200KB, then 500KB, then 1MB
-    const RANGES = [204800, 524288, 1048576]; // 200KB → 500KB → 1MB
-    let rendered = false;
-
-    for (const sz of RANGES) {
-      if (rendered) break;
-      if (subId && subId !== S.currentSubId) break;
-      try {
-        const resp = await fetch(url, {
-          headers: { 'Range': `bytes=0-${sz - 1}` },
-          cache: 'force-cache'
-        });
-        if (!resp.ok && resp.status !== 206) continue;
-        const buf = await resp.arrayBuffer();
-        const arr = new Uint8Array(buf);
-        if (arr.length < 1024) continue;
-        // Check %PDF header
-        if (!(arr[0]===0x25 && arr[1]===0x50 && arr[2]===0x44 && arr[3]===0x46)) continue;
-
-        try {
-          const pdf = await pdfjsLib.getDocument({
-            data: arr,
-            disableAutoFetch: true,
-            disableStream: true,
-            stopAtErrors: false,
-          }).promise;
-          const page = await pdf.getPage(1);
-          const vp = page.getViewport({ scale: 0.55 });
-          const cv = document.createElement('canvas');
-          cv.width = vp.width; cv.height = vp.height;
-          await page.render({ canvasContext: cv.getContext('2d'), viewport: vp }).promise;
-          const dataUrl = cv.toDataURL('image/jpeg', 0.72);
-          S.covers.set(url, dataUrl);
-          idbS('covers', url, dataUrl).catch(() => {});
-          if (!subId || subId === S.currentSubId) setCoverImg(key, dataUrl);
-          try { pdf.destroy(); } catch(e) {}
-          rendered = true;
-        } catch(e) {
-          // partial wasn't enough — try larger range
-        }
-      } catch(e) {
-        console.warn('Range fetch failed:', e?.message);
-      }
-    }
-
-    // 4. If all ranges failed → keep gradient cover (no download of full file)
+    // 4. No JPG cover & no cached PDF → keep gradient (don't download whole PDF for cover)
   } catch(e) {
     console.warn('Cover failed:', name, e?.message || e);
   } finally {
@@ -1415,7 +2204,7 @@ function startDownload(url, name, key, showProgress, autoOpen) {
     } catch(e) {
       hideCoverProgress(coverEl);
       DOWNLOADS.delete(url);
-      if (e.name !== 'AbortError') toast('Хатогии шабака: ' + (e.message||''), 3000);
+      if (e.name !== 'AbortError') toast('Хатогӣ дар шабака: ' + (e.message||''), 3000);
       return null;
     }
   })();
@@ -1428,6 +2217,7 @@ function startDownload(url, name, key, showProgress, autoOpen) {
    OPEN BOOK — ⚡ INSTANT VIA URL STREAMING
 ══════════════════════════════════════════ */
 async function openBook(url, name, key) {
+  bumpOpenCount(url);
   // 1. In-memory blob — instant open
   let blob = S.blobs.get(url);
   if (blob && !await isValidPdfBlob(blob)) { blob = null; S.blobs.delete(url); }
@@ -1440,14 +2230,15 @@ async function openBook(url, name, key) {
     if (blob) { S.blobs.set(url, blob); S.cachedUrls.add(url); touchLRU(url); return openBookFromBlob(url, name, key, blob); }
   } catch(e) {}
 
-  // 3. Already downloading — wait for it
-  const ex = DOWNLOADS.get(url);
-  if (ex) { ex.autoOpen = true; ex.key = key; toast('Бор кардан давом дорад...', 1500); return; }
+  // 3. Not in cache — need internet
+  if (!navigator.onLine) {
+    toast('🔒 Ин китоб ҳифз нашудааст. Барои хифз кардан ё хондан ба шумо интернет лозим', 5000);
+    return;
+  }
 
-  // 4. Open immediately via URL streaming
+  // 4. Online: open via streaming + bg download
   openBookFromUrl(url, name, key);
-  // Background download for cache + cover
-  bgDownload(url, name, key);
+  if (!DOWNLOADS.has(url)) bgDownload(url, name, key);
 }
 
 async function openBookFromUrl(url, name, key) {
@@ -1470,10 +2261,10 @@ async function openBookFromUrl(url, name, key) {
     const sp = getProgress(S.key);
     S.page   = sp ? Math.min(sp.page, S.pages) : 1;
     await renderPage(S.page);
-    saveProgress(); showFoot();
+    saveProgress(); showFoot(); updateFavBtn();
   } catch(e) {
     console.error('OpenUrl error:', e);
-    toast('Хатогии кушодан: ' + (e.message || ''), 3000);
+    toast('Хатогӣ ҳангоми кушодан: ' + (e.message || ''), 3000);
     closeReader();
   }
 }
@@ -1539,12 +2330,12 @@ async function openBookFromBlob(url, name, key, blob) {
     const sp = getProgress(S.key);
     S.page   = sp ? Math.min(sp.page, S.pages) : 1;
     await renderPage(S.page);
-    saveProgress(); showFoot();
+    saveProgress(); showFoot(); updateFavBtn();
     if (!S.covers.has(url) && S.currentSubId)
       fastCover(url, name, S.key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
   } catch(e) {
     console.error('OpenBlob error:', e);
-    toast('Хатогии кушодан: ' + (e.message || ''), 3000);
+    toast('Хатогӣ ҳангоми кушодан: ' + (e.message || ''), 3000);
     closeReader();
   }
 }
@@ -1555,6 +2346,7 @@ function closeReader() {
   if (S.pdf) { try { S.pdf.destroy(); } catch(e) {} S.pdf = null; }
   S.key = null; S.url = null;
   closeFind(); renderLastRead();
+  if (S.view === 'home') { renderHomeLast(); renderHomeTop(); }
 }
 
 /* ══════════════════════════════════════════
@@ -1568,11 +2360,251 @@ async function downloadBook(url, name) {
   if (blob && !await isValidPdfBlob(blob)) blob = null;
   if (!blob) {
     if (DOWNLOADS.has(url)) { toast('Бор кардан давом дорад...', 1500); return; }
-    toast('⬇ Юклаб гирифтан...', 2000);
+    toast('⬇ Гирифтан...', 2000);
     blob = await startDownload(url, name, name, true, false);
   }
   if (!blob) return;
   saveBlobToUser(blob, fn);
+}
+function toggleFavCurrent() {
+  if (!S.url) return;
+  const isNow = toggleFav(S.url);
+  updateFavBtn();
+  toast(isNow ? '★ Ба дӯстдошта илова шуд' : 'Аз дӯстдошта хориҷ шуд', 1800);
+  if (S.view === 'home') renderHomeFav();
+}
+function updateFavBtn() {
+  const btn = $('favBtn'); if (!btn) return;
+  btn.textContent = (S.url && isFav(S.url)) ? '❤️' : '🤍';
+  updateBmBtn();
+}
+
+/* ══════════════════════════════════════════
+   BOOKMARKS
+══════════════════════════════════════════ */
+function getBookmarks(url) {
+  try {
+    const all = JSON.parse(localStorage.getItem('kk_bms')||'{}');
+    return all[url] || [];
+  } catch(e) { return []; }
+}
+function saveBookmarks(url, arr) {
+  try {
+    const all = JSON.parse(localStorage.getItem('kk_bms')||'{}');
+    all[url] = arr;
+    localStorage.setItem('kk_bms', JSON.stringify(all));
+  } catch(e) {}
+}
+function toggleBookmark() {
+  if (!S.url || !S.page) return;
+  let bms = getBookmarks(S.url);
+  const i = bms.findIndex(b => b.page === S.page);
+  if (i >= 0) { bms.splice(i, 1); toast('Хатчуб гирифта шуд', 1500); }
+  else { bms.push({ page: S.page, ts: Date.now() }); bms.sort((a,b) => a.page - b.page); toast('🔖 Хатчуб гузошта шуд', 1500); }
+  saveBookmarks(S.url, bms);
+  updateBmBtn();
+}
+function updateBmBtn() {
+  const btn = $('bmBtn'); if (!btn || !S.url) return;
+  const bms = getBookmarks(S.url);
+  const has = bms.some(b => b.page === S.page);
+  btn.textContent = has ? '⭐' : '🔖';
+  btn.style.color = has ? 'var(--gold)' : '';
+}
+function openBookmarks() {
+  if (!S.url) return;
+  const bms = getBookmarks(S.url);
+  const list = $('bmList');
+  const sub = $('bmSub');
+  if (!bms.length) {
+    list.innerHTML = '<div class="bm-empty">Хатчубе нест.<br>Дар сафҳаи дилхоҳ тугмаи 🔖-ро пахш кунед.</div>';
+    sub.textContent = '0 хатчуб';
+  } else {
+    list.innerHTML = '';
+    sub.textContent = bms.length + ' хатчуб';
+    bms.forEach(bm => {
+      const d = document.createElement('div'); d.className = 'bm-item';
+      const date = new Date(bm.ts).toLocaleDateString('ru-RU');
+      d.innerHTML = `<div class="bm-item-num">${bm.page}</div><div class="bm-item-info"><div class="bm-item-name">Саҳифаи ${bm.page} / ${S.pages||'?'}</div><div class="bm-item-sub">${date}</div></div><button class="bm-item-del">🗑</button>`;
+      d.onclick = (e) => { if (e.target.classList.contains('bm-item-del')) return; closeBookmarks(); S.page = bm.page; renderPage(bm.page); saveProgress(); };
+      d.querySelector('.bm-item-del').onclick = (e) => {
+        e.stopPropagation();
+        const arr = getBookmarks(S.url).filter(x => x.page !== bm.page);
+        saveBookmarks(S.url, arr);
+        openBookmarks(); updateBmBtn();
+      };
+      list.appendChild(d);
+    });
+  }
+  $('bmModal').classList.add('on');
+}
+function closeBookmarks() { $('bmModal').classList.remove('on'); }
+
+/* ══════════════════════════════════════════
+   FULL-TEXT SEARCH (whole book)
+══════════════════════════════════════════ */
+let _ftsAbort = false;
+async function runFTS() {
+  if (!S.pdf) return;
+  const q = ($('ftsInp').value || '').trim();
+  if (!q || q.length < 2) { toast('Калимаи дарозтар нависед', 1500); return; }
+  const list = $('ftsList'); const status = $('ftsStatus');
+  list.innerHTML = ''; _ftsAbort = false;
+  const results = [];
+  const lo = q.toLowerCase();
+  for (let p = 1; p <= S.pages; p++) {
+    if (_ftsAbort) break;
+    status.textContent = `Тафтиш: ${p} / ${S.pages} · Ёфтшуда: ${results.length}`;
+    try {
+      const page = await S.pdf.getPage(p);
+      const tc = await page.getTextContent();
+      const text = tc.items.map(i => i.str).join(' ');
+      const tl = text.toLowerCase();
+      const idx = tl.indexOf(lo);
+      if (idx >= 0) {
+        const start = Math.max(0, idx - 40);
+        const end = Math.min(text.length, idx + q.length + 40);
+        const snippet = (start>0?'…':'') + text.slice(start, end) + (end<text.length?'…':'');
+        results.push({ page: p, snippet });
+        // Live append
+        const d = document.createElement('div'); d.className = 'bm-item';
+        const safeSnip = esc(snippet).replace(new RegExp(esc(q).replace(/[.*+?^${}()|[\]\\]/g,'\\$&'), 'gi'), m => `<mark style="background:var(--gold);color:#000;padding:0 2px;border-radius:2px;">${m}</mark>`);
+        d.innerHTML = `<div class="bm-item-num">${p}</div><div class="bm-item-info"><div class="bm-item-name">Саҳифаи ${p}</div><div class="bm-item-sub" style="white-space:normal;">${safeSnip}</div></div>`;
+        d.onclick = () => { closeFTS(); S.page = p; renderPage(p); saveProgress(); };
+        list.appendChild(d);
+      }
+    } catch(e) { /* skip */ }
+    if (p % 5 === 0) await new Promise(r => setTimeout(r, 1));
+  }
+  status.textContent = `✓ Тайёр · ${results.length} натиҷа дар ${S.pages} саҳифа`;
+  if (!results.length && !_ftsAbort) {
+    list.innerHTML = '<div class="bm-empty">Ҳеҷ натиҷае ёфт нашуд</div>';
+  }
+}
+function openFTS() {
+  if (!S.pdf) { toast('Аввал китобро кушоед'); return; }
+  $('ftsList').innerHTML = '';
+  $('ftsStatus').textContent = 'Калимаро нависед ва тугмаи 🔍-ро пахш кунед';
+  $('ftsModal').classList.add('on');
+  setTimeout(() => { $('ftsInp')?.focus(); }, 80);
+}
+function closeFTS() { _ftsAbort = true; $('ftsModal').classList.remove('on'); }
+
+/* ══════════════════════════════════════════
+   ABOUT / README
+══════════════════════════════════════════ */
+let _aboutLoaded = false;
+async function openAbout() {
+  $('aboutModal').classList.add('on');
+  closeSettings();
+  if (_aboutLoaded) return;
+  const body = $('aboutBody');
+  try {
+    const r = await fetch('README.md?t=' + Date.now(), { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const md = await r.text();
+    body.innerHTML = mdToHtml(md);
+    _aboutLoaded = true;
+  } catch(e) {
+    body.innerHTML = `<div style="color:var(--textm);">⚠️ Файли README.md ёфт нашуд.<br><br><b>Китобхона · v1.0</b><br>© 2026 Парвиз Шарипов<br><br>Тамос: <a href="tel:+992907972295" style="color:var(--gold);">+992 907 972 295</a></div>`;
+  }
+}
+function closeAbout() { $('aboutModal').classList.remove('on'); }
+/* Minimal Markdown → HTML — token-based to avoid double-processing links */
+function mdToHtml(md) {
+  // 1) Extract code-like and link tokens BEFORE escaping HTML, store placeholders
+  const tokens = [];
+  const T = (html) => { const i = tokens.length; tokens.push(html); return `\x00${i}\x00`; };
+  // Markdown links [text](url)
+  md = md.replace(/\[([^\]]+)\]\(([^)\s]+)\)/g, (_, txt, url) =>
+    T(`<a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline;">${esc(txt)}</a>`));
+  // Auto links: bare http(s)://...
+  md = md.replace(/(^|[\s(])(https?:\/\/[^\s<>()]+)/g, (_, pre, url) =>
+    pre + T(`<a href="${esc(url)}" target="_blank" rel="noopener" style="color:var(--gold);text-decoration:underline;">${esc(url)}</a>`));
+  // Auto tel: numbers like +992...
+  md = md.replace(/(^|[\s(])(\+\d[\d\s\-]{6,}\d)/g, (_, pre, num) => {
+    const clean = num.replace(/[^\d+]/g, '');
+    return pre + T(`<a href="tel:${clean}" style="color:var(--gold);text-decoration:underline;">${esc(num)}</a>`);
+  });
+
+  // 2) Escape everything else
+  let html = esc(md);
+
+  // 3) Block elements
+  html = html.replace(/^### (.*)$/gm, '<h4 style="margin:14px 0 6px;color:var(--gold-l);font-size:14px;">$1</h4>');
+  html = html.replace(/^## (.*)$/gm,  '<h3 style="margin:16px 0 8px;color:var(--gold);font-size:16px;font-family:\'Cormorant Garamond\',serif;letter-spacing:1px;">$1</h3>');
+  html = html.replace(/^# (.*)$/gm,   '<h2 style="margin:8px 0 10px;color:var(--gold);font-size:18px;font-family:\'Cormorant Garamond\',serif;letter-spacing:1.5px;text-align:center;">$1</h2>');
+  html = html.replace(/^---+$/gm, '<hr style="border:none;border-top:1px solid var(--border);margin:14px 0;">');
+
+  // 4) Inline
+  html = html.replace(/\*\*([^*\n]+)\*\*/g, '<b>$1</b>');
+  html = html.replace(/(^|[^*\w])\*([^*\n]+)\*(?=[^*\w]|$)/g, '$1<i>$2</i>');
+
+  // 5) Lists (consecutive "- " lines)
+  html = html.replace(/(?:^|\n)((?:- [^\n]+\n?)+)/g, (_, list) => {
+    const items = list.trim().split('\n').map(l => '<li style="margin:3px 0;">' + l.replace(/^- /, '') + '</li>').join('');
+    return '\n<ul style="margin:6px 0;padding-left:20px;list-style:disc;">' + items + '</ul>';
+  });
+
+  // 6) Paragraphs
+  html = html.split(/\n{2,}/).map(block => {
+    if (/^\s*<(h[1-6]|ul|ol|hr|p|blockquote|pre)/i.test(block)) return block;
+    return '<p style="margin:8px 0;">' + block.replace(/\n/g, '<br>') + '</p>';
+  }).join('\n');
+
+  // 7) Restore tokens
+  html = html.replace(/\x00(\d+)\x00/g, (_, i) => tokens[+i] || '');
+
+  // Cleanup empty paragraphs
+  html = html.replace(/<p[^>]*>\s*<\/p>/g, '');
+  return html;
+}
+
+/* ══════════════════════════════════════════
+   SHARE
+══════════════════════════════════════════ */
+async function shareBook() {
+  if (!S.url) return;
+  const title = $('rdrTitle').textContent || 'Китоб';
+  const fname = (S.url.split('/').pop() || 'kitob.pdf').split('?')[0];
+  const decoded = (() => { try { return decodeURIComponent(fname); } catch(e) { return fname; } })();
+  // Get blob (cached or download)
+  let blob = S.blobs.get(S.url);
+  if (!blob) { try { blob = await idbG('pdfs', S.url); } catch(e) {} }
+  if (!blob) {
+    toast('⬇ Гирифта истодаст...', 2000);
+    try {
+      const r = await fetch(S.url, { cache: 'force-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      blob = await r.blob();
+      S.blobs.set(S.url, blob);
+      idbS('pdfs', S.url, blob).then(() => { touchLRU(S.url); enforceCacheLimit(); }).catch(()=>{});
+      S.cachedUrls.add(S.url);
+    } catch(e) {
+      toast('Хатогӣ ҳангоми боргирӣ', 2500);
+      return;
+    }
+  }
+  // Try share with file
+  try {
+    const file = new File([blob], decoded, { type: 'application/pdf' });
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({ files: [file], title: title });
+      return;
+    }
+  } catch(e) {
+    if (e.name === 'AbortError') return;
+    console.warn('Share files failed:', e);
+  }
+  // Fallback: save to device
+  try {
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = decoded;
+    document.body.appendChild(a); a.click();
+    setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 1000);
+    toast('💾 Захира шуд: ' + decoded, 2500);
+  } catch(e) { toast('Дастгирӣ нашуд', 2000); }
 }
 function downloadCurrent() {
   if (S.url) downloadBook(S.url, $('rdrTitle').textContent);
@@ -1725,11 +2757,12 @@ function cycleReaderBg() {
 
   window.addEventListener('resize', () => { if (S.pdf && $('reader').classList.contains('on')) renderPage(S.page); });
   document.addEventListener('keydown', e => {
-    if (!$('reader').classList.contains('on')) return;
-    if (e.target.tagName==='INPUT') return;
-    if (e.key==='ArrowRight') turnPage(1);
-    else if (e.key==='ArrowLeft') turnPage(-1);
-    else if (e.key==='Escape') { if ($('findBar').classList.contains('on')) closeFind(); else closeReader(); }
+    if (e.key !== 'Escape') return;
+    if ($('reader').classList.contains('on')) {
+      if ($('findBar').classList.contains('on')) closeFind();
+      else closeReader();
+    } else if ($('navPnl')?.classList.contains('on')) closeNav();
+    else if ($('sPanel')?.classList.contains('on')) closeSettings();
   });
 })();
 
@@ -1881,7 +2914,17 @@ function loadVoices() {
 if (TTS.synth) { TTS.synth.onvoiceschanged = loadVoices; loadVoices(); }
 
 function ttsToggle() {
-  if (!TTS.synth) { toast('Браузер садоро дастгирӣ намекунад'); return; }
+  if (!TTS.synth) {
+    toast('Браузери шумо садоро дастгирӣ намекунад. Лутфан Chrome ё Safari-ро истифода баред', 4500);
+    return;
+  }
+  if (!TTS.voices || TTS.voices.length === 0) {
+    loadVoices();
+    if (!TTS.voices || TTS.voices.length === 0) {
+      toast('Садоҳо ёфт нашуданд. Лутфан баъдтар кӯшиш кунед', 3500);
+      return;
+    }
+  }
   if (TTS.active) {
     $('ttsBar').classList.toggle('on');
   } else {
@@ -1975,12 +3018,37 @@ function closeSettings() {
 
 async function renderDlList() {
   const container = $('dlList'); if (!container) return;
-  container.innerHTML = '<div class="s-none">⏳ Юклаб истодааст...</div>';
+  container.innerHTML = '<div class="s-none">⏳ Бор шуда истодаст...</div>';
   try {
-    const keys = await idbKeys('pdfs');
-    if (!keys.length) { container.innerHTML = '<div class="s-none">Китобе захира нашудааст</div>'; return; }
+    const allKeys = await idbKeys('pdfs');
+    if (!allKeys.length) { container.innerHTML = '<div class="s-none">Китобе захира нашудааст</div>'; return; }
+
+    // Dedupe by filename (old jsDelivr URLs + new raw URLs = same book)
+    const byName = new Map();
+    for (const k of allKeys) {
+      const fname = decodeURIComponent(k.split('/').pop()).toLowerCase();
+      if (!byName.has(fname)) byName.set(fname, []);
+      byName.get(fname).push(k);
+    }
+    // For each filename, keep only the newest (raw URL preferred), delete duplicates
+    const keepKeys = [];
+    for (const [fname, keys] of byName.entries()) {
+      if (keys.length === 1) { keepKeys.push(keys[0]); continue; }
+      // Prefer raw.githubusercontent over others
+      const preferred = keys.find(k => k.includes('raw.githubusercontent')) || keys[0];
+      keepKeys.push(preferred);
+      // Delete duplicates
+      for (const k of keys) {
+        if (k === preferred) continue;
+        await idbDel('pdfs', k).catch(()=>{});
+        await idbDel('covers', k).catch(()=>{});
+        S.blobs.delete(k); S.covers.delete(k); S.cachedUrls.delete(k);
+      }
+    }
+
+    if (!keepKeys.length) { container.innerHTML = '<div class="s-none">Китобе захира нашудааст</div>'; return; }
     container.innerHTML = '';
-    for (const key of keys) {
+    for (const key of keepKeys) {
       const blob = await idbG('pdfs', key).catch(() => null);
       const name = decodeURIComponent(key.split('/').pop()).replace(/\.pdf$/i, '');
       const size = blob ? `${(blob.size/1048576).toFixed(1)} MB` : '?';
@@ -2052,6 +3120,7 @@ function saveProgress() {
 function renderLastRead() {
   const sec  = $('lastRead');
   const wrap = $('lastReadScroll');
+  if (!sec || !wrap) return; // element removed from catalog view
   let l = []; try { l = JSON.parse(localStorage.getItem('kk_last')||'[]'); } catch(e) {}
   if (!l.length) { sec.style.display='none'; return; }
   const prog = (() => { try { return JSON.parse(localStorage.getItem('kk_prog')||'{}'); } catch(e) { return {}; } })();
@@ -2146,19 +3215,78 @@ function doSearch(q) {
     
     S.cat = CATS[0];
     S.sub = CATS[0]?.subs?.[0] || null;
-    
+
     if (typeof renderCats !== 'undefined') renderCats();
     if (typeof renderSubs !== 'undefined') renderSubs();
-    
+    if (typeof renderNavCats !== 'undefined') renderNavCats();
+
     const secTitle = document.getElementById('secTitle');
     const secSub = document.getElementById('secSub');
     if (secTitle) secTitle.textContent = S.cat?.name || '';
     if (secSub) secSub.textContent = S.sub?.name || '';
-    
+
     if (typeof renderLastRead !== 'undefined') renderLastRead();
-    if (S.sub && typeof loadSub !== 'undefined') loadSub(S.sub.id);
+
+    // Default view = HOME
+    goHome();
+
+    // STAGE 1 — Load all categories from IDB cache (fast, parallel)
+    (async () => {
+      const allSubs = [];
+      for (const c of CATS) for (const s of c.subs) if (!S.books.has(s.id) && s.folder) allSubs.push(s);
+      // Parallel IDB lookups
+      await Promise.all(allSubs.map(async s => {
+        try {
+          const cached = await idbG('lists', s.folder).catch(()=>null);
+          if (cached?.books) S.books.set(s.id, cached.books);
+        } catch(e) {}
+      }));
+      renderHome();
+      renderNavCats();
+
+      // STAGE 2 — Refresh from network (parallel, in background)
+      if (!navigator.onLine) return;
+      const toFetch = [];
+      for (const c of CATS) for (const s of c.subs) if (s.folder) toFetch.push(s);
+      // Parallel network — but throttle to 4 at a time to be gentle
+      const CONCURRENCY = 4;
+      let idx = 0;
+      const workers = Array.from({length: CONCURRENCY}, async () => {
+        while (idx < toFetch.length) {
+          const s = toFetch[idx++];
+          try { await fetchManifest(s, s.id, true); } catch(e) {}
+        }
+      });
+      await Promise.all(workers);
+      renderHome();
+      renderNavCats();
+    })();
+
     // cleanup old cached files (keep last 20 PDFs)
     setTimeout(() => { try { enforceCacheLimit(); } catch(e){} }, 2500);
+    // One-time cleanup: remove stale jsdelivr URLs from IDB & seen list
+    setTimeout(async () => {
+      try {
+        const stores = ['pdfs', 'covers'];
+        for (const store of stores) {
+          const keys = await idbKeys(store).catch(()=>[]);
+          for (const k of keys) {
+            if (typeof k === 'string' && k.includes('cdn.jsdelivr.net')) {
+              await idbDel(store, k).catch(()=>{});
+            }
+          }
+        }
+        // Clean kk_seen
+        try {
+          const seen = JSON.parse(localStorage.getItem('kk_seen')||'{}');
+          let changed = false;
+          for (const k of Object.keys(seen)) {
+            if (k.includes('cdn.jsdelivr.net')) { delete seen[k]; changed = true; }
+          }
+          if (changed) localStorage.setItem('kk_seen', JSON.stringify(seen));
+        } catch(e) {}
+      } catch(e) {}
+    }, 3000);
   } catch(e) {
     console.error('Init error:', e);
     const splash = document.getElementById('splash');
@@ -2171,6 +3299,18 @@ function doSearch(q) {
 
 // Auto-generate covers for visible books (one at a time, with delay)
 window.addEventListener('beforeunload', saveProgress);
+
+// Re-render on online/offline change to show/hide locks
+window.addEventListener('online', () => {
+  toast('🌐 Интернет пайваст шуд', 1800);
+  if (S.view === 'home') renderHome();
+  else if (S.view === 'catalog' && S.sub) renderBooks(S.sub.id);
+});
+window.addEventListener('offline', () => {
+  toast('📴 Интернет нест. Танҳо китобҳои ҳифзшуда дастрасанд', 2800);
+  if (S.view === 'home') renderHome();
+  else if (S.view === 'catalog' && S.sub) renderBooks(S.sub.id);
+});
 </script>
 </body>
 </html>
