@@ -15,6 +15,7 @@
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@700;800&family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 /* ══════════════════════════════════════════
@@ -135,7 +136,14 @@ body::before{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 2L78 40 40 78 2 40Z' fill='none' stroke='%23C8962E' stroke-width='.4' opacity='.09'/%3E%3Cpath d='M40 18L62 40 40 62 18 40Z' fill='none' stroke='%23C8962E' stroke-width='.4' opacity='.07'/%3E%3Ccircle cx='40' cy='40' r='8' fill='none' stroke='%23C8962E' stroke-width='.4' opacity='.06'/%3E%3Ccircle cx='0' cy='0' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3Ccircle cx='80' cy='80' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3Ccircle cx='80' cy='0' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3Ccircle cx='0' cy='80' r='2.5' fill='%23C8962E' opacity='.07'/%3E%3C/svg%3E");
 }
 
-#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh;}
+#app{position:relative;z-index:1;display:flex;flex-direction:column;height:100dvh;
+  max-width:720px;margin:0 auto;width:100%;
+  padding-top:env(safe-area-inset-top);
+  padding-bottom:env(safe-area-inset-bottom);}
+/* Touch targets ≥44px on mobile */
+@media (hover:none) and (pointer:coarse){
+  .menu-btn,.hdr-btn,.r-btn,.book-btn,.modal-btn,.s-item,.cat-chip,.sub-chip{min-height:40px;}
+}
 
 /* ══════════════════════════════════════════
    SPLASH — TAJIK STYLE
@@ -783,14 +791,6 @@ body::before{
     <!-- Contact -->
     <div class="s-sec">
       <div class="s-sec-title">📬 Тамос</div>
-      <a class="s-item" href="tel:+992907972295">
-        <div class="s-item-ico">📱</div>
-        <div class="s-item-info">
-          <div class="s-item-name">Занг задан</div>
-          <div class="s-item-sub">+992 907 972 295</div>
-        </div>
-        <div class="s-item-arr">›</div>
-      </a>
       <a class="s-item" href="https://wa.me/992907972295" target="_blank" rel="noopener">
         <div class="s-item-ico" style="background:rgba(37,211,102,.18);color:#25D366;">💬</div>
         <div class="s-item-info">
@@ -888,6 +888,13 @@ body::before{
         <div class="home-scroll" id="homeFav"></div>
       </div>
 
+      <div class="home-sec" id="homeRecSec" style="display:none;">
+        <div class="home-sec-head">
+          <div class="home-sec-title">⭐ Тавсия барои шумо</div>
+        </div>
+        <div class="home-scroll" id="homeRec"></div>
+      </div>
+
       <div class="home-empty" id="homeLoading" style="display:none;">Интизор шавед...</div>
     </div>
 
@@ -910,12 +917,8 @@ body::before{
 <!-- ═══ READER ═══ -->
 <div class="reader" id="reader">
   <div class="reader-hdr">
-    <button class="r-btn" onclick="closeReader()" title="Бозгашт">←</button>
     <div class="reader-title" id="rdrTitle">—</div>
-    <button class="r-btn" onclick="copyPageText()" title="Нусхаи матн">📋</button>
-    <button class="r-btn" id="ttsBtn" onclick="ttsToggle()" title="Хондани садо">🔊</button>
-    <button class="r-btn" onclick="toggleFind()" title="Ҷустуҷӯ дар саҳифа">🔍</button>
-    <button class="r-btn" onclick="openFTS()" title="Ҷустуҷӯ дар тамоми китоб">🔎</button>
+    <button class="r-btn" onclick="openFTS()" title="Ҷустуҷӯ">🔍</button>
     <button class="r-btn" id="lightBtn" onclick="cycleReaderBg()" title="Тема">☀️</button>
     <button class="r-btn" id="favBtn" onclick="toggleFavCurrent()" title="Дӯстдошта">🤍</button>
     <button class="r-btn" id="bmBtn" onclick="toggleBookmark()" title="Хатчуб">🔖</button>
@@ -952,9 +955,7 @@ body::before{
     </div>
   </div>
   <div class="reader-foot" id="foot">
-    <button class="z-btn" onclick="changeZoom(-.2)">−</button>
     <button class="page-info" id="pageInfo" onclick="openJump()">— / —</button>
-    <button class="z-btn" onclick="changeZoom(.2)">+</button>
   </div>
 </div>
 
@@ -1031,6 +1032,102 @@ body::before{
 ══════════════════════════════════════════ */
 pdfjsLib.GlobalWorkerOptions.workerSrc =
   'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+
+/* ══════════════════════════════════════════
+   SUPABASE ANALYTICS (anonymous tracking)
+══════════════════════════════════════════ */
+const SUPA_URL = 'https://dwkdzfqooprxytlepaoo.supabase.co';
+const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
+let supa = null;
+try { supa = window.supabase?.createClient?.(SUPA_URL, SUPA_KEY, { auth: { persistSession: false } }); } catch(e) {}
+
+/* Anonymous device id (random UUID stored in localStorage) */
+function getDeviceId() {
+  let id = localStorage.getItem('kk_device_id');
+  if (!id) {
+    id = (crypto && crypto.randomUUID) ? crypto.randomUUID()
+      : ('xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random()*16|0, v = c==='x' ? r : (r&0x3|0x8);
+          return v.toString(16);
+        }));
+    localStorage.setItem('kk_device_id', id);
+  }
+  return id;
+}
+const DEVICE_ID = getDeviceId();
+
+/* Event queue — batched send every 12s + on visibility hidden */
+const _evQueue = [];
+let _flushTm = null;
+function track(type, book, extra) {
+  if (!supa) return;
+  if (!['open','download','finish','page_read','bookmark','fav'].includes(type)) return;
+  _evQueue.push({
+    event_type: type,
+    book_url: book?.url || book?.book_url || '',
+    book_name: book?.name || book?.book_name || '',
+    category_id: book?.category_id || (S?.cat?.id) || null,
+    page: extra?.page || null,
+    total_pages: extra?.total_pages || null,
+    device_id: DEVICE_ID,
+    ts: new Date().toISOString(),
+  });
+  // Persist to localStorage in case of offline
+  try { localStorage.setItem('kk_ev_buf', JSON.stringify(_evQueue)); } catch(e) {}
+  scheduleFlush();
+}
+function scheduleFlush(delay = 12000) {
+  if (_flushTm) return;
+  _flushTm = setTimeout(() => { _flushTm = null; flushEvents(); }, delay);
+}
+async function flushEvents() {
+  if (!supa || !_evQueue.length || !navigator.onLine) {
+    if (_evQueue.length) scheduleFlush(20000);
+    return;
+  }
+  const batch = _evQueue.splice(0, _evQueue.length);
+  try {
+    const { error } = await supa.from('events').insert(batch);
+    if (error) {
+      // Put back, retry later
+      _evQueue.unshift(...batch);
+      scheduleFlush(30000);
+    } else {
+      try { localStorage.removeItem('kk_ev_buf'); } catch(e) {}
+    }
+  } catch(e) {
+    _evQueue.unshift(...batch);
+    scheduleFlush(30000);
+  }
+}
+// Restore buffered events from previous session
+try {
+  const buf = JSON.parse(localStorage.getItem('kk_ev_buf') || '[]');
+  if (Array.isArray(buf) && buf.length) { _evQueue.push(...buf); scheduleFlush(3000); }
+} catch(e) {}
+// Flush on tab hide and on online
+document.addEventListener('visibilitychange', () => { if (document.hidden) flushEvents(); });
+window.addEventListener('online', flushEvents);
+
+/* Fetch popular books from Supabase (for "топ" section on home) */
+let _popularCache = null;
+let _popularTs = 0;
+async function fetchPopularBooks(limit = 20) {
+  if (!supa) return [];
+  // Cache 5 min
+  if (_popularCache && Date.now() - _popularTs < 5 * 60 * 1000) return _popularCache;
+  try {
+    const { data, error } = await supa
+      .from('book_stats')
+      .select('book_url,book_name,category_id,total_opens,total_downloads')
+      .order('total_opens', { ascending: false })
+      .limit(limit);
+    if (error) return [];
+    _popularCache = data || [];
+    _popularTs = Date.now();
+    return _popularCache;
+  } catch(e) { return []; }
+}
 
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
@@ -1283,8 +1380,8 @@ const S = {
   findQ: '', findHits: [], findCurr: -1,
 };
 
-/* NEW marker threshold — 7 days */
-const NEW_DAYS = 7;
+/* NEW marker threshold — 3 days */
+const NEW_DAYS = 3;
 function isBookNew(b) {
   if (!b) return false;
   const ts = b.addedAt || b.ts || 0;
@@ -1592,6 +1689,7 @@ function renderHome() {
   renderHomeNew();
   renderHomeTop();
   renderHomeFav();
+  renderHomeRec();
 }
 
 function renderHomeCats() {
@@ -1719,9 +1817,23 @@ function renderHomeNew() {
   }
 }
 
-function renderHomeTop() {
+async function renderHomeTop() {
   const wrap = $('homeTop'); const sec = $('homeTopSec');
   if (!wrap || !sec) return;
+  // Use global Supabase popular stats
+  const popular = await fetchPopularBooks(20).catch(()=>[]);
+  wrap.innerHTML = '';
+  let vis = 0;
+  for (const p of popular) {
+    if (!p.book_url) continue;
+    const f = findBookByUrl(p.book_url);
+    if (!f) continue;
+    const card = makeHomeCard(f.book, f.cat, { subId: f.sub.id, meta: `${p.total_opens||0}× хонда шуд` });
+    wrap.appendChild(card); vis++;
+    if (vis >= 10) break;
+  }
+  if (vis) { sec.style.display = ''; return; }
+  // Fallback to local stats
   const counts = getOpenCounts();
   const items = [];
   for (const c of CATS) for (const s of c.subs) {
@@ -1732,16 +1844,59 @@ function renderHomeTop() {
     }
   }
   items.sort((a,b) => b.cnt - a.cnt);
-  wrap.innerHTML = '';
   items.slice(0, 10).forEach(({b,c,s,cnt}) => wrap.appendChild(makeHomeCard(b, c, { subId: s.id, meta: `${cnt}× хонда шуд` })));
   if (items.length) { sec.style.display = ''; return; }
-  // Has open counts but books not loaded → skeleton
   if (Object.keys(counts).length && isStillLoading()) {
     wrap.appendChild(makeSkeletons(4));
     sec.style.display = '';
   } else {
     sec.style.display = 'none';
   }
+}
+
+/* Recommendations: books from your favorite category that you haven't read */
+async function renderHomeRec() {
+  const wrap = $('homeRec'); const sec = $('homeRecSec');
+  if (!wrap || !sec) return;
+  // Find user's favorite category (most opened locally)
+  const counts = getOpenCounts();
+  const catScore = {};
+  for (const c of CATS) for (const s of c.subs) {
+    const books = S.books.get(s.id) || [];
+    for (const b of books) if (counts[b.url]) catScore[c.id] = (catScore[c.id] || 0) + counts[b.url];
+  }
+  const favCatId = Object.keys(catScore).sort((a,b) => catScore[b] - catScore[a])[0];
+
+  // Get popular books from Supabase
+  const popular = await fetchPopularBooks(50).catch(()=>[]);
+  const items = [];
+
+  if (favCatId && popular.length) {
+    // Recommend: popular books in favorite category that user hasn't opened
+    for (const p of popular) {
+      const f = findBookByUrl(p.book_url);
+      if (!f) continue;
+      if (counts[p.book_url]) continue;
+      if (f.cat.id !== favCatId) continue;
+      items.push({ b: f.book, c: f.cat, s: f.sub });
+      if (items.length >= 10) break;
+    }
+  }
+  // If not enough — add other popular books not yet read
+  if (items.length < 8 && popular.length) {
+    for (const p of popular) {
+      if (items.length >= 10) break;
+      if (counts[p.book_url]) continue;
+      const f = findBookByUrl(p.book_url);
+      if (!f) continue;
+      if (items.find(x => x.b.url === f.book.url)) continue;
+      items.push({ b: f.book, c: f.cat, s: f.sub });
+    }
+  }
+
+  wrap.innerHTML = '';
+  items.forEach(({b,c,s}) => wrap.appendChild(makeHomeCard(b, c, { subId: s.id })));
+  sec.style.display = items.length ? '' : 'none';
 }
 
 function renderHomeFav() {
@@ -2218,6 +2373,7 @@ function startDownload(url, name, key, showProgress, autoOpen) {
 ══════════════════════════════════════════ */
 async function openBook(url, name, key) {
   bumpOpenCount(url);
+  track('open', { url, name, category_id: S.cat?.id });
   // 1. In-memory blob — instant open
   let blob = S.blobs.get(url);
   if (blob && !await isValidPdfBlob(blob)) { blob = null; S.blobs.delete(url); }
@@ -2356,6 +2512,7 @@ const IS_ANDROID = typeof KitobAndroid !== 'undefined' && KitobAndroid?.isAndroi
 
 async function downloadBook(url, name) {
   const fn = name + '.pdf';
+  track('download', { url, name, category_id: S.cat?.id });
   let blob = S.blobs.get(url) || await idbG('pdfs', url).catch(() => null);
   if (blob && !await isValidPdfBlob(blob)) blob = null;
   if (!blob) {
@@ -2370,6 +2527,7 @@ function toggleFavCurrent() {
   if (!S.url) return;
   const isNow = toggleFav(S.url);
   updateFavBtn();
+  if (isNow) track('fav', { url: S.url, name: $('rdrTitle').textContent });
   toast(isNow ? '★ Ба дӯстдошта илова шуд' : 'Аз дӯстдошта хориҷ шуд', 1800);
   if (S.view === 'home') renderHomeFav();
 }
@@ -2400,7 +2558,7 @@ function toggleBookmark() {
   let bms = getBookmarks(S.url);
   const i = bms.findIndex(b => b.page === S.page);
   if (i >= 0) { bms.splice(i, 1); toast('Хатчуб гирифта шуд', 1500); }
-  else { bms.push({ page: S.page, ts: Date.now() }); bms.sort((a,b) => a.page - b.page); toast('🔖 Хатчуб гузошта шуд', 1500); }
+  else { bms.push({ page: S.page, ts: Date.now() }); bms.sort((a,b) => a.page - b.page); toast('🔖 Хатчуб гузошта шуд', 1500); track('bookmark', { url: S.url, name: $('rdrTitle').textContent }, { page: S.page, total_pages: S.pages }); }
   saveBookmarks(S.url, bms);
   updateBmBtn();
 }
@@ -2665,6 +2823,16 @@ async function renderPage(n) {
   $('pageInfo').textContent = `${n} / ${S.pages}`;
   if (S.findQ) renderFindHl(n);
   saveProgress();
+  // Track page_read every 5 pages
+  if (S.url && n % 5 === 0) track('page_read', { url: S.url, name: $('rdrTitle')?.textContent }, { page: n, total_pages: S.pages });
+  // Track finish (last page)
+  if (S.url && n === S.pages && S.pages > 1) {
+    const finKey = 'kk_fin_' + S.url;
+    if (!localStorage.getItem(finKey)) {
+      localStorage.setItem(finKey, '1');
+      track('finish', { url: S.url, name: $('rdrTitle')?.textContent }, { page: n, total_pages: S.pages });
+    }
+  }
 }
 
 function turnPage(dir) {
@@ -3227,6 +3395,12 @@ function doSearch(q) {
 
     if (typeof renderLastRead !== 'undefined') renderLastRead();
 
+    // Pre-fill cachedUrls from IDB so offline-lock works correctly after reload
+    try {
+      const keys = await idbKeys('pdfs').catch(() => []);
+      for (const k of keys) if (typeof k === 'string') S.cachedUrls.add(k);
+    } catch(e) {}
+
     // Default view = HOME
     goHome();
 
@@ -3299,6 +3473,82 @@ function doSearch(q) {
 
 // Auto-generate covers for visible books (one at a time, with delay)
 window.addEventListener('beforeunload', saveProgress);
+
+/* ══════════════════════════════════════════
+   PINCH-TO-ZOOM in reader (2 fingers)
+══════════════════════════════════════════ */
+(function setupPinch(){
+  const area = document.getElementById('rdrArea');
+  if (!area) return;
+  let startDist = 0, startZoom = 1, pinching = false, rafPending = false;
+  function dist(t) {
+    const dx = t[0].clientX - t[1].clientX;
+    const dy = t[0].clientY - t[1].clientY;
+    return Math.hypot(dx, dy);
+  }
+  area.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      pinching = true;
+      startDist = dist(e.touches);
+      startZoom = S.zoom || 1;
+      e.preventDefault();
+    }
+  }, { passive: false });
+  area.addEventListener('touchmove', e => {
+    if (!pinching || e.touches.length !== 2) return;
+    e.preventDefault();
+    const d = dist(e.touches);
+    if (startDist < 10) return;
+    const ratio = d / startDist;
+    const newZoom = Math.max(0.5, Math.min(3.5, startZoom * ratio));
+    S.zoom = newZoom;
+    if (!rafPending) {
+      rafPending = true;
+      requestAnimationFrame(() => {
+        rafPending = false;
+        if (typeof renderPage === 'function' && S.pdf) renderPage(S.page);
+      });
+    }
+  }, { passive: false });
+  area.addEventListener('touchend', e => {
+    if (e.touches.length < 2) pinching = false;
+  });
+})();
+
+/* ══════════════════════════════════════════
+   ANDROID BACK BUTTON → close modal/menu/reader, not exit app
+══════════════════════════════════════════ */
+(function setupBack(){
+  // Push a "guard" state so first back press triggers popstate (not exit)
+  try { history.pushState({ guard: true }, ''); } catch(e) {}
+  window.addEventListener('popstate', () => {
+    let handled = false;
+    // Priority: close what's open
+    const reader = document.getElementById('reader');
+    const findBar = document.getElementById('findBar');
+    const ftsModal = document.getElementById('ftsModal');
+    const bmModal = document.getElementById('bmModal');
+    const aboutModal = document.getElementById('aboutModal');
+    const voiceModal = document.getElementById('voiceModal');
+    const jumpModal = document.getElementById('jumpModal');
+    const navPnl = document.getElementById('navPnl');
+    const sPanel = document.getElementById('sPanel');
+
+    if (ftsModal && ftsModal.classList.contains('on'))      { closeFTS(); handled = true; }
+    else if (bmModal && bmModal.classList.contains('on'))   { closeBookmarks(); handled = true; }
+    else if (aboutModal && aboutModal.classList.contains('on')) { closeAbout(); handled = true; }
+    else if (voiceModal && voiceModal.classList.contains('on')) { closeVoiceModal(); handled = true; }
+    else if (jumpModal && jumpModal.classList.contains('on'))   { closeJump(); handled = true; }
+    else if (findBar && findBar.classList.contains('on'))   { closeFind(); handled = true; }
+    else if (reader && reader.classList.contains('on'))     { closeReader(); handled = true; }
+    else if (navPnl && navPnl.classList.contains('on'))     { closeNav(); handled = true; }
+    else if (sPanel && sPanel.classList.contains('on'))     { closeSettings(); handled = true; }
+    else if (S.view === 'catalog')                          { goHome(); handled = true; }
+    // If handled, push state again so next back also works
+    if (handled) { try { history.pushState({ guard: true }, ''); } catch(e) {} }
+    // If nothing open — let browser exit (next back will close app)
+  });
+})();
 
 // Re-render on online/offline change to show/hide locks
 window.addEventListener('online', () => {
