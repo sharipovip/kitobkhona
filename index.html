@@ -149,50 +149,47 @@ button{font-family:inherit;cursor:pointer;}
 /* ─── HERO БЛОК с СВЕТЯЩЕЙСЯ РАМКОЙ ФЛАГА ─── */
 .hero{position:relative;padding:14px 14px;margin-bottom:18px;
   border-radius:18px;background:rgba(0,0,0,.15);
-  overflow:hidden;
-  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;}
-.hero::before{
-  content:'';position:absolute;inset:-2px;border-radius:20px;z-index:-1;
-  background:conic-gradient(from var(--ang,0deg),
-    var(--flag-red),var(--flag-red),
-    #fff,
-    var(--flag-gold),var(--flag-gold),
-    #fff,
-    var(--flag-green),var(--flag-green),
-    var(--flag-red));
-  animation:rotateGlow 6s linear infinite;
-  filter:blur(2px);
+  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;
+  border:1px solid transparent;
+  /* Граница имитирует флаг */
+  background:
+    linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.2)) padding-box,
+    linear-gradient(135deg,
+      var(--flag-red) 0%,var(--flag-red) 30%,
+      #fff 33%,
+      var(--flag-gold) 40%,var(--flag-gold) 50%,
+      #fff 53%,
+      var(--flag-green) 60%,var(--flag-green) 100%) border-box;
+  border:2px solid transparent;
 }
+[data-theme="light"] .hero,[data-theme="sepia"] .hero{
+  background:
+    linear-gradient(rgba(255,255,255,.4),rgba(255,255,255,.4)) padding-box,
+    linear-gradient(135deg,
+      var(--flag-red) 0%,var(--flag-red) 30%,
+      #fff 33%,
+      var(--flag-gold) 40%,var(--flag-gold) 50%,
+      #fff 53%,
+      var(--flag-green) 60%,var(--flag-green) 100%) border-box;
+}
+/* Бегущий блик */
 .hero::after{
-  content:'';position:absolute;inset:2px;border-radius:16px;
-  background:var(--bg);z-index:-1;
+  content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;
+  background:linear-gradient(110deg,
+    transparent 0%,
+    transparent 40%,
+    rgba(232,184,75,.18) 50%,
+    transparent 60%,
+    transparent 100%);
+  background-size:300% 100%;
+  animation:heroShine 5s ease-in-out infinite;
 }
-@property --ang{syntax:'<angle>';initial-value:0deg;inherits:false;}
-@keyframes rotateGlow{
-  0%{--ang:0deg;}
-  100%{--ang:360deg;}
+@keyframes heroShine{
+  0%{background-position:200% 0;}
+  100%{background-position:-100% 0;}
 }
-/* Fallback для браузеров без @property */
-.hero{position:relative;}
-.hero-glow-border{
-  position:absolute;inset:0;border-radius:18px;pointer-events:none;
-  padding:2px;
-  background:conic-gradient(from 0deg,
-    var(--flag-red),var(--flag-red) 33%,
-    #fff 33%,#fff 50%,
-    var(--flag-gold) 50%,var(--flag-gold) 56%,
-    #fff 56%,#fff 67%,
-    var(--flag-green) 67%,var(--flag-green));
-  -webkit-mask:linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
-  -webkit-mask-composite:xor;
-  mask-composite:exclude;
-  opacity:.65;
-  animation:spinBorder 8s linear infinite;
-}
-@keyframes spinBorder{
-  from{transform:rotate(0deg);}
-  to{transform:rotate(360deg);}
-}
+/* старый glow-border больше не нужен, скрываем */
+.hero-glow-border{display:none;}
 .hero-photo-wrap{position:relative;z-index:2;width:96px;height:96px;flex-shrink:0;}
 .hero-photo{width:100%;height:100%;border-radius:50%;
   background:url(hero/01_istiqlol.jpg) center/cover no-repeat,#0D1E35;
@@ -228,15 +225,33 @@ button{font-family:inherit;cursor:pointer;}
 
 /* ─── ПЕШВОИ МИЛЛАТ — со светящейся рамкой флага ─── */
 .pesvo-sec{position:relative;padding:14px 12px;margin-bottom:22px;
-  border-radius:18px;background:rgba(0,0,0,.15);overflow:hidden;}
-.pesvo-sec .hero-glow-border{
-  background:conic-gradient(from 0deg,
-    var(--flag-red),var(--flag-red) 25%,
-    var(--flag-gold) 25%,var(--flag-gold) 50%,
-    var(--flag-green) 50%,var(--flag-green) 75%,
-    #fff 75%,#fff,
-    var(--flag-red));
-  opacity:.7;animation-duration:10s;
+  border-radius:18px;
+  background:
+    linear-gradient(rgba(0,0,0,.2),rgba(0,0,0,.2)) padding-box,
+    linear-gradient(135deg,
+      var(--flag-red) 0%,var(--flag-red) 25%,
+      var(--flag-gold) 35%,var(--flag-gold) 50%,
+      #fff 55%,
+      var(--flag-green) 65%,var(--flag-green) 100%) border-box;
+  border:2px solid transparent;
+}
+[data-theme="light"] .pesvo-sec,[data-theme="sepia"] .pesvo-sec{
+  background:
+    linear-gradient(rgba(255,255,255,.4),rgba(255,255,255,.4)) padding-box,
+    linear-gradient(135deg,
+      var(--flag-red) 0%,var(--flag-red) 25%,
+      var(--flag-gold) 35%,var(--flag-gold) 50%,
+      #fff 55%,
+      var(--flag-green) 65%,var(--flag-green) 100%) border-box;
+}
+.pesvo-sec::after{
+  content:'';position:absolute;inset:0;border-radius:18px;pointer-events:none;
+  background:linear-gradient(110deg,
+    transparent 0%,transparent 40%,
+    rgba(232,184,75,.15) 50%,
+    transparent 60%,transparent 100%);
+  background-size:300% 100%;
+  animation:heroShine 6s ease-in-out infinite;
 }
 .pesvo-sec > *{position:relative;z-index:1;}
 .pesvo-sec .sec-title{font-size:14px;font-weight:700;
@@ -588,7 +603,6 @@ button{font-family:inherit;cursor:pointer;}
     <div class="search-results" id="searchResults"></div>
 
     <div class="hero">
-      <div class="hero-glow-border"></div>
       <div class="hero-photo-wrap"><div class="hero-photo" id="heroPhoto"></div></div>
       <div class="hero-words">
         <div class="hero-label">СУХАНҲОИ ПЕШВОИ МИЛЛАТ</div>
@@ -597,7 +611,6 @@ button{font-family:inherit;cursor:pointer;}
     </div>
 
     <section class="pesvo-sec" id="pesvoSec" style="display:none;">
-      <div class="hero-glow-border"></div>
       <div class="sec-hdr">
         <div class="sec-title">👑 Китобҳои Пешвои миллат</div>
         <button class="sec-more" id="pesvoMore" onclick="openPesvoFull()">Ҳама ›</button>
@@ -831,7 +844,7 @@ button{font-family:inherit;cursor:pointer;}
 // ════════════════════════════════════════════════
 
 const SUPA_URL='https://dwkdzfqooprxytlepaoo.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDk0MTcwNTUsImV4cCI6MjA2NDk5MzA1NX0.RIHO5jOSWKqp6lf-iZGo-FzbAuyvfdcDhEvinZD3MgI';
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
 let supa=null;
 try{supa=window.supabase?.createClient?.(SUPA_URL,SUPA_KEY,{auth:{persistSession:false}});}catch(e){}
 
@@ -1288,18 +1301,97 @@ async function openBook(book){
   updateBmBtn();
   $('rCanvas').innerHTML='';
   $('rDlProg').classList.add('on');
-  $('rDlStatus').textContent='Боркунӣ...';
+  $('rDlStatus').textContent='Кушода истодааст...';
   setDlProg(0);
   addLastRead(book);
   trackEvent('open',book);
   history.pushState({reader:true},'');
+
+  // pdf.js настраиваем 1 раз
+  if(!window._pdfjsReady){
+    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    window._pdfjsReady=true;
+  }
+
+  // Если уже есть в IDB — открываем мгновенно
+  let blob=null;
+  try{blob=await idbGet('pdfs',book.url);if(blob)S.cachedUrls.add(book.url);}catch(e){}
+
   try{
-    let blob=null;
-    try{blob=await idbGet('pdfs',book.url);if(blob)S.cachedUrls.add(book.url);}catch(e){}
-    if(!blob){
-      blob=await fetchBookWithProgress(book);
-      idbSet('pdfs',book.url,blob).catch(()=>{});
+    if(blob){
+      // Открываем из локального blob
+      await openPdfFromBlob(blob);
+      $('rDlProg').classList.remove('on');
+      // в фоне ничего не делаем, уже скачано
+    } else {
+      // Открываем через URL — pdf.js сам качает по chunks (Range)
+      await openPdfFromUrl(book);
+      $('rDlProg').classList.remove('on');
+      // В фоне качаем полностью для офлайна
+      bgDownload(book).catch(()=>{});
+    }
+  }catch(e){
+    console.error('openBook:',e);
+    $('rDlProg').classList.add('on');
+    $('rDlStatus').textContent='❌ '+(e.message||'Хатогӣ ҳангоми кушодан');
+    if(!navigator.onLine&&!S.cachedUrls.has(book.url)){
+      $('rDlStatus').innerHTML='<b>Ин китоб ҳифз нашудааст.</b><br>Барои хондан интернет лозим аст.';
+    }
+  }
+}
+
+// Открыть PDF из URL через pdf.js (потоковый, Range-запросы)
+async function openPdfFromUrl(book){
+  // Пробуем 2 URL: основной и fallback (jsDelivr)
+  const urls=[book.url,book.urlFallback].filter(Boolean);
+  let lastErr=null;
+  for(const url of urls){
+    try{
+      $('rDlStatus').textContent='Кушода истодааст...';
+      const pdf=await pdfjsLib.getDocument({
+        url,
+        rangeChunkSize:65536,
+        disableStream:false,
+        disableRange:false,
+        withCredentials:false,
+      }).promise;
+      S.pdf=pdf;
+      S.totalPages=pdf.numPages;
+      const lastPage=readBookPage(book.url);
+      S.currentPage=Math.min(Math.max(1,lastPage||1),S.totalPages);
+      await renderPage(S.currentPage);
+      return;
+    }catch(e){
+      console.warn('pdf.js URL fail:',url,e.message);
+      lastErr=e;
+    }
+  }
+  throw lastErr||new Error('Не удалось открыть PDF');
+}
+
+// Открыть PDF из локального blob
+async function openPdfFromBlob(blob){
+  const ab=await blob.arrayBuffer();
+  const pdf=await pdfjsLib.getDocument({data:ab}).promise;
+  S.pdf=pdf;
+  S.totalPages=pdf.numPages;
+  const lastPage=readBookPage(S.currentBook.url);
+  S.currentPage=Math.min(Math.max(1,lastPage||1),S.totalPages);
+  await renderPage(S.currentPage);
+}
+
+// Фоновое скачивание полного PDF для офлайна
+async function bgDownload(book){
+  if(S.cachedUrls.has(book.url))return;
+  const urls=[book.url,book.urlFallback].filter(Boolean);
+  for(const url of urls){
+    try{
+      const r=await fetch(url);
+      if(!r.ok)continue;
+      const blob=await r.blob();
+      await idbSet('pdfs',book.url,blob);
       S.cachedUrls.add(book.url);
+      // LRU
       try{
         let lru=JSON.parse(localStorage.getItem('kk_lru')||'[]');
         lru=lru.filter(u=>u!==book.url);lru.push(book.url);
@@ -1309,61 +1401,15 @@ async function openBook(book){
         }
         localStorage.setItem('kk_lru',JSON.stringify(lru));
       }catch(e){}
-    }
-    $('rDlProg').classList.remove('on');
-    await renderPDF(blob);
-  }catch(e){
-    $('rDlStatus').textContent='❌ '+(e.message||'Хатогӣ');
-    if(!navigator.onLine&&!S.cachedUrls.has(book.url)){
-      $('rDlStatus').innerHTML='<b>Ин китоб ҳифз нашудааст.</b><br>Барои хондан интернет лозим аст.';
-    }
+      return;
+    }catch(e){continue;}
   }
-}
-
-async function fetchBookWithProgress(book){
-  // Пробуем 2 URL: основной и fallback
-  const urls=[book.url,book.urlFallback];
-  let lastErr=null;
-  for(const url of urls){
-    try{
-      const r=await fetch(url);
-      if(!r.ok){lastErr=new Error('HTTP '+r.status);continue;}
-      const total=+r.headers.get('Content-Length')||0;
-      if(!total||!r.body?.getReader){return await r.blob();}
-      const reader=r.body.getReader();
-      let loaded=0;const chunks=[];
-      while(true){
-        const{done,value}=await reader.read();
-        if(done)break;
-        chunks.push(value);loaded+=value.length;
-        setDlProg(Math.round(loaded/total*100));
-      }
-      return new Blob(chunks,{type:'application/pdf'});
-    }catch(e){lastErr=e;continue;}
-  }
-  throw lastErr||new Error('Не удалось скачать');
 }
 
 function setDlProg(p){
   $('rDlPct').textContent=p+'%';
   const C=214;
   $('rDlPath').setAttribute('stroke-dashoffset',String(C*(1-p/100)));
-}
-
-async function renderPDF(blob){
-  try{
-    pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-    const ab=await blob.arrayBuffer();
-    const pdf=await pdfjsLib.getDocument({data:ab}).promise;
-    S.pdf=pdf;S.totalPages=pdf.numPages;
-    // Восстановить страницу с прошлого раза
-    const lastPage=readBookPage(S.currentBook.url);
-    S.currentPage=Math.min(Math.max(1,lastPage||1),S.totalPages);
-    await renderPage(S.currentPage);
-  }catch(e){
-    $('rDlStatus').textContent='Хатои PDF: '+e.message;
-    $('rDlProg').classList.add('on');
-  }
 }
 function readBookPage(url){try{return (JSON.parse(localStorage.getItem('kk_page')||'{}'))[url]||1;}catch(e){return 1;}}
 function setBookPage(url,p){try{const o=JSON.parse(localStorage.getItem('kk_page')||'{}');o[url]=p;localStorage.setItem('kk_page',JSON.stringify(o));}catch(e){}}
@@ -1880,5 +1926,5 @@ window.addEventListener('popstate',()=>{
   },500);
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0bbc45f682b8b20',t:'MTc4MTQ2NTYxMA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
