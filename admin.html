@@ -334,6 +334,7 @@ a{color:var(--primary);text-decoration:none;}
 <nav class="tabs">
   <button class="tab on" data-view="manage" onclick="switchView('manage')">📚 Идоракунӣ</button>
   <button class="tab" data-view="stats" onclick="switchView('stats')">📊 Омор</button>
+  <button class="tab" data-view="pesvo" onclick="switchView('pesvo')">💬 Калимаи Президент</button>
   <button class="tab" data-view="settings" onclick="switchView('settings')">⚙️ Танзимот</button>
 </nav>
 
@@ -429,6 +430,84 @@ a{color:var(--primary);text-decoration:none;}
   </div>
 </div>
 </div><!-- /view-stats -->
+
+<!-- ═══ VIEW: PESVO WORDS ═══ -->
+<div class="view" id="view-pesvo">
+<div class="container">
+  <div class="panel">
+    <div class="panel-header">
+      <div class="panel-title">💬 Калимаи Президент</div>
+      <div style="display:flex;gap:6px;">
+        <button class="btn btn-primary" onclick="pesvoAddNew()">➕ Илова</button>
+        <button class="btn" onclick="pesvoReload()">🔄</button>
+      </div>
+    </div>
+    <div class="panel-body" style="padding:16px;">
+      <p style="color:var(--text-muted);font-size:12.5px;margin:0 0 14px;">
+        Калимаҳое, ки дар саҳифаи асосии барнома ҳар <b>8 сония</b> иваз мешаванд.
+        Танҳо <b>фаъол</b>-ҳо нишон дода мешаванд.
+      </p>
+      <div id="pesvoList" style="display:grid;gap:8px;">
+        <div style="text-align:center;color:var(--text-muted);padding:30px 10px;">Боркунӣ...</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div><!-- /view-pesvo -->
+
+<!-- Modal: add/edit pesvo word -->
+<div id="pesvoModalOv" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.65);backdrop-filter:blur(4px);align-items:center;justify-content:center;padding:14px;" onclick="if(event.target===this)closePesvoModal()">
+  <div style="background:var(--card);border:1px solid var(--border);border-radius:14px;max-width:480px;width:100%;box-shadow:0 20px 60px rgba(0,0,0,.5);">
+    <div style="padding:16px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;">
+      <h3 id="pesvoModalTitle" style="margin:0;font-size:16px;">➕ Илова</h3>
+      <button style="background:none;border:none;color:var(--text-muted);font-size:22px;cursor:pointer;line-height:1;" onclick="closePesvoModal()">✕</button>
+    </div>
+    <div style="padding:18px;">
+      <label style="display:block;margin-bottom:6px;color:var(--text-muted);font-size:12px;font-weight:600;">Матни калима</label>
+      <textarea id="pesvoText" rows="4" style="width:100%;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:10px;font-size:14px;font-family:inherit;resize:vertical;line-height:1.5;" placeholder="Масалан: Илм фурӯғи маърифат аст"></textarea>
+
+      <label style="display:flex;align-items:center;gap:8px;margin-top:14px;cursor:pointer;font-size:13.5px;">
+        <input type="checkbox" id="pesvoActive" checked style="width:16px;height:16px;cursor:pointer;">
+        <span>Фаъол (нишон додан)</span>
+      </label>
+
+      <label style="display:block;margin-top:14px;color:var(--text-muted);font-size:12px;font-weight:600;">Тартиб (хурдтар = аввал)</label>
+      <input type="number" id="pesvoSortOrder" value="0" step="10" min="0" style="width:100%;background:var(--bg-2);color:var(--text);border:1px solid var(--border);border-radius:8px;padding:9px;font-size:14px;">
+    </div>
+    <div style="padding:14px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;">
+      <button class="btn" onclick="closePesvoModal()">Бекор</button>
+      <button class="btn btn-primary" onclick="pesvoSave()" id="pesvoSaveBtn">💾 Захира</button>
+    </div>
+  </div>
+</div>
+
+<style>
+  .pesvo-item{
+    display:grid;grid-template-columns:1fr auto auto auto auto;gap:10px;align-items:center;
+    padding:12px 14px;background:var(--card);border:1px solid var(--border);border-radius:10px;
+    transition:.15s;
+  }
+  .pesvo-item:hover{border-color:var(--primary);}
+  .pesvo-item.inactive{opacity:.45;}
+  .pi-text{font-size:14px;font-style:italic;color:var(--text);line-height:1.5;}
+  .pi-order{
+    font-size:11px;color:var(--text-muted);padding:3px 9px;
+    background:var(--bg-2);border-radius:99px;font-weight:700;
+    white-space:nowrap;
+  }
+  .pi-btn{
+    background:transparent;border:1px solid var(--border);
+    color:var(--text-muted);width:32px;height:32px;border-radius:8px;cursor:pointer;
+    display:inline-flex;align-items:center;justify-content:center;font-size:14px;
+    transition:.15s;
+  }
+  .pi-btn:hover{color:var(--primary);border-color:var(--primary);}
+  .pi-btn.danger:hover{color:#ef4444;border-color:#ef4444;}
+  @media (max-width:520px){
+    .pesvo-item{grid-template-columns:1fr auto auto;gap:8px;}
+    .pi-order{grid-column:1;justify-self:start;margin-top:2px;}
+  }
+</style>
 
 <!-- ═══ VIEW: SETTINGS ═══ -->
 <div class="view" id="view-settings">
@@ -655,10 +734,179 @@ function switchView(name) {
   document.querySelectorAll('.tab').forEach(t => t.classList.toggle('on', t.dataset.view === name));
   document.querySelectorAll('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + name));
   if (name === 'stats') loadStats(false);
+  if (name === 'pesvo') pesvoLoad();
   if (name === 'settings') {
     document.getElementById('sRepo').value = A.data.repo || 'sharipovip/books';
     document.getElementById('sBranch').value = A.data.branch || 'main';
   }
+}
+
+/* ══════════════════════════════════════════
+   PESVO WORDS (Калимаи Президент)
+   Supabase CRUD + проверка наличия таблицы
+══════════════════════════════════════════ */
+let PESVO_DATA = [];
+let PESVO_EDITING_ID = null;
+let PESVO_TABLE_OK = null; // null=не проверяли, true=есть, false=нет
+
+async function pesvoCheckTable(){
+  if (PESVO_TABLE_OK !== null) return PESVO_TABLE_OK;
+  try{
+    const { error } = await supa.from('pesvo_words').select('id').limit(1);
+    PESVO_TABLE_OK = !error;
+  } catch(e){ PESVO_TABLE_OK = false; }
+  return PESVO_TABLE_OK;
+}
+
+async function pesvoLoad(){
+  const wrap = document.getElementById('pesvoList');
+  if (!wrap) return;
+  wrap.innerHTML = '<div style="text-align:center;color:var(--text-muted);padding:30px 10px;">⏳ Боркунӣ...</div>';
+
+  const ok = await pesvoCheckTable();
+  if (!ok){
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:30px 18px;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:12px;color:var(--text);">
+        <div style="font-size:36px;margin-bottom:10px;">⚠️</div>
+        <div style="font-weight:700;margin-bottom:6px;">Ҷадвали <code>pesvo_words</code> дар Supabase нест</div>
+        <div style="color:var(--text-muted);font-size:13px;line-height:1.6;margin-bottom:12px;">
+          Барои фаъол кардан фойли <code>supabase/01_pesvo_words.sql</code>-ро дар<br>
+          Supabase → SQL Editor → Run иҷро намоед (1 дақиқа).
+        </div>
+        <button class="btn" onclick="PESVO_TABLE_OK=null;pesvoLoad();">🔄 Аз нав санҷидан</button>
+      </div>`;
+    return;
+  }
+
+  try{
+    const { data, error } = await supa
+      .from('pesvo_words')
+      .select('*')
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    PESVO_DATA = data || [];
+    pesvoRender();
+  } catch(e){
+    wrap.innerHTML = `<div style="text-align:center;color:#ef4444;padding:20px;">Хатогӣ: ${e.message}</div>`;
+  }
+}
+
+function pesvoRender(){
+  const wrap = document.getElementById('pesvoList');
+  if (!wrap) return;
+  if (!PESVO_DATA.length){
+    wrap.innerHTML = `
+      <div style="text-align:center;padding:40px 20px;color:var(--text-muted);">
+        <div style="font-size:36px;margin-bottom:10px;">📝</div>
+        <div>Калимае нест. <button class="btn btn-primary" onclick="pesvoAddNew()" style="margin-left:8px;">➕ Илова</button></div>
+      </div>`;
+    return;
+  }
+  wrap.innerHTML = PESVO_DATA.map(w => `
+    <div class="pesvo-item ${w.active ? '' : 'inactive'}">
+      <div class="pi-text">« ${pesvoEsc(w.text)} »</div>
+      <div class="pi-order">№ ${w.sort_order ?? 0}</div>
+      <button class="pi-btn" title="${w.active ? 'Хомӯш' : 'Фаъол'}" onclick="pesvoToggleActive(${w.id})">${w.active ? '👁' : '🚫'}</button>
+      <button class="pi-btn" title="Таҳрир" onclick="pesvoEdit(${w.id})">✏️</button>
+      <button class="pi-btn danger" title="Нест кардан" onclick="pesvoDelete(${w.id})">🗑</button>
+    </div>
+  `).join('');
+}
+
+function pesvoEsc(s){
+  return String(s ?? '').replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
+}
+
+function pesvoAddNew(){
+  PESVO_EDITING_ID = null;
+  document.getElementById('pesvoModalTitle').textContent = '➕ Илова';
+  document.getElementById('pesvoText').value = '';
+  document.getElementById('pesvoActive').checked = true;
+  // Найдём следующий sort_order
+  const maxSort = PESVO_DATA.reduce((m, w) => Math.max(m, w.sort_order || 0), 0);
+  document.getElementById('pesvoSortOrder').value = maxSort + 10;
+  document.getElementById('pesvoModalOv').style.display = 'flex';
+  setTimeout(() => document.getElementById('pesvoText').focus(), 100);
+}
+
+function pesvoEdit(id){
+  const w = PESVO_DATA.find(x => x.id === id);
+  if (!w) return;
+  PESVO_EDITING_ID = id;
+  document.getElementById('pesvoModalTitle').textContent = '✏️ Таҳрир';
+  document.getElementById('pesvoText').value = w.text || '';
+  document.getElementById('pesvoActive').checked = !!w.active;
+  document.getElementById('pesvoSortOrder').value = w.sort_order ?? 0;
+  document.getElementById('pesvoModalOv').style.display = 'flex';
+}
+
+function closePesvoModal(){
+  document.getElementById('pesvoModalOv').style.display = 'none';
+  PESVO_EDITING_ID = null;
+}
+
+async function pesvoSave(){
+  const btn = document.getElementById('pesvoSaveBtn');
+  const text = document.getElementById('pesvoText').value.trim();
+  const active = document.getElementById('pesvoActive').checked;
+  const sort_order = parseInt(document.getElementById('pesvoSortOrder').value, 10) || 0;
+  if (!text){
+    toast('Матн нависед', 'error');
+    return;
+  }
+  btn.disabled = true;
+  btn.textContent = '⏳ Захира...';
+  try{
+    if (PESVO_EDITING_ID){
+      const { error } = await supa.from('pesvo_words')
+        .update({ text, active, sort_order })
+        .eq('id', PESVO_EDITING_ID);
+      if (error) throw error;
+      toast('✓ Таҳрир шуд', 'success');
+    } else {
+      const { error } = await supa.from('pesvo_words')
+        .insert({ text, active, sort_order });
+      if (error) throw error;
+      toast('✓ Илова шуд', 'success');
+    }
+    closePesvoModal();
+    await pesvoLoad();
+  } catch(e){
+    toast('Хатогӣ: ' + e.message, 'error', 4000);
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '💾 Захира';
+  }
+}
+
+async function pesvoToggleActive(id){
+  const w = PESVO_DATA.find(x => x.id === id);
+  if (!w) return;
+  try{
+    const { error } = await supa.from('pesvo_words')
+      .update({ active: !w.active }).eq('id', id);
+    if (error) throw error;
+    w.active = !w.active;
+    pesvoRender();
+  } catch(e){ toast('Хатогӣ: ' + e.message, 'error'); }
+}
+
+async function pesvoDelete(id){
+  const w = PESVO_DATA.find(x => x.id === id);
+  if (!w) return;
+  if (!confirm(`Нест кардани калимаи зерин?\n\n« ${w.text} »`)) return;
+  try{
+    const { error } = await supa.from('pesvo_words').delete().eq('id', id);
+    if (error) throw error;
+    PESVO_DATA = PESVO_DATA.filter(x => x.id !== id);
+    pesvoRender();
+    toast('✓ Нест шуд', 'success');
+  } catch(e){ toast('Хатогӣ: ' + e.message, 'error'); }
+}
+
+function pesvoReload(){
+  PESVO_TABLE_OK = null;
+  pesvoLoad();
 }
 function saveSettings() {
   A.data.repo = document.getElementById('sRepo').value.trim() || 'sharipovip/books';

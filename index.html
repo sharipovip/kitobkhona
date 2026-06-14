@@ -159,33 +159,45 @@ body::before{
   background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='80'%3E%3Cpath d='M40 2L78 40 40 78 2 40Z' fill='none' stroke='%23C8962E' stroke-width='.6' opacity='.2'/%3E%3Cpath d='M40 18L62 40 40 62 18 40Z' fill='none' stroke='%23C8962E' stroke-width='.6' opacity='.15'/%3E%3Ccircle cx='40' cy='40' r='8' fill='none' stroke='%230D7B7F' stroke-width='.5' opacity='.18'/%3E%3Ccircle cx='0' cy='0' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3Ccircle cx='80' cy='80' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3Ccircle cx='80' cy='0' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3Ccircle cx='0' cy='80' r='2.5' fill='%23C8962E' opacity='.2'/%3E%3C/svg%3E");
 }
 .splash-inner{position:relative;z-index:1;text-align:center;}
-.splash-emblem{
-  width:90px;height:90px;margin:0 auto 22px;
-  background:linear-gradient(135deg,rgba(200,150,46,.18),rgba(13,123,127,.18));
-  border:1.5px solid rgba(200,150,46,.45);
-  border-radius:22px;
-  display:flex;align-items:center;justify-content:center;
-  font-size:44px;
-  box-shadow:0 0 40px rgba(200,150,46,.18);
+/* Круглое фото 35-летия Истиклола с круговым прогрессом по периметру */
+.splash-ring{
+  position:relative;width:160px;height:160px;margin:0 auto 22px;
   animation:float 3s ease-in-out infinite;
 }
-@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-9px);}}
+.splash-photo{
+  position:absolute;inset:8px;border-radius:50%;
+  background:#0D1E35 center/cover no-repeat;
+  background-image:url(splash_logo.jpg);
+  box-shadow:0 0 50px rgba(200,150,46,.35), inset 0 0 20px rgba(0,0,0,.3);
+  border:2px solid rgba(200,150,46,.4);
+}
+.splash-ring svg{position:absolute;inset:0;width:100%;height:100%;transform:rotate(-90deg);}
+.splash-ring .ring-bg{fill:none;stroke:rgba(200,150,46,.18);stroke-width:3;}
+.splash-ring .ring-fg{
+  fill:none;stroke:url(#ringGrad);stroke-width:3;stroke-linecap:round;
+  stroke-dasharray:471;stroke-dashoffset:471;
+  animation:ringFill 1.5s cubic-bezier(.4,0,.2,1) forwards .2s;
+  filter:drop-shadow(0 0 6px rgba(232,184,75,.6));
+}
+@keyframes ringFill{to{stroke-dashoffset:0;}}
+@keyframes float{0%,100%{transform:translateY(0);}50%{transform:translateY(-6px);}}
 .splash-title{
   font-family:'Cormorant Garamond',serif;
-  font-size:30px;font-weight:800;letter-spacing:5px;
+  font-size:28px;font-weight:800;letter-spacing:4px;
   background:linear-gradient(135deg,#E8B84B,#C8962E,#E8B84B);
   -webkit-background-clip:text;-webkit-text-fill-color:transparent;
   background-clip:text;
 }
 .splash-div{
-  width:110px;height:1px;margin:12px auto;
+  width:110px;height:1px;margin:10px auto;
   background:linear-gradient(90deg,transparent,var(--gold),transparent);
   opacity:.7;
 }
-.splash-sub{font-size:10px;letter-spacing:3.5px;color:var(--textm);}
-.splash-bar{margin:24px auto 0;width:110px;max-width:110px;height:3px;background:rgba(200,150,46,.20);border-radius:2px;overflow:hidden;box-shadow:0 0 8px rgba(200,150,46,.12);position:relative;}
-.splash-fill{display:block;height:100%;width:0;background:var(--gold);border-radius:2px;animation:fillBar 1.1s cubic-bezier(.4,0,.2,1) forwards .15s;}
-@keyframes fillBar{0%{width:0;}100%{width:100%;}}
+.splash-sub{font-size:10px;letter-spacing:3px;color:var(--textm);}
+.splash-anniv{
+  margin-top:18px;font-size:10px;letter-spacing:2px;
+  color:#C8962E;font-weight:600;opacity:.85;
+}
 
 /* ══════════════════════════════════════════
    SETTINGS PANEL
@@ -463,6 +475,125 @@ body::before{
 .home-card-fav{position:absolute;top:5px;left:5px;background:rgba(0,0,0,.5);color:#FFD700;font-size:11px;width:18px;height:18px;border-radius:50%;display:flex;align-items:center;justify-content:center;z-index:2;}
 .home-cat-row{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;padding-bottom:4px;}
 .home-cat-row::-webkit-scrollbar{display:none;}
+
+/* ═══ HERO БЛОК (фото + слова Президента) ═══ */
+.home-hero{
+  position:relative;
+  display:grid;grid-template-columns:auto 1fr;gap:14px;align-items:center;
+  margin:0 0 20px;padding:14px 14px;
+  background:linear-gradient(135deg,rgba(220,38,38,.08) 0%,rgba(16,185,129,.08) 100%);
+  border:1px solid rgba(200,150,46,.25);
+  border-radius:18px;
+  overflow:hidden;
+}
+.home-hero::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at top right, rgba(200,150,46,.08), transparent 60%);
+  pointer-events:none;
+}
+.hero-photo-wrap{
+  position:relative;z-index:1;
+  width:96px;height:96px;flex-shrink:0;
+}
+.hero-photo{
+  width:100%;height:100%;border-radius:50%;
+  background:#0D1E35 center/cover no-repeat;
+  box-shadow:0 6px 20px rgba(0,0,0,.35), 0 0 0 3px rgba(200,150,46,.35);
+  transition:opacity .9s ease, transform 8s linear;
+  animation:heroPulse 4s ease-in-out infinite;
+}
+.hero-photo.fading{opacity:0;}
+@keyframes heroPulse{0%,100%{transform:scale(1);}50%{transform:scale(1.04);}}
+.hero-words{
+  position:relative;z-index:1;
+  min-height:60px;display:flex;flex-direction:column;justify-content:center;
+}
+.hero-words-label{
+  font-size:9.5px;letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--gold);font-weight:700;margin-bottom:6px;opacity:.85;
+}
+.hero-words-text{
+  font-family:'Cormorant Garamond',Georgia,serif;
+  font-size:17px;line-height:1.35;font-weight:600;
+  color:var(--text);font-style:italic;
+  transition:opacity .9s ease, transform .9s ease;
+  text-shadow:0 1px 0 rgba(0,0,0,.15);
+}
+.hero-words-text::before{content:'« ';color:var(--gold);opacity:.7;}
+.hero-words-text::after {content:' »';color:var(--gold);opacity:.7;}
+.hero-words-text.fading{opacity:0;transform:translateY(-6px);}
+@media (max-width:480px){
+  .home-hero{grid-template-columns:auto 1fr;padding:12px;gap:12px;}
+  .hero-photo-wrap{width:78px;height:78px;}
+  .hero-words-text{font-size:15px;}
+}
+
+/* ═══ ОЗМУНҲО (плитки конкурсов) ═══ */
+.ozmun-row{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  gap:12px;
+}
+.ozmun-tile{
+  position:relative;
+  display:flex;flex-direction:column;align-items:center;gap:8px;
+  padding:14px 8px 12px;border-radius:16px;
+  background:linear-gradient(180deg,rgba(255,255,255,.04),rgba(255,255,255,.01));
+  border:1px solid var(--border);
+  cursor:pointer;text-decoration:none;color:var(--text);
+  transition:transform .2s, box-shadow .2s, border-color .2s;
+  text-align:center;
+}
+.ozmun-tile:hover{
+  transform:translateY(-3px);
+  box-shadow:0 8px 22px rgba(0,0,0,.25);
+  border-color:rgba(200,150,46,.5);
+}
+.ozmun-tile-circle{
+  width:80px;height:80px;border-radius:50%;
+  background:#fff center/cover no-repeat;
+  box-shadow:0 4px 14px rgba(0,0,0,.25), 0 0 0 2px rgba(200,150,46,.35);
+}
+.ozmun-tile-name{
+  font-size:11.5px;font-weight:600;line-height:1.25;
+  color:var(--text);min-height:28px;
+}
+@media (max-width:380px){
+  .ozmun-row{grid-template-columns:repeat(3,1fr);gap:10px;}
+  .ozmun-tile-circle{width:64px;height:64px;}
+  .ozmun-tile-name{font-size:10.5px;}
+}
+
+/* ═══ Раздел ПЕШВОИ МИЛЛАТ ═══ */
+.pesvo-sec{
+  margin-bottom:24px;padding:14px 12px;
+  background:linear-gradient(135deg,rgba(180,83,9,.10) 0%,rgba(245,158,11,.06) 100%);
+  border:1.5px solid rgba(200,150,46,.45);
+  border-radius:16px;
+  position:relative;
+}
+.pesvo-sec::before{
+  content:'';position:absolute;inset:0;border-radius:16px;
+  background:linear-gradient(135deg,transparent 40%,rgba(200,150,46,.06) 100%);
+  pointer-events:none;
+}
+.pesvo-sec .home-sec-title{
+  font-size:16px;
+  background:linear-gradient(135deg,#E8B84B,#C8962E);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+.pesvo-sec .home-sec-title::before{
+  background:linear-gradient(180deg,#E8B84B,#C8962E);
+  width:4px;height:18px;
+}
+.pesvo-sec .home-card{
+  border:2px solid rgba(200,150,46,.55);
+  box-shadow:0 4px 14px rgba(200,150,46,.18);
+}
+.pesvo-sec .home-card-cov::before{
+  content:'👑';position:absolute;top:6px;right:6px;font-size:18px;z-index:2;
+  filter:drop-shadow(0 2px 4px rgba(0,0,0,.5));
+}
 .home-cat-tile{
   flex:0 0 130px;padding:14px 12px;border-radius:12px;cursor:pointer;
   background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#3b82f6));
@@ -745,11 +876,24 @@ body::before{
 <div class="splash" id="splash">
   <div class="splash-ornament"></div>
   <div class="splash-inner">
-    <div class="splash-emblem">📚</div>
+    <div class="splash-ring">
+      <div class="splash-photo"></div>
+      <svg viewBox="0 0 160 160" aria-hidden="true">
+        <defs>
+          <linearGradient id="ringGrad" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%"  stop-color="#E8B84B"/>
+            <stop offset="50%" stop-color="#C8962E"/>
+            <stop offset="100%" stop-color="#E8B84B"/>
+          </linearGradient>
+        </defs>
+        <circle class="ring-bg" cx="80" cy="80" r="75"/>
+        <circle class="ring-fg" cx="80" cy="80" r="75"/>
+      </svg>
+    </div>
     <div class="splash-title">КИТОБХОНА</div>
     <div class="splash-div"></div>
     <div class="splash-sub">ГАНҶИНАИ ДОНИШ</div>
-    <div class="splash-bar"><div class="splash-fill"></div></div>
+    <div class="splash-anniv">35 СОЛИ ИСТИҚЛОЛ · 1991-2026</div>
   </div>
 </div>
 
@@ -852,6 +996,56 @@ body::before{
   <div class="scroll-area" id="scrollArea">
     <!-- HOME VIEW -->
     <div id="homeView">
+
+      <!-- ═══ HERO: фото-карусель + слова Президента ═══ -->
+      <div class="home-hero" id="homeHero">
+        <div class="hero-photo-wrap">
+          <div class="hero-photo" id="heroPhoto"></div>
+        </div>
+        <div class="hero-words">
+          <div class="hero-words-label">КАЛИМАИ ПРЕЗИДЕНТ</div>
+          <div class="hero-words-text" id="heroWords">Илм фурӯғи маърифат аст</div>
+        </div>
+      </div>
+
+      <!-- ═══ ПЕШВОИ МИЛЛАТ (показывается если категория priority есть) ═══ -->
+      <div class="home-sec pesvo-sec" id="homePesvoSec" style="display:none;">
+        <div class="home-sec-head">
+          <div class="home-sec-title">👑 Китобҳои Пешвои миллат</div>
+          <button class="home-sec-more" id="homePesvoMore" onclick="openPesvoCat()">Ҳама ›</button>
+        </div>
+        <div class="home-scroll" id="homePesvo"></div>
+      </div>
+
+      <!-- ═══ ОЗМУНҲО ═══ -->
+      <div class="home-sec">
+        <div class="home-sec-head">
+          <div class="home-sec-title">🏆 Озмунҳои ҷумҳуриявӣ</div>
+        </div>
+        <div class="ozmun-row">
+          <a class="ozmun-tile" href="shohnomahoni.html">
+            <div class="ozmun-tile-circle" style="background-image:url(shohnoma_banner.png);"></div>
+            <div class="ozmun-tile-name">Шоҳномахонӣ</div>
+          </a>
+          <a class="ozmun-tile" href="ilm_furugi_marifat.html">
+            <div class="ozmun-tile-circle" style="background-image:url(ilm_banner.png);"></div>
+            <div class="ozmun-tile-name">Илм-фурӯғи маърифат</div>
+          </a>
+          <a class="ozmun-tile" href="furugi_subhi_donoi.html">
+            <div class="ozmun-tile-circle" style="background-image:url(furugi_banner.png);"></div>
+            <div class="ozmun-tile-name">Фурӯғи субҳи доноӣ</div>
+          </a>
+          <a class="ozmun-tile" href="vatani_azizi_man.html">
+            <div class="ozmun-tile-circle" style="background-image:url(vatan_banner.jpg);"></div>
+            <div class="ozmun-tile-name">Ватани азизи ман</div>
+          </a>
+          <a class="ozmun-tile" href="donandai_asarho.html">
+            <div class="ozmun-tile-circle" style="background-image:url(donandai_banner.png);"></div>
+            <div class="ozmun-tile-name">Донандаи асарҳо</div>
+          </a>
+        </div>
+      </div>
+
       <div class="home-sec" id="homeLastSec" style="display:none;">
         <div class="home-sec-head">
           <div class="home-sec-title">📖 Таърихи китобҳои хондашудаи шумо</div>
@@ -923,7 +1117,6 @@ body::before{
     <button class="r-btn" id="favBtn" onclick="toggleFavCurrent()" title="Дӯстдошта">🤍</button>
     <button class="r-btn" id="bmBtn" onclick="toggleBookmark()" title="Хатчуб">🔖</button>
     <button class="r-btn" onclick="openBookmarks()" title="Хатчубҳо">📑</button>
-    <button class="r-btn" onclick="shareBook()" title="Мубодила">📤</button>
     <button class="r-btn" onclick="downloadCurrent()" title="Гирифтан">⬇</button>
   </div>
   <div class="reader-area" id="rdrArea">
@@ -1363,6 +1556,8 @@ applyTheme(localStorage.getItem('kk_theme') || 'dark');
    STATE
 ══════════════════════════════════════════ */
 let CATS = [], REPO = 'sharipovip/books', BRANCH = 'main';
+// URL для удалённого books.json (всегда свежий из репо books)
+const REMOTE_BOOKS_JSON = 'https://raw.githubusercontent.com/sharipovip/books/main/books.json';
 const S = {
   cat: null, sub: null,
   books:        new Map(),   // subId → books[]
@@ -1509,18 +1704,33 @@ async function enforceCacheLimit() {
 /* ══════════════════════════════════════════
    BOOKS.JSON
 ══════════════════════════════════════════ */
+/* Загружаем books.json: сначала с удалённого репо books, потом fallback на локальный */
+async function fetchBooksJsonFresh(){
+  const sources = [
+    REMOTE_BOOKS_JSON + '?t=' + Date.now(),
+    'books.json?t=' + Date.now()
+  ];
+  let lastErr = null;
+  for (const url of sources){
+    try{
+      const r = await fetch(url, { cache:'no-store' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      const d = await r.json();
+      if (!d || typeof d !== 'object') throw new Error('Invalid JSON');
+      return d;
+    }catch(e){ lastErr = e; console.warn('books.json source failed:', url, e.message); }
+  }
+  throw lastErr || new Error('Не удалось загрузить books.json');
+}
 async function loadBooksJson() {
   let cached = null;
   try { cached = await idbG('json', 'books'); } catch(e) { console.warn('IDB load error:', e); }
-  if (cached && typeof cached === 'object') { 
+  if (cached && typeof cached === 'object') {
     try { parseCats(cached); refreshBooksJson(); return true; }
     catch(e) { console.warn('Parse cached error:', e); }
   }
   try {
-    const r = await fetch('books.json?t=' + Date.now(), { cache:'no-store' });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    const d = await r.json();
-    if (!d || typeof d !== 'object') throw new Error('Invalid JSON format');
+    const d = await fetchBooksJsonFresh();
     parseCats(d);
     idbS('json','books',d).catch(() => {});
     return true;
@@ -1536,18 +1746,14 @@ async function loadBooksJson() {
 }
 async function refreshBooksJson() {
   try {
-    const r = await fetch('books.json?t=' + Date.now(), { cache:'no-store' });
-    if (!r.ok) return;
-    const d = await r.json();
+    const d = await fetchBooksJsonFresh();
     const old = JSON.stringify(CATS);
     parseCats(d);
     if (old !== JSON.stringify(CATS)) {
       idbS('json','books',d).catch(() => {});
       renderCats(); renderSubs();
       if (typeof renderNavCats === 'function') renderNavCats();
-      // Only refresh catalog if it's currently shown
       if (S.view === 'catalog' && S.sub) loadSub(S.sub.id);
-      // Refresh home sections
       if (S.view === 'home' && typeof renderHome === 'function') renderHome();
     }
   } catch(e) {}
@@ -1684,6 +1890,7 @@ function anyNewInCat(c) {
 function renderHome() {
   if (S.view !== 'home') return;
   const loadEl = $('homeLoading'); if (loadEl) loadEl.style.display = CATS.length ? 'none' : '';
+  renderHomePesvo();
   renderHomeCats();
   renderHomeLast();
   renderHomeNew();
@@ -1691,6 +1898,150 @@ function renderHome() {
   renderHomeFav();
   renderHomeRec();
 }
+
+/* ═══ ПЕШВОИ МИЛЛАТ ═══
+   Показываем секцию если в CATS есть категория с priority=true.
+   Загружаем книги первой подкатегории. */
+let PESVO_CAT = null; // ссылка на категорию Пешвои миллат если есть
+
+function renderHomePesvo(){
+  const sec = $('homePesvoSec'); const wrap = $('homePesvo');
+  if (!sec || !wrap) return;
+  PESVO_CAT = CATS.find(c => c.priority === true) || null;
+  if (!PESVO_CAT || !PESVO_CAT.subs?.length){
+    sec.style.display = 'none';
+    return;
+  }
+  sec.style.display = '';
+  wrap.innerHTML = '';
+
+  // Собираем все книги изо всех подкатегорий Пешвои миллат
+  let books = [];
+  for (const sub of PESVO_CAT.subs){
+    const arr = S.books.get(sub.id) || [];
+    for (const b of arr) books.push({ b, sub });
+    // Подгружаем если ещё не было
+    if (!S.books.has(sub.id) && typeof fetchManifest === 'function'){
+      fetchManifest(sub, sub.id, false).catch(()=>{});
+    }
+  }
+
+  if (!books.length){
+    wrap.innerHTML = '<div class="sk-row">' + Array.from({length:4}).map(()=>'<div class="sk-card"><div class="sk-cov"></div><div class="sk-line"></div></div>').join('') + '</div>';
+    return;
+  }
+
+  // Показываем до 12
+  books.slice(0, 12).forEach(({b, sub}) => {
+    const card = makeHomeCard(b, PESVO_CAT, { subId: sub.id });
+    wrap.appendChild(card);
+  });
+}
+
+function openPesvoCat(){
+  if (PESVO_CAT && PESVO_CAT.subs?.[0]){
+    try { selectCat(PESVO_CAT.id); }
+    catch(e){
+      if (typeof selectSub === 'function') selectSub(PESVO_CAT.subs[0].id);
+    }
+  }
+}
+
+/* ═══ HERO: карусель фото + слова Президента ═══
+   Фото: hero/01_istiqlol.jpg ... hero/10_javonon.jpg
+   Слова: Supabase таблица pesvo_words (fallback на встроенный список) */
+const HERO_PHOTOS = [
+  'hero/01_istiqlol.jpg','hero/02_vahdat.jpg','hero/03_ob.jpg',
+  'hero/04_ilm.jpg','hero/05_35sol.jpg','hero/06_kishovarzi.jpg',
+  'hero/07_tabiat.jpg','hero/08_rohho.jpg','hero/09_qasr.jpg',
+  'hero/10_javonon.jpg'
+];
+const PESVO_WORDS_FALLBACK = [
+  'Илм фурӯғи маърифат аст',
+  'Ваҳдат — ҳастии миллат',
+  'Истиқлол — гавҳари бебаҳои миллат',
+  'Забон — ҳастии миллат аст',
+  'Об сарчашмаи ҳаёт аст',
+  'Ҷавонон — ояндаи миллат мебошанд',
+  'Маориф калиди пешрафти миллат аст',
+  'Сулҳу субот сарвати бузургтарини мост',
+  'Худшиносию худогоҳӣ асоси давлатдории миллӣ мебошад',
+  'Тоҷикистон Ватани азизи мост'
+];
+
+let PESVO_WORDS = PESVO_WORDS_FALLBACK.slice();
+let heroIdx = 0;
+let heroTimer = null;
+
+async function loadPesvoWordsFromSupabase(){
+  try{
+    if (typeof supa === 'undefined' || !supa) return;
+    const { data, error } = await supa
+      .from('pesvo_words')
+      .select('text,sort_order')
+      .eq('active', true)
+      .order('sort_order', { ascending: true });
+    if (error) throw error;
+    if (Array.isArray(data) && data.length){
+      PESVO_WORDS = data.map(r => r.text).filter(Boolean);
+      try { localStorage.setItem('kk_pesvo_words', JSON.stringify(PESVO_WORDS)); } catch(e){}
+    }
+  } catch(e){
+    console.warn('pesvo_words load:', e.message || e);
+  }
+}
+
+function loadPesvoWordsCached(){
+  try{
+    const raw = localStorage.getItem('kk_pesvo_words');
+    if (raw){
+      const arr = JSON.parse(raw);
+      if (Array.isArray(arr) && arr.length) PESVO_WORDS = arr;
+    }
+  }catch(e){}
+}
+
+function preloadHeroPhotos(){
+  HERO_PHOTOS.forEach(src => { const im = new Image(); im.src = src; });
+}
+
+function startHeroCarousel(){
+  const photoEl = $('heroPhoto');
+  const wordsEl = $('heroWords');
+  if (!photoEl || !wordsEl) return;
+
+  // Показываем первый
+  heroIdx = 0;
+  photoEl.style.backgroundImage = `url('${HERO_PHOTOS[0]}')`;
+  wordsEl.textContent = PESVO_WORDS[0] || '';
+
+  if (heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(() => {
+    heroIdx++;
+    const photoSrc = HERO_PHOTOS[heroIdx % HERO_PHOTOS.length];
+    const word = PESVO_WORDS[heroIdx % PESVO_WORDS.length];
+
+    // Fade out
+    photoEl.classList.add('fading');
+    wordsEl.classList.add('fading');
+    setTimeout(() => {
+      photoEl.style.backgroundImage = `url('${photoSrc}')`;
+      wordsEl.textContent = word;
+      // Fade in
+      photoEl.classList.remove('fading');
+      wordsEl.classList.remove('fading');
+    }, 450);
+  }, 8000);
+}
+
+// Пауза карусели когда вкладка скрыта
+document.addEventListener('visibilitychange', () => {
+  if (document.hidden){
+    if (heroTimer){ clearInterval(heroTimer); heroTimer = null; }
+  } else {
+    if (!heroTimer) startHeroCarousel();
+  }
+});
 
 function renderHomeCats() {
   const wrap = $('homeCatRow'); if (!wrap) return;
@@ -3403,6 +3754,14 @@ function doSearch(q) {
 
     // Default view = HOME
     goHome();
+
+    // ── HERO: запуск карусели фото + слов Президента ──
+    try {
+      loadPesvoWordsCached();          // быстро из localStorage
+      preloadHeroPhotos();             // в кеш браузера
+      startHeroCarousel();
+      loadPesvoWordsFromSupabase();    // в фоне — обновим из БД
+    } catch(e) { console.warn('hero init:', e); }
 
     // STAGE 1 — Load all categories from IDB cache (fast, parallel)
     (async () => {
