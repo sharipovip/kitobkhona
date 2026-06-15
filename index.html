@@ -348,7 +348,7 @@ body::before{
   flex:1;overflow-y:auto;overflow-x:hidden;
   -webkit-overflow-scrolling:touch;
   padding:12px 11px;
-  padding-bottom:calc(22px + env(safe-area-inset-bottom,0));
+  padding-bottom:calc(88px + env(safe-area-inset-bottom,0));
   overscroll-behavior:contain;
 }
 .scroll-area::-webkit-scrollbar{width:2px;}
@@ -911,6 +911,51 @@ body::before{
   backdrop-filter:blur(10px);
 }
 .toast.on{opacity:1;transform:translateX(-50%) translateY(0);transition:opacity .2s,transform .2s;}
+
+
+/* ═══ SAFE FIX OVERRIDES — calm design, no heavy flag/glow animation ═══ */
+.flag-line{display:none!important;}
+.v3-hero{
+  border:1px solid rgba(200,150,46,.28)!important;
+  background:linear-gradient(135deg,rgba(200,150,46,.08),rgba(13,123,127,.06)),var(--card)!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.18)!important;
+}
+.v3-hero::after{display:none!important;}
+.v3-hero-photo{box-shadow:0 4px 14px rgba(0,0,0,.25),0 0 0 2px rgba(200,150,46,.35)!important;animation:none!important;}
+.v3-pesvo-sec{
+  border:1px solid rgba(200,150,46,.42)!important;
+  background:linear-gradient(180deg,rgba(200,150,46,.08),transparent 38%),var(--card)!important;
+  box-shadow:0 4px 16px rgba(0,0,0,.16)!important;
+  padding:12px!important;
+}
+.v3-pesvo-sec::before{content:'';position:absolute;left:12px;right:12px;top:0;height:3px;border-radius:0 0 4px 4px;background:linear-gradient(90deg,#dc2626 0 33%,#fff 33% 66%,#10b981 66% 100%);opacity:.75;}
+.v3-pesvo-sec::after{display:none!important;}
+.v3-pesvo-sec .home-card .home-card-cov{border:1px solid rgba(200,150,46,.35)!important;box-shadow:0 3px 10px rgba(0,0,0,.28)!important;}
+.v3-ozmun-row{grid-template-columns:repeat(5,minmax(58px,1fr))!important;gap:7px!important;}
+.v3-ozmun-tile{padding:7px 4px!important;border-radius:10px!important;background:var(--card)!important;}
+.v3-ozmun-circle{width:48px!important;height:48px!important;}
+.v3-ozmun-name{font-size:9.2px!important;min-height:22px!important;}
+@media(max-width:380px){.v3-ozmun-row{grid-template-columns:repeat(5,minmax(50px,1fr))!important}.v3-ozmun-circle{width:42px!important;height:42px!important}.v3-ozmun-name{font-size:8.5px!important}}
+
+
+
+/* Mobile-first polish: soft taps and safer bottom spacing */
+button,.home-card,.book,.s-item,.nav-cat,.v3-ozmun-tile{touch-action:manipulation;transition:transform .12s ease, opacity .12s ease, background .18s ease, border-color .18s ease;}
+button:active,.home-card:active,.book:active,.s-item:active,.nav-cat:active,.v3-ozmun-tile:active{transform:scale(.97);}
+@media(max-width:520px){
+  #app{max-width:100%;}
+  .scroll-area{padding-left:10px;padding-right:10px;padding-bottom:calc(30px + env(safe-area-inset-bottom,0));}
+  .books-grid{grid-template-columns:repeat(3,1fr);gap:16px 9px;}
+  .v3-hero{grid-template-columns:74px 1fr!important;border-radius:16px!important;}
+}
+
+
+
+/* Full release mobile bottom navigation */
+.kb-bottom-nav{position:fixed;left:50%;bottom:0;transform:translateX(-50%);width:min(720px,100%);z-index:120;display:grid;grid-template-columns:repeat(5,1fr);background:rgba(15,28,46,.96);backdrop-filter:blur(14px);border-top:1px solid var(--border);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0));box-shadow:0 -8px 26px rgba(0,0,0,.28)}
+.kb-bottom-nav a,.kb-bottom-nav button{border:0;background:transparent;color:var(--textm);text-decoration:none;text-align:center;font-family:inherit;font-size:9.5px;font-weight:800;display:flex;flex-direction:column;align-items:center;gap:1px;padding:4px 0;border-radius:10px;min-width:0}.kb-bottom-nav span{font-size:19px;line-height:1}.kb-bottom-nav .on{color:var(--gold);background:rgba(200,150,46,.08)}
+.kb-bottom-spacer{height:64px;flex-shrink:0}@media(min-width:760px){.kb-bottom-nav{border-radius:18px 18px 0 0}}
+
 </style>
 </head>
 <body>
@@ -1149,6 +1194,14 @@ body::before{
   </div>
 </div>
 
+<nav class="kb-bottom-nav" aria-label="Асосӣ">
+  <button class="on" onclick="goHome()"><span>🏠</span>Асосӣ</button>
+  <button onclick="document.getElementById('search')?.focus()"><span>🔍</span>Ҷустуҷӯ</button>
+  <button onclick="openNav()"><span>📚</span>Китобҳо</button>
+  <a href="pages/winners.html"><span>🏆</span>Ғолибон</a>
+  <a href="pages/profile.html"><span>👤</span>Профил</a>
+</nav>
+
 <!-- ═══ READER ═══ -->
 <div class="reader" id="reader">
   <div class="reader-hdr">
@@ -1274,7 +1327,7 @@ pdfjsLib.GlobalWorkerOptions.workerSrc =
 const SUPA_URL = 'https://dwkdzfqooprxytlepaoo.supabase.co';
 const SUPA_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
 let supa = null;
-try { supa = window.supabase?.createClient?.(SUPA_URL, SUPA_KEY, { auth: { persistSession: false } }); } catch(e) {}
+try { supa = window.supabase?.createClient?.(SUPA_URL, SUPA_KEY, { auth: { persistSession: true, autoRefreshToken: true } }); } catch(e) {}
 
 /* Anonymous device id (random UUID stored in localStorage) */
 function getDeviceId() {
@@ -1614,6 +1667,88 @@ const S = {
   rdrBg: 'dark',             // dark | light | sepia
   findQ: '', findHits: [], findCurr: -1,
 };
+
+/* ══════════════════════════════════════════
+   REAL READING SESSIONS — 10 minutes minimum
+   Counts real reading time for profile, achievements and Ғолибон.
+══════════════════════════════════════════ */
+const RS = {
+  id: null,
+  userId: null,
+  startedAt: 0,
+  lastBeat: 0,
+  duration: 0,
+  pages: new Set(),
+  timer: null,
+};
+async function rsGetUser() {
+  try { const { data } = await supa.auth.getUser(); return data?.user || null; } catch(e) { return null; }
+}
+function rsBookAgeGroup() {
+  const n = String(S.sub?.name || S.cat?.name || '').toLowerCase();
+  if (/синфи\s*[1-4]|бач|кудак|дет/i.test(n)) return 'school_1_4';
+  if (/синфи\s*[5-9]/i.test(n)) return 'school_5_9';
+  if (/синфи\s*(10|11)/i.test(n)) return 'school_10_11';
+  return 'unknown';
+}
+async function rsStart() {
+  rsStopTimer(false);
+  RS.id = null; RS.userId = null; RS.duration = 0; RS.pages = new Set();
+  RS.startedAt = Date.now(); RS.lastBeat = Date.now();
+  const user = await rsGetUser();
+  if (!user || !S.url) { rsStartLocalTimer(); return; }
+  RS.userId = user.id;
+  try {
+    const { data, error } = await supa.from('reading_sessions').insert({
+      user_id: user.id,
+      device_id: DEVICE_ID,
+      book_url: S.url,
+      book_name: $('rdrTitle')?.textContent || '',
+      category_id: S.cat?.id || null,
+      book_age_group: rsBookAgeGroup(),
+      started_at: new Date(RS.startedAt).toISOString(),
+      last_heartbeat_at: new Date().toISOString(),
+      duration_seconds: 0,
+      pages_read: 0
+    }).select('id').single();
+    if (!error && data?.id) RS.id = data.id;
+  } catch(e) { console.warn('reading session start:', e); }
+  rsStartLocalTimer();
+}
+function rsStartLocalTimer() {
+  RS.timer = setInterval(rsHeartbeat, 30000);
+}
+function rsStopTimer(finalUpdate=true) {
+  if (RS.timer) { clearInterval(RS.timer); RS.timer = null; }
+  if (finalUpdate) rsHeartbeat(true);
+}
+async function rsHeartbeat(final=false) {
+  if (!S.url || !$('reader')?.classList.contains('on')) return;
+  if (document.hidden && !final) return;
+  const now = Date.now();
+  const delta = Math.max(0, Math.min(90, Math.round((now - (RS.lastBeat || now)) / 1000)));
+  RS.lastBeat = now;
+  RS.duration += delta;
+  if (S.page) RS.pages.add(S.page);
+  // Local fallback for non-auth users
+  try {
+    const loc = JSON.parse(localStorage.getItem('kk_reading_local') || '{}');
+    const k = S.url;
+    loc[k] = loc[k] || { book_name: $('rdrTitle')?.textContent || '', seconds: 0, pages: 0 };
+    loc[k].seconds = Math.max(loc[k].seconds || 0, RS.duration);
+    loc[k].pages = Math.max(loc[k].pages || 0, RS.pages.size);
+    localStorage.setItem('kk_reading_local', JSON.stringify(loc));
+  } catch(e) {}
+  if (!RS.id || !RS.userId) return;
+  try {
+    await supa.from('reading_sessions').update({
+      last_heartbeat_at: new Date().toISOString(),
+      ended_at: final ? new Date().toISOString() : null,
+      duration_seconds: RS.duration,
+      pages_read: RS.pages.size
+    }).eq('id', RS.id).eq('user_id', RS.userId);
+  } catch(e) { console.warn('reading heartbeat:', e); }
+}
 
 /* NEW marker threshold — 3 days */
 const NEW_DAYS = 3;
@@ -2176,7 +2311,13 @@ async function loadSub(id) {
   S.currentSubId = id;
   S.coverQueue   = [];
 
-  if (S.books.has(id)) { renderBooks(id); return; }
+  if (S.books.has(id)) {
+    const cachedBooks = S.books.get(id) || [];
+    renderBooks(id);
+    // If an earlier broken/empty list was cached while manifest.json was missing,
+    // refresh it now through the new GitHub API fallback instead of staying empty.
+    if (cachedBooks.length || !navigator.onLine) return;
+  }
   if (!sub.folder)     { S.books.set(id, []); renderBooks(id); return; }
 
   // IDB instant cache
@@ -2267,6 +2408,59 @@ async function tryFetch(path) {
   } catch(e) { return null; }
 }
 
+
+/* Fallback: if manifest.json is missing, read PDF list directly from GitHub Contents API.
+   This keeps the old reader intact and solves folders where build.py has not yet created manifest.json. */
+async function listPdfsFromGithubFolder(folder) {
+  const api = `https://api.github.com/repos/${REPO}/contents/${encPath(folder)}?ref=${encodeURIComponent(BRANCH)}`;
+  try {
+    const r = await fetch(api, { cache: 'no-store' });
+    if (!r.ok) return null;
+    const arr = await r.json();
+    if (!Array.isArray(arr)) return null;
+    const pdfs = arr
+      .filter(x => x && x.type === 'file' && /\.pdf$/i.test(x.name || ''))
+      .sort((a,b) => String(a.name).localeCompare(String(b.name), 'ru'))
+      .map(x => ({
+        name: String(x.name).replace(/\.pdf$/i, ''),
+        file: x.name,
+        size: x.size || 0
+      }));
+    return { version: 1, folder, books: pdfs, _fromGithubApi: true };
+  } catch(e) {
+    console.warn('GitHub folder fallback failed:', folder, e);
+    return null;
+  }
+}
+
+async function findExistingFolderForSub(folder) {
+  // Direct folder first
+  let d = await listPdfsFromGithubFolder(folder);
+  if (d) return { path: folder, data: d };
+
+  // Then try cached path
+  const cached = await getCachedPath(folder).catch(()=>null);
+  if (cached && cached !== folder) {
+    d = await listPdfsFromGithubFolder(cached);
+    if (d) return { path: cached, data: d };
+  }
+
+  // Finally scan tree if available. GitHub recursive tree sometimes 504s, so this is best-effort.
+  const folders = await loadRepoTree().catch(()=>[]);
+  const target = String(folder).toLowerCase();
+  const lastTarget = target.split('/').pop();
+  const cands = folders.filter(p => {
+    const pl = String(p).toLowerCase();
+    const last = pl.split('/').pop();
+    return pl === target || pl.endsWith('/' + target) || last === lastTarget;
+  }).sort((a,b) => a.length - b.length);
+  for (const c of cands) {
+    d = await listPdfsFromGithubFolder(c);
+    if (d && d.books && d.books.length) return { path: c, data: d };
+  }
+  return null;
+}
+
 async function fetchManifest(sub, id, silent) {
   const folder = sub.folder;
   let realPath = null, data = null;
@@ -2294,6 +2488,13 @@ async function fetchManifest(sub, id, silent) {
     for (const c of cands) { data = await tryFetch(c); if (data) { realPath = c; break; } }
   }
 
+  // Strategy 4: manifest.json is missing, but PDFs may exist in the folder.
+  // Read the folder via GitHub Contents API and build the manifest in memory.
+  if (!data) {
+    const found = await findExistingFolderForSub(folder);
+    if (found && found.data) { data = found.data; realPath = found.path; }
+  }
+
   if (!data) {
     const err = new Error('EMPTY_FOLDER');
     err.folderName = sub.name || folder;
@@ -2317,7 +2518,10 @@ async function fetchManifest(sub, id, silent) {
       name: b.name || b.file?.replace(/\.pdf$/i, ''),
       file: file,
       url:  url,
-      cover: `https://raw.githubusercontent.com/${REPO}/${BRANCH}/covers/${encPath(realPath)}/${encodeURIComponent(fileJpg)}`,
+      // Covers generated by build.py are stored under /covers/<path without leading books/>.
+      // Example: books/Чистон/A.pdf -> covers/Чистон/A.jpg
+      cover: `https://raw.githubusercontent.com/${REPO}/${BRANCH}/covers/${encPath(String(realPath).replace(/^books\//,''))}/${encodeURIComponent(fileJpg)}`,
+      coverAlt: `https://raw.githubusercontent.com/${REPO}/${BRANCH}/covers/${encPath(realPath)}/${encodeURIComponent(fileJpg)}`,
       size: b.size || 0,
       addedAt: b.addedAt || seen[url] || 0,
     };
@@ -2431,9 +2635,15 @@ async function fastCover(url, name, key, c1, c2, subId, coverUrl) {
 
     // 2. Pre-rendered JPG from /covers (generated by GitHub Action) — instant ~30KB
     if (coverUrl) {
+      const candidates = [coverUrl];
+      // Support both old and new cover layouts:
+      // covers/books/... and covers/...
+      if (coverUrl.includes('/covers/books/')) candidates.push(coverUrl.replace('/covers/books/', '/covers/'));
+      else candidates.push(coverUrl.replace('/covers/', '/covers/books/'));
       try {
-        const r = await fetch(coverUrl, { cache: 'force-cache' });
-        if (r.ok) {
+        for (const cu of [...new Set(candidates)]) {
+          const r = await fetch(cu, { cache: 'force-cache' });
+          if (!r.ok) continue;
           const blob = await r.blob();
           if (blob.size > 200 && blob.type.startsWith('image/')) {
             const dataUrl = await new Promise((res, rej) => {
@@ -2448,7 +2658,7 @@ async function fastCover(url, name, key, c1, c2, subId, coverUrl) {
             return;
           }
         }
-      } catch(e) { /* fallthrough to PDF range */ }
+      } catch(e) { /* fallthrough to cached PDF */ }
     }
 
     // 3. Full blob already cached
@@ -2664,9 +2874,30 @@ async function openBookFromUrl(url, name, key) {
     S.page   = sp ? Math.min(sp.page, S.pages) : 1;
     await renderPage(S.page);
     saveProgress(); showFoot(); updateFavBtn();
+    rsStart();
   } catch(e) {
     console.error('OpenUrl error:', e);
-    toast('Хатогӣ ҳангоми кушодан: ' + (e.message || ''), 3000);
+    // One safe fallback: raw.githubusercontent -> jsDelivr, reader stays the same (pdf.js range loading).
+    if (url.includes('raw.githubusercontent.com/')) {
+      try {
+        const alt = url.replace('https://raw.githubusercontent.com/', 'https://cdn.jsdelivr.net/gh/').replace('/main/', '@main/');
+        console.warn('Trying PDF fallback URL:', alt);
+        S.pdf = await pdfjsLib.getDocument({
+          url: alt,
+          rangeChunkSize: 65536,
+          disableStream: false,
+          disableRange: false,
+        }).promise;
+        S.pages = S.pdf.numPages;
+        const sp = getProgress(S.key);
+        S.page = sp ? Math.min(sp.page, S.pages) : 1;
+        await renderPage(S.page);
+        saveProgress(); showFoot(); updateFavBtn();
+        rsStart();
+        return;
+      } catch(e2) { console.error('OpenUrl fallback error:', e2); }
+    }
+    toast('Хатогӣ ҳангоми кушодани PDF. Папка/файл ё интернетро санҷед.', 3500);
     closeReader();
   }
 }
@@ -2733,6 +2964,7 @@ async function openBookFromBlob(url, name, key, blob) {
     S.page   = sp ? Math.min(sp.page, S.pages) : 1;
     await renderPage(S.page);
     saveProgress(); showFoot(); updateFavBtn();
+    rsStart();
     if (!S.covers.has(url) && S.currentSubId)
       fastCover(url, name, S.key, S.cat?.c1||'#2563eb', S.cat?.c2||'#3b82f6', S.currentSubId);
   } catch(e) {
@@ -2743,7 +2975,7 @@ async function openBookFromBlob(url, name, key, blob) {
 }
 
 function closeReader() {
-  saveProgress(); ttsStop();
+  saveProgress(); rsStopTimer(true); ttsStop();
   $('reader').classList.remove('on');
   if (S.pdf) { try { S.pdf.destroy(); } catch(e) {} S.pdf = null; }
   S.key = null; S.url = null;
@@ -3066,6 +3298,7 @@ async function renderPage(n) {
   sl.appendChild(cv); slider.appendChild(sl);
   slider.style.transform = 'translateX(0)';
   S.page = n;
+  if (RS && RS.pages) RS.pages.add(n);
   $('pageInfo').textContent = `${n} / ${S.pages}`;
   if (S.findQ) renderFindHl(n);
   saveProgress();
@@ -3718,7 +3951,11 @@ function doSearch(q) {
 })();
 
 // Auto-generate covers for visible books (one at a time, with delay)
-window.addEventListener('beforeunload', saveProgress);
+window.addEventListener('beforeunload', () => { saveProgress(); rsHeartbeat(true); });
+
+// Save reading session when app/tab goes hidden
+(document.addEventListener || function(){})('visibilitychange', () => { if (document.hidden) rsHeartbeat(true); });
+
 
 /* ══════════════════════════════════════════
    PINCH-TO-ZOOM in reader (2 fingers)

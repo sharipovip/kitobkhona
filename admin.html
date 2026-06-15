@@ -141,6 +141,7 @@ tr:hover{background:rgba(255,255,255,.03);}
     <button class="tab" data-v="collections" onclick="setView('collections')">📚 Маҷмӯаҳо</button>
     <button class="tab" data-v="ach" onclick="setView('ach')">🏆 Дастовардҳо</button>
     <button class="tab" data-v="stats" onclick="setView('stats')">📊 Омор</button>
+    <button class="tab" data-v="mod" onclick="setView('mod')">🛡 Модератсия</button>
   </nav>
 
   <main class="wrap">
@@ -219,6 +220,24 @@ tr:hover{background:rgba(255,255,255,.03);}
       </div>
     </div>
 
+
+
+    <!-- VIEW: MODERATION -->
+    <div class="view" id="v-mod">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
+        <h2 style="margin:0;flex:1;">🛡 Модератсия</h2>
+        <button class="btn" onclick="modLoad()">🔄 Навсозӣ</button>
+      </div>
+      <div class="panel">
+        <div class="panel-title">⚠️ Қонуншиканиҳои чат</div>
+        <div id="modViolations" style="margin-top:10px;color:var(--textm);font-size:13px;">⏳</div>
+      </div>
+      <div class="panel">
+        <div class="panel-title">🚩 Шикоятҳо ба паёмҳо</div>
+        <div id="modReports" style="margin-top:10px;color:var(--textm);font-size:13px;">⏳</div>
+      </div>
+    </div>
+
   </main>
 </div>
 
@@ -280,6 +299,7 @@ function setView(name){
   if(name==='collections') colLoad();
   if(name==='ach') achLoad();
   if(name==='stats') statsLoad();
+  if(name==='mod') modLoad();
 }
 
 // ─── MODAL ───
@@ -612,6 +632,26 @@ async function achSave(){
   }catch(e){toast(e.message,'error');}
 }
 async function achDel(id){if(!confirm('Нест?'))return;await supa.from('achievements').delete().eq('id',id);await achLoad();toast('✓','success');}
+
+
+
+// ════════════════════════════════════════════
+// 6. MODERATION
+// ════════════════════════════════════════════
+async function modLoad(){
+  const v=$('modViolations'), r=$('modReports');
+  if(v)v.innerHTML='⏳ Боркунӣ...'; if(r)r.innerHTML='⏳ Боркунӣ...';
+  try{
+    const {data:viol,error:ve}=await supa.from('chat_violations').select('*').order('created_at',{ascending:false}).limit(50);
+    if(ve) throw ve;
+    v.innerHTML = viol?.length ? viol.map(x=>`<div class="item"><div><div class="item-text"><b>${esc(x.type)}</b> · severity ${x.severity}</div><div style="font-size:12px;color:var(--textm);">${esc(x.text_sample||'')}<br>${new Date(x.created_at).toLocaleString('ru-RU')}</div></div><div class="badge">${esc(x.action_taken||'')}</div></div>`).join('') : '<div style="padding:20px;text-align:center;">Қонуншиканӣ нест</div>';
+  }catch(e){ v.innerHTML = '<div style="color:var(--red);">'+esc(e.message)+'</div>'; }
+  try{
+    const {data:rep,error:re}=await supa.from('message_reports').select('*').order('created_at',{ascending:false}).limit(50);
+    if(re) throw re;
+    r.innerHTML = rep?.length ? rep.map(x=>`<div class="item"><div><div class="item-text"><b>${esc(x.reason||'Шикоят')}</b></div><div style="font-size:12px;color:var(--textm);">message: ${esc(x.message_id)}<br>${new Date(x.created_at).toLocaleString('ru-RU')}</div></div><div class="badge">${esc(x.status)}</div></div>`).join('') : '<div style="padding:20px;text-align:center;">Шикоят нест</div>';
+  }catch(e){ r.innerHTML = '<div style="color:var(--red);">'+esc(e.message)+'</div>'; }
+}
 
 // ════════════════════════════════════════════
 // 5. STATS

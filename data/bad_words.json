@@ -1,0 +1,25 @@
+{
+  "version": 1,
+  "note": "Starter moderation list. Expand carefully in admin panel. Do not put direct severe slurs in public docs if not needed.",
+  "blockedLinks": [
+    "http://", "https://", "www.", "t.me", "telegram.me", "instagram.com", "facebook.com", "youtube.com", "youtu.be", "@username", "dot com", ". com", ".ru", ".tj", ".net", ".org"
+  ],
+  "patterns": {
+    "links": "(https?:\\/\\/|www\\.|t\\.me|telegram\\.me|instagram\\.com|facebook\\.com|youtube\\.com|youtu\\.be|@\\w{3,}|\\b\\+?\\d[\\d\\s\\-()]{7,}\\d\\b|\\b[a-z0-9.-]+\\s*(\\.|dot)\\s*(com|ru|tj|net|org)\\b)"
+  },
+  "words": [
+    {"lang":"ru", "word":"дурак", "severity":1},
+    {"lang":"ru", "word":"идиот", "severity":1},
+    {"lang":"ru_lat", "word":"durak", "severity":1},
+    {"lang":"ru_lat", "word":"idiot", "severity":1},
+    {"lang":"tg", "word":"ҳақорат", "severity":1},
+    {"lang":"tg", "word":"дашном", "severity":1},
+    {"lang":"tg_lat", "word":"haqorat", "severity":1},
+    {"lang":"tg_lat", "word":"dashnom", "severity":1}
+  ],
+  "actions": [
+    {"warnings":1, "action":"reject_message", "label":"Паём фиристода намешавад"},
+    {"warnings":2, "action":"mute_24h", "label":"Чат барои 24 соат баста мешавад"},
+    {"warnings":3, "action":"moderation_review", "label":"Дастрасӣ то санҷиши модератор баста мешавад"}
+  ]
+}

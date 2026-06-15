@@ -1,0 +1,21 @@
+{
+  "version": 1,
+  "groups": [
+    {"id":"4_6","label":"4–6 сол", "name":"Томактабӣ", "min":4, "max":6, "chatAllowed":false},
+    {"id":"7_10","label":"7–10 сол", "name":"Синфҳои 1–4", "min":7, "max":10, "chatAllowed":false},
+    {"id":"11_15","label":"11–15 сол", "name":"Синфҳои 5–9", "min":11, "max":15, "chatAllowed":false},
+    {"id":"16_18","label":"16–18 сол", "name":"Синфҳои 10–11", "min":16, "max":18, "chatAllowed":false},
+    {"id":"19_24","label":"19–24 сол", "name":"Донишҷӯён ва ҷавонон", "min":19, "max":24, "chatAllowed":true},
+    {"id":"25_35","label":"25–35 сол", "name":"Ҷавонон", "min":25, "max":35, "chatAllowed":true},
+    {"id":"36_55","label":"36–55 сол", "name":"Калонсолон", "min":36, "max":55, "chatAllowed":true},
+    {"id":"56_plus","label":"56+", "name":"Бузургсолон", "min":56, "max":120, "chatAllowed":true}
+  ],
+  "chatRequirements": {
+    "minAge": 18,
+    "minAccountDays": 15,
+    "minReadingHours": 50,
+    "minValidSessionSeconds": 600,
+    "friendshipRequired": true,
+    "rulesRequired": true
+  }
+}
