@@ -1,0 +1,76 @@
+{
+  "version": 1,
+  "size": "400x400 jpg",
+  "items": [
+    {
+      "file": "01-president-official.jpg",
+      "small": "01-president-official-200.jpg",
+      "source": "01.jpeg",
+      "title": "Портрет / суханҳои Пешвои миллат",
+      "description": "Портрет дар Қасри миллат"
+    },
+    {
+      "file": "02-istiqlol-flag.jpg",
+      "small": "02-istiqlol-flag-200.jpg",
+      "source": "02.jpeg",
+      "title": "Истиқлолият ва Парчам",
+      "description": "Портрет бо Парчами Тоҷикистон"
+    },
+    {
+      "file": "03-vahdat-diplomacy.jpg",
+      "small": "03-vahdat-diplomacy-200.jpg",
+      "source": "03.jpeg",
+      "title": "Ваҳдат ва робитаҳо",
+      "description": "Мулоқот / робитаҳои давлатӣ"
+    },
+    {
+      "file": "04-kishovarzi.jpg",
+      "small": "04-kishovarzi-200.jpg",
+      "source": "04.jpeg",
+      "title": "Кишоварзӣ",
+      "description": "Пешвои миллат дар саҳро"
+    },
+    {
+      "file": "05-president-young.jpg",
+      "small": "05-president-young-200.jpg",
+      "source": "05.jpeg",
+      "title": "Солҳои аввал / роҳбарӣ",
+      "description": "Портрет аз солҳои аввал"
+    },
+    {
+      "file": "06-zaboni-millat.jpg",
+      "small": "06-zaboni-millat-200.jpg",
+      "source": "06.jpeg",
+      "title": "Забон — ҳастии миллат",
+      "description": "Китоби «Забони миллат — ҳастии миллат»"
+    },
+    {
+      "file": "07-chehrahoyi-mondagor.jpg",
+      "small": "07-chehrahoyi-mondagor-200.jpg",
+      "source": "07.jpeg",
+      "title": "Чеҳраҳои мондагор",
+      "description": "Китоби «Чеҳраҳои мондагор»"
+    },
+    {
+      "file": "08-davlatdori.jpg",
+      "small": "08-davlatdori-200.jpg",
+      "source": "08.jpeg",
+      "title": "Давлатдорӣ",
+      "description": "Портрет дар мизи корӣ"
+    },
+    {
+      "file": "09-suhanroni.jpg",
+      "small": "09-suhanroni-200.jpg",
+      "source": "09.jpeg",
+      "title": "Суханронӣ",
+      "description": "Суханронӣ дар минбар"
+    },
+    {
+      "file": "10-nishon-tojikiston.jpg",
+      "small": "10-nishon-tojikiston-200.jpg",
+      "source": "Нишон тч.png",
+      "title": "Нишони давлатӣ / Ватан",
+      "description": "Нишони Тоҷикистон"
+    }
+  ]
+}
