@@ -2,679 +2,81 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <title>Admin · Китобхона</title>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-:root{
-  --bg:#0a0e1a;--bg2:#11172a;--card:#151b30;--card2:#1a2240;
-  --border:#243154;--text:#e7ecf7;--textm:#8a94b8;
-  --gold:#E8B84B;--gold2:#C8962E;--primary:#3b82f6;
-  --red:#ef4444;--green:#10b981;
-  --shadow:0 4px 16px rgba(0,0,0,.35);
-}
-*{box-sizing:border-box}
-html,body{margin:0;background:var(--bg);color:var(--text);
-  font-family:'Vazirmatn','Segoe UI',system-ui,sans-serif;font-size:14px;}
-button{font-family:inherit;cursor:pointer}
-
-.hdr{display:flex;align-items:center;gap:10px;padding:12px 16px;
-  background:var(--card);border-bottom:1px solid var(--border);
-  position:sticky;top:0;z-index:10;}
-.hdr-title{font-size:16px;font-weight:700;flex:1;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));
-  -webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-.hdr-user{font-size:12px;color:var(--textm);}
-.btn{padding:8px 14px;border-radius:8px;border:1px solid var(--border);
-  background:var(--card2);color:var(--text);font-size:13px;font-weight:600;
-  display:inline-flex;align-items:center;gap:6px;}
-.btn:hover{border-color:var(--primary);}
-.btn-primary{background:var(--gold);color:#1a1303;border-color:var(--gold);}
-.btn-primary:hover{filter:brightness(1.08);}
-.btn-danger{background:var(--red);color:#fff;border-color:var(--red);}
-
-.tabs{background:var(--card);border-bottom:1px solid var(--border);padding:0 12px;
-  display:flex;gap:2px;overflow-x:auto;}
-.tabs::-webkit-scrollbar{display:none}
-.tab{padding:11px 14px;background:none;border:none;color:var(--textm);
-  font-size:13px;font-weight:600;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;}
-.tab.on{color:var(--gold);border-bottom-color:var(--gold);}
-
-.wrap{max-width:920px;margin:0 auto;padding:16px;}
-.view{display:none;}
-.view.on{display:block;animation:fadeIn .2s;}
-@keyframes fadeIn{from{opacity:0;transform:translateY(4px);}to{opacity:1;transform:translateY(0);}}
-
-h2{font-size:18px;margin:0 0 14px;}
-
-.panel{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:14px;margin-bottom:12px;}
-.panel-title{font-weight:700;font-size:14px;margin-bottom:10px;}
-
-input,textarea,select{background:var(--bg2);color:var(--text);border:1px solid var(--border);
-  border-radius:8px;padding:9px 11px;font-size:14px;font-family:inherit;width:100%;outline:none;}
-input:focus,textarea:focus,select:focus{border-color:var(--gold);}
-label{font-size:12px;color:var(--textm);font-weight:600;display:block;margin-bottom:4px;}
-.field{margin-bottom:12px;}
-
-table{width:100%;border-collapse:collapse;font-size:13px;}
-th{background:var(--card2);color:var(--gold);padding:8px 10px;text-align:left;font-weight:700;border-bottom:2px solid var(--gold);}
-td{padding:8px 10px;border-bottom:1px solid var(--border);}
-tr:hover{background:rgba(255,255,255,.03);}
-
-/* LOGIN */
-.login-wrap{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px;
-  background:radial-gradient(ellipse at center, #11172a 0%, #060d18 70%);}
-.login-card{max-width:380px;width:100%;background:var(--card);border:1px solid var(--border);
-  border-radius:16px;padding:30px 22px;}
-.login-logo{width:80px;height:80px;border-radius:50%;margin:0 auto 16px;
-  background:url(splash_logo.jpg) center/cover;border:2px solid var(--gold);}
-.login-title{text-align:center;font-size:18px;font-weight:700;margin-bottom:18px;
-  background:linear-gradient(135deg,var(--gold),var(--gold2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;}
-
-/* Toast */
-.toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%) translateY(60px);
-  z-index:200;padding:11px 18px;background:var(--card);border:1px solid var(--border);
-  border-radius:99px;font-size:13px;opacity:0;transition:.3s;}
-.toast.show{transform:translateX(-50%) translateY(0);opacity:1;}
-.toast.success{border-color:var(--green);color:var(--green);}
-.toast.error{border-color:var(--red);color:#fca5a5;}
-
-/* Items */
-.item{display:grid;grid-template-columns:1fr auto auto auto;gap:10px;align-items:center;
-  padding:11px 14px;background:var(--card);border:1px solid var(--border);
-  border-radius:10px;margin-bottom:6px;}
-.item.inactive{opacity:.4;}
-.item-text{font-size:13.5px;line-height:1.4;}
-.badge{font-size:11px;padding:3px 9px;border-radius:99px;background:var(--card2);
-  color:var(--textm);font-weight:700;white-space:nowrap;}
-.icon-btn{background:transparent;border:1px solid var(--border);color:var(--textm);
-  width:30px;height:30px;border-radius:7px;display:inline-flex;align-items:center;justify-content:center;font-size:13px;}
-.icon-btn:hover{color:var(--gold);border-color:var(--gold);}
-.icon-btn.danger:hover{color:var(--red);border-color:var(--red);}
-
-/* Modal */
-.modal-ov{position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:300;
-  display:none;align-items:center;justify-content:center;padding:14px;backdrop-filter:blur(4px);}
-.modal-ov.on{display:flex;}
-.modal{background:var(--card);border:1px solid var(--border);border-radius:14px;
-  max-width:520px;width:100%;max-height:88vh;overflow-y:auto;}
-.modal-hdr{padding:14px 18px;border-bottom:1px solid var(--border);
-  display:flex;justify-content:space-between;align-items:center;}
-.modal-body{padding:18px;}
-.modal-foot{padding:12px 18px;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px;}
-
-/* Color picker */
-.color-row{display:flex;gap:6px;}
-.color-row input{width:80px;}
-
-@media (max-width:520px){
-  .item{grid-template-columns:1fr auto auto;}
-  .badge{grid-column:1;justify-self:start;}
-}
+:root{--bg:#07101d;--bg2:#0d1829;--card:#111f34;--card2:#182a45;--line:#2b4164;--text:#edf3ff;--muted:#9fb0c8;--gold:#d5aa38;--gold2:#f0cd70;--red:#ef4444;--green:#22c55e;--blue:#38bdf8;--shadow:0 16px 44px rgba(0,0,0,.35)}*{box-sizing:border-box}body{margin:0;background:var(--bg);color:var(--text);font-family:Inter,system-ui,"Segoe UI",Arial,sans-serif}.login{min-height:100vh;display:grid;place-items:center;padding:20px;background:radial-gradient(circle at 50% 0%,rgba(213,170,56,.13),transparent 44%),var(--bg)}.login-card{width:min(390px,100%);background:var(--card);border:1px solid var(--line);border-radius:22px;padding:22px;box-shadow:var(--shadow)}.logo{width:82px;height:82px;border-radius:50%;margin:0 auto 14px;background:url(splash_logo.jpg) center/cover;border:3px solid var(--gold)}.title{text-align:center;font-size:19px;font-weight:950;color:var(--gold2);margin-bottom:16px}input,textarea,select{width:100%;border:1px solid var(--line);border-radius:12px;background:var(--bg2);color:var(--text);padding:10px;outline:none}textarea{min-height:90px;resize:vertical}.field{margin:10px 0}.field label{display:block;font-size:12px;color:var(--muted);font-weight:850;margin-bottom:5px}.btn{border:1px solid var(--line);background:var(--card2);color:var(--text);border-radius:12px;padding:9px 12px;font-weight:850;cursor:pointer}.btn:hover{border-color:var(--gold)}.btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1d1303;border-color:var(--gold)}.btn.danger{border-color:rgba(239,68,68,.55);color:#fecaca}.btn.green{border-color:rgba(34,197,94,.55);color:#bbf7d0}.app{display:none;min-height:100vh}.top{position:sticky;top:0;z-index:30;background:rgba(7,16,29,.96);backdrop-filter:blur(14px);border-bottom:1px solid var(--line);padding:10px 14px;display:flex;align-items:center;gap:10px}.top-title{font-size:18px;font-weight:950;color:var(--gold2);flex:1}.user{font-size:12px;color:var(--muted)}.tabs{position:sticky;top:57px;z-index:25;background:rgba(7,16,29,.94);border-bottom:1px solid var(--line);display:flex;gap:4px;overflow:auto;padding:0 10px}.tab{border:0;background:transparent;color:var(--muted);padding:13px 10px;font-weight:850;white-space:nowrap;border-bottom:2px solid transparent}.tab.on{color:var(--gold2);border-bottom-color:var(--gold)}.wrap{max-width:1050px;margin:0 auto;padding:14px}.view{display:none}.view.on{display:block}.panel{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:12px;box-shadow:0 10px 28px rgba(0,0,0,.18)}.row{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.row.space{justify-content:space-between}.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:10px}.item{background:var(--card2);border:1px solid var(--line);border-radius:15px;padding:12px}.item.off{opacity:.55}.item-title{font-weight:900}.item-sub{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.45}.badge{display:inline-flex;border:1px solid rgba(213,170,56,.35);background:rgba(213,170,56,.10);color:var(--gold2);border-radius:999px;padding:3px 8px;font-size:11px;font-weight:900}table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:8px;border-bottom:1px solid var(--line);text-align:left}th{color:var(--gold2);font-size:12px}.toast{position:fixed;left:50%;bottom:18px;transform:translateX(-50%) translateY(22px);opacity:0;transition:.25s;background:var(--card);border:1px solid var(--line);border-radius:999px;padding:10px 16px;z-index:100}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.modal{position:fixed;inset:0;background:rgba(0,0,0,.62);display:none;align-items:center;justify-content:center;padding:14px;z-index:90}.modal.on{display:flex}.dialog{width:min(620px,100%);max-height:88vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:20px;padding:16px;box-shadow:var(--shadow)}.preview-hero{display:grid;grid-template-columns:90px 1fr;gap:12px;align-items:center;border:1px solid rgba(213,170,56,.35);border-radius:20px;padding:12px;background:linear-gradient(135deg,rgba(213,170,56,.11),rgba(56,189,248,.06))}.preview-hero img{width:86px;height:86px;border-radius:50%;object-fit:cover;border:3px solid var(--gold)}.small{font-size:12px;color:var(--muted);line-height:1.5}@media(max-width:650px){.tabs{top:55px}.grid{grid-template-columns:1fr}.top{flex-wrap:wrap}.user{display:none}}
 </style>
 </head>
 <body>
-
-<!-- LOGIN -->
-<div id="login" class="login-wrap" style="display:flex;">
-  <div class="login-card">
-    <div class="login-logo"></div>
-    <div class="login-title">КИТОБХОНА · ADMIN</div>
-    <div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="admin@example.com"></div>
-    <div class="field"><label>Парол</label><input id="loginPass" type="password" placeholder="••••••••"></div>
-    <button class="btn btn-primary" style="width:100%;margin-top:6px;" onclick="doLogin()">🔐 Воридшавӣ</button>
-    <div id="loginErr" style="color:var(--red);font-size:12px;margin-top:10px;text-align:center;"></div>
-  </div>
-</div>
-
-<!-- APP -->
-<div id="app" style="display:none;">
-  <div class="hdr">
-    <div class="hdr-title">КИТОБХОНА · ADMIN</div>
-    <div class="hdr-user" id="userEmail">—</div>
-    <button class="btn" onclick="doLogout()">🚪</button>
-  </div>
-
-  <nav class="tabs">
-    <button class="tab on" data-v="pesvo" onclick="setView('pesvo')">💬 Суханҳои Пешвоӣ</button>
-    <button class="tab" data-v="names" onclick="setView('names')">🏷 Номҳои категория</button>
-    <button class="tab" data-v="collections" onclick="setView('collections')">📚 Маҷмӯаҳо</button>
-    <button class="tab" data-v="ach" onclick="setView('ach')">🏆 Дастовардҳо</button>
-    <button class="tab" data-v="stats" onclick="setView('stats')">📊 Омор</button>
-    <button class="tab" data-v="mod" onclick="setView('mod')">🛡 Модератсия</button>
-  </nav>
-
-  <main class="wrap">
-
-    <!-- VIEW: PESVO WORDS -->
-    <div class="view on" id="v-pesvo">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <h2 style="margin:0;flex:1;">💬 Суханҳои Асосгузори сулҳу ваҳдати миллӣ</h2>
-        <button class="btn btn-primary" onclick="pesvoNew()">➕ Илова</button>
-      </div>
-      <p style="color:var(--textm);font-size:12.5px;margin:0 0 14px;">
-        Калимаҳое, ки ҳар <b>8 сония</b> дар саҳифаи асосии барнома иваз мешаванд.
-      </p>
-      <div id="pesvoList"></div>
-    </div>
-
-    <!-- VIEW: NAMES (DISPLAY NAMES) -->
-    <div class="view" id="v-names">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <h2 style="margin:0;flex:1;">🏷 Номҳои категория (GitHub → Намоиш)</h2>
-        <button class="btn btn-primary" onclick="nameNew()">➕ Илова</button>
-        <button class="btn" onclick="loadNames()">🔄</button>
-      </div>
-      <p style="color:var(--textm);font-size:12.5px;margin:0 0 14px;line-height:1.6;">
-        💡 Дар <b>GitHub</b> папкаҳо метавонанд бо лотинӣ бошанд (масалан <code>Sinfi_1</code>),<br>
-        ин ҷо муқаррар кунед чӣ гуна номро <b>дар барнома</b> намоиш кунад (масалан <code>Синфи 1</code>).
-      </p>
-      <div id="namesList"></div>
-    </div>
-
-    <!-- VIEW: COLLECTIONS -->
-    <div class="view" id="v-collections">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <h2 style="margin:0;flex:1;">📚 Маҷмӯаҳои китобҳо</h2>
-        <button class="btn btn-primary" onclick="colNew()">➕ Илова</button>
-      </div>
-      <p style="color:var(--textm);font-size:12.5px;margin:0 0 14px;">
-        Масалан: «Топ 10 барои наврасон», «Классикаи тоҷик», «Китобҳои тобистон».
-      </p>
-      <div id="colList"></div>
-    </div>
-
-    <!-- VIEW: ACHIEVEMENTS -->
-    <div class="view" id="v-ach">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <h2 style="margin:0;flex:1;">🏆 Дастовардҳо</h2>
-        <button class="btn btn-primary" onclick="achNew()">➕ Илова</button>
-      </div>
-      <div id="achList"></div>
-    </div>
-
-    <!-- VIEW: STATS -->
-    <div class="view" id="v-stats">
-      <h2>📊 Омор</h2>
-      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(140px,1fr));gap:10px;margin-bottom:18px;">
-        <div class="panel" style="text-align:center;">
-          <div style="font-size:22px;font-weight:800;color:var(--gold);" id="stat-users">—</div>
-          <div style="font-size:11px;color:var(--textm);margin-top:4px;">Корбарон</div>
-        </div>
-        <div class="panel" style="text-align:center;">
-          <div style="font-size:22px;font-weight:800;color:var(--gold);" id="stat-opens">—</div>
-          <div style="font-size:11px;color:var(--textm);margin-top:4px;">Кушодан</div>
-        </div>
-        <div class="panel" style="text-align:center;">
-          <div style="font-size:22px;font-weight:800;color:var(--gold);" id="stat-finish">—</div>
-          <div style="font-size:11px;color:var(--textm);margin-top:4px;">Хатм</div>
-        </div>
-        <div class="panel" style="text-align:center;">
-          <div style="font-size:22px;font-weight:800;color:var(--gold);" id="stat-dl">—</div>
-          <div style="font-size:11px;color:var(--textm);margin-top:4px;">Скачивание</div>
-        </div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">🔥 Топ-20 китобҳои хондашуда</div>
-        <div id="topBooksList"></div>
-      </div>
-    </div>
-
-
-
-    <!-- VIEW: MODERATION -->
-    <div class="view" id="v-mod">
-      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;">
-        <h2 style="margin:0;flex:1;">🛡 Модератсия</h2>
-        <button class="btn" onclick="modLoad()">🔄 Навсозӣ</button>
-      </div>
-      <div class="panel">
-        <div class="panel-title">⚠️ Қонуншиканиҳои чат</div>
-        <div id="modViolations" style="margin-top:10px;color:var(--textm);font-size:13px;">⏳</div>
-      </div>
-      <div class="panel">
-        <div class="panel-title">🚩 Шикоятҳо ба паёмҳо</div>
-        <div id="modReports" style="margin-top:10px;color:var(--textm);font-size:13px;">⏳</div>
-      </div>
-    </div>
-
-  </main>
-</div>
-
-<!-- Modal -->
-<div class="modal-ov" id="mov" onclick="if(event.target===this)closeM()">
-  <div class="modal">
-    <div class="modal-hdr">
-      <div id="mtitle" style="font-size:16px;font-weight:700;">—</div>
-      <button class="icon-btn" onclick="closeM()">✕</button>
-    </div>
-    <div class="modal-body" id="mbody"></div>
-    <div class="modal-foot" id="mfoot"></div>
-  </div>
-</div>
-
-<div class="toast" id="toast"></div>
-
+<div id="login" class="login"><div class="login-card"><div class="logo"></div><div class="title">КИТОБХОНА · ADMIN</div><div class="field"><label>Email</label><input id="loginEmail" type="email" placeholder="admin@example.com"></div><div class="field"><label>Парол</label><input id="loginPass" type="password" placeholder="••••••••"></div><button class="btn primary" style="width:100%" onclick="doLogin()">🔐 Воридшавӣ</button><div id="loginErr" class="small" style="color:#fca5a5;text-align:center;margin-top:10px"></div></div></div>
+<div id="app" class="app"><header class="top"><div class="top-title">Китобхона · Admin</div><div class="user" id="userEmail">—</div><button class="btn" onclick="doLogout()">🚪</button></header><nav class="tabs"><button class="tab on" data-tab="dashboard">📊 Омор</button><button class="tab" data-tab="hero">👑 Суханҳо</button><button class="tab" data-tab="chat">💬 Чат</button><button class="tab" data-tab="users">👥 Истифодабарандагон</button><button class="tab" data-tab="names">🏷 Категорияҳо</button><button class="tab" data-tab="ach">🏆 Дастовардҳо</button><button class="tab" data-tab="collections">📚 Маҷмӯаҳо</button></nav><main class="wrap">
+<section class="view on" id="v-dashboard"><div class="panel row space"><div><h2>📊 Омор</h2><p class="small">Омори умумӣ аз events/v_winners.</p></div><button class="btn" onclick="loadDashboard()">🔄 Навсозӣ</button></div><div class="grid" id="dashCards"></div><div class="panel"><h3>🔥 Top китобҳо</h3><div id="topBooks">—</div></div></section>
+<section class="view" id="v-hero"><div class="panel row space"><div><h2>👑 Суханҳои Пешвои миллат</h2><p class="small">Фото + мавзуъ + сухан. Ҳамаи тағйирот дар index.html бе deploy намоён мешавад.</p></div><button class="btn primary" onclick="editHero()">➕ Илова</button></div><div class="grid" id="heroList"></div></section>
+<section class="view" id="v-chat"><div class="panel"><h2>💬 Танзими чат</h2><p class="small">Барои тест метавонед ҳама маҳдудиятҳоро хомӯш кунед. Баъдтар дубора фаъол мекунем.</p><div id="chatSettings"></div><button class="btn primary" onclick="saveChatSettings()">💾 Захира</button></div></section>
+<section class="view" id="v-users"><div class="panel row space"><div><h2>👥 Истифодабарандагон</h2><p class="small">Ҷустуҷӯ, галочка, статус ва маълумоти профил.</p></div><button class="btn" onclick="loadUsers()">🔄</button></div><div class="panel"><input id="userSearch" placeholder="Ҷустуҷӯ..." oninput="renderUsers()"></div><div id="usersList"></div></section>
+<section class="view" id="v-names"><div class="panel row space"><div><h2>🏷 Номҳои категория</h2><p class="small">Папкаи GitHub → номи намоишӣ, emoji, ранг ва тартиб.</p></div><button class="btn primary" onclick="editName()">➕ Илова</button></div><div class="grid" id="namesList"></div></section>
+<section class="view" id="v-ach"><div class="panel row space"><div><h2>🏆 Дастовардҳо</h2></div><button class="btn primary" onclick="editAch()">➕ Илова</button></div><div class="grid" id="achList"></div></section>
+<section class="view" id="v-collections"><div class="panel row space"><div><h2>📚 Маҷмӯаҳо</h2></div><button class="btn primary" onclick="editCollection()">➕ Илова</button></div><div class="grid" id="collectionsList"></div></section>
+</main></div>
+<div id="modal" class="modal"><div class="dialog"><div class="row space"><h3 id="modalTitle">—</h3><button class="btn" onclick="closeModal()">✕</button></div><div id="modalBody"></div><div class="row" id="modalFoot" style="justify-content:flex-end;margin-top:12px"></div></div></div><div id="toast" class="toast"></div>
 <script>
 const SUPA_URL='https://dwkdzfqooprxytlepaoo.supabase.co';
 const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
-const supa = supabase.createClient(SUPA_URL, SUPA_KEY);
+const supa=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true}});const $=id=>document.getElementById(id);let HERO=[],NAMES=[],ACH=[],COLS=[],USERS=[],VERIF=[],CHAT={};
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));function toast(t){$('toast').textContent=t;$('toast').classList.add('show');setTimeout(()=>$('toast').classList.remove('show'),2200)}
+async function doLogin(){const email=$('loginEmail').value.trim(),password=$('loginPass').value;const{data,error}=await supa.auth.signInWithPassword({email,password});if(error){$('loginErr').textContent=error.message;return}enter(data.user)}async function doLogout(){await supa.auth.signOut();location.reload()}async function enter(user){$('login').style.display='none';$('app').style.display='block';$('userEmail').textContent=user.email;loadDashboard()}(async()=>{const{data}=await supa.auth.getSession();if(data.session)enter(data.session.user)})();
+document.querySelectorAll('.tab').forEach(b=>b.onclick=()=>{document.querySelectorAll('.tab').forEach(x=>x.classList.remove('on'));document.querySelectorAll('.view').forEach(x=>x.classList.remove('on'));b.classList.add('on');$('v-'+b.dataset.tab).classList.add('on');({dashboard:loadDashboard,hero:loadHero,chat:loadChatSettings,users:loadUsers,names:loadNames,ach:loadAch,collections:loadCollections}[b.dataset.tab]||(()=>{}))()});
+function openModal(t,body,foot){$('modalTitle').textContent=t;$('modalBody').innerHTML=body;$('modalFoot').innerHTML=foot||'';$('modal').classList.add('on')}function closeModal(){$('modal').classList.remove('on')}
+async function loadDashboard(){try{const{data:ev}=await supa.from('events').select('event_type,book_url,book_name,device_id').limit(5000);const{data:win}=await supa.from('v_winners').select('*').order('valid_seconds',{ascending:false}).limit(10);const types={};(ev||[]).forEach(e=>types[e.event_type]=(types[e.event_type]||0)+1);$('dashCards').innerHTML=[['👥 Дастгоҳҳо',new Set((ev||[]).map(e=>e.device_id).filter(Boolean)).size],['📖 Кушодан',types.open||0],['🏁 Хатм',types.finish||0],['⬇ Боргирӣ',types.download||0],['🏆 Ғолибон',(win||[]).length]].map(x=>`<div class="item"><div class="item-title">${x[0]}</div><div style="font-size:28px;color:var(--gold2);font-weight:950">${x[1]}</div></div>`).join('');const by={};(ev||[]).filter(e=>e.event_type==='open').forEach(e=>{by[e.book_url]=by[e.book_url]||{n:e.book_name||e.book_url,c:0};by[e.book_url].c++});$('topBooks').innerHTML=Object.values(by).sort((a,b)=>b.c-a.c).slice(0,20).map((b,i)=>`<div class="row space item"><span>${i+1}. ${esc(b.n)}</span><b>${b.c}</b></div>`).join('')||'<p class="small">Маълумот нест</p>'}catch(e){toast(e.message)}}
+async function loadHero(){const{data,error}=await supa.from('hero_slides').select('*').order('sort_order');if(error){$('heroList').innerHTML='<div class="panel">SQL 11_app_control_and_admin.sql иҷро нашудааст: '+esc(error.message)+'</div>';return}HERO=data||[];$('heroList').innerHTML=HERO.map(h=>`<div class="item ${h.active?'':'off'}"><div class="preview-hero"><img src="${esc(h.image_url)}"><div><div class="badge">${esc(h.topic)}</div><div class="item-title" style="margin-top:7px">${esc(h.quote)}</div><div class="item-sub">№ ${h.sort_order}</div></div></div><div class="row" style="margin-top:10px"><button class="btn" onclick="editHero(${h.id})">✏️</button><button class="btn" onclick="toggleHero(${h.id},${!h.active})">${h.active?'🚫':'👁'}</button><button class="btn danger" onclick="del('hero_slides',${h.id},loadHero)">🗑</button></div></div>`).join('')||'<div class="panel">Слайд нест</div>'}
+function editHero(id){const h=HERO.find(x=>x.id===id)||{topic:'маориф',quote:'',image_url:'assets/hero/01-president-official.jpg',sort_order:100,active:true};openModal(id?'Таҳрир':'Илова',`<div class="field"><label>Мавзуъ</label><input id="hTopic" value="${esc(h.topic)}"></div><div class="field"><label>Сухан</label><textarea id="hQuote">${esc(h.quote)}</textarea></div><div class="field"><label>Фото URL</label><input id="hImg" value="${esc(h.image_url)}"></div><div class="field"><label>Тартиб</label><input id="hSort" type="number" value="${h.sort_order||100}"></div><label><input id="hActive" type="checkbox" ${h.active?'checked':''}> Фаъол</label>`,`<button class="btn" onclick="closeModal()">Бекор</button><button class="btn primary" onclick="saveHero(${id||0})">💾</button>`)}async function saveHero(id){const p={topic:$('hTopic').value.trim(),quote:$('hQuote').value.trim(),image_url:$('hImg').value.trim(),sort_order:+$('hSort').value||100,active:$('hActive').checked};if(!p.topic||!p.quote||!p.image_url)return toast('Маълумот пурра нест');const q=id?supa.from('hero_slides').update(p).eq('id',id):supa.from('hero_slides').insert(p);const{error}=await q;if(error)return toast(error.message);closeModal();loadHero();toast('✓')}
+async function toggleHero(id,active){await supa.from('hero_slides').update({active}).eq('id',id);loadHero()}
+async function loadChatSettings(){const{data}=await supa.from('app_settings').select('*').eq('key','chat').maybeSingle();CHAT=data?.value||{test_open:true,require_auth:false,require_18:false,require_15_days:false,require_50_hours:false,require_friendship:false};$('chatSettings').innerHTML=Object.entries({test_open:'Чат барои тест кушода',require_auth:'Талаби воридшавӣ',require_18:'18+',require_15_days:'15 рӯз',require_50_hours:'50 соат',require_friendship:'Танҳо дӯстҳо'}).map(([k,t])=>`<label class="row item"><input type="checkbox" data-chat="${k}" ${CHAT[k]?'checked':''}> <b>${t}</b></label>`).join('')}async function saveChatSettings(){document.querySelectorAll('[data-chat]').forEach(x=>CHAT[x.dataset.chat]=x.checked);const{error}=await supa.from('app_settings').upsert({key:'chat',value:CHAT,description:'Chat access rules'});toast(error?error.message:'✓ Захира шуд')}
+async function loadUsers(){const{data:w}=await supa.from('v_winners').select('*').order('valid_seconds',{ascending:false}).limit(200);const{data:v}=await supa.from('user_verifications').select('*');USERS=w||[];VERIF=v||[];renderUsers()}function renderUsers(){const q=($('userSearch')?.value||'').toLowerCase();const vf=id=>VERIF.find(v=>String(v.user_id)===String(id));$('usersList').innerHTML=`<table><thead><tr><th>Ном</th><th>Шаҳр</th><th>Соат</th><th>Китоб</th><th>Галочка</th></tr></thead><tbody>${USERS.filter(u=>(u.display_name||'').toLowerCase().includes(q)||[u.city,u.region].filter(Boolean).join(' ').toLowerCase().includes(q)).map(u=>`<tr><td>${esc(u.avatar_emoji||'👤')} ${esc(u.display_name||'Китобхон')}</td><td>${esc([u.city,u.region].filter(Boolean).join(' · '))}</td><td>${Number(u.valid_hours||0).toFixed(1)}</td><td>${u.books_read||0}</td><td><button class="btn ${vf(u.user_id)?.verified?'green':''}" onclick="verifyUser('${u.user_id}',${!vf(u.user_id)?.verified})">${vf(u.user_id)?.verified?'✓':'—'}</button></td></tr>`).join('')}</tbody></table>`}async function verifyUser(user_id,verified){const{error}=await supa.from('user_verifications').upsert({user_id,verified,badge:'✓'});if(error)return toast(error.message);loadUsers()}
+async function loadNames(){const{data,error}=await supa.from('display_names').select('*').order('sort_order');if(error){$('namesList').innerHTML='<div class="panel">09_admin_core.sql лозим: '+esc(error.message)+'</div>';return}NAMES=data||[];$('namesList').innerHTML=NAMES.map(n=>`<div class="item"><div class="item-title">${esc(n.emoji||'📚')} ${esc(n.name)}</div><div class="item-sub">${esc(n.folder)} · №${n.sort_order}</div><div class="row"><button class="btn" onclick="editName(${n.id})">✏️</button><button class="btn danger" onclick="del('display_names',${n.id},loadNames)">🗑</button></div></div>`).join('')}
+function editName(id){const n=NAMES.find(x=>x.id===id)||{folder:'',name:'',emoji:'📚',color1:'#3b82f6',color2:'#60a5fa',sort_order:100,is_priority:false};openModal(id?'Категория':'Категория',`<div class="field"><label>Folder</label><input id="nFolder" value="${esc(n.folder)}"></div><div class="field"><label>Name</label><input id="nName" value="${esc(n.name)}"></div><div class="field"><label>Emoji</label><input id="nEmoji" value="${esc(n.emoji||'📚')}"></div><div class="grid"><input id="nC1" value="${esc(n.color1)}"><input id="nC2" value="${esc(n.color2)}"><input id="nSort" type="number" value="${n.sort_order}"></div>`,`<button class="btn primary" onclick="saveName(${id||0})">💾</button>`)}async function saveName(id){const p={folder:$('nFolder').value.trim(),name:$('nName').value.trim(),emoji:$('nEmoji').value.trim(),color1:$('nC1').value.trim(),color2:$('nC2').value.trim(),sort_order:+$('nSort').value||100};const q=id?supa.from('display_names').update(p).eq('id',id):supa.from('display_names').insert(p);const{error}=await q;if(error)return toast(error.message);closeModal();loadNames()}
+async function loadAch(){const{data}=await supa.from('achievements').select('*').order('sort_order');ACH=data||[];$('achList').innerHTML=ACH.map(a=>`<div class="item ${a.active?'':'off'}"><div class="item-title">${esc(a.emoji)} ${esc(a.title)}</div><div class="item-sub">${esc(a.code)} · ${esc(a.condition_type)}=${a.condition_value}</div><div class="row"><button class="btn" onclick="editAch(${a.id})">✏️</button><button class="btn danger" onclick="del('achievements',${a.id},loadAch)">🗑</button></div></div>`).join('')}
+function editAch(id){const a=ACH.find(x=>x.id===id)||{code:'',title:'',description:'',emoji:'🏆',condition_type:'open_count',condition_value:1,sort_order:100,active:true};openModal('Дастовард',`<div class="field"><label>Code</label><input id="aCode" value="${esc(a.code)}"></div><div class="field"><label>Title</label><input id="aTitle" value="${esc(a.title)}"></div><div class="field"><label>Emoji</label><input id="aEmoji" value="${esc(a.emoji)}"></div><div class="grid"><select id="aType"><option>open_count</option><option>finish_count</option><option>valid_hours</option><option>books_read</option></select><input id="aVal" type="number" value="${a.condition_value}"><input id="aSort" type="number" value="${a.sort_order}"></div><label><input id="aActive" type="checkbox" ${a.active?'checked':''}> Фаъол</label>`,`<button class="btn primary" onclick="saveAch(${id||0})">💾</button>`);$('aType').value=a.condition_type}async function saveAch(id){const p={code:$('aCode').value,title:$('aTitle').value,emoji:$('aEmoji').value,condition_type:$('aType').value,condition_value:+$('aVal').value||1,sort_order:+$('aSort').value||100,active:$('aActive').checked};const q=id?supa.from('achievements').update(p).eq('id',id):supa.from('achievements').insert(p);const{error}=await q;if(error)return toast(error.message);closeModal();loadAch()}
+async function loadCollections(){const{data}=await supa.from('book_collections').select('*').order('sort_order');COLS=data||[];$('collectionsList').innerHTML=COLS.map(c=>`<div class="item ${c.active?'':'off'}"><div class="item-title">${esc(c.emoji||'📚')} ${esc(c.title)}</div><div class="item-sub">${(c.book_urls||[]).length} китоб · №${c.sort_order}</div><div class="row"><button class="btn" onclick="editCollection(${c.id})">✏️</button><button class="btn danger" onclick="del('book_collections',${c.id},loadCollections)">🗑</button></div></div>`).join('')}
+function editCollection(id){const c=COLS.find(x=>x.id===id)||{title:'',emoji:'📚',description:'',book_urls:[],sort_order:100,active:true};openModal('Маҷмӯа',`<div class="field"><label>Title</label><input id="cTitle" value="${esc(c.title)}"></div><div class="field"><label>Emoji</label><input id="cEmoji" value="${esc(c.emoji)}"></div><div class="field"><label>URLs</label><textarea id="cUrls">${esc((c.book_urls||[]).join('\n'))}</textarea></div><input id="cSort" type="number" value="${c.sort_order}"><label><input id="cActive" type="checkbox" ${c.active?'checked':''}> Фаъол</label>`,`<button class="btn primary" onclick="saveCollection(${id||0})">💾</button>`)}async function saveCollection(id){const p={title:$('cTitle').value,emoji:$('cEmoji').value,book_urls:$('cUrls').value.split('\n').map(x=>x.trim()).filter(Boolean),sort_order:+$('cSort').value||100,active:$('cActive').checked};const q=id?supa.from('book_collections').update(p).eq('id',id):supa.from('book_collections').insert(p);const{error}=await q;if(error)return toast(error.message);closeModal();loadCollections()}
+async function del(table,id,cb){if(!confirm('Нест кардан?'))return;const{error}=await supa.from(table).delete().eq('id',id);toast(error?error.message:'✓');cb&&cb()}
 
-const $ = id => document.getElementById(id);
-const esc = s => String(s??'').replace(/[&<>"']/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-function toast(msg, type='', dur=2500){
-  const t=$('toast'); t.textContent=msg; t.className='toast show '+(type||'');
-  setTimeout(()=>t.classList.remove('show'),dur);
-}
-
-// ─── AUTH ───
-async function doLogin(){
-  const email=$('loginEmail').value.trim();
-  const pass=$('loginPass').value;
-  $('loginErr').textContent='';
-  if(!email||!pass){$('loginErr').textContent='Email ва паролро ворид кунед';return;}
-  const {data,error}=await supa.auth.signInWithPassword({email,password:pass});
-  if(error){$('loginErr').textContent=error.message;return;}
-  enterApp(data.user);
-}
-async function doLogout(){await supa.auth.signOut();location.reload();}
-function enterApp(user){
-  $('login').style.display='none';
-  $('app').style.display='block';
-  $('userEmail').textContent=user.email;
-  pesvoLoad();
-}
-(async()=>{
-  const {data}=await supa.auth.getSession();
-  if(data.session) enterApp(data.session.user);
-})();
-
-// ─── TABS ───
-function setView(name){
-  document.querySelectorAll('.tab').forEach(t=>t.classList.toggle('on',t.dataset.v===name));
-  document.querySelectorAll('.view').forEach(v=>v.classList.toggle('on',v.id==='v-'+name));
-  if(name==='pesvo') pesvoLoad();
-  if(name==='names') loadNames();
-  if(name==='collections') colLoad();
-  if(name==='ach') achLoad();
-  if(name==='stats') statsLoad();
-  if(name==='mod') modLoad();
-}
-
-// ─── MODAL ───
-function openM(title, bodyHtml, footHtml=''){
-  $('mtitle').textContent=title;
-  $('mbody').innerHTML=bodyHtml;
-  $('mfoot').innerHTML=footHtml;
-  $('mov').classList.add('on');
-}
-function closeM(){$('mov').classList.remove('on');}
-
-// ════════════════════════════════════════════
-// 1. PESVO WORDS
-// ════════════════════════════════════════════
-let pesvoData=[];
-async function pesvoLoad(){
-  const w=$('pesvoList');
-  w.innerHTML='⏳ Боркунӣ...';
+// ---- Overrides: improved hero/category admin ----
+let BOOK_CATEGORIES=[];
+async function loadBookCategories(){
   try{
-    const {data,error}=await supa.from('pesvo_words').select('*').order('sort_order');
-    if(error) throw error;
-    pesvoData=data||[];
-    pesvoRender();
-  }catch(e){
-    w.innerHTML=`<div style="padding:20px;background:rgba(239,68,68,.1);border-radius:10px;color:var(--red);">
-      <b>Хатогӣ:</b> ${e.message}<br><br>
-      <i style="color:var(--textm);">Аввал SQL ҳосилкунандаро дар Supabase иҷро кунед: <code>supabase/00_schema_v3.sql</code></i>
-    </div>`;
-  }
+    const r=await fetch('https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now(),{cache:'no-store'});
+    const d=await r.json();
+    const arr=[];
+    (d.categories||[]).forEach(c=>{arr.push({folder:c.folder_raw||c.id,name:c.name,emoji:c.emoji||'📚',color1:c.color1||'#3b82f6',color2:c.color2||'#60a5fa',sort_order:c.sort_order||100,kind:'category'});(c.subs||[]).forEach(s=>arr.push({folder:s.folder,name:s.name,emoji:s.emoji||'📁',color1:c.color1||'#3b82f6',color2:c.color2||'#60a5fa',sort_order:s.sort_order||100,kind:'sub'}))});
+    BOOK_CATEGORIES=arr;
+  }catch(e){BOOK_CATEGORIES=[]}
 }
-function pesvoRender(){
-  const w=$('pesvoList');
-  if(!pesvoData.length){w.innerHTML='<div style="text-align:center;padding:30px;color:var(--textm);">Калимае нест</div>';return;}
-  w.innerHTML=pesvoData.map(p=>`
-    <div class="item ${p.active?'':'inactive'}">
-      <div class="item-text">« ${esc(p.text)} »</div>
-      <div class="badge">№ ${p.sort_order??0}</div>
-      <button class="icon-btn" onclick="pesvoToggle(${p.id})" title="${p.active?'Хомӯш':'Фаъол'}">${p.active?'👁':'🚫'}</button>
-      <button class="icon-btn" onclick="pesvoEdit(${p.id})">✏️</button>
-      <button class="icon-btn danger" onclick="pesvoDel(${p.id})">🗑</button>
-    </div>
-  `).join('');
+async function loadHero(){
+  const {data,error}=await supa.from('hero_slides').select('*').order('sort_order');
+  if(error){$('heroList').innerHTML='<div class="panel">SQL 11/12 лозим: '+esc(error.message)+'</div>';return}
+  HERO=data||[];
+  $('heroList').innerHTML=HERO.map(h=>`<div class="item ${h.active?'':'off'}"><div><div class="badge">${esc(h.topic)}</div><div class="item-title" style="margin-top:8px;font-size:15px;line-height:1.45">${esc(h.quote)}</div><div class="item-sub">Фото: ${esc(h.image_url)} · № ${h.sort_order}</div></div><div class="row" style="margin-top:10px"><button class="btn" onclick="editHero(${h.id})">✏️</button><button class="btn" onclick="toggleHero(${h.id},${!h.active})">${h.active?'🚫':'👁'}</button><button class="btn danger" onclick="del('hero_slides',${h.id},loadHero)">🗑</button></div></div>`).join('')||'<div class="panel">Слайд нест</div>';
 }
-let pEditId=null;
-function pesvoNew(){
-  pEditId=null;
-  const max=pesvoData.reduce((m,p)=>Math.max(m,p.sort_order||0),0);
-  openM('➕ Илова',`
-    <div class="field"><label>Матни калима</label><textarea id="pTxt" rows="4" placeholder="Илм фурӯғи маърифат аст"></textarea></div>
-    <div class="field"><label><input type="checkbox" id="pAct" checked> Фаъол</label></div>
-    <div class="field"><label>Тартиб</label><input type="number" id="pSort" value="${max+10}" step="10"></div>
-  `,`<button class="btn" onclick="closeM()">Бекор</button><button class="btn btn-primary" onclick="pesvoSave()">💾 Захира</button>`);
-}
-function pesvoEdit(id){
-  const p=pesvoData.find(x=>x.id===id);if(!p)return;
-  pEditId=id;
-  openM('✏️ Таҳрир',`
-    <div class="field"><label>Матни калима</label><textarea id="pTxt" rows="4">${esc(p.text)}</textarea></div>
-    <div class="field"><label><input type="checkbox" id="pAct" ${p.active?'checked':''}> Фаъол</label></div>
-    <div class="field"><label>Тартиб</label><input type="number" id="pSort" value="${p.sort_order??0}" step="10"></div>
-  `,`<button class="btn" onclick="closeM()">Бекор</button><button class="btn btn-primary" onclick="pesvoSave()">💾 Захира</button>`);
-}
-async function pesvoSave(){
-  const text=$('pTxt').value.trim();
-  const active=$('pAct').checked;
-  const sort_order=parseInt($('pSort').value,10)||0;
-  if(!text){toast('Матн нависед','error');return;}
-  try{
-    if(pEditId){await supa.from('pesvo_words').update({text,active,sort_order}).eq('id',pEditId);}
-    else{await supa.from('pesvo_words').insert({text,active,sort_order});}
-    closeM(); await pesvoLoad(); toast('✓ Захира шуд','success');
-  }catch(e){toast(e.message,'error');}
-}
-async function pesvoToggle(id){
-  const p=pesvoData.find(x=>x.id===id);if(!p)return;
-  await supa.from('pesvo_words').update({active:!p.active}).eq('id',id);
-  p.active=!p.active; pesvoRender();
-}
-async function pesvoDel(id){
-  if(!confirm('Нест кардан?'))return;
-  await supa.from('pesvo_words').delete().eq('id',id);
-  pesvoData=pesvoData.filter(x=>x.id!==id); pesvoRender(); toast('✓ Нест шуд','success');
-}
-
-// ════════════════════════════════════════════
-// 2. DISPLAY NAMES (категории GitHub → отображение)
-// ════════════════════════════════════════════
-let namesData=[];
-let githubFolders=[];
-async function loadGithubFolders(){
-  try{
-    const r=await fetch('https://api.github.com/repos/sharipovip/books/contents/books?ref=main',{cache:'no-store'});
-    const data=await r.json();
-    const list=[];
-    for(const it of data){
-      if(it.type==='dir') list.push({folder:it.name,is_sub:false});
-    }
-    // 2-й уровень
-    for(const top of list.filter(x=>!x.is_sub)){
-      try{
-        const r2=await fetch(`https://api.github.com/repos/sharipovip/books/contents/books/${encodeURIComponent(top.folder)}?ref=main`);
-        const d2=await r2.json();
-        if(Array.isArray(d2)){
-          for(const it of d2){
-            if(it.type==='dir') list.push({folder:it.name,parent:top.folder,is_sub:true});
-          }
-        }
-      }catch(e){}
-    }
-    githubFolders=list;
-  }catch(e){console.warn('GitHub folders:',e);}
-}
-
 async function loadNames(){
-  const w=$('namesList');
-  w.innerHTML='⏳ Боркунӣ...';
-  try{
-    const {data,error}=await supa.from('display_names').select('*').order('sort_order');
-    if(error) throw error;
-    namesData=data||[];
-    await loadGithubFolders();
-    renderNames();
-  }catch(e){
-    w.innerHTML=`<div style="padding:20px;color:var(--red);">Хатогӣ: ${e.message}</div>`;
-  }
+  const {data,error}=await supa.from('display_names').select('*').order('sort_order');
+  if(error){$('namesList').innerHTML='<div class="panel">09/12 SQL лозим: '+esc(error.message)+'</div>';return}
+  NAMES=data||[];
+  await loadBookCategories();
+  const saved=new Map(NAMES.map(n=>[n.folder,n]));
+  const all=[...BOOK_CATEGORIES];
+  NAMES.forEach(n=>{if(!all.find(x=>x.folder===n.folder))all.push(n)});
+  all.sort((a,b)=>(saved.get(a.folder)?.sort_order??a.sort_order??100)-(saved.get(b.folder)?.sort_order??b.sort_order??100));
+  $('namesList').innerHTML=all.map((raw,i)=>{const n=saved.get(raw.folder)||raw;return `<div class="item" draggable="true" ondragstart="catDrag='${esc(raw.folder)}'" ondragover="event.preventDefault()" ondrop="dropCat('${esc(raw.folder)}')"><div class="item-title">↕ ${esc(n.emoji||'📚')} ${esc(n.name||raw.name)}</div><div class="item-sub">${esc(raw.folder)} · ${raw.kind||''} · №${n.sort_order||i*10+10}</div><div class="row"><button class="btn" onclick="editNameByFolder('${esc(raw.folder)}')">✏️</button><button class="btn" onclick="moveCat('${esc(raw.folder)}',-1)">⬆</button><button class="btn" onclick="moveCat('${esc(raw.folder)}',1)">⬇</button></div></div>`}).join('')||'<div class="panel">Категория нест</div>';
 }
-function renderNames(){
-  const w=$('namesList');
-  const mapped=new Map(namesData.map(n=>[n.folder,n]));
+let catDrag='';
+async function upsertNameObj(o){await supa.from('display_names').upsert(o,{onConflict:'folder'});}
+async function dropCat(target){if(!catDrag||catDrag===target)return;const arr=[...document.querySelectorAll('#namesList .item .item-sub')].map(x=>x.textContent.split(' · ')[0]);const from=arr.indexOf(catDrag),to=arr.indexOf(target);if(from<0||to<0)return;arr.splice(to,0,arr.splice(from,1)[0]);for(let i=0;i<arr.length;i++){const base=BOOK_CATEGORIES.find(x=>x.folder===arr[i])||NAMES.find(x=>x.folder===arr[i])||{folder:arr[i],name:arr[i],emoji:'📚'};await upsertNameObj({folder:base.folder,name:base.name||base.folder,emoji:base.emoji||'📚',color1:base.color1||'#3b82f6',color2:base.color2||'#60a5fa',sort_order:(i+1)*10});}loadNames();}
+async function moveCat(folder,d){const items=[...document.querySelectorAll('#namesList .item .item-sub')].map(x=>x.textContent.split(' · ')[0]);const i=items.indexOf(folder),j=i+d;if(i<0||j<0||j>=items.length)return;[items[i],items[j]]=[items[j],items[i]];for(let k=0;k<items.length;k++){const base=BOOK_CATEGORIES.find(x=>x.folder===items[k])||NAMES.find(x=>x.folder===items[k])||{folder:items[k],name:items[k],emoji:'📚'};await upsertNameObj({folder:base.folder,name:base.name||base.folder,emoji:base.emoji||'📚',color1:base.color1||'#3b82f6',color2:base.color2||'#60a5fa',sort_order:(k+1)*10});}loadNames();}
+function editNameByFolder(folder){const base=BOOK_CATEGORIES.find(x=>x.folder===folder)||{};const n=NAMES.find(x=>x.folder===folder)||base;openModal('Категория',`<div class="field"><label>Folder</label><input id="nFolder" value="${esc(folder)}" readonly></div><div class="field"><label>Name</label><input id="nName" value="${esc(n.name||folder)}"></div><div class="field"><label>Emoji</label><input id="nEmoji" value="${esc(n.emoji||'📚')}"></div><div class="grid"><input id="nC1" value="${esc(n.color1||'#3b82f6')}"><input id="nC2" value="${esc(n.color2||'#60a5fa')}"><input id="nSort" type="number" value="${n.sort_order||100}"></div>`,`<button class="btn primary" onclick="saveNameByFolder()">💾</button>`)}
+async function saveNameByFolder(){const p={folder:$('nFolder').value.trim(),name:$('nName').value.trim(),emoji:$('nEmoji').value.trim(),color1:$('nC1').value.trim(),color2:$('nC2').value.trim(),sort_order:+$('nSort').value||100};const{error}=await supa.from('display_names').upsert(p,{onConflict:'folder'});if(error)return toast(error.message);closeModal();loadNames();}
+async function verifyUser(user_id,verified){const{error}=await supa.from('user_verifications').upsert({user_id,verified,badge:'✓'},{onConflict:'user_id'});if(error)return toast(error.message+' — иҷро кунед SQL 12_temporary_admin_testing_policies.sql');loadUsers()}
 
-  // Все папки + те что есть в DB но не на GH
-  const allFolders=new Set();
-  githubFolders.forEach(f=>allFolders.add(f.folder));
-  namesData.forEach(n=>allFolders.add(n.folder));
-
-  if(!allFolders.size){
-    w.innerHTML='<div style="padding:20px;color:var(--textm);">Папка ёфт нашуд. Дар <code>github.com/sharipovip/books/books/</code> папка бисозед.</div>';
-    return;
-  }
-
-  const rows=[...allFolders].sort().map(f=>{
-    const dn=mapped.get(f);
-    const onGh=githubFolders.find(x=>x.folder===f);
-    return `
-      <div class="item">
-        <div>
-          <div style="font-family:monospace;font-size:12px;color:var(--textm);">📂 ${esc(f)}${onGh?'':' <span style="color:var(--red);">⚠ нест дар GitHub</span>'}</div>
-          <div style="font-size:14px;font-weight:600;margin-top:2px;">${dn?esc(dn.emoji||'')+' '+esc(dn.name):'<i style="color:var(--textm);">Номи зерин намоиш мешавад</i>'}</div>
-        </div>
-        ${dn?.is_priority?'<div class="badge" style="color:#000;background:var(--gold);">👑 Аввал</div>':''}
-        <button class="icon-btn" onclick="nameEdit('${esc(f)}')">${dn?'✏️':'➕'}</button>
-        ${dn?`<button class="icon-btn danger" onclick="nameDel(${dn.id})">🗑</button>`:''}
-      </div>
-    `;
-  }).join('');
-  w.innerHTML=rows;
-}
-let nEditFolder=null,nEditId=null;
-function nameNew(){
-  nEditFolder=null;nEditId=null;
-  nameOpen({folder:'',name:'',emoji:'📚',color1:'#3b82f6',color2:'#60a5fa',sort_order:100,is_priority:false});
-}
-function nameEdit(folder){
-  const dn=namesData.find(x=>x.folder===folder);
-  nEditFolder=folder;nEditId=dn?.id||null;
-  nameOpen(dn||{folder,name:folder,emoji:'📚',color1:'#3b82f6',color2:'#60a5fa',sort_order:100,is_priority:false});
-}
-function nameOpen(o){
-  openM(nEditId?'✏️ Таҳрир':'➕ Илова',`
-    <div class="field"><label>📂 Папка дар GitHub (нодидашуда танҳо хонда мешавад)</label><input id="nFolder" value="${esc(o.folder)}" ${nEditFolder?'readonly style="opacity:.7"':''}></div>
-    <div class="field"><label>📝 Ном барои намоиш</label><input id="nName" value="${esc(o.name||'')}" placeholder="Масалан: Синфи 1"></div>
-    <div class="field"><label>😊 Эмодзи</label><input id="nEmoji" value="${esc(o.emoji||'')}" placeholder="📚"></div>
-    <div class="field">
-      <label>🎨 Рангҳои фон</label>
-      <div class="color-row"><input id="nC1" type="text" value="${esc(o.color1||'#3b82f6')}" placeholder="#3b82f6"><input id="nC2" type="text" value="${esc(o.color2||'#60a5fa')}" placeholder="#60a5fa"></div>
-    </div>
-    <div class="field"><label>📊 Тартиб</label><input id="nSort" type="number" value="${o.sort_order||100}"></div>
-    <div class="field"><label><input type="checkbox" id="nPrio" ${o.is_priority?'checked':''}> 👑 Аввал нишон додан (золотая рамка)</label></div>
-  `,`<button class="btn" onclick="closeM()">Бекор</button><button class="btn btn-primary" onclick="nameSave()">💾</button>`);
-}
-async function nameSave(){
-  const folder=$('nFolder').value.trim();
-  const name=$('nName').value.trim();
-  const emoji=$('nEmoji').value.trim();
-  const color1=$('nC1').value.trim();
-  const color2=$('nC2').value.trim();
-  const sort_order=parseInt($('nSort').value,10)||100;
-  const is_priority=$('nPrio').checked;
-  if(!folder||!name){toast('Папка ва ном','error');return;}
-  try{
-    if(nEditId){
-      await supa.from('display_names').update({name,emoji,color1,color2,sort_order,is_priority}).eq('id',nEditId);
-    }else{
-      await supa.from('display_names').insert({folder,name,emoji,color1,color2,sort_order,is_priority});
-    }
-    closeM();await loadNames();toast('✓ Захира','success');
-  }catch(e){toast(e.message,'error');}
-}
-async function nameDel(id){
-  if(!confirm('Нест кардан?'))return;
-  await supa.from('display_names').delete().eq('id',id);
-  await loadNames();toast('✓ Нест','success');
-}
-
-// ════════════════════════════════════════════
-// 3. COLLECTIONS
-// ════════════════════════════════════════════
-let colData=[];
-async function colLoad(){
-  const w=$('colList');w.innerHTML='⏳';
-  try{
-    const {data,error}=await supa.from('book_collections').select('*').order('sort_order');
-    if(error) throw error;
-    colData=data||[]; renderCol();
-  }catch(e){w.innerHTML=`<div style="color:var(--red);">${e.message}</div>`;}
-}
-function renderCol(){
-  const w=$('colList');
-  if(!colData.length){w.innerHTML='<div style="padding:20px;color:var(--textm);text-align:center;">Маҷмӯа нест</div>';return;}
-  w.innerHTML=colData.map(c=>`
-    <div class="item ${c.active?'':'inactive'}">
-      <div>
-        <div style="font-size:14px;font-weight:600;">${esc(c.emoji||'📚')} ${esc(c.title)}</div>
-        <div style="font-size:12px;color:var(--textm);">${esc(c.description||'')} · ${(c.book_urls||[]).length} китоб</div>
-      </div>
-      <div class="badge">№ ${c.sort_order}</div>
-      <button class="icon-btn" onclick="colEdit(${c.id})">✏️</button>
-      <button class="icon-btn danger" onclick="colDel(${c.id})">🗑</button>
-    </div>
-  `).join('');
-}
-let cEditId=null;
-function colNew(){
-  cEditId=null;
-  colOpen({title:'',emoji:'📚',description:'',book_urls:[],sort_order:100,active:true});
-}
-function colEdit(id){
-  const c=colData.find(x=>x.id===id);if(!c)return;
-  cEditId=id; colOpen(c);
-}
-function colOpen(o){
-  const urls=(o.book_urls||[]).join('\n');
-  openM(cEditId?'✏️ Маҷмӯа':'➕ Маҷмӯа',`
-    <div class="field"><label>Ном</label><input id="cT" value="${esc(o.title)}" placeholder="Топ 10 барои наврасон"></div>
-    <div class="field"><label>Эмодзи</label><input id="cE" value="${esc(o.emoji||'📚')}"></div>
-    <div class="field"><label>Тавсиф</label><input id="cD" value="${esc(o.description||'')}"></div>
-    <div class="field"><label>URL-ҳои китобҳо (як URL дар як хат)</label><textarea id="cU" rows="8" style="font-family:monospace;font-size:12px;">${esc(urls)}</textarea></div>
-    <div class="field"><label>Тартиб</label><input id="cS" type="number" value="${o.sort_order||100}"></div>
-    <div class="field"><label><input type="checkbox" id="cA" ${o.active?'checked':''}> Фаъол</label></div>
-  `,`<button class="btn" onclick="closeM()">Бекор</button><button class="btn btn-primary" onclick="colSave()">💾</button>`);
-}
-async function colSave(){
-  const title=$('cT').value.trim();
-  const emoji=$('cE').value.trim()||'📚';
-  const description=$('cD').value.trim();
-  const book_urls=$('cU').value.split('\n').map(s=>s.trim()).filter(Boolean);
-  const sort_order=parseInt($('cS').value,10)||100;
-  const active=$('cA').checked;
-  if(!title){toast('Ном нависед','error');return;}
-  try{
-    if(cEditId){await supa.from('book_collections').update({title,emoji,description,book_urls,sort_order,active}).eq('id',cEditId);}
-    else{await supa.from('book_collections').insert({title,emoji,description,book_urls,sort_order,active});}
-    closeM();await colLoad();toast('✓','success');
-  }catch(e){toast(e.message,'error');}
-}
-async function colDel(id){
-  if(!confirm('Нест?'))return;
-  await supa.from('book_collections').delete().eq('id',id);
-  await colLoad();toast('✓','success');
-}
-
-// ════════════════════════════════════════════
-// 4. ACHIEVEMENTS
-// ════════════════════════════════════════════
-let achData=[];
-async function achLoad(){
-  const w=$('achList');w.innerHTML='⏳';
-  try{
-    const {data,error}=await supa.from('achievements').select('*').order('sort_order');
-    if(error) throw error;
-    achData=data||[]; renderAch();
-  }catch(e){w.innerHTML=`<div style="color:var(--red);">${e.message}</div>`;}
-}
-function renderAch(){
-  const w=$('achList');
-  if(!achData.length){w.innerHTML='<div style="padding:20px;color:var(--textm);text-align:center;">Дастоварде нест</div>';return;}
-  w.innerHTML=achData.map(a=>`
-    <div class="item ${a.active?'':'inactive'}">
-      <div>
-        <div style="font-size:14px;font-weight:600;">${esc(a.emoji||'🏆')} ${esc(a.title)}</div>
-        <div style="font-size:12px;color:var(--textm);">${esc(a.description||'')} · ${esc(a.condition_type||'')}=${a.condition_value||''}</div>
-      </div>
-      <div class="badge">${esc(a.code)}</div>
-      <button class="icon-btn" onclick="achEdit(${a.id})">✏️</button>
-      <button class="icon-btn danger" onclick="achDel(${a.id})">🗑</button>
-    </div>
-  `).join('');
-}
-let aEditId=null;
-function achNew(){aEditId=null;achOpen({code:'',title:'',description:'',emoji:'🏆',condition_type:'open_count',condition_value:1,active:true,sort_order:100});}
-function achEdit(id){const a=achData.find(x=>x.id===id);if(!a)return;aEditId=id;achOpen(a);}
-function achOpen(o){
-  openM(aEditId?'✏️':'➕ Дастовард',`
-    <div class="field"><label>Код (англ.)</label><input id="aCode" value="${esc(o.code)}" ${aEditId?'readonly':''}></div>
-    <div class="field"><label>Ном</label><input id="aT" value="${esc(o.title)}"></div>
-    <div class="field"><label>Тавсиф</label><input id="aD" value="${esc(o.description||'')}"></div>
-    <div class="field"><label>Эмодзи</label><input id="aE" value="${esc(o.emoji||'🏆')}"></div>
-    <div class="field"><label>Намуди шарт</label>
-      <select id="aCt">
-        <option value="open_count" ${o.condition_type==='open_count'?'selected':''}>Кушодан (open_count)</option>
-        <option value="finish_count" ${o.condition_type==='finish_count'?'selected':''}>Хатм (finish_count)</option>
-      </select>
-    </div>
-    <div class="field"><label>Қимат</label><input id="aV" type="number" value="${o.condition_value||1}"></div>
-    <div class="field"><label>Тартиб</label><input id="aS" type="number" value="${o.sort_order||100}"></div>
-    <div class="field"><label><input type="checkbox" id="aA" ${o.active?'checked':''}> Фаъол</label></div>
-  `,`<button class="btn" onclick="closeM()">Бекор</button><button class="btn btn-primary" onclick="achSave()">💾</button>`);
-}
-async function achSave(){
-  const code=$('aCode').value.trim();
-  const title=$('aT').value.trim();
-  if(!code||!title){toast('Код ва ном','error');return;}
-  const p={code,title,description:$('aD').value.trim(),emoji:$('aE').value.trim(),
-    condition_type:$('aCt').value,condition_value:parseInt($('aV').value,10),
-    sort_order:parseInt($('aS').value,10),active:$('aA').checked};
-  try{
-    if(aEditId){await supa.from('achievements').update(p).eq('id',aEditId);}
-    else{await supa.from('achievements').insert(p);}
-    closeM();await achLoad();toast('✓','success');
-  }catch(e){toast(e.message,'error');}
-}
-async function achDel(id){if(!confirm('Нест?'))return;await supa.from('achievements').delete().eq('id',id);await achLoad();toast('✓','success');}
-
-
-
-// ════════════════════════════════════════════
-// 6. MODERATION
-// ════════════════════════════════════════════
-async function modLoad(){
-  const v=$('modViolations'), r=$('modReports');
-  if(v)v.innerHTML='⏳ Боркунӣ...'; if(r)r.innerHTML='⏳ Боркунӣ...';
-  try{
-    const {data:viol,error:ve}=await supa.from('chat_violations').select('*').order('created_at',{ascending:false}).limit(50);
-    if(ve) throw ve;
-    v.innerHTML = viol?.length ? viol.map(x=>`<div class="item"><div><div class="item-text"><b>${esc(x.type)}</b> · severity ${x.severity}</div><div style="font-size:12px;color:var(--textm);">${esc(x.text_sample||'')}<br>${new Date(x.created_at).toLocaleString('ru-RU')}</div></div><div class="badge">${esc(x.action_taken||'')}</div></div>`).join('') : '<div style="padding:20px;text-align:center;">Қонуншиканӣ нест</div>';
-  }catch(e){ v.innerHTML = '<div style="color:var(--red);">'+esc(e.message)+'</div>'; }
-  try{
-    const {data:rep,error:re}=await supa.from('message_reports').select('*').order('created_at',{ascending:false}).limit(50);
-    if(re) throw re;
-    r.innerHTML = rep?.length ? rep.map(x=>`<div class="item"><div><div class="item-text"><b>${esc(x.reason||'Шикоят')}</b></div><div style="font-size:12px;color:var(--textm);">message: ${esc(x.message_id)}<br>${new Date(x.created_at).toLocaleString('ru-RU')}</div></div><div class="badge">${esc(x.status)}</div></div>`).join('') : '<div style="padding:20px;text-align:center;">Шикоят нест</div>';
-  }catch(e){ r.innerHTML = '<div style="color:var(--red);">'+esc(e.message)+'</div>'; }
-}
-
-// ════════════════════════════════════════════
-// 5. STATS
-// ════════════════════════════════════════════
-async function statsLoad(){
-  try{
-    const {count:uc}=await supa.from('events').select('device_id',{count:'exact',head:true});
-    const {data,count:ec}=await supa.from('events').select('event_type,book_url,book_name',{count:'exact'}).limit(5000);
-    $('stat-users').textContent=uc||0;
-    if(data){
-      const types={};
-      data.forEach(e=>{types[e.event_type]=(types[e.event_type]||0)+1;});
-      $('stat-opens').textContent=types.open||0;
-      $('stat-finish').textContent=types.finish||0;
-      $('stat-dl').textContent=types.download||0;
-      // top
-      const byBook={};
-      data.filter(e=>e.event_type==='open').forEach(e=>{byBook[e.book_url]=byBook[e.book_url]||{n:e.book_name,c:0};byBook[e.book_url].c++;});
-      const top=Object.entries(byBook).sort((a,b)=>b[1].c-a[1].c).slice(0,20);
-      $('topBooksList').innerHTML=top.length?`<table><thead><tr><th>#</th><th>Китоб</th><th style="text-align:right;">Кушодан</th></tr></thead><tbody>${top.map(([url,o],i)=>`<tr><td>${i+1}</td><td>${esc(o.n||url)}</td><td style="text-align:right;font-weight:700;color:var(--gold);">${o.c}</td></tr>`).join('')}</tbody></table>`:'<div style="color:var(--textm);text-align:center;padding:20px;">Маълумот нест</div>';
-    }
-  }catch(e){toast('Хатогии омор: '+e.message,'error',4000);}
-}
-</script>
-</body>
-</html>
+</script></body></html>
