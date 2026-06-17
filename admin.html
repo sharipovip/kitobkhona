@@ -46,14 +46,17 @@ async function del(table,id,cb){if(!confirm('Нест кардан?'))return;con
 // ---- Overrides: improved hero/category admin ----
 let BOOK_CATEGORIES=[];
 async function loadBookCategories(){
+  async function fetchJsonFast(u,ms=4500){const ctrl=new AbortController();const t=setTimeout(()=>ctrl.abort(),ms);try{const r=await fetch(u,{cache:'no-store',signal:ctrl.signal});if(!r.ok)throw new Error('HTTP '+r.status);return await r.json()}finally{clearTimeout(t)}}
   try{
-    const r=await fetch('https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now(),{cache:'no-store'});
-    const d=await r.json();
+    let d=null;
+    for(const u of ['books.json?t='+Date.now(),'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now()]){try{d=await fetchJsonFast(u);break}catch(e){}}
+    if(!d)throw new Error('books not loaded');
     const arr=[];
     (d.categories||[]).forEach(c=>{arr.push({folder:c.folder_raw||c.id,name:c.name,emoji:c.emoji||'📚',color1:c.color1||'#3b82f6',color2:c.color2||'#60a5fa',sort_order:c.sort_order||100,kind:'category'});(c.subs||[]).forEach(s=>arr.push({folder:s.folder,name:s.name,emoji:s.emoji||'📁',color1:c.color1||'#3b82f6',color2:c.color2||'#60a5fa',sort_order:s.sort_order||100,kind:'sub'}))});
     BOOK_CATEGORIES=arr;
   }catch(e){BOOK_CATEGORIES=[]}
 }
+
 async function loadHero(){
   const {data,error}=await supa.from('hero_slides').select('*').order('sort_order');
   if(error){$('heroList').innerHTML='<div class="panel">SQL 11/12 лозим: '+esc(error.message)+'</div>';return}
