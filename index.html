@@ -1,222 +1,60 @@
 <!DOCTYPE html>
-<html lang="tg" data-theme="dark">
+<html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#07101D">
-<title>Китобхона · Асосӣ</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D1B2A">
+<title>Китобхона — Асосӣ</title>
 <link rel="manifest" href="manifest.json">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
-/* =========================================================
-   КИТОБХОНА v4 — HOME ONLY / MOBILE-FIRST
-   Асосӣ: hero, Пешвои миллат, Озмунҳо, Навтарин, Ғолибон
-   No reader here. No users list here. Links to other pages.
-========================================================= */
-:root{
-  --bg:#07101D;--bg2:#0B1626;--card:#101D31;--card2:#17263D;
-  --border:#263A58;--text:#F1E5CE;--muted:#91A3BA;--dim:#50647F;
-  --gold:#C8962E;--gold2:#E5B955;--teal:#13A19A;--green:#10B981;--red:#DC2626;
-  --shadow:0 16px 40px rgba(0,0,0,.38);--soft:rgba(200,150,46,.12);
-  --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px);
-}
-[data-theme="light"]{
-  --bg:#F4EBD9;--bg2:#EBDDCA;--card:#FFFDF7;--card2:#F7EEDC;
-  --border:#D8C59D;--text:#27180E;--muted:#806A48;--dim:#B09466;
-  --gold:#9B6A13;--gold2:#C38A24;--teal:#087D79;--green:#0F8A62;--red:#C82121;
-  --shadow:0 14px 34px rgba(71,45,10,.15);--soft:rgba(155,106,19,.10);
-}
-*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
-html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:Inter,system-ui,-apple-system,"Segoe UI",Arial,sans-serif;overscroll-behavior:none}
-body{overflow-x:hidden}
-button,a{font:inherit}button{cursor:pointer}a{text-decoration:none;color:inherit}
-.app{width:100%;max-width:720px;margin:0 auto;min-height:100dvh;padding:calc(12px + var(--safe-top)) 12px calc(92px + var(--safe-bottom));position:relative;z-index:2}
-
-/* Background */
-.bgfx{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden;background:
-  radial-gradient(circle at 15% 5%,rgba(200,150,46,.20),transparent 28%),
-  radial-gradient(circle at 85% 20%,rgba(19,161,154,.14),transparent 28%),
-  linear-gradient(180deg,var(--bg),var(--bg2));}
-.bgfx::before{content:"";position:absolute;inset:-80px;background-image:
-  radial-gradient(1px 1px at 15% 20%,rgba(255,255,255,.9),transparent),
-  radial-gradient(1px 1px at 45% 10%,rgba(229,185,85,.8),transparent),
-  radial-gradient(1px 1px at 70% 32%,rgba(255,255,255,.55),transparent),
-  radial-gradient(1px 1px at 30% 72%,rgba(19,161,154,.55),transparent),
-  radial-gradient(1px 1px at 88% 80%,rgba(255,255,255,.65),transparent);
-  background-size:330px 330px;opacity:.55;animation:stars 18s linear infinite}
-[data-theme="light"] .bgfx::before{opacity:.18}
-@keyframes stars{to{transform:translateY(40px)}}
-
-/* Header */
-.topbar{position:sticky;top:0;z-index:20;margin:-4px -2px 10px;padding:4px 2px 8px;backdrop-filter:blur(10px)}
-.toprow{height:48px;display:flex;align-items:center;gap:10px}
-.brand{flex:1;display:flex;align-items:center;gap:10px;min-width:0}
-.brand-logo{width:42px;height:42px;border-radius:15px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:grid;place-items:center;box-shadow:0 8px 20px rgba(200,150,46,.22);overflow:hidden;border:1px solid rgba(255,255,255,.18)}
-.brand-logo img{width:100%;height:100%;object-fit:cover}.brand-logo span{font-size:22px}
-.brand-title{font-family:Georgia,serif;font-weight:900;letter-spacing:1.5px;font-size:19px;line-height:1;background:linear-gradient(135deg,var(--gold2),var(--gold));-webkit-background-clip:text;color:transparent;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.brand-sub{font-size:10px;color:var(--muted);letter-spacing:1.4px;margin-top:3px;text-transform:uppercase;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.iconbtn{width:42px;height:42px;border-radius:14px;border:1px solid var(--border);background:rgba(255,255,255,.04);color:var(--text);display:grid;place-items:center;font-size:18px;box-shadow:0 5px 16px rgba(0,0,0,.10)}
-[data-theme="light"] .iconbtn{background:rgba(255,255,255,.55)}
-
-/* Hero */
-.hero{position:relative;overflow:hidden;border-radius:26px;border:1px solid rgba(200,150,46,.36);background:
-  linear-gradient(135deg,rgba(200,150,46,.18),rgba(19,161,154,.08)),var(--card);box-shadow:var(--shadow);padding:14px;margin:8px 0 16px;}
-.hero::before{content:"";position:absolute;top:0;left:14px;right:14px;height:3px;border-radius:0 0 6px 6px;background:linear-gradient(90deg,var(--red) 0 33%,#fff 33% 66%,var(--green) 66% 100%);opacity:.8}
-.hero::after{content:"";position:absolute;inset:0;background:linear-gradient(110deg,transparent 25%,rgba(255,255,255,.10) 45%,transparent 62%);transform:translateX(-120%);animation:shine 7s ease-in-out infinite;pointer-events:none}
-@keyframes shine{0%,55%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
-.hero-grid{position:relative;z-index:1;display:grid;grid-template-columns:106px 1fr;gap:13px;align-items:center}
-.hero-photo-wrap{position:relative;width:106px;height:106px;border-radius:50%;padding:4px;background:conic-gradient(from 0deg,var(--red),#fff,var(--gold2),#fff,var(--green),var(--red));box-shadow:0 8px 22px rgba(0,0,0,.28)}
-.hero-photo{width:100%;height:100%;border-radius:50%;object-fit:cover;border:3px solid var(--card);background:var(--card2);transition:opacity .45s ease,transform .45s ease}
-.hero-photo.fade{opacity:.15;transform:scale(.94)}
-.hero-kicker{font-size:9px;font-weight:900;color:var(--gold2);letter-spacing:1.1px;text-transform:uppercase;margin-bottom:6px;line-height:1.35}
-.hero-quote{font-family:Georgia,serif;font-size:18px;font-weight:800;line-height:1.28;color:var(--text);transition:opacity .45s ease,transform .45s ease}
-.hero-quote.fade{opacity:.1;transform:translateY(4px)}
-.hero-quote::before{content:"«";color:var(--gold2)}.hero-quote::after{content:"»";color:var(--gold2)}
-.hero-meta{display:flex;align-items:center;gap:7px;color:var(--muted);font-size:10.5px;margin-top:8px}.dot{width:5px;height:5px;border-radius:50%;background:var(--gold)}
-
-/* Quick continue */
-.continue{display:none;align-items:center;gap:11px;padding:11px;border-radius:20px;border:1px solid var(--border);background:linear-gradient(135deg,rgba(19,161,154,.10),rgba(200,150,46,.08)),var(--card);margin-bottom:16px;box-shadow:0 10px 24px rgba(0,0,0,.16)}
-.continue.on{display:flex}.cont-cover{width:44px;height:58px;border-radius:9px;background:linear-gradient(135deg,var(--gold),var(--teal));display:grid;place-items:center;font-size:22px;flex-shrink:0}.cont-info{flex:1;min-width:0}.cont-title{font-weight:900;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.cont-sub{font-size:11px;color:var(--muted);margin-top:2px}.cont-btn{border:0;border-radius:13px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#201402;font-weight:900;padding:10px 12px}
-
-/* Sections */
-.sec{margin:0 0 20px}.sec-head{display:flex;align-items:end;justify-content:space-between;margin:0 2px 11px}.sec-title{font-weight:950;font-size:17px;display:flex;align-items:center;gap:8px}.sec-title::before{content:"";width:4px;height:18px;border-radius:4px;background:linear-gradient(var(--gold2),var(--teal))}.sec-sub{font-size:10.5px;color:var(--muted);margin-top:2px}.more{border:0;background:transparent;color:var(--gold2);font-weight:900;font-size:12px;padding:6px}
-
-/* Horizontal cards */
-.hscroll{display:flex;gap:11px;overflow-x:auto;scroll-snap-type:x mandatory;padding:2px 1px 7px;scrollbar-width:none}.hscroll::-webkit-scrollbar{display:none}
-.book-card{flex:0 0 112px;scroll-snap-align:start}.cover{position:relative;width:112px;height:156px;border-radius:12px;background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--border);overflow:hidden;box-shadow:0 10px 22px rgba(0,0,0,.25);display:grid;place-items:center;text-align:center;padding:8px;font-weight:900;font-size:10px;color:#fff}.cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover}.cover .badge{position:absolute;top:6px;right:6px;background:rgba(0,0,0,.6);border:1px solid rgba(255,255,255,.12);color:#fff;border-radius:999px;font-size:9px;padding:3px 6px;backdrop-filter:blur(4px)}.book-name{font-size:11px;font-weight:800;line-height:1.25;margin-top:7px;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;color:var(--text)}.book-meta{text-align:center;color:var(--muted);font-size:9px;margin-top:2px}
-.pesvo-box{position:relative;border-radius:24px;border:1px solid rgba(200,150,46,.42);background:linear-gradient(180deg,rgba(200,150,46,.09),transparent 45%),var(--card);padding:13px 12px 11px;box-shadow:var(--shadow);overflow:hidden}.pesvo-box::before{content:"";position:absolute;top:0;left:16px;right:16px;height:3px;border-radius:0 0 6px 6px;background:linear-gradient(90deg,var(--red) 0 33%,#fff 33% 66%,var(--green) 66% 100%);opacity:.85}.pesvo-box .cover{border-color:rgba(200,150,46,.45)}.pesvo-box .cover::after{content:"👑";position:absolute;top:6px;left:6px;font-size:18px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.55))}
-
-/* Ozmun */
-.ozmun-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}.oz{border:1px solid var(--border);background:var(--card);border-radius:16px;padding:8px 4px;text-align:center;min-width:0;box-shadow:0 8px 18px rgba(0,0,0,.13)}.oz-icon{width:48px;height:48px;margin:0 auto 6px;border-radius:50%;display:grid;place-items:center;background:linear-gradient(135deg,var(--gold),var(--teal));font-size:24px;box-shadow:0 6px 14px rgba(0,0,0,.20)}.oz-name{font-size:9.4px;font-weight:900;line-height:1.15;color:var(--text);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:22px}
-
-/* Category tiles */
-.cat-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.cat{position:relative;overflow:hidden;border-radius:20px;padding:14px 12px;min-height:92px;background:linear-gradient(135deg,var(--c1,#2563eb),var(--c2,#60a5fa));color:#fff;box-shadow:0 12px 24px rgba(0,0,0,.22)}.cat::after{content:"";position:absolute;right:-20px;bottom:-25px;width:90px;height:90px;border-radius:50%;background:rgba(255,255,255,.14)}.cat-ico{font-size:27px;margin-bottom:7px}.cat-name{font-weight:950;font-size:13px;line-height:1.15}.cat-count{font-size:10px;opacity:.88;margin-top:4px}
-
-/* Winners */
-.win-card{display:flex;align-items:center;gap:10px;border-radius:18px;border:1px solid var(--border);background:var(--card);padding:10px;margin-bottom:8px}.rank{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;font-weight:950;background:var(--card2);color:var(--gold)}.rank.r1{background:#fbbf24;color:#1b1202}.rank.r2{background:#cbd5e1;color:#111827}.rank.r3{background:#d97706;color:#fff}.avatar{width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--gold2));display:grid;place-items:center;font-size:20px}.win-info{flex:1;min-width:0}.win-name{font-weight:950;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.win-sub{font-size:10.5px;color:var(--muted);margin-top:2px}.win-score{text-align:right;color:var(--gold2);font-weight:950;font-size:13px}
-
-/* Bottom navigation */
-.bottom{position:fixed;left:50%;bottom:0;transform:translateX(-50%);z-index:50;width:min(720px,100%);display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:rgba(16,29,49,.96);border-top:1px solid var(--border);backdrop-filter:blur(16px);padding:7px 4px calc(7px + var(--safe-bottom));box-shadow:0 -10px 28px rgba(0,0,0,.25)}
-.bn{display:flex;flex-direction:column;align-items:center;gap:2px;color:var(--muted);font-size:9.5px;font-weight:900;border-radius:12px;padding:5px 2px}.bn span{font-size:20px;line-height:1}.bn.on{color:var(--gold2);background:rgba(200,150,46,.10)}
-
-/* Loading */
-.loader{width:26px;height:26px;margin:16px auto;border-radius:50%;border:3px solid rgba(200,150,46,.20);border-top-color:var(--gold);animation:spin .75s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}.empty{color:var(--muted);font-size:12px;text-align:center;padding:18px}
-
-/* Taps */
-button,a,.book-card,.cat,.oz,.win-card,.continue{transition:transform .12s ease,opacity .12s ease,filter .12s ease}button:active,a:active,.book-card:active,.cat:active,.oz:active,.win-card:active,.continue:active{transform:scale(.97)}
-
-@media(max-width:370px){.hero-grid{grid-template-columns:90px 1fr}.hero-photo-wrap{width:90px;height:90px}.hero-quote{font-size:16px}.oz-icon{width:42px;height:42px}.oz-name{font-size:8.5px}.book-card{flex-basis:104px}.cover{width:104px;height:146px}.cat-grid{gap:8px}.cat{padding:12px 10px}}
+:root{--bg:#0D1B2A;--bg2:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--dim:#6B7F96;--green:#27AE60;--red:#E74C3C;--border:rgba(201,168,76,.2);--shadow:rgba(0,0,0,.4);--glass:rgba(13,27,42,.92);--safe-bottom:env(safe-area-inset-bottom,0px)}
+.light-theme{--bg:#F5F0E8;--bg2:#EDE6D6;--card:#fff;--card2:#FAF7F0;--text:#1A2D44;--muted:#4A5D73;--dim:#8A9AAD;--shadow:rgba(0,0,0,.12);--glass:rgba(245,240,232,.92)}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}body{background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;font-size:14px;overflow-x:hidden}body:before{content:"";position:fixed;inset:0;background:radial-gradient(ellipse at 20% 10%,rgba(201,168,76,.06),transparent 50%),radial-gradient(ellipse at 80% 90%,rgba(42,82,152,.08),transparent 50%);pointer-events:none}.phone-wrapper{max-width:430px;margin:0 auto;min-height:100vh;position:relative;background:var(--bg);padding-bottom:92px}.top-header{position:sticky;top:0;z-index:50;background:var(--glass);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:12px 16px;display:flex;align-items:center;justify-content:space-between}.header-logo{display:flex;align-items:center;gap:10px}.logo-icon{width:42px;height:42px;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:grid;place-items:center;font-size:22px;color:#1b1202;box-shadow:0 8px 22px rgba(201,168,76,.24);overflow:hidden}.logo-icon img{width:100%;height:100%;object-fit:cover}.logo-text{font-family:Georgia,serif;font-size:19px;font-weight:900;color:var(--gold2);letter-spacing:1px}.logo-sub{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.8px}.header-actions{display:flex;gap:8px}.header-btn{width:38px;height:38px;border-radius:13px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;cursor:pointer}.main-content{padding-bottom:12px}.hero-section{margin:16px;border-radius:28px;background:linear-gradient(135deg,rgba(201,168,76,.13),rgba(42,82,152,.10)),var(--card);border:1px solid rgba(201,168,76,.32);box-shadow:0 18px 40px var(--shadow);position:relative;overflow:hidden;padding:14px}.hero-flag-stripe{position:absolute;top:0;left:18px;right:18px;height:3px;background:linear-gradient(90deg,#D01F2F 0 33%,#fff 33% 66%,#1FA463 66%);border-radius:0 0 8px 8px}.hero-inner{display:grid;grid-template-columns:104px 1fr;gap:14px;align-items:center}.president-photo-wrap{text-align:center;position:relative}.president-photo{width:96px;height:96px;margin:0 auto;border-radius:50%;background:var(--card2);border:4px solid var(--gold);overflow:hidden;box-shadow:0 10px 28px rgba(0,0,0,.35)}.president-photo img{width:100%;height:100%;object-fit:cover}.president-crown{position:absolute;top:-5px;right:12px;font-size:22px;filter:drop-shadow(0 2px 4px #000)}.president-title{font-size:10px;color:var(--gold2);font-weight:800;margin-top:7px}.quote-marks{font-size:34px;line-height:.8;color:var(--gold);font-family:Georgia,serif}.hero-quote-text{font-family:Georgia,serif;font-size:17px;line-height:1.32;font-weight:800;transition:.35s}.hero-quote-tag{display:inline-flex;margin-top:10px;padding:5px 9px;border-radius:99px;background:rgba(201,168,76,.12);border:1px solid var(--border);color:var(--gold2);font-size:11px;font-weight:800}.hero-dots{display:flex;justify-content:center;gap:5px;margin-top:12px}.hero-dot{width:7px;height:7px;border-radius:50%;background:var(--dim);transition:.2s}.hero-dot.active{width:20px;border-radius:99px;background:var(--gold2)}.section-header-row,.section-row{display:flex;align-items:center;justify-content:space-between;margin:20px 16px 10px;gap:10px}.section-title{font-size:17px;font-weight:900}.section-title-accent{color:var(--gold2)}.search-mini{display:flex;align-items:center;gap:6px;background:var(--card);border:1px solid var(--border);border-radius:99px;padding:7px 10px;min-width:138px}.search-mini input{width:100%;background:transparent;border:0;outline:0;color:var(--text);font-size:12px}.ozmunho-scroll,.president-books-scroll,.books-scroll{display:flex;gap:12px;overflow-x:auto;padding:2px 16px 12px;scrollbar-width:none}.ozmunho-scroll::-webkit-scrollbar,.president-books-scroll::-webkit-scrollbar,.books-scroll::-webkit-scrollbar{display:none}.ozmun-item{width:82px;flex:0 0 82px;text-align:center;cursor:pointer}.ozmun-circle{width:68px;height:68px;border-radius:50%;margin:0 auto 8px;background:var(--card);border:2px solid var(--gold);display:grid;place-items:center;overflow:hidden;box-shadow:0 10px 22px var(--shadow);position:relative}.ozmun-circle img{width:100%;height:100%;object-fit:cover}.ozmun-badge{position:absolute;right:0;bottom:0;background:var(--gold);color:#1b1202;border-radius:50%;width:20px;height:20px;font-size:11px;font-weight:900;display:grid;place-items:center}.ozmun-label{font-size:11px;font-weight:800;line-height:1.2;color:var(--muted)}.continue-section,.president-books-section,.categories-section,.winners-section{margin:14px 16px}.section-label{font-size:15px;font-weight:900;margin-bottom:10px}.continue-card{display:flex;align-items:center;gap:12px;padding:12px;border-radius:20px;background:var(--card);border:1px solid var(--border);box-shadow:0 10px 26px var(--shadow)}.continue-book-cover{width:48px;height:66px;border-radius:10px;display:grid;place-items:center;font-size:24px;flex-shrink:0}.continue-info{flex:1;min-width:0}.continue-book-title{font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.continue-author,.progress-label{font-size:11px;color:var(--muted);margin-top:3px}.progress-bar-wrap{height:5px;background:rgba(255,255,255,.12);border-radius:10px;margin-top:8px;overflow:hidden}.progress-bar-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:10px}.continue-btn,.see-all-btn{border:0;border-radius:14px;background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1b1202;font-weight:900;padding:10px 12px}.president-books-section{border:1px solid rgba(201,168,76,.32);border-radius:24px;background:linear-gradient(180deg,rgba(201,168,76,.10),transparent),var(--card);padding:13px 0}.president-books-header{display:flex;align-items:center;gap:10px;padding:0 13px 12px}.president-books-icon{font-size:24px}.president-books-title{font-weight:900}.president-books-sub{font-size:11px;color:var(--muted)}.president-books-badge{margin-left:auto;background:var(--gold);color:#1b1202;border-radius:99px;padding:4px 8px;font-size:10px;font-weight:900}.book-card{width:112px;flex:0 0 112px;cursor:pointer}.book-cover{height:154px;border-radius:13px;background:linear-gradient(135deg,var(--card2),var(--bg2));border:1px solid var(--border);box-shadow:0 10px 24px var(--shadow);overflow:hidden;display:grid;place-items:center;text-align:center;padding:8px;font-weight:900;font-size:10px}.book-cover img{width:100%;height:100%;object-fit:cover}.book-name{font-size:11px;font-weight:800;line-height:1.25;margin-top:7px;text-align:center;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.categories-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}.category-card{min-height:88px;border-radius:20px;padding:14px;background:linear-gradient(135deg,var(--c1,#1A2D44),var(--c2,#1E3350));border:1px solid rgba(255,255,255,.08);box-shadow:0 10px 24px var(--shadow);cursor:pointer}.category-icon{font-size:24px}.category-name{font-weight:900;margin-top:8px}.category-count{font-size:11px;color:rgba(255,255,255,.75);margin-top:3px}.winner-card{display:flex;align-items:center;gap:10px;background:var(--card);border:1px solid var(--border);border-radius:18px;padding:10px;margin-bottom:8px}.winner-rank{width:30px;height:30px;border-radius:50%;display:grid;place-items:center;background:var(--gold);color:#1b1202;font-weight:900}.winner-avatar{font-size:24px}.winner-info{flex:1}.winner-name{font-weight:900}.winner-sub{font-size:11px;color:var(--muted)}.winner-score{color:var(--gold2);font-weight:900}.home-search-results{margin:-3px 16px 12px;background:var(--card);border:1px solid var(--border);border-radius:18px;overflow:hidden;box-shadow:0 12px 28px var(--shadow)}.search-result-item{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:1px solid rgba(255,255,255,.06);cursor:pointer}.search-result-item:last-child{border-bottom:0}.search-result-icon{width:34px;height:42px;border-radius:8px;background:linear-gradient(135deg,var(--gold),var(--gold2));display:grid;place-items:center;color:#1b1202;flex-shrink:0}.search-result-name{font-weight:900;font-size:13px}.search-result-sub{font-size:11px;color:var(--muted);margin-top:2px}.president-books-section .book-cover{position:relative}.president-books-section .book-cover:after{content:'👑';position:absolute;top:6px;right:6px;z-index:3;font-size:18px;filter:drop-shadow(0 2px 3px rgba(0,0,0,.6))}.bottom-nav{position:fixed;left:0;right:0;bottom:0;z-index:80;padding:8px 12px calc(8px + var(--safe-bottom));background:linear-gradient(transparent,var(--bg) 22%)}.bottom-nav-inner{max-width:430px;margin:0 auto;display:grid;grid-template-columns:repeat(5,1fr);gap:6px;background:var(--glass);border:1px solid var(--border);border-radius:24px;padding:7px;backdrop-filter:blur(18px);box-shadow:0 -10px 28px var(--shadow)}.nav-item{min-width:0;text-align:center;color:var(--muted);font-size:10px;font-weight:800;padding:4px 2px;border-radius:16px;cursor:pointer;position:relative}.nav-icon{font-size:20px;line-height:1}.nav-item.active{color:var(--gold2);background:rgba(201,168,76,.11)}.nav-label{margin-top:2px}.empty{color:var(--muted);text-align:center;padding:18px;border:1px dashed var(--border);border-radius:18px;background:rgba(255,255,255,.03)}.loader{width:34px;height:34px;border-radius:50%;border:3px solid rgba(201,168,76,.18);border-top-color:var(--gold);animation:spin 1s linear infinite;margin:18px auto}@keyframes spin{to{transform:rotate(360deg)}}
 </style>
 </head>
 <body>
-<div class="bgfx"></div>
-<main class="app">
-  <header class="topbar">
-    <div class="toprow">
-      <a class="brand" href="index.html" aria-label="Китобхона">
-        <div class="brand-logo"><img src="assets/hero/10-nishon-tojikiston-200.jpg" onerror="this.remove();this.parentElement.innerHTML='<span>📚</span>'" alt=""></div>
-        <div><div class="brand-title">КИТОБХОНА</div><div class="brand-sub">Манбаи дониш</div></div>
-      </a>
-      <button class="iconbtn" id="themeBtn" onclick="toggleTheme()" title="Тема">🌙</button>
-      <a class="iconbtn" href="profile.html" title="Профил">👤</a>
-    </div>
-  </header>
-
-  <section class="hero" aria-label="Суханҳои Пешвои миллат">
-    <div class="hero-grid">
-      <div class="hero-photo-wrap"><img class="hero-photo" id="heroPhoto" src="assets/hero/01-president-official.jpg" alt="Пешвои миллат"></div>
-      <div>
-        <div class="hero-kicker">Суханҳои Асосгузори сулҳу ваҳдати миллӣ — Пешвои миллат</div>
-        <div class="hero-quote" id="heroQuote">Илм фурӯғи маърифат аст</div>
-        <div class="hero-meta"><span class="dot"></span><span id="heroTopic">Портрет · Пешвои миллат</span></div>
-      </div>
-    </div>
-  </section>
-
-  <section class="continue" id="continueBox">
-    <div class="cont-cover">📖</div>
-    <div class="cont-info"><div class="cont-title" id="contTitle">—</div><div class="cont-sub" id="contSub">Давом додани хондан</div></div>
-    <button class="cont-btn" onclick="openContinue()">Хондан</button>
-  </section>
-
-  <section class="sec" id="pesvoSec" style="display:none">
-    <div class="sec-head"><div><div class="sec-title">👑 Китобҳои Пешвои миллат</div><div class="sec-sub">Осор ва китобҳои муҳим</div></div><button class="more" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳама</button></div>
-    <div class="pesvo-box"><div class="hscroll" id="pesvoBooks"><div class="loader"></div></div></div>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><div><div class="sec-title">🏆 Озмунҳо</div><div class="sec-sub">Озмунҳои ҷумҳуриявӣ</div></div></div>
-    <div class="ozmun-grid">
-      <a class="oz" href="shohnomahoni.html"><div class="oz-icon">📜</div><div class="oz-name">Шоҳномахонӣ</div></a>
-      <a class="oz" href="ilm_furugi_marifat.html"><div class="oz-icon">🔬</div><div class="oz-name">Илм-фурӯғи маърифат</div></a>
-      <a class="oz" href="furugi_subhi_donoi.html"><div class="oz-icon">🌅</div><div class="oz-name">Фурӯғи субҳи доноӣ</div></a>
-      <a class="oz" href="vatani_azizi_man.html"><div class="oz-icon">🇹🇯</div><div class="oz-name">Ватани азизи ман</div></a>
-      <a class="oz" href="donandai_asarho.html"><div class="oz-icon">🧠</div><div class="oz-name">Донандаи асарҳо</div></a>
-    </div>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><div><div class="sec-title">📂 Категорияҳо</div><div class="sec-sub">Интихоби бахшҳои китобхона</div></div><button class="more" onclick="location.href='kitobho.html'">Ҳама</button></div>
-    <div class="cat-grid" id="catGrid"><div class="loader"></div></div>
-  </section>
-
-  <section class="sec" id="newSec" style="display:none">
-    <div class="sec-head"><div><div class="sec-title">🆕 Навтарин китобҳо</div><div class="sec-sub">Китобҳои охирин иловашуда</div></div><button class="more" onclick="location.href='kitobho.html?sort=new'">Ҳама</button></div>
-    <div class="hscroll" id="newBooks"></div>
-  </section>
-
-  <section class="sec">
-    <div class="sec-head"><div><div class="sec-title">🏆 Ғолибон</div><div class="sec-sub">Китобхонҳои фаъол</div></div><button class="more" onclick="location.href='honandagon.html#gholibon'">Top 100</button></div>
-    <div id="winnersBox"><div class="empty">Ҳоло маълумот нест</div></div>
-  </section>
+<div class="phone-wrapper">
+<header class="top-header"><div class="header-logo"><div class="logo-icon"><img src="splash_logo.jpg" onerror="this.replaceWith(document.createTextNode('📚'))" alt=""></div><div><div class="logo-text">Китобхона</div><div class="logo-sub">Китобхонаи электронӣ</div></div></div><div class="header-actions"><div class="header-btn" title="Огоҳӣ">🔔</div><div class="header-btn" id="themeBtn" title="Мавзӯъ">🌙</div></div></header>
+<main class="main-content">
+<section class="hero-section"><div class="hero-flag-stripe"></div><div class="hero-inner"><div class="president-photo-wrap"><div class="president-photo"><img id="heroImg" src="assets/hero/01-president-official.jpg" alt="Пешвои миллат"></div><div class="president-title">Пешвои миллат</div></div><div class="hero-quote-block"><div class="quote-marks">“</div><div class="hero-quote-text" id="heroQuote">Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад</div><div class="hero-quote-tag" id="heroTag">✦ Маориф</div></div></div><div class="hero-dots" id="heroDots"></div></section>
+<div class="section-header-row"><div class="section-title">🏆 <span class="section-title-accent">Озмунҳои</span> ҷумҳуриявӣ</div><form class="search-mini" id="homeSearchForm"><span>🔍</span><input id="homeSearch" type="search" placeholder="Ҷустуҷӯи китоб..."></form></div>
+<div id="homeSearchResults" class="home-search-results" style="display:none"></div>
+<div class="ozmunho-scroll" id="ozmunList"></div>
+<div class="continue-section" id="continueSection" style="display:none"><div class="section-label">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
+<div class="president-books-section" id="pesvoSection" style="display:none"><div class="president-books-header"><div class="president-books-icon">👑</div><div><div class="president-books-title">Китобҳои Пешвои миллат</div><div class="president-books-sub">Асарҳои Эмомалӣ Раҳмон</div></div><div class="president-books-badge">РАСМӢ</div></div><div class="president-books-scroll" id="pesvoBooks"></div></div>
+<div class="categories-section"><div class="section-row"><div class="section-title">📂 Категорияҳо</div><button class="see-all-btn" onclick="location.href='kitobho.html'">Ҳама →</button></div><div class="categories-grid" id="catGrid"><div class="loader"></div></div></div>
+<div class="categories-section" id="newSection" style="display:none"><div class="section-row"><div class="section-title">🆕 Навтарин китобҳо</div><button class="see-all-btn" onclick="location.href='kitobho.html?sort=new'">Ҳама →</button></div><div class="books-scroll" id="newBooks"></div></div>
+<div class="winners-section"><div class="section-row"><div class="section-title">🏆 Ғолибон</div><button class="see-all-btn" onclick="location.href='honandagon.html#gholibon'">Ҳама →</button></div><div id="winnersBox"><div class="empty">Ҳоло маълумот нест</div></div></div>
 </main>
-
-<nav class="bottom" aria-label="Меню">
-  <a class="bn on" href="index.html"><span>🏠</span>Асосӣ</a>
-  <a class="bn" href="kitobho.html"><span>📚</span>Китобҳо</a>
-  <a class="bn" href="honandagon.html#gholibon"><span>🏆</span>Ғолибон</a>
-  <a class="bn" href="honandagon.html"><span>👥</span>Хонандагон</a>
-  <a class="bn" href="profile.html"><span>👤</span>Профил</a>
-</nav>
-
+<nav class="bottom-nav"><div class="bottom-nav-inner"><div class="nav-item active" onclick="location.href='index.html'"><div class="nav-icon">🏠</div><div class="nav-label">Асосӣ</div></div><div class="nav-item" onclick="location.href='kitobho.html'"><div class="nav-icon">📚</div><div class="nav-label">Китобҳо</div></div><div class="nav-item" onclick="location.href='honandagon.html#gholibon'"><div class="nav-icon">🏆</div><div class="nav-label">Ғолибон</div></div><div class="nav-item" onclick="location.href='honandagon.html'"><div class="nav-icon">👥</div><div class="nav-label">Хонандагон</div></div><div class="nav-item" onclick="location.href='profile.html'"><div class="nav-icon">👤</div><div class="nav-label">Профил</div></div></div></nav>
+</div>
 <script>
-const BOOKS_JSON='https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now();
+const BOOKS_JSON_URLS=['https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now(),'books.json?t='+Date.now()];
 const SUPA_URL='https://dwkdzfqooprxytlepaoo.supabase.co';
-const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJIUzI1NiIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
-// Correct key used if typo above fails in future packaging
-const SUPA_KEY_OK='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
-let supa=null;try{if(window.supabase)supa=window.supabase.createClient(SUPA_URL,SUPA_KEY_OK,{auth:{persistSession:true}})}catch(e){}
-const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-
-const heroItems=[
-  ['assets/hero/01-president-official.jpg','Илм фурӯғи маърифат аст','Портрет · Пешвои миллат'],
-  ['assets/hero/02-istiqlol-flag.jpg','Истиқлол — гавҳари бебаҳои миллат аст','Истиқлолият · Парчам'],
-  ['assets/hero/03-vahdat-diplomacy.jpg','Ваҳдат — ҳастии миллат мебошад','Ваҳдати миллӣ'],
-  ['assets/hero/04-kishovarzi.jpg','Ободии Ватан аз меҳнати содиқона сарчашма мегирад','Кишоварзӣ'],
-  ['assets/hero/05-president-young.jpg','Ҷавонон неруи созанда ва ояндаи миллатанд','Ҷавонон'],
-  ['assets/hero/06-zaboni-millat.jpg','Забон ҳастии миллат аст','Забон'],
-  ['assets/hero/07-chehrahoyi-mondagor.jpg','Шинохти таърих пояи худшиносии миллӣ аст','Таърих'],
-  ['assets/hero/08-davlatdori.jpg','Давлатдорӣ масъулияти бузург дар назди халқ аст','Давлатдорӣ'],
-  ['assets/hero/09-suhanroni.jpg','Маориф калиди пешрафти ҷомеа мебошад','Маориф'],
-  ['assets/hero/10-nishon-tojikiston.jpg','Тоҷикистон Ватани азизи мост','Ватан']
-];
-let hi=0;function startHero(){setInterval(()=>{hi=(hi+1)%heroItems.length;const img=$('heroPhoto'),q=$('heroQuote');img.classList.add('fade');q.classList.add('fade');setTimeout(()=>{img.src=heroItems[hi][0];q.textContent=heroItems[hi][1];$('heroTopic').textContent=heroItems[hi][2];img.classList.remove('fade');q.classList.remove('fade')},450)},8000)}
-
-function applyTheme(t){document.documentElement.dataset.theme=t;localStorage.setItem('kk_home_theme',t);$('themeBtn').textContent=t==='dark'?'🌙':'☀️';document.querySelector('meta[name="theme-color"]').content=t==='dark'?'#07101D':'#F4EBD9'}
-function toggleTheme(){applyTheme((localStorage.getItem('kk_home_theme')||'dark')==='dark'?'light':'dark')}
-applyTheme(localStorage.getItem('kk_home_theme')||'dark');
-
-function coverUrl(folder,file){const jpg=encodeURIComponent(file.replace(/\.pdf$/i,'.jpg'));const p=folder.replace(/^books\//,'').split('/').map(encodeURIComponent).join('/');return `https://raw.githubusercontent.com/sharipovip/books/main/covers/${p}/${jpg}`}
-function rawUrl(folder,file){return `https://raw.githubusercontent.com/sharipovip/books/main/${folder.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`}
-function bookCard(b,sub,cat){const cov=coverUrl(sub.folder,b.file||b.name+'.pdf');const url=rawUrl(sub.folder,b.file||b.name+'.pdf');return `<a class="book-card" href="kitobho.html?open=${encodeURIComponent(url)}&name=${encodeURIComponent(b.name||'Китоб')}"><div class="cover" style="background:linear-gradient(135deg,${cat.color1||'#2563eb'},${cat.color2||'#60a5fa'})"><img src="${cov}" onerror="this.remove()" alt=""><span>${esc(b.name||'Китоб')}</span></div><div class="book-name">${esc(b.name||'Китоб')}</div><div class="book-meta">${esc(sub.name||'')}</div></a>`}
-async function loadManifest(sub){try{const r=await fetch(`https://raw.githubusercontent.com/sharipovip/books/main/${sub.folder.split('/').map(encodeURIComponent).join('/')}/manifest.json?t=${Date.now()}`);if(!r.ok)return[];const j=await r.json();return Array.isArray(j.books)?j.books:[]}catch(e){return[]}}
-async function loadHome(){let data;try{data=await fetch(BOOKS_JSON,{cache:'no-store'}).then(r=>r.json())}catch(e){$('catGrid').innerHTML='<div class="empty">Интернет нест ё books.json дастрас нест</div>';return}const cats=data.categories||[];$('catGrid').innerHTML=cats.slice(0,6).map(c=>`<a class="cat" href="kitobho.html?cat=${encodeURIComponent(c.id)}" style="--c1:${c.color1||'#2563eb'};--c2:${c.color2||'#60a5fa'}"><div class="cat-ico">${esc(c.emoji||'📚')}</div><div class="cat-name">${esc(c.name)}</div><div class="cat-count">${(c.subs||[]).length} бахш</div></a>`).join('');
- const pesvo=cats.find(c=>c.priority||c.id==='peshvoi_millat');if(pesvo){$('pesvoSec').style.display='';let html='';for(const sub of (pesvo.subs||[]).slice(0,2)){const books=(await loadManifest(sub)).slice(0,10);html+=books.map(b=>bookCard(b,sub,pesvo)).join('')}$('pesvoBooks').innerHTML=html||'<div class="empty">Ҳоло китоб нест</div>'}
- let newest=[];for(const c of cats.slice(0,8)){for(const sub of (c.subs||[]).slice(0,2)){const bs=(await loadManifest(sub)).slice(0,2);bs.forEach(b=>newest.push({b,sub,c}))}}if(newest.length){$('newSec').style.display='';$('newBooks').innerHTML=newest.slice(0,12).map(x=>bookCard(x.b,x.sub,x.c)).join('')}
-}
-async function loadWinners(){if(!supa)return;try{const{data,error}=await supa.from('v_winners').select('*').order('valid_seconds',{ascending:false}).limit(3);if(error||!data?.length)return;$('winnersBox').innerHTML=data.map((u,i)=>`<a class="win-card" href="honandagon.html#gholibon"><div class="rank ${i==0?'r1':i==1?'r2':'r3'}">${i+1}</div><div class="avatar">${esc(u.avatar_emoji||'👤')}</div><div class="win-info"><div class="win-name">${esc(u.display_name)}</div><div class="win-sub">${esc([u.city,u.region].filter(Boolean).join(' · '))}</div></div><div class="win-score">${Number(u.valid_hours||0).toFixed(1)}с</div></a>`).join('')}catch(e){}}
-function loadContinue(){try{const last=JSON.parse(localStorage.getItem('kk_last')||'[]')[0];const prog=JSON.parse(localStorage.getItem('kk_prog')||'{}');const p=prog[last];if(p){$('continueBox').classList.add('on');$('contTitle').textContent=last.split(':').slice(1).join(':')||p.url;$('contSub').textContent=`Саҳифа ${p.page||1} / ${p.pages||'?'}`;window.openContinue=()=>location.href='kitobho.html?open='+encodeURIComponent(p.url)}}catch(e){}}
-startHero();loadContinue();loadHome();loadWinners();
+const SUPA_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI';
+const $=id=>document.getElementById(id);const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const enc=p=>String(p||'').split('/').map(encodeURIComponent).join('/');
+let DATA=null,supa=null;try{if(window.supabase)supa=window.supabase.createClient(SUPA_URL,SUPA_KEY,{auth:{persistSession:true,autoRefreshToken:true}})}catch(e){}
+function theme(t){document.body.classList.toggle('light-theme',t==='light');localStorage.setItem('kk_theme',t);$('themeBtn').textContent=t==='light'?'☀️':'🌙'}$('themeBtn').onclick=()=>theme(localStorage.getItem('kk_theme')==='light'?'dark':'light');theme(localStorage.getItem('kk_theme')||'dark');
+const hero=[['assets/hero/01-president-official.jpg','Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад','✦ Маориф'],['assets/hero/02-istiqlol-flag.jpg','Истиқлолият неъмати бебаҳо ва асоси ҳастии давлатдории миллӣ аст','✦ Истиқлолият'],['assets/hero/03-vahdat-diplomacy.jpg','Ваҳдати миллӣ пояи сулҳу субот ва рушди ҷомеа мебошад','✦ Ваҳдат'],['assets/hero/06-zaboni-millat.jpg','Забони миллат ҳастии миллат аст','✦ Забон'],['assets/hero/09-suhanroni.jpg','Китоб сарчашмаи дониш ва роҳнамои инсон аст','✦ Китоб']];
+let hi=0;function setHero(i){hi=i%hero.length;$('heroImg').src=hero[hi][0];$('heroQuote').textContent=hero[hi][1];$('heroTag').textContent=hero[hi][2];$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot ${j===hi?'active':''}"></div>`).join('')}setHero(0);setInterval(()=>setHero(hi+1),8500);
+const oz=[['shohnomahoni.html','shohnoma_banner.jpg','Шоҳнома-хонӣ'],['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'],['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'],['vatani_azizi_man.html','vatan_banner.jpg','Ватани азизи ман'],['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо']];$('ozmunList').innerHTML=oz.map(o=>`<div class="ozmun-item" onclick="location.href='${o[0]}'"><div class="ozmun-circle"><img src="${o[1]}" alt=""></div><div class="ozmun-label">${o[2]}</div></div>`).join('');
+$('homeSearchForm').onsubmit=e=>{e.preventDefault();const q=$('homeSearch').value.trim();if(q)searchHome(q,true);};
+async function loadBooksJson(){for(const u of BOOKS_JSON_URLS){try{const r=await fetch(u,{cache:'no-store'});if(r.ok){DATA=await r.json();return DATA}}catch(e){}}throw new Error('books.json дастрас нест')}
+function rawUrl(folder,file){return `https://raw.githubusercontent.com/${DATA.repo||'sharipovip/books'}/${DATA.branch||'main'}/${enc(folder)}/${encodeURIComponent(file)}`}
+function coverCandidates(folder,file){const jpg=encodeURIComponent(file.replace(/\.pdf$/i,'.jpg'));const clean=String(folder).replace(/^books\//,'');const base=`https://raw.githubusercontent.com/${DATA.repo||'sharipovip/books'}/${DATA.branch||'main'}`;return [`${base}/covers/${enc(clean)}/${jpg}`,`${base}/covers/books/${enc(clean)}/${jpg}`,`${base}/covers/${enc(folder)}/${jpg}`]}
+function bookCard(b,folder,badge=''){const file=b.file||((b.name||'book')+'.pdf'),name=b.name||file.replace(/\.pdf$/i,''),url=rawUrl(folder,file),c=coverCandidates(folder,file);return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}')"><div class="book-cover"><img src="${c[0]}" onerror="this.onerror=function(){this.onerror=null;this.src='${c[2]}'};this.src='${c[1]}'" alt=""><span>${esc(name)}</span></div><div class="book-name">${esc(name)}</div></div>`}
+function openReader(url,name){location.href=`reader.html?url=${url}&name=${name}`}
+const manifestCache=new Map();let searchTimer=null;
+async function loadManifest(sub){const key=sub?.folder;if(!key)return[];if(manifestCache.has(key))return manifestCache.get(key);let arr=[];try{const r=await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(sub.folder)}/manifest.json?t=${Date.now()}`,{cache:'no-store'});if(r.ok){const j=await r.json();arr=Array.isArray(j.books)?j.books:[]}}catch(e){}manifestCache.set(key,arr);return arr}
+async function searchHome(q,force=false){q=(q||'').trim().toLowerCase();const box=$('homeSearchResults');if(!q){box.style.display='none';box.innerHTML='';return}if(q.length<2&&!force)return;box.style.display='block';box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⌕</div><div><div class="search-result-name">Ҷустуҷӯ...</div><div class="search-result-sub">Лутфан интизор шавед</div></div></div>';try{if(!DATA)await loadBooksJson();const results=[];for(const c of (DATA.categories||[])){for(const s of (c.subs||[])){const arr=await loadManifest(s);for(const b of arr){const name=b.name||String(b.file||'').replace(/\.pdf$/i,'');if(name.toLowerCase().includes(q))results.push({b,sub:s,cat:c,name});if(results.length>=20)break}if(results.length>=20)break}if(results.length>=20)break}if(!results.length){box.innerHTML='<div class="search-result-item"><div class="search-result-icon">📭</div><div><div class="search-result-name">Ёфт нашуд</div><div class="search-result-sub">Калимаи дигар нависед</div></div></div>';return}box.innerHTML=results.map(r=>{const file=r.b.file||r.name+'.pdf',url=rawUrl(r.sub.folder,file);return `<div class="search-result-item" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(r.name)}')"><div class="search-result-icon">📖</div><div><div class="search-result-name">${esc(r.name)}</div><div class="search-result-sub">${esc(r.cat.name)} · ${esc(r.sub.name||r.sub.folder)}</div></div></div>`}).join('')}catch(e){box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⚠️</div><div><div class="search-result-name">Хатогӣ</div><div class="search-result-sub">'+esc(e.message||e)+'</div></div></div>'}}
+$('homeSearch').addEventListener('input',()=>{clearTimeout(searchTimer);searchTimer=setTimeout(()=>searchHome($('homeSearch').value),350)});
+async function loadHome(){try{const d=await loadBooksJson();const cats=d.categories||[];$('catGrid').innerHTML=cats.slice(0,6).map(c=>`<div class="category-card" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'" style="--c1:${c.color1||c.c1||'#1A2D44'};--c2:${c.color2||c.c2||'#2A5298'}"><div class="category-icon">${esc(c.emoji||'📚')}</div><div class="category-name">${esc(c.name)}</div><div class="category-count">${(c.subs||[]).length} бахш</div></div>`).join('');
+const priority=cats.find(c=>c.priority||/пешвои|асосгузор/i.test(c.name||'')); if(priority&&priority.subs?.[0]){const arr=await loadManifest(priority.subs[0]); if(arr.length){$('pesvoSection').style.display='block';$('pesvoBooks').innerHTML=arr.slice(0,8).map(b=>bookCard(b,priority.subs[0].folder,'👑')).join('')}}
+let newest=[];for(const c of cats.slice(0,4)){for(const s of (c.subs||[]).slice(0,2)){const arr=await loadManifest(s);newest.push(...arr.slice(-2).map(b=>({b,folder:s.folder})))} } if(newest.length){$('newSection').style.display='block';$('newBooks').innerHTML=newest.slice(0,12).map(x=>bookCard(x.b,x.folder)).join('')}}catch(e){$('catGrid').innerHTML='<div class="empty">'+esc(e.message)+'</div>'}}
+function loadContinue(){try{const all=JSON.parse(localStorage.getItem('kk_reader_progress')||'{}');const vals=Object.entries(all).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0));if(!vals.length)return;const [url,p]=vals[0];$('continueSection').style.display='block';$('continueCard').innerHTML=`<div class="continue-book-cover" style="background:linear-gradient(160deg,#1A3A5C,#2A5298)">📗</div><div class="continue-info"><div class="continue-book-title">${esc(p.name||'Китоб')}</div><div class="continue-author">Саҳ. ${p.page||1} / ${p.pages||'?'} </div><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${p.pages?Math.round((p.page||1)/p.pages*100):0}%"></div></div></div><button class="continue-btn" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(p.name||'Китоб')}')">Давом</button>`}catch(e){}}
+async function loadWinners(){if(!supa)return;try{const {data,error}=await supa.from('v_winners').select('*').order('valid_seconds',{ascending:false}).limit(3);if(error||!data?.length)return;$('winnersBox').innerHTML=data.map((u,i)=>`<div class="winner-card" onclick="location.href='honandagon.html#gholibon'"><div class="winner-rank">${i+1}</div><div class="winner-avatar">${esc(u.avatar_emoji||'👤')}</div><div class="winner-info"><div class="winner-name">${esc(u.display_name||'Китобхон')}</div><div class="winner-sub">${esc([u.city,u.region].filter(Boolean).join(' · '))}</div></div><div class="winner-score">${Number(u.valid_hours||0).toFixed(1)}с</div></div>`).join('')}catch(e){}}
+loadContinue();loadHome();loadWinners();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0c485b9cef5e842',t:'MTc4MTU1NzQxNQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v833ccba57c9e4d2798f2e76cebdd09a11778172276447" integrity="sha512-57MDmcccJXYtNnH+ZiBwzC4jb2rvgVCEokYN+L/nLlmO8rfYT/gIpW2A569iJ/3b+0UEasghjuZH/ma3wIs/EQ==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body>
 </html>
