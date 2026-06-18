@@ -1156,6 +1156,14 @@ body.not-logged-in .logged-out-content {
   <div class="logged-out-content">
     <main class="main-content">
 
+      <div class="auth-card local-profile-card">
+        <div class="auth-logo"><div class="auth-logo-icon">👤</div></div>
+        <div class="auth-title">Профили маҳаллӣ</div>
+        <div class="auth-subtitle">Бе email ҳам метавонед профил созед. Барои нигоҳдории доимӣ баъдтар email илова кунед.</div>
+        <button class="btn-primary" type="button" id="createLocalProfileBtn">👤 Сохтани профил</button>
+      </div>
+      <div class="auth-divider"><span class="auth-divider-text">Ё ворид шавед</span></div>
+
       <div class="auth-card">
         <div class="auth-logo">
           <div class="auth-logo-icon">📚</div>
@@ -1298,8 +1306,14 @@ if(optionItems[5])optionItems[5].addEventListener('click',()=>msg('Огоҳиҳ�
 if(optionItems[6])optionItems[6].addEventListener('click',async()=>{if(!supa||!CURRENT_USER?.email)return;const {error}=await supa.auth.resetPasswordForEmail(CURRENT_USER.email);msg(error?error.message:'Паёми барқарорсозии рамз ба email фиристода шуд')});
 if(optionItems[7])optionItems[7].addEventListener('click',()=>msg('Китобхона · 2026\nМуаллиф: Парвиз Шарипов'));
 document.querySelectorAll('.auth-link').forEach((a,i)=>{a.addEventListener('click',async e=>{e.preventDefault();if(i===0){const email=forms[0]?.querySelector('input')?.value.trim()||prompt('Email:');if(email&&supa){const {error}=await supa.auth.resetPasswordForEmail(email);msg(error?error.message:'Паёми барқарорсозӣ фиристода шуд')}}else{document.querySelector('.auth-card:nth-of-type(2)')?.scrollIntoView({behavior:'smooth'})}})});
+
+function saveLocalProfile(p){localStorage.setItem('kk_local_profile',JSON.stringify(p));CURRENT_PROFILE=p;CURRENT_USER={email:p.email||''};document.body.classList.remove('not-logged-in');renderProfile()}
+async function createLocalProfile(){const loc=await getLocations();const years=Array.from({length:90},(_,i)=>new Date().getFullYear()-i-4);const ov=document.createElement('div');ov.style.cssText='position:fixed;inset:0;z-index:400;background:rgba(0,0,0,.62);display:flex;align-items:flex-end;justify-content:center';ov.innerHTML=`<div style="width:100%;max-width:430px;max-height:88vh;overflow:auto;background:var(--bg-secondary);border:1px solid var(--border);border-radius:24px 24px 0 0;padding:16px;color:var(--text-primary)"><div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px"><b style="color:var(--gold)">👤 Сохтани профил</b><button id="lpClose" class="header-btn">✕</button></div><label class="form-label">Ном</label><input id="lpName" class="form-input" placeholder="Номи шумо"><label class="form-label">Насаб</label><input id="lpLast" class="form-input" placeholder="Насаб"><label class="form-label">Аватар emoji</label><input id="lpAvatar" class="form-input" value="👤"><label class="form-label">Соли таваллуд</label><select id="lpBirth" class="form-input"><option value="">Интихоб кунед</option>${years.map(y=>`<option>${y}</option>`).join('')}</select><label class="form-label">Вилоят</label><select id="lpRegion" class="form-input"><option value="">Интихоб кунед</option>${(loc.regions||[]).map(r=>`<option>${r.name}</option>`).join('')}</select><label class="form-label">Шаҳр/ноҳия</label><select id="lpCity" class="form-input"><option value="">Интихоб кунед</option></select><label class="form-label">Деҳа/ҷамоат</label><input id="lpVillage" class="form-input" placeholder="Дастӣ нависед"><div style="font-size:12px;color:var(--text-secondary);line-height:1.5;margin:12px 0">Барои ҳифзи доимии маълумот email ва рамз тавсия мешавад. Бе email маълумот танҳо дар ҳамин телефон мемонад.</div><button id="lpSave" class="btn-primary">Захира кардан</button></div>`;document.body.appendChild(ov);function fillCity(){const r=(loc.regions||[]).find(x=>x.name===ov.querySelector('#lpRegion').value);const arr=[...(r?.cities||[]),...(r?.districts||[])];ov.querySelector('#lpCity').innerHTML='<option value="">Интихоб кунед</option>'+arr.map(c=>`<option>${c}</option>`).join('')}ov.querySelector('#lpRegion').onchange=fillCity;ov.querySelector('#lpClose').onclick=()=>ov.remove();ov.querySelector('#lpSave').onclick=()=>{const name=[ov.querySelector('#lpName').value.trim(),ov.querySelector('#lpLast').value.trim()].filter(Boolean).join(' ')||'Китобхон';saveLocalProfile({display_name:name,full_name:name,avatar_emoji:ov.querySelector('#lpAvatar').value.trim()||'👤',birth_year:ov.querySelector('#lpBirth').value?parseInt(ov.querySelector('#lpBirth').value,10):null,region:ov.querySelector('#lpRegion').value,city:ov.querySelector('#lpCity').value,village:ov.querySelector('#lpVillage').value.trim(),local:true,created_at:Date.now()});ov.remove()}}
+document.getElementById('createLocalProfileBtn')?.addEventListener('click',createLocalProfile);
+const lp0=(()=>{try{return JSON.parse(localStorage.getItem('kk_local_profile')||'null')}catch(e){return null}})();
+if(lp0&&!supa){saveLocalProfile(lp0)}
 supa?.auth.onAuthStateChange(()=>loadProfile());
-loadProfile();
+loadProfile().then(()=>{if(document.body.classList.contains('not-logged-in')){try{const lp=JSON.parse(localStorage.getItem('kk_local_profile')||'null');if(lp)saveLocalProfile(lp)}catch(e){}}});
 </script>
 
 <!-- kitobkhona_phase1_nav -->

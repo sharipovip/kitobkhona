@@ -1,12 +1,16 @@
-Book cover refine patch
+Chat/Profile/Feed patch
 
 Replace:
-- kitobho.html
-- sw.js
+- pages/chat.html
+- profile.html
+- honandagon.html
+- data/tajikistan_locations.json
 
 Changes:
-- Book 3D side/spine is smaller and softer.
-- Cover image fills the full book shape, including rounded corners.
-- Right page-thickness is slightly smaller and more visible.
-- Press animation is softer.
-- Service worker version bumped.
+- Chat redesigned WhatsApp-style.
+- Chat is open for testing and also saves local test messages.
+- Profile supports local profile without email.
+- Profile creation asks name, surname, age/year, region, city/district, village.
+- Email/password remains optional for saving/restoring data across devices.
+- Feed posts from reading history now show real book cover if available.
+- Local profile warns via text that without email data stays only on this phone.
