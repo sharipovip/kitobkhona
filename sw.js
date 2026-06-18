@@ -1,5 +1,5 @@
 /* Китобхона Service Worker — phase1 */
-const VER = 'kitobkhona-2026-06-18-categories-fix';
+const VER = 'kitobkhona-2026-06-18-offline-reader-final';
 const SHELL = 'kk-shell-' + VER;
 const RUNTIME = 'kk-runtime-' + VER;
 const PDFS = 'kk-pdfs-' + VER;

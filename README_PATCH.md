@@ -1,29 +1,41 @@
-# Китобхона patch 2
+# Китобхона complete patch
 
-Replace in site repo:
+Replace these files in site repo:
 - index.html
 - kitobho.html
 - reader.html
 - honandagon.html
 - profile.html
 - admin.html
+- books.json
+- sw.js
+- manifest.json
 - pages/chat.html
 - data/tajikistan_locations.json
-- sw.js
 
 Run SQL in Supabase:
-1. supabase/sql/11_app_control_and_admin.sql
-2. supabase/sql/12_temporary_admin_testing_policies.sql
+1) supabase/sql/09_admin_core.sql
+2) supabase/sql/11_app_control_and_admin.sql
+3) supabase/sql/12_temporary_admin_testing_policies.sql  (temporary testing policies)
 
-Important:
-- SQL 12 is temporary for testing admin actions (blue check, hero, categories) without manually inserting admin_users.
-- Later remove temporary policies and keep strict admin_users security.
+What is fixed:
+- Fresh local books.json v3 and fast loading/local fallback.
+- Categories show from fresh books.json.
+- Admin categories show all books.json categories and can reorder/edit.
+- Hero can be controlled from admin hero_slides.
+- Main header hidden; hero text slower, no vertical line/dots.
+- Ozmun icons and categories are compact.
+- Reader settings compact; 10-star rating; PDF cache and share progress.
+- Offline/downloaded books in kitobho:
+  * Downloaded section.
+  * Lock on unavailable offline books.
+  * Download button becomes delete if cached.
+  * Delete one/all cached books.
+- Last category/subcategory is remembered.
+- Chat opened for testing and controlled by app_settings.
+- User verification temporary RLS policy for testing.
 
-Fixes:
-- Blue-check RLS testing fix.
-- Stories can choose books from all books if reading history is empty.
-- Profile edit uses select lists for birth year, region, city/district.
-- Admin categories show all books.json categories even if display_names table is empty.
-- Admin categories can be reordered by drag/drop or up/down buttons.
-- Admin hero section is text-focused; photo URL is editable.
-- Hero dots hidden and text animation slowed.
+After upload:
+- Hard refresh: Ctrl+Shift+R.
+- If still old: unregister Service Worker / clear site data.
+- On Android: clear app cache if WebView still shows old version.
