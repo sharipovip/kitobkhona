@@ -1,5 +1,5 @@
 /* Китобхона Service Worker — phase1 */
-const VER = 'kitobkhona-2026-06-18-peshvo-font-layout-v8';
+const VER = 'kitobkhona-2026-06-18-zapf-size-fix';
 const SHELL = 'kk-shell-' + VER;
 const RUNTIME = 'kk-runtime-' + VER;
 const PDFS = 'kk-pdfs-' + VER;
@@ -11,10 +11,7 @@ const PRECACHE = [
   './shohnoma_banner.jpg', './ilm_banner.jpg', './furugi_banner.jpg', './vatan_banner.jpg', './donandai_banner.jpg', './splash_logo.jpg',
   './icons/icon-192.png', './icons/icon-512.png',
   './data/age_groups.json', './data/chat_rules.json', './data/bad_words.json', './data/tajikistan_locations.json',
-  './pages/winners.html', './pages/profile.html', './pages/users.html', './pages/chat.html', './pages/book_reviews.html',
-  './assets/fonts/anna-faustina-script.ttf',
-  './assets/fonts/peshvo.ttf',
-  './assets/fonts/osnovnoy.ttf',
+  './pages/winners.html', './pages/profile.html', './pages/users.html', './pages/chat.html', './pages/book_reviews.html',  './assets/fonts/zapf-chancec.ttf',
   './assets/hero/01-president-official.jpg', './assets/hero/02-istiqlol-flag.jpg', './assets/hero/03-vahdat-diplomacy.jpg', './assets/hero/04-kishovarzi.jpg', './assets/hero/05-president-young.jpg', './assets/hero/06-zaboni-millat.jpg', './assets/hero/07-chehrahoyi-mondagor.jpg', './assets/hero/08-davlatdori.jpg', './assets/hero/09-suhanroni.jpg', './assets/hero/10-nishon-tojikiston.jpg', './assets/hero/hero_manifest.json',
   './hero/01_istiqlol.jpg', './hero/02_vahdat.jpg', './hero/03_ob.jpg', './hero/04_ilm.jpg', './hero/05_35sol.jpg', './hero/06_kishovarzi.jpg', './hero/07_tabiat.jpg', './hero/08_rohho.jpg', './hero/09_qasr.jpg', './hero/10_javonon.jpg'
 ];
