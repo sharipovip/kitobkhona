@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Чат (мокап)</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --wa-header:#075E54;
+    --wa-chat-bg:#ECE5DD;
+    --wa-bubble-in:#FFFFFF;
+    --wa-bubble-out:#DCF8C6;
+    --wa-text:#111B21;
+    --wa-muted:#667781;
+    --wa-check-grey:#8696A0;
+    --wa-check-blue:#34B7F1;
+    --wa-compose-bg:#F0F0F0;
+    --wa-pill-bg:#FFFFFF;
+    --shadow:0 18px 40px -12px rgba(0,0,0,0.55);
+  }
+  [data-theme="dark"]{
+    --wa-header:#1F2C34;
+    --wa-chat-bg:#0B141A;
+    --wa-bubble-in:#1F2C34;
+    --wa-bubble-out:#005C4B;
+    --wa-text:#E9EDEF;
+    --wa-muted:#8696A0;
+    --wa-compose-bg:#1F2C34;
+    --wa-pill-bg:#2A3942;
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    font-family:'Noto Sans', sans-serif;
+    background:radial-gradient(circle at 20% 0%, #16304a 0%, transparent 45%), radial-gradient(circle at 85% 90%, #0c1c2e 0%, transparent 50%), #0a1320;
+    min-height:100vh; display:flex; flex-direction:column; align-items:center; gap:18px; padding:28px 14px 60px; color:#F3ECDD;
+  }
+
+  .preview-bar{width:100%; max-width:430px; display:flex; align-items:center; justify-content:space-between; gap:10px; background:rgba(255,255,255,0.04); border:1px solid rgba(255,255,255,0.08); border-radius:16px; padding:10px 14px; backdrop-filter:blur(6px);}
+  .preview-bar__label{font-size:11px; letter-spacing:.04em; color:#8CA0B8; text-transform:uppercase;}
+  .theme-btn{width:34px; height:34px; border-radius:50%; border:1px solid rgba(220,181,94,0.3); background:transparent; color:#F3ECDD; cursor:pointer; font-size:15px; display:flex; align-items:center; justify-content:center;}
+
+  .phone{
+    position:relative; width:390px; height:844px; background:var(--wa-chat-bg); border-radius:46px;
+    box-shadow:var(--shadow), 0 0 0 10px #050a12, 0 0 0 11px rgba(220,181,94,0.25);
+    overflow:hidden; display:flex; flex-direction:column;
+  }
+  .island{position:absolute; top:14px; left:50%; transform:translateX(-50%); width:108px; height:26px; background:#000; border-radius:20px; z-index:60;}
+
+  .status-bar{flex:0 0 auto; display:flex; align-items:center; justify-content:space-between; padding:16px 22px 4px; font-size:13px; font-weight:600; color:#fff; background:var(--wa-header);}
+  .status-bar .icons{display:flex; gap:5px; font-size:11px;}
+
+  .chat-header{
+    flex:0 0 auto; background:var(--wa-header); color:#fff;
+    display:flex; align-items:center; gap:10px; padding:8px 12px 12px;
+  }
+  .back-btn{font-size:24px; line-height:1; padding:2px 4px 2px 0; cursor:pointer;}
+  .head-avatar{width:38px; height:38px; border-radius:50%; background:#0a4a42; display:flex; align-items:center; justify-content:center; flex:0 0 auto; overflow:hidden;}
+  .head-avatar svg{width:62%; height:62%;}
+  .head-info{flex:1; min-width:0;}
+  .head-name{font-size:15.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .head-status{font-size:11.5px; color:rgba(255,255,255,0.78); display:flex; align-items:center; gap:5px; margin-top:1px;}
+  .online-dot{width:7px; height:7px; border-radius:50%; background:#4ADE80; flex:0 0 auto;}
+  .menu-btn{font-size:21px; cursor:pointer; padding:2px 6px; transform:rotate(90deg);}
+
+  .messages{flex:1 1 auto; overflow-y:auto; padding:14px 12px 10px; display:flex; flex-direction:column; gap:3px; scrollbar-width:none;}
+  .messages::-webkit-scrollbar{display:none;}
+
+  .date-sep{align-self:center; background:rgba(0,0,0,0.08); color:var(--wa-muted); font-size:11.5px; font-weight:600; padding:4px 12px; border-radius:8px; margin:6px 0 12px;}
+  [data-theme="dark"] .date-sep{background:rgba(255,255,255,0.07);}
+
+  .msg-row{display:flex; margin:3px 0;}
+  .msg-row.in{justify-content:flex-start;}
+  .msg-row.out{justify-content:flex-end;}
+
+  .bubble{
+    max-width:78%; padding:6px 9px 7px 9px; font-size:14.5px; line-height:1.35; color:var(--wa-text);
+    box-shadow:0 1px 1px rgba(0,0,0,0.12); white-space:pre-wrap; word-break:break-word; position:relative;
+  }
+  .bubble.in{background:var(--wa-bubble-in); border-radius:9px 9px 9px 2px;}
+  .bubble.out{background:var(--wa-bubble-out); border-radius:9px 9px 2px 9px;}
+
+  .bubble-text{margin-right:46px;}
+  .bubble-meta{
+    position:absolute; right:9px; bottom:5px; display:flex; align-items:center; gap:3px;
+    font-size:10.5px; color:var(--wa-muted); white-space:nowrap;
+  }
+  .check{font-size:13px; line-height:1; color:var(--wa-check-grey);}
+  .check.read{color:var(--wa-check-blue);}
+
+  .composer{
+    flex:0 0 auto; background:var(--wa-compose-bg);
+    display:flex; align-items:flex-end; gap:8px; padding:8px 10px 16px;
+  }
+  .input-pill{
+    flex:1; display:flex; align-items:flex-end; gap:6px;
+    background:var(--wa-pill-bg); border-radius:22px; padding:6px 6px 6px 12px;
+    min-height:40px;
+  }
+  .emoji-btn{font-size:20px; cursor:pointer; flex:0 0 auto; padding-bottom:3px; line-height:1;}
+  .msg-input{
+    flex:1; border:none; outline:none; background:transparent; resize:none;
+    font-family:'Noto Sans'; font-size:14.5px; color:var(--wa-text); line-height:1.4;
+    max-height:100px; overflow-y:auto; padding:5px 4px; scrollbar-width:none;
+  }
+  .msg-input::-webkit-scrollbar{display:none;}
+  .msg-input::placeholder{color:var(--wa-muted);}
+  .send-btn{
+    width:40px; height:40px; border-radius:50%; background:var(--wa-header);
+    display:flex; align-items:center; justify-content:center; flex:0 0 auto; cursor:pointer; color:#fff; font-size:17px;
+    transition:transform .1s;
+  }
+  .send-btn:active{transform:scale(.92);}
+
+  @media (max-width:430px){ .phone{width:100%; max-width:390px; height:calc(100vh - 110px); max-height:844px;} }
+</style>
+</head>
+<body>
+
+  <div class="preview-bar">
+    <div class="preview-bar__label">Чат · мокап</div>
+    <button class="theme-btn" id="themeToggle" title="Тағйири мавзӯъ">🌙</button>
+  </div>
+
+  <div class="phone">
+    <div class="island"></div>
+    <div class="status-bar"><span>9:41</span><span class="icons">📶 📡 🔋</span></div>
+
+    <div class="chat-header">
+      <div class="back-btn">‹</div>
+      <div class="head-avatar">
+        <svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="#fff" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="#fff" stroke-width="1.6" stroke-linecap="round"/></svg>
+      </div>
+      <div class="head-info">
+        <div class="head-name">Гулчеҳра Раҳимова</div>
+        <div class="head-status"><span class="online-dot"></span>Онлайн</div>
+      </div>
+      <div class="menu-btn">⋮</div>
+    </div>
+
+    <div class="messages" id="messages">
+      <div class="date-sep">Имрӯз</div>
+
+      <div class="msg-row in">
+        <div class="bubble in"><div class="bubble-text">Ассалому алайкум! Шоҳномаро кай хатм мекунӣ?</div><div class="bubble-meta">13:40</div></div>
+      </div>
+      <div class="msg-row out">
+        <div class="bubble out"><div class="bubble-text">Ассалом! Боз 3 боб боқӣ мондааст 📖</div><div class="bubble-meta">13:41 <span class="check read">✓✓</span></div></div>
+      </div>
+      <div class="msg-row in">
+        <div class="bubble in"><div class="bubble-text">Зер кардан мегӣ-да 😄</div><div class="bubble-meta">13:42</div></div>
+      </div>
+      <div class="msg-row out">
+        <div class="bubble out"><div class="bubble-text">Ҳа, имрӯз шояд хатм кунам</div><div class="bubble-meta">13:43 <span class="check read">✓✓</span></div></div>
+      </div>
+      <div class="msg-row in">
+        <div class="bubble in"><div class="bubble-text">Баъд фикратро нависӣ, хуб?</div><div class="bubble-meta">13:44</div></div>
+      </div>
+      <div class="msg-row out">
+        <div class="bubble out"><div class="bubble-text">Албатта, мефиристам</div><div class="bubble-meta">13:45 <span class="check">✓</span></div></div>
+      </div>
+    </div>
+
+    <div class="composer">
+      <div class="input-pill">
+        <div class="emoji-btn">😊</div>
+        <textarea class="msg-input" id="msgInput" placeholder="Паём нависед..." rows="1"></textarea>
+      </div>
+      <div class="send-btn" id="sendBtn">➤</div>
+    </div>
+  </div>
+
+<script>
+  const themeBtn = document.getElementById('themeToggle');
+  themeBtn.addEventListener('click', ()=>{
+    const dark = document.body.dataset.theme === 'dark';
+    document.body.dataset.theme = dark ? 'light' : 'dark';
+    themeBtn.textContent = dark ? '☀️' : '🌙';
+  });
+
+  const input = document.getElementById('msgInput');
+  const sendBtn = document.getElementById('sendBtn');
+  const messages = document.getElementById('messages');
+
+  function autoResize(){
+    input.style.height = 'auto';
+    input.style.height = Math.min(input.scrollHeight, 100) + 'px';
+  }
+  input.addEventListener('input', autoResize);
+
+  function nowTime(){
+    const d = new Date();
+    return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+  }
+
+  function scrollToBottom(){
+    messages.scrollTop = messages.scrollHeight;
+  }
+
+  function sendMessage(){
+    const text = input.value.trim();
+    if(!text) return;
+
+    const row = document.createElement('div');
+    row.className = 'msg-row out';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble out';
+    const textEl = document.createElement('div');
+    textEl.className = 'bubble-text';
+    textEl.textContent = text;
+    const meta = document.createElement('div');
+    meta.className = 'bubble-meta';
+    meta.innerHTML = nowTime() + ' <span class="check">✓</span>';
+    bubble.appendChild(textEl);
+    bubble.appendChild(meta);
+    row.appendChild(bubble);
+    messages.appendChild(row);
+
+    input.value = '';
+    autoResize();
+    scrollToBottom();
+
+    const checkEl = meta.querySelector('.check');
+    setTimeout(()=>{ checkEl.textContent = '✓✓'; }, 600);
+    setTimeout(()=>{ checkEl.textContent = '✓✓'; checkEl.classList.add('read'); }, 1400);
+  }
+
+  sendBtn.addEventListener('click', sendMessage);
+
+  input.addEventListener('keydown', (e)=>{
+    if(e.key === 'Enter' && !e.shiftKey){
+      e.preventDefault();
+      sendMessage();
+    }
+    // Shift+Enter: default browser behavior inserts a newline
+  });
+
+  scrollToBottom();
+</script>
+</body>
+</html>
