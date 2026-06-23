@@ -1,0 +1,450 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Чат — Китобхона</title>
+<script src="config.js"></script>
+<script src="https://cdn.socket.io/4.7.2/socket.io.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
+
+  :root{
+    --wa-header:#075E54;
+    --wa-chat-bg:#ECE5DD;
+    --wa-bubble-in:#FFFFFF;
+    --wa-bubble-out:#DCF8C6;
+    --wa-text:#111B21;
+    --wa-muted:#667781;
+    --wa-check-grey:#8696A0;
+    --wa-check-blue:#34B7F1;
+    --wa-compose-bg:#F0F0F0;
+    --wa-pill-bg:#FFFFFF;
+    --shadow:0 18px 40px -12px rgba(0,0,0,0.55);
+  }
+  [data-theme="dark"]{
+    --wa-header:#1F2C34;
+    --wa-chat-bg:#0B141A;
+    --wa-bubble-in:#1F2C34;
+    --wa-bubble-out:#005C4B;
+    --wa-text:#E9EDEF;
+    --wa-muted:#8696A0;
+    --wa-compose-bg:#1F2C34;
+    --wa-pill-bg:#2A3942;
+  }
+
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Noto Sans', sans-serif;
+    background:radial-gradient(circle at 20% 0%, #16304a 0%, transparent 45%), radial-gradient(circle at 85% 90%, #0c1c2e 0%, transparent 50%), #0a1320;
+    min-height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px;
+    color:#F3ECDD;
+  }
+
+  .chat-container{
+    width:100%; max-width:420px;
+    height:90vh;
+    background:var(--wa-chat-bg);
+    border-radius:32px;
+    overflow:hidden;
+    display:flex;
+    flex-direction:column;
+    box-shadow:0 0 0 1px rgba(232,222,199,0.08), 0 40px 80px rgba(0,0,0,0.55);
+  }
+
+  .chat-header{
+    flex:0 0 auto;
+    background:var(--wa-header);
+    color:#fff;
+    display:flex;
+    align-items:center;
+    gap:10px;
+    padding:12px 14px;
+  }
+  .back-btn{
+    font-size:24px;
+    cursor:pointer;
+    padding:2px 6px 2px 0;
+    background:none;
+    border:none;
+    color:#fff;
+  }
+  .head-avatar{
+    width:38px; height:38px;
+    border-radius:50%;
+    background:#0a4a42;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    overflow:hidden;
+    font-size:16px;
+    color:#fff;
+  }
+  .head-info{flex:1; min-width:0;}
+  .head-name{font-size:15.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .head-status{font-size:11.5px; color:rgba(255,255,255,0.78); display:flex; align-items:center; gap:5px; margin-top:1px;}
+  .online-dot{width:7px; height:7px; border-radius:50%; background:#4ADE80; flex:0 0 auto;}
+  .menu-btn{
+    font-size:21px;
+    cursor:pointer;
+    padding:2px 6px;
+    transform:rotate(90deg);
+    background:none;
+    border:none;
+    color:#fff;
+  }
+
+  .messages{
+    flex:1 1 auto;
+    overflow-y:auto;
+    padding:14px 12px 10px;
+    display:flex;
+    flex-direction:column;
+    gap:3px;
+    scrollbar-width:none;
+  }
+  .messages::-webkit-scrollbar{display:none;}
+
+  .date-sep{align-self:center; background:rgba(0,0,0,0.08); color:var(--wa-muted); font-size:11.5px; font-weight:600; padding:4px 12px; border-radius:8px; margin:6px 0 12px;}
+  [data-theme="dark"] .date-sep{background:rgba(255,255,255,0.07);}
+
+  .msg-row{display:flex; margin:3px 0;}
+  .msg-row.in{justify-content:flex-start;}
+  .msg-row.out{justify-content:flex-end;}
+
+  .bubble{
+    max-width:78%;
+    padding:6px 9px 7px 9px;
+    font-size:14.5px;
+    line-height:1.35;
+    color:var(--wa-text);
+    box-shadow:0 1px 1px rgba(0,0,0,0.12);
+    white-space:pre-wrap;
+    word-break:break-word;
+    position:relative;
+  }
+  .bubble.in{background:var(--wa-bubble-in); border-radius:9px 9px 9px 2px;}
+  .bubble.out{background:var(--wa-bubble-out); border-radius:9px 9px 2px 9px;}
+
+  .bubble-text{margin-right:46px;}
+  .bubble-meta{
+    position:absolute; right:9px; bottom:5px;
+    display:flex; align-items:center; gap:3px;
+    font-size:10.5px; color:var(--wa-muted); white-space:nowrap;
+  }
+  .check{font-size:13px; line-height:1; color:var(--wa-check-grey);}
+  .check.read{color:var(--wa-check-blue);}
+
+  .composer{
+    flex:0 0 auto;
+    background:var(--wa-compose-bg);
+    display:flex;
+    align-items:flex-end;
+    gap:8px;
+    padding:8px 10px 12px;
+  }
+  .input-pill{
+    flex:1;
+    display:flex;
+    align-items:flex-end;
+    gap:6px;
+    background:var(--wa-pill-bg);
+    border-radius:22px;
+    padding:6px 6px 6px 12px;
+    min-height:40px;
+  }
+  .emoji-btn{font-size:20px; cursor:pointer; flex:0 0 auto; padding-bottom:3px; line-height:1;}
+  .msg-input{
+    flex:1;
+    border:none;
+    outline:none;
+    background:transparent;
+    resize:none;
+    font-family:'Noto Sans';
+    font-size:14.5px;
+    color:var(--wa-text);
+    line-height:1.4;
+    max-height:100px;
+    overflow-y:auto;
+    padding:5px 4px;
+    scrollbar-width:none;
+  }
+  .msg-input::-webkit-scrollbar{display:none;}
+  .msg-input::placeholder{color:var(--wa-muted);}
+  .send-btn{
+    width:40px; height:40px;
+    border-radius:50%;
+    background:var(--wa-header);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    flex:0 0 auto;
+    cursor:pointer;
+    color:#fff;
+    font-size:17px;
+    border:none;
+    transition:transform .1s;
+  }
+  .send-btn:active{transform:scale(.92);}
+
+  .loading-msg{display:flex; align-items:center; justify-content:center; padding:40px 20px; color:var(--wa-muted); font-size:14px;}
+  .spinner{width:20px; height:20px; border:2px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .bottom-nav{
+    flex:0 0 auto;
+    background:#0B1A2E;
+    border-top:1px solid rgba(232,222,199,0.08);
+    display:flex;
+    justify-content:space-around;
+    padding:6px 0 12px;
+  }
+  .nav-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:2px;
+    color:#6E7F97;
+    font-size:10px;
+    font-weight:600;
+    cursor:pointer;
+    padding:4px 8px;
+  }
+  .nav-item.active{color:#E8C879;}
+  .nav-icon{font-size:18px;}
+</style>
+</head>
+<body>
+
+<div class="chat-container">
+  <div class="chat-header">
+    <button class="back-btn" onclick="goBack()">‹</button>
+    <div class="head-avatar" id="chatAvatar">👤</div>
+    <div class="head-info">
+      <div class="head-name" id="headName">Чат</div>
+      <div class="head-status" id="headStatus"><span class="online-dot"></span>Дӯст</div>
+    </div>
+    <button class="menu-btn" id="reportBtn">⋮</button>
+  </div>
+
+  <div class="messages" id="messages">
+    <div class="loading-msg"><div class="spinner"></div> Боргирӣ...</div>
+  </div>
+
+  <div class="composer">
+    <div class="input-pill">
+      <div class="emoji-btn">😊</div>
+      <textarea class="msg-input" id="msgInput" placeholder="Паём нависед..." rows="1"></textarea>
+    </div>
+    <button class="send-btn" id="sendBtn">➤</button>
+  </div>
+
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">🏠</span><span>Асосӣ</span></div>
+    <div class="nav-item" onclick="location.href='kitobho.html'"><span class="nav-icon">📚</span><span>Китобҳо</span></div>
+    <div class="nav-item active" onclick="location.href='chats.html'"><span class="nav-icon">💬</span><span>Чатҳо</span></div>
+    <div class="nav-item" onclick="location.href='profile.html'"><span class="nav-icon">👤</span><span>Профил</span></div>
+  </div>
+</div>
+
+<script>
+  // ===== Параметры URL =====
+  const qs = new URL(location.href).searchParams;
+  const peerId = qs.get('to') || '';
+  const peerName = decodeURIComponent(qs.get('name') || 'Чат');
+
+  document.getElementById('headName').textContent = peerName;
+
+  // ===== Socket.IO =====
+  let socket = null;
+  let currentUserId = null;
+  const token = localStorage.getItem('kk_token');
+
+  function connectSocket() {
+    if(!token) return;
+    socket = io(KITOB_CONFIG.CHAT_API, {
+      auth: { token: token },
+      transports: ['websocket', 'polling']
+    });
+    socket.on('connect', () => {
+      console.log('Socket connected');
+      socket.emit('join', { room: peerId });
+    });
+    socket.on('message', (data) => {
+      // Новое сообщение от собеседника
+      if(data.sender_id === peerId) {
+        addMessage(data.text, false, formatTime(data.created_at), data.status === 'read' ? '✓✓' : '✓');
+        scrollToBottom();
+      }
+    });
+    socket.on('history', (history) => {
+      // История загружается отдельно через REST, но можем использовать и это
+    });
+    socket.on('user_joined', (data) => {
+      document.getElementById('headStatus').innerHTML = '<span class="online-dot"></span>Онлайн';
+    });
+    socket.on('user_left', () => {
+      document.getElementById('headStatus').innerHTML = '<span class="online-dot" style="background:#888;"></span>Насомад';
+    });
+    socket.on('error', (err) => {
+      console.error('Socket error:', err);
+    });
+  }
+
+  // ===== Загрузка сообщений через REST =====
+  async function loadMessages() {
+    const msgContainer = document.getElementById('messages');
+    try {
+      const { data } = await AUTH.getUser();
+      if(!data.user) {
+        msgContainer.innerHTML = '<div class="loading-msg">Логин шавед барои чат</div>';
+        return;
+      }
+      currentUserId = data.user.id;
+      // Подключаем Socket после получения userId
+      if(!socket) connectSocket();
+
+      const msgs = await ChatAPI.getMessages(currentUserId, peerId);
+      if(!msgs || msgs.length === 0) {
+        msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+        return;
+      }
+
+      msgContainer.innerHTML = '';
+      let lastDate = '';
+      msgs.forEach(m => {
+        const isMine = m.sender_id === currentUserId;
+        const time = timeLabel(m.created_at);
+        const status = m.status === 'read' ? '✓✓' : '✓';
+        addMessage(m.text, isMine, time, status);
+      });
+      scrollToBottom();
+    } catch(e) {
+      console.error(e);
+      msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+    }
+  }
+
+  function timeLabel(v) {
+    try { return new Date(v).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); }
+    catch(_){ return ''; }
+  }
+
+  function formatDate(d) {
+    const today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dd = new Date(d);
+    if(dd.toDateString() === today.toDateString()) return 'Имрӯз';
+    if(dd.toDateString() === yesterday.toDateString()) return 'Дирӯз';
+    return dd.toLocaleDateString('ru-RU', {day:'numeric', month:'long'});
+  }
+
+  let lastDate = '';
+  function addMessage(text, mine, time, status='✓') {
+    const container = document.getElementById('messages');
+    const dateLabel = formatDate(new Date().toISOString());
+    if(dateLabel !== lastDate){
+      const sep = document.createElement('div');
+      sep.className = 'date-sep';
+      sep.textContent = dateLabel;
+      container.appendChild(sep);
+      lastDate = dateLabel;
+    }
+    const row = document.createElement('div');
+    row.className = 'msg-row ' + (mine ? 'out' : 'in');
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble ' + (mine ? 'out' : 'in');
+    const textEl = document.createElement('div');
+    textEl.className = 'bubble-text';
+    textEl.textContent = text;
+    const meta = document.createElement('div');
+    meta.className = 'bubble-meta';
+    meta.innerHTML = time + (mine ? ' <span class="check' + (status === '✓✓' ? ' read' : '') + '">' + status + '</span>' : '');
+    bubble.appendChild(textEl);
+    bubble.appendChild(meta);
+    row.appendChild(bubble);
+    container.appendChild(row);
+    return meta;
+  }
+
+  function scrollToBottom() {
+    setTimeout(() => {
+      const msgs = document.getElementById('messages');
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 50);
+  }
+
+  // ===== Отправка сообщения =====
+  async function sendMessage() {
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if(!text || !currentUserId || !peerId) return;
+    input.value = '';
+    input.style.height = 'auto';
+
+    const meta = addMessage(text, true, timeLabel(new Date().toISOString()), '✓');
+    scrollToBottom();
+    const checkEl = meta.querySelector('.check');
+
+    try {
+      await ChatAPI.sendMessage(currentUserId, peerId, text);
+      // Отправляем через Socket для мгновенного обновления у собеседника
+      if(socket) {
+        socket.emit('message', { room: peerId, text });
+      }
+      checkEl.textContent = '✓✓';
+      checkEl.className = 'check read';
+    } catch(e) {
+      checkEl.textContent = '⚠';
+      console.error(e);
+    }
+  }
+
+  // ===== Обработчики UI =====
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  document.getElementById('msgInput').addEventListener('keydown', (e) => {
+    if(e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  document.getElementById('msgInput').addEventListener('input', function() {
+    this.style.height = 'auto';
+    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+  });
+
+  // ===== Жалоба =====
+  document.getElementById('reportBtn').addEventListener('click', async () => {
+    if(!currentUserId || !peerId) return;
+    if(!confirm('Барои ин корбар жалоба фиристан?')) return;
+    try {
+      await ChatAPI.sendReport(currentUserId, peerId, 'Жалоба аз чат');
+      alert('Жалоба фиристо шуд!');
+    } catch(e) {
+      alert('Хатогӣ: ' + e.message);
+    }
+  });
+
+  // ===== Назад =====
+  function goBack() {
+    if(history.length > 1) history.back();
+    else location.href = 'chats.html';
+  }
+
+  // ===== Автообновление каждые 5 сек =====
+  setInterval(() => {
+    if(document.hidden) return;
+    loadMessages();
+  }, 5000);
+
+  // ===== Инициализация =====
+  loadMessages();
+</script>
+</body>
+</html>

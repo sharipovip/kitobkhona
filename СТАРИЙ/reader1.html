@@ -121,36 +121,3 @@ function goBack(){if(history.length>1)history.back();else location.href='kitobho
 </script>
 </body>
 </html>
-
-// === READING SESSION TRACKING ===
-// Start tracking when reader opens
-window.addEventListener('load', async () => {
-  // Extract book ID from URL or name
-  const bookId = name || url || 'unknown';
-  ReadingSession.start(bookId);
-  console.log('[Reader] Reading session started for:', bookId);
-});
-
-// Stop tracking when user leaves
-window.addEventListener('beforeunload', () => {
-  ReadingSession.stop();
-});
-
-// Also track visibility change (tab switch)
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    // User switched tabs - save session
-    ReadingSession.stop();
-  } else {
-    // User returned - restart tracking
-    const bookId = name || url || 'unknown';
-    ReadingSession.start(bookId);
-  }
-});
-
-// Override goBack to save session first
-const originalGoBack = goBack;
-goBack = function() {
-  ReadingSession.stop();
-  originalGoBack();
-};

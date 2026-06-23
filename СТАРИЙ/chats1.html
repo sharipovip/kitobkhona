@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<title>Чатҳо — Китобхона</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="./config.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
+  :root{
+    --bg:#0B1A2E;
+    --bg-deep:#081323;
+    --card:#142841;
+    --card-hi:#1A314E;
+    --line: rgba(232,222,199,0.08);
+    --gold:#D4A94A;
+    --gold-soft:#E8C879;
+    --gold-dim: rgba(212,169,74,0.16);
+    --cream:#F3EBDA;
+    --cream-dim:#9FB0C5;
+    --cream-faint:#6E7F97;
+    --green:#3F9E63;
+    --red:#C85850;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent;}
+  html,body{ height:100%; background:#05090f; }
+  body{
+    font-family:'Noto Sans', sans-serif;
+    display:flex; align-items:center; justify-content:center;
+    min-height:100vh;
+    padding:24px;
+  }
+
+  .device{
+    width:390px; height:844px;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    border-radius:44px;
+    position:relative;
+    overflow:hidden;
+    box-shadow:
+      0 0 0 10px #0a0a0c,
+      0 0 0 12px #2b2b2f,
+      0 40px 80px rgba(0,0,0,0.55);
+    display:flex; flex-direction:column;
+    color: var(--cream);
+  }
+
+  /* status bar */
+  .statusbar{
+    height:48px; flex:none;
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 14px 28px 0 28px;
+    font-family:'JetBrains Mono', monospace;
+    font-size:13px; font-weight:600; letter-spacing:0.3px;
+    color: var(--cream);
+  }
+  .statusbar .icons{ display:flex; gap:6px; align-items:center; }
+
+  .notch{
+    position:absolute; top:0; left:50%; transform:translateX(-50%);
+    width:120px; height:28px; background:#000; border-radius:0 0 18px 18px; z-index:30;
+  }
+
+  /* header */
+  .header{
+    flex:none; padding: 6px 22px 14px 22px;
+  }
+  .header-row{
+    display:flex; align-items:center; justify-content:space-between;
+    margin-top:6px;
+  }
+  .title{
+    font-size:30px; font-weight:800; letter-spacing:0.2px; color:var(--cream);
+  }
+  .icon-btn{
+    width:40px; height:40px; border-radius:13px;
+    background: var(--card);
+    border:1px solid var(--line);
+    display:flex; align-items:center; justify-content:center;
+  }
+
+  .ornament{
+    height:10px; margin-top:12px;
+    background-image: radial-gradient(circle, var(--gold) 1.4px, transparent 1.6px);
+    background-size: 14px 10px;
+    background-position: center;
+    opacity:0.55;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+            mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+
+  /* search */
+  .search{
+    margin: 16px 22px 4px 22px;
+    height:46px; border-radius:16px;
+    background: var(--card);
+    border:1px solid var(--line);
+    display:flex; align-items:center; gap:10px;
+    padding: 0 16px;
+    flex:none;
+  }
+  .search input{
+    background:none; border:none; outline:none;
+    color: var(--cream); font-family:'Noto Sans'; font-size:14.5px;
+    width:100%;
+  }
+  .search input::placeholder{ color: var(--cream-faint); }
+
+  /* scroll area */
+  .scroll{
+    flex:1; overflow-y:auto; padding-bottom: 14px;
+  }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  /* requests section */
+  .section-label{
+    display:flex; align-items:center; justify-content:space-between;
+    padding: 20px 22px 10px 22px;
+  }
+  .section-label .t{
+    font-size:13px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase;
+    color: var(--gold-soft);
+  }
+  .section-label .count{
+    font-family:'JetBrains Mono'; font-size:12px; color: var(--cream-faint);
+  }
+
+  .requests-row{
+    display:flex; gap:12px; overflow-x:auto; padding: 2px 22px 6px 22px;
+  }
+  .requests-row::-webkit-scrollbar{ display:none; }
+
+  .req-card{
+    flex:none; width:128px;
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius:18px;
+    padding:14px 12px 12px 12px;
+    display:flex; flex-direction:column; align-items:center;
+    gap:8px;
+  }
+  .req-avatar{
+    width:54px; height:54px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:17px; color: var(--bg-deep);
+  }
+  .req-name{ font-size:13px; font-weight:600; color:var(--cream); text-align:center; }
+  .req-actions{ display:flex; gap:6px; width:100%; }
+  .btn-mini{
+    flex:1; height:28px; border-radius:9px; border:none;
+    font-family:'Noto Sans'; font-size:11.5px; font-weight:700;
+    display:flex; align-items:center; justify-content:center;
+  }
+  .btn-mini.accept{ background: var(--gold); color:#1c1404; }
+  .btn-mini.decline{ background: rgba(232,222,199,0.07); color: var(--cream-dim); border:1px solid var(--line); }
+
+  .divider-soft{
+    height:1px; background: var(--line); margin: 18px 22px 4px 22px;
+  }
+
+  /* chat list */
+  .chat-list{ padding: 6px 10px 0 10px; }
+
+  .chat-item{
+    display:flex; align-items:center; gap:13px;
+    padding: 12px 12px;
+    margin: 4px 0;
+    border-radius:18px;
+    position:relative;
+  }
+  .chat-item:active{ background: var(--card); }
+
+  .avatar-wrap{ position:relative; flex:none; }
+  .avatar{
+    width:54px; height:54px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:700; font-size:18px; color:#1c1404;
+  }
+  .avatar.ring{
+    box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4px var(--gold);
+  }
+  .online-dot{
+    position:absolute; right:1px; bottom:1px;
+    width:13px; height:13px; border-radius:50%;
+    background: var(--green);
+    border:2.5px solid var(--bg);
+  }
+
+  .chat-mid{ flex:1; min-width:0; }
+  .chat-top{ display:flex; align-items:baseline; justify-content:space-between; gap:8px; }
+  .chat-name{ font-size:15.5px; font-weight:700; color:var(--cream); }
+  .chat-time{
+    font-family:'JetBrains Mono'; font-size:11px; color: var(--cream-faint);
+    flex:none;
+  }
+  .chat-time.unread{ color: var(--gold-soft); font-weight:600; }
+
+  .chat-bottom{ display:flex; align-items:center; justify-content:space-between; gap:8px; margin-top:3px; }
+  .chat-msg{
+    font-size:13.5px; color: var(--cream-dim);
+    overflow:hidden; text-overflow:ellipsis; white-space:nowrap;
+  }
+  .chat-msg.unread-text{ color: var(--cream); font-weight:500; }
+  .chat-msg .you{ color: var(--cream-faint); }
+
+  .badge{
+    flex:none;
+    min-width:20px; height:20px; border-radius:10px;
+    background: var(--gold);
+    color:#1c1404; font-family:'JetBrains Mono'; font-weight:700; font-size:11px;
+    display:flex; align-items:center; justify-content:center;
+    padding:0 6px;
+  }
+
+  .empty-hint{
+    margin: 8px 22px 0 22px;
+    padding: 14px 16px;
+    border-radius:16px;
+    background: var(--gold-dim);
+    border: 1px solid rgba(212,169,74,0.28);
+    font-size:12.5px; color: var(--gold-soft); line-height:1.5;
+  }
+
+  /* bottom nav */
+  .navbar{
+    flex:none;
+    height:84px;
+    background: var(--bg-deep);
+    border-top:1px solid var(--line);
+    display:flex; align-items:center; justify-content:space-around;
+    padding-bottom: 16px;
+  }
+  .nav-item{
+    display:flex; flex-direction:column; align-items:center; gap:5px;
+    color: var(--cream-faint);
+    font-size:11px; font-weight:600;
+    width:64px;
+  }
+  .nav-item.active{ color: var(--gold-soft); }
+  .nav-icon{ width:24px; height:24px; }
+  .nav-dot{
+    width:4px; height:4px; border-radius:50%; background: var(--gold);
+    margin-top:-2px;
+  }
+
+  /* avatar color variety */
+  .c1{ background: linear-gradient(135deg,#E8C879,#C9933A); }
+  .c2{ background: linear-gradient(135deg,#7FB8A0,#3F9E63); }
+  .c3{ background: linear-gradient(135deg,#E0958C,#C85850); }
+  .c4{ background: linear-gradient(135deg,#9AB6D9,#4E7AA8); }
+  .c5{ background: linear-gradient(135deg,#D4A94A,#9C7327); }
+  .c6{ background: linear-gradient(135deg,#B79AD9,#7551A8); }
+
+
+/* ===== APP MODE: phone mockup frame removed ===== */
+.preview-bar,
+.island,
+.status-bar,
+.statusbar,
+.notch{
+  display:none !important;
+}
+html,body{
+  width:100% !important;
+  min-height:100vh !important;
+}
+body{
+  padding:0 !important;
+  margin:0 !important;
+  gap:0 !important;
+  display:flex !important;
+  align-items:stretch !important;
+  justify-content:center !important;
+  background:#05090f !important;
+}
+.phone,
+.device{
+  width:100% !important;
+  max-width:430px !important;
+  height:100dvh !important;
+  max-height:none !important;
+  border-radius:0 !important;
+  box-shadow:none !important;
+}
+.screen-area{
+  flex:1 1 auto !important;
+}
+@media (max-width:430px){
+  .phone,.device{width:100% !important;height:100dvh !important;max-height:none !important;}
+}
+
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="notch"></div>
+
+  <div class="statusbar">
+    <span>9:41</span>
+    <div class="icons">
+      <span>•••• LTE</span>
+      <span>100%</span>
+    </div>
+  </div>
+
+  <div class="header">
+    <div class="header-row">
+      <div class="title">Чатҳо</div>
+      <div class="icon-btn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#D4A94A" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+      </div>
+    </div>
+    <div class="ornament"></div>
+  </div>
+
+  <div class="search">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+    <input type="text" placeholder="Ҷустуҷӯи дӯстон ё чатҳо">
+  </div>
+
+  <div class="scroll">
+
+    <!-- Friend requests -->
+    <div class="section-label">
+      <div class="t">Дархостҳо</div>
+      <div class="count">2 нав</div>
+    </div>
+
+    <div class="requests-row">
+      <div class="req-card">
+        <div class="req-avatar c4">Б.Қ</div>
+        <div class="req-name">Бахтиёр Қ.</div>
+        <div class="req-actions">
+          <button class="btn-mini accept">Қабул</button>
+          <button class="btn-mini decline">Рад</button>
+        </div>
+      </div>
+      <div class="req-card">
+        <div class="req-avatar c2">Н.С</div>
+        <div class="req-name">Нигина С.</div>
+        <div class="req-actions">
+          <button class="btn-mini accept">Қабул</button>
+          <button class="btn-mini decline">Рад</button>
+        </div>
+      </div>
+      <div class="req-card">
+        <div class="req-avatar c6">Ҷ.Р</div>
+        <div class="req-name">Ҷамшед Р.</div>
+        <div class="req-actions">
+          <button class="btn-mini accept">Қабул</button>
+          <button class="btn-mini decline">Рад</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="divider-soft"></div>
+
+    <!-- Chat list -->
+    <div class="section-label" style="padding-top:14px;">
+      <div class="t">Дӯстон</div>
+      <div class="count">6 фаъол</div>
+    </div>
+
+    <div class="chat-list">
+
+      <div class="chat-item">
+        <div class="avatar-wrap">
+          <div class="avatar ring c1">Ф.Қ</div>
+          <div class="online-dot"></div>
+        </div>
+        <div class="chat-mid">
+          <div class="chat-top">
+            <div class="chat-name">Фарзона Қурбонова</div>
+            <div class="chat-time unread">12:04</div>
+          </div>
+          <div class="chat-bottom">
+            <div class="chat-msg unread-text">Ин китобро хондӣ? Хеле ҷолиб аст 📚</div>
+            <div class="badge">3</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar-wrap">
+          <div class="avatar c5">Ш.Қ</div>
+        </div>
+        <div class="chat-mid">
+          <div class="chat-top">
+            <div class="chat-name">Шерали Қодиров</div>
+            <div class="chat-time">Дирӯз</div>
+          </div>
+          <div class="chat-bottom">
+            <div class="chat-msg"><span class="you">Шумо:</span> Раҳмат барои тавсия!</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar-wrap">
+          <div class="avatar ring c2">Г.Ҳ</div>
+          <div class="online-dot"></div>
+        </div>
+        <div class="chat-mid">
+          <div class="chat-top">
+            <div class="chat-name">Гулнора Ҳакимова</div>
+            <div class="chat-time unread">10:47</div>
+          </div>
+          <div class="chat-bottom">
+            <div class="chat-msg unread-text">Пагоҳ дар китобхона вохӯрем?</div>
+            <div class="badge">1</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar-wrap">
+          <div class="avatar c3">Х.Н</div>
+        </div>
+        <div class="chat-mid">
+          <div class="chat-top">
+            <div class="chat-name">Хуршед Назаров</div>
+            <div class="chat-time">Душанбе</div>
+          </div>
+          <div class="chat-bottom">
+            <div class="chat-msg">Овоз додам ба рӯйхати хониш 👍</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar-wrap">
+          <div class="avatar c4">М.С</div>
+        </div>
+        <div class="chat-mid">
+          <div class="chat-top">
+            <div class="chat-name">Мадина Сафарова</div>
+            <div class="chat-time">Якшанбе</div>
+          </div>
+          <div class="chat-bottom">
+            <div class="chat-msg"><span class="you">Шумо:</span> Бубахшед, дер ҷавоб медиҳам</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="chat-item">
+        <div class="avatar-wrap">
+          <div class="avatar c6">Р.Т</div>
+        </div>
+        <div class="chat-mid">
+          <div class="chat-top">
+            <div class="chat-name">Рустам Турсунов</div>
+            <div class="chat-time">14 май</div>
+          </div>
+          <div class="chat-bottom">
+            <div class="chat-msg">Шарҳи ту дар бораи китоб хуб буд</div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+    <div class="empty-hint">
+      Дар ин ҷо танҳо дӯстоне нишон дода мешаванд, ки дархости шуморо қабул кардаанд.
+    </div>
+
+  </div>
+
+  <!-- Bottom nav -->
+  <div class="navbar">
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11.5 12 4l9 7.5"/><path d="M5 10v9a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-9"/></svg>
+      <span>Хона</span>
+    </div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5C4 4.7 4.7 4 5.5 4H11v16H5.5A1.5 1.5 0 0 1 4 18.5z"/><path d="M20 5.5c0-.8-.7-1.5-1.5-1.5H13v16h5.5a1.5 1.5 0 0 0 1.5-1.5z"/></svg>
+      <span>Китобҳо</span>
+    </div>
+    <div class="nav-item active">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="#E8C879" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8z"/></svg>
+      <span>Чатҳо</span>
+      <div class="nav-dot"></div>
+    </div>
+    <div class="nav-item">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/></svg>
+      <span>Профил</span>
+    </div>
+  </div>
+
+</div>
+
+
+<script>
+(function(){
+  const reqRow = document.querySelector('.requests-row');
+  const chatList = document.querySelector('.chat-list');
+  const labels = document.querySelectorAll('.section-label .count');
+  const searchInput = document.querySelector('.search input');
+  const escLocal = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const initials = name => (String(name || 'Китобхон').trim().split(/\s+/).slice(0,2).map(x=>x[0]).join('') || 'К').toUpperCase();
+  let rowsCache = [];
+
+  function setEmpty(){
+    reqRow.innerHTML = '<div class="empty-hint">Дархости нав нест</div>';
+    chatList.innerHTML = '<div class="empty-hint">Ҳоло дӯст ё чат нест</div>';
+    if(labels[0]) labels[0].textContent = '0 нав';
+    if(labels[1]) labels[1].textContent = '0 фаъол';
+  }
+  async function profileMap(ids){
+    const map = new Map();
+    await Promise.all([...new Set(ids)].filter(Boolean).map(async id=>{
+      try{
+        const p = await apiGet('profiles', {eq:{column:'id', value:id}, single:true});
+        if(p) map.set(id, p);
+      }catch(_){}
+    }));
+    return map;
+  }
+  async function acceptRequest(id){
+    try{
+      await apiPatch('friend_requests', 'id', id, {status:'accepted'});
+      await loadChats();
+    }catch(_){}
+  }
+  async function declineRequest(id){
+    try{
+      await apiPatch('friend_requests', 'id', id, {status:'declined'});
+      await loadChats();
+    }catch(_){}
+  }
+  window.acceptRequest = acceptRequest;
+  window.declineRequest = declineRequest;
+
+  function renderLists(requests, friends, profiles){
+    if(labels[0]) labels[0].textContent = `${requests.length} нав`;
+    if(labels[1]) labels[1].textContent = `${friends.length} фаъол`;
+    reqRow.innerHTML = requests.length ? requests.map(r=>{
+      const p = profiles.get(r.from_user) || {};
+      const name = p.display_name || p.full_name || 'Китобхон';
+      return `<div class="req-card"><div class="req-avatar c4">${escLocal(initials(name))}</div><div class="req-name">${escLocal(name)}</div><div class="req-actions"><button class="btn-mini accept" onclick="acceptRequest('${r.id}')">Қабул</button><button class="btn-mini decline" onclick="declineRequest('${r.id}')">Рад</button></div></div>`;
+    }).join('') : '<div class="empty-hint">Дархости нав нест</div>';
+    rowsCache = friends.map((r, i)=>{
+      const friendId = r.from_user === window.KK_USER_ID ? r.to_user : r.from_user;
+      const p = profiles.get(friendId) || {};
+      const name = p.display_name || p.full_name || 'Китобхон';
+      return {id: friendId, name, cls:`c${(i%6)+1}`};
+    });
+    renderFriends();
+  }
+  function renderFriends(){
+    const q = (searchInput?.value || '').trim().toLowerCase();
+    const rows = rowsCache.filter(x=>!q || x.name.toLowerCase().includes(q));
+    chatList.innerHTML = rows.length ? rows.map(x=>`<div class="chat-item" onclick="location.href='chat.html?to=${encodeURIComponent(x.id)}&name=${encodeURIComponent(x.name)}'"><div class="avatar-wrap"><div class="avatar ${x.cls}">${escLocal(initials(x.name))}</div></div><div class="chat-mid"><div class="chat-top"><div class="chat-name">${escLocal(x.name)}</div><div class="chat-time"></div></div><div class="chat-bottom"><div class="chat-msg">Паёмҳо баъди навиштан пайдо мешаванд</div></div></div></div>`).join('') : '<div class="empty-hint">Ҳоло дӯст ё чат нест</div>';
+  }
+  async function loadChats(){
+    setEmpty();
+    try{
+      const {data} = await AUTH.getUser();
+      const user = data.user;
+      if(!user) return;
+      window.KK_USER_ID = user.id;
+      const fromMe = await apiGet('friend_requests', {eq:{column:'from_user', value:user.id}, limit:100});
+      const toMe = await apiGet('friend_requests', {eq:{column:'to_user', value:user.id}, limit:100});
+      const all = [...(fromMe || []), ...(toMe || [])];
+      const requests = all.filter(r=>r.to_user === user.id && r.status === 'pending');
+      const friends = all.filter(r=>r.status === 'accepted');
+      const profiles = await profileMap(all.flatMap(r=>[r.from_user, r.to_user]));
+      renderLists(requests, friends, profiles);
+    }catch(_){
+      setEmpty();
+    }
+  }
+  if(searchInput) searchInput.addEventListener('input', renderFriends);
+  loadChats();
+})();
+</script>
+
+<script>
+(function(){
+  const page = location.pathname.split('/').pop();
+  const go = {
+    feed:'./honandagon.html', lenta:'./honandagon.html', home:'./honandagon.html',
+    winners:'./winners.html', golib:'./winners.html', gholib:'./winners.html',
+    profile:'./profile.html',
+    chat:'./chat.html', chats:'./chats.html', login:'./login.html'
+  };
+  document.querySelectorAll('.navbar .nav-item, .bottom-nav .nav-item, .bottom .nav-item, .bottom .bn, .bottom-nav a, .bottom a').forEach(el=>{
+    const text=(el.textContent||'').toLowerCase();
+    if(text.includes('лент')||text.includes('хона')) el.onclick=()=>{location.href=go.feed};
+    else if(text.includes('ғол')||text.includes('гол')||text.includes('🏆')) el.onclick=()=>{location.href=go.winners};
+    else if(text.includes('проф')||text.includes('👤')) el.onclick=()=>{location.href=go.profile};
+  });
+})();
+</script>
+
+</body>
+</html>

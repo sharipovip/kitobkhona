@@ -1,0 +1,677 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Лента — Китобхона</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700;900&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* === Ваши стили (сохраняем дизайн) === */
+  :root{
+    --bg:#0B1726;
+    --bg-2:#0E2034;
+    --card:#152840;
+    --card-2:#1B3150;
+    --card-soft:#10233A;
+    --gold:#DCB55E;
+    --gold-deep:#B68B33;
+    --gold-soft:rgba(220,181,94,0.14);
+    --green:#4F9D70;
+    --green-soft:rgba(79,157,112,0.16);
+    --red:#BD5650;
+    --red-soft:rgba(189,86,80,0.16);
+    --teal:#4C92AE;
+    --teal-soft:rgba(76,146,174,0.16);
+    --white-mot:#EDE7D6;
+    --cream:#F3ECDD;
+    --cream-dim:#C9C0AC;
+    --muted:#8CA0B8;
+    --line:rgba(220,181,94,0.16);
+    --shadow:0 18px 40px -12px rgba(0,0,0,0.55);
+    --radius-lg:20px;
+    --radius-md:14px;
+    --radius-sm:9px;
+  }
+  [data-theme="light"]{
+    --bg:#F3EEE2; --bg-2:#EAE2D2; --card:#FFFFFF; --card-2:#FBF7EE; --card-soft:#F4EEE0;
+    --gold:#B6863A; --gold-deep:#8F6A28; --gold-soft:rgba(182,134,58,0.12);
+    --green:#3F7E58; --green-soft:rgba(63,126,88,0.12);
+    --red:#A8463F; --red-soft:rgba(168,70,63,0.12);
+    --teal:#386E83; --teal-soft:rgba(56,110,131,0.12);
+    --white-mot:#FFFFFF; --cream:#23211B; --cream-dim:#5C5749; --muted:#7B7563;
+    --line:rgba(182,134,58,0.22); --shadow:0 14px 30px -10px rgba(60,50,30,0.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Noto Sans', sans-serif;
+    background:radial-gradient(circle at 20% 0%, #16304a 0%, transparent 45%), radial-gradient(circle at 85% 90%, #0c1c2e 0%, transparent 50%), #0a1320;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
+    color:var(--cream);
+  }
+  [data-theme="light"] body{background:radial-gradient(circle at 20% 0%, #fbf4e3 0%, transparent 45%), radial-gradient(circle at 85% 90%, #efe3c8 0%, transparent 50%), #f0e8d6;}
+
+  .theme-btn{
+    position:fixed; top:16px; right:16px;
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid rgba(220,181,94,0.3);
+    background:rgba(255,255,255,0.04);
+    color:var(--cream);
+    cursor:pointer; font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(6px);
+    z-index:100;
+  }
+
+  .lenta-container{
+    width:100%; max-width:420px;
+    background:var(--bg);
+    border-radius:32px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(232,222,199,0.08), 0 40px 80px rgba(0,0,0,0.55);
+    display:flex;
+    flex-direction:column;
+    padding: 20px 0 12px;
+  }
+
+  .top-app-bar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px 10px;
+  }
+  .brand-mini{
+    display:flex;
+    align-items:center;
+    gap:8px;
+  }
+  .brand-mini svg{width:24px; height:24px;}
+  .brand-mini span{font-family:'Noto Serif'; font-size:18px; font-weight:700; color:var(--gold);}
+
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    padding:0 0 12px;
+  }
+  .scroll::-webkit-scrollbar{display:none;}
+
+  /* Stories (демо) */
+  .stories-rail{
+    display:flex;
+    gap:14px;
+    padding:6px 18px 16px;
+    overflow-x:auto;
+    scrollbar-width:none;
+  }
+  .stories-rail::-webkit-scrollbar{display:none;}
+  .story-item{
+    flex:0 0 auto;
+    width:60px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:6px;
+    cursor:pointer;
+  }
+  .story-ring{
+    width:58px; height:58px;
+    border-radius:50%;
+    padding:2.5px;
+    background:conic-gradient(var(--gold), var(--red), var(--green), var(--gold));
+  }
+  .story-ring.seen{background:var(--line);}
+  .story-ring.add{background:transparent; border:1.6px dashed var(--gold); display:flex; align-items:center; justify-content:center;}
+  .story-inner{
+    width:100%; height:100%;
+    border-radius:50%;
+    background:var(--card-2);
+    border:2.5px solid var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+  }
+  .story-name{font-size:10px; color:var(--cream-dim); max-width:60px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+
+  /* Feed */
+  .feed{
+    display:flex;
+    flex-direction:column;
+    gap:14px;
+    padding:2px 14px 6px;
+  }
+
+  .post-card{
+    background:var(--card);
+    border:1px solid var(--line);
+    border-radius:var(--radius-lg);
+    padding:13px;
+    display:flex;
+    flex-direction:column;
+    gap:11px;
+  }
+  .post-card.achieve{border-color:rgba(220,181,94,0.4);}
+
+  .post-head{
+    display:flex;
+    align-items:center;
+    gap:10px;
+  }
+  .av{
+    width:40px; height:40px;
+    border-radius:50%;
+    padding:2px;
+    background:conic-gradient(var(--gold), var(--teal), var(--green), var(--gold));
+    flex:0 0 auto;
+  }
+  .av-inner{
+    width:100%; height:100%;
+    border-radius:50%;
+    background:var(--card-2);
+    border:2px solid var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+  }
+  .post-head-text{flex:1; min-width:0;}
+  .post-name{font-size:13.5px; font-weight:700; color:var(--cream);}
+  .post-time{font-size:11px; color:var(--muted);}
+
+  .post-caption{font-size:13px; color:var(--cream-dim); line-height:1.45;}
+
+  .book-block{
+    display:flex;
+    gap:11px;
+    align-items:center;
+    background:var(--card-soft);
+    border:1px solid var(--line);
+    border-radius:var(--radius-md);
+    padding:10px;
+    cursor:pointer;
+  }
+  .thumb{
+    position:relative;
+    width:54px; height:76px;
+    border-radius:7px;
+    flex:0 0 auto;
+    overflow:hidden;
+    box-shadow:0 6px 14px -6px rgba(0,0,0,0.55);
+  }
+  .thumb img{width:100%; height:100%; object-fit:cover;}
+  .thumb .fallback{
+    width:100%; height:100%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:24px;
+    background:linear-gradient(160deg, var(--card-2), var(--bg-2));
+  }
+  .book-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
+  .book-title{font-family:'Noto Serif'; font-size:14px; font-weight:700; color:var(--cream); line-height:1.2;}
+  .book-author{font-size:11.5px; color:var(--muted);}
+  .status-chip{
+    display:inline-flex;
+    align-items:center;
+    gap:4px;
+    font-size:10.5px;
+    font-weight:700;
+    padding:3px 8px;
+    border-radius:999px;
+    width:fit-content;
+    margin-top:2px;
+  }
+  .chip-reading{color:var(--teal); background:var(--teal-soft); border:1px solid rgba(76,146,174,0.3);}
+  .chip-finished{color:var(--green); background:var(--green-soft); border:1px solid rgba(79,157,112,0.3);}
+  .chip-achieve{color:var(--gold); background:var(--gold-soft); border:1px solid var(--line);}
+  .progress-track{height:5px; border-radius:4px; background:var(--line); margin-top:4px; overflow:hidden;}
+  .progress-fill{height:100%; background:linear-gradient(90deg, var(--gold-deep), var(--gold)); border-radius:4px;}
+
+  .post-actions{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding-top:9px;
+    border-top:1px solid var(--line);
+  }
+  .action-group{display:flex; gap:16px;}
+  .action-btn{
+    display:flex;
+    align-items:center;
+    gap:5px;
+    font-size:12.5px;
+    color:var(--muted);
+    cursor:pointer;
+    user-select:none;
+  }
+  .action-btn .ic{font-size:17px; transition:transform .12s;}
+  .action-btn.liked{color:var(--red);}
+  .action-btn.liked .ic{transform:scale(1.08);}
+  .save-btn{color:var(--muted); font-size:17px; cursor:pointer;}
+  .save-btn.saved{color:var(--gold);}
+
+  .post-comments{display:flex; flex-direction:column; gap:5px;}
+  .comment-line{font-size:12px; color:var(--cream-dim); line-height:1.4;}
+  .comment-line b{color:var(--cream); font-weight:700;}
+  .view-comments{font-size:11.5px; color:var(--muted); cursor:pointer;}
+  .comment-input-row{
+    display:flex;
+    align-items:center;
+    gap:8px;
+    margin-top:3px;
+  }
+  .comment-input-row .av{width:26px; height:26px; padding:1.5px;}
+  .comment-input-row .av-inner{border-width:1.5px;}
+  .comment-input{
+    flex:1;
+    background:var(--card-soft);
+    border:1px solid var(--line);
+    border-radius:999px;
+    padding:6px 13px;
+    font-size:12px;
+    color:var(--cream-dim);
+    outline:none;
+  }
+  .comment-input:focus{border-color:var(--gold);}
+  .send-ic{color:var(--gold); font-size:16px; cursor:pointer;}
+
+  .empty-feed{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:14px;
+    padding:40px 20px;
+    text-align:center;
+  }
+  .empty-feed h3{font-size:17px; color:var(--cream);}
+  .empty-feed p{font-size:13px; color:var(--muted); line-height:1.55;}
+
+  .btn{
+    padding:10px 18px;
+    border-radius:14px;
+    font-family:'Noto Sans';
+    font-size:13.5px;
+    font-weight:700;
+    border:none;
+    cursor:pointer;
+  }
+  .btn-outline{background:transparent; color:var(--cream); border:1.4px solid rgba(220,181,94,0.45);}
+  .btn-primary{background:linear-gradient(180deg, #E8C778, var(--gold-deep)); color:#1A1206; box-shadow:0 10px 22px -8px rgba(220,181,94,0.55);}
+
+  .bottom-nav{
+    flex:0 0 auto;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    padding: 10px 0 0;
+    border-top:1px solid var(--line);
+    margin-top:8px;
+  }
+  .nav-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-size:10.5px;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .nav-item .ic{font-size:18px; line-height:1;}
+  .nav-item.active{color:var(--gold); font-weight:700;}
+
+  .loading-spinner{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px 0;
+    color:var(--muted);
+    gap:10px;
+  }
+  .spinner{width:20px; height:20px; border:2px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* Адаптация под мобильные */
+  @media (max-width:430px){
+    body{padding:10px;}
+  }
+</style>
+</head>
+<body>
+  <button class="theme-btn" id="themeToggle">🌙</button>
+
+  <div class="lenta-container">
+    <div class="top-app-bar">
+      <div class="brand-mini">
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+          <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
+        </svg>
+        <span>Китобхона</span>
+      </div>
+      <div class="icon-btn" onclick="location.href='profile.html'" style="width:36px;height:36px;border-radius:50%;background:var(--card-soft);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold);cursor:pointer;">👤</div>
+    </div>
+
+    <div class="scroll" id="feedScroll">
+      <div class="loading-spinner"><div class="spinner"></div> Боргирӣ...</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="location.href='index.html'"><span class="ic">🏠</span><span>Асосӣ</span></div>
+      <div class="nav-item" onclick="location.href='kitobho.html'"><span class="ic">📚</span><span>Китобҳо</span></div>
+      <div class="nav-item active" onclick="location.href='Lenta.html'"><span class="ic">📰</span><span>Лента</span></div>
+      <div class="nav-item" onclick="location.href='profile.html'"><span class="ic">👤</span><span>Профил</span></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // Theme toggle
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', ()=>{
+      const isDark = document.body.dataset.theme === 'dark';
+      document.body.dataset.theme = isDark ? 'light' : 'dark';
+      themeBtn.textContent = isDark ? '☀️' : '🌙';
+    });
+    if(localStorage.getItem('kk_theme') === 'light'){
+      document.body.dataset.theme = 'light';
+      themeBtn.textContent = '☀️';
+    }
+
+    let currentUser = null;
+
+    async function loadFeed() {
+      const scroll = document.getElementById('feedScroll');
+
+      try {
+        const { data } = await AUTH.getUser();
+        currentUser = data.user;
+        if(!currentUser) {
+          scroll.innerHTML = `
+            <div class="empty-feed">
+              <h3>Лента холӣ аст</h3>
+              <p>Барои дидани лента ворид шавед</p>
+              <button class="btn btn-primary" onclick="location.href='login.html'">Ворид шудан</button>
+            </div>
+          `;
+          return;
+        }
+
+        // Загружаем посты из таблицы posts
+        // Сначала получаем друзей, чтобы фильтровать только друзей для visibility='friends'
+        const friends = await ChatAPI.getFriends(currentUser.id).catch(() => []);
+        const friendIds = friends.map(id => `'${id}'`).join(',');
+
+        // Запрос к таблице posts через Supabase
+        // Показываем публичные посты и посты друзей
+        let posts = [];
+        try {
+          // Получаем все посты
+          const allPosts = await apiGet('posts', {
+            order: 'created_at.desc',
+            limit: 50
+          });
+          // Фильтруем: публичные или друзья
+          const filtered = allPosts.filter(p => {
+            if(p.visibility === 'public') return true;
+            if(p.visibility === 'friends' && friends.includes(p.user_id)) return true;
+            return false;
+          });
+          posts = filtered;
+        } catch(e) {
+          console.warn('Posts load error', e);
+        }
+
+        // Если постов нет — показываем пустое состояние
+        if(!posts || posts.length === 0) {
+          scroll.innerHTML = `
+            <div class="empty-feed">
+              <h3>Лента холӣ аст</h3>
+              <p>Вақте ки шумо ё дӯстонатон дар бораи китобе нависанд, он дар ин ҷо намоён мешавад.</p>
+              <button class="btn btn-outline" onclick="location.href='kitobho.html'">Китобҳоро дидан</button>
+            </div>
+          `;
+          return;
+        }
+
+        // Получаем профили пользователей для постов
+        const userIds = [...new Set(posts.map(p => p.user_id))];
+        const profiles = {};
+        await Promise.all(userIds.map(async (id) => {
+          try {
+            const p = await AUTH.getProfileFromRailway(id);
+            if(p) profiles[id] = p;
+          } catch(e) {}
+        }));
+
+        // Загружаем лайки и комментарии (для каждого поста)
+        // Для простоты пока используем счётчики из таблицы posts
+        // Но можно сделать отдельные запросы для подсчёта
+
+        // Формируем HTML
+        const colors = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
+        let html = '';
+
+        // Stories (демо)
+        html += `
+          <div class="stories-rail">
+            <div class="story-item" onclick="location.href='kitobho.html'">
+              <div class="story-ring add"><div class="story-inner">+</div></div>
+              <div class="story-name">Нав</div>
+            </div>
+          </div>
+        `;
+
+        // Посты
+        html += `<div class="feed">`;
+        for(const post of posts) {
+          const profile = profiles[post.user_id] || {};
+          const displayName = profile.display_name || profile.full_name || 'Китобхон';
+          const avatarEmoji = profile.avatar_emoji || '👤';
+          const timeAgo = formatTime(post.created_at);
+          const bookTitle = post.book_title || 'Китоб';
+          const bookAuthor = post.book_author || '';
+          const bookUrl = post.book_url || '';
+          const bookCover = post.book_cover || '';
+          const status = post.status || 'reading';
+          const progress = post.progress || 0;
+          const likes = post.likes_count || 0;
+          const comments = post.comments_count || 0;
+          const content = post.content || '';
+
+          html += `
+            <div class="post-card ${status === 'achievement' ? 'achieve' : ''}">
+              <div class="post-head">
+                <div class="av"><div class="av-inner">${esc(avatarEmoji)}</div></div>
+                <div class="post-head-text">
+                  <div class="post-name">${esc(displayName)}</div>
+                  <div class="post-time">${timeAgo}</div>
+                </div>
+              </div>
+              ${content ? `<div class="post-caption">${esc(content)}</div>` : ''}
+              <div class="book-block" onclick="openBook('${encodeURIComponent(bookUrl)}','${encodeURIComponent(bookTitle)}')">
+                <div class="thumb">
+                  ${bookCover ? `<img src="${esc(bookCover)}" alt="${esc(bookTitle)}">` : `<div class="fallback">📖</div>`}
+                </div>
+                <div class="book-info">
+                  <div class="book-title">${esc(bookTitle)}</div>
+                  ${bookAuthor ? `<div class="book-author">${esc(bookAuthor)}</div>` : ''}
+                  <div class="status-chip ${status === 'finished' ? 'chip-finished' : status === 'achievement' ? 'chip-achieve' : 'chip-reading'}">
+                    ${status === 'finished' ? '✅ Хатм кард' : status === 'achievement' ? '🏆 Дастовард' : '📖 Дар ҳоли хондан'}
+                  </div>
+                  ${progress > 0 ? `<div class="progress-track"><div class="progress-fill" style="width:${Math.min(progress,100)}%"></div></div>` : ''}
+                </div>
+              </div>
+              <div class="post-actions">
+                <div class="action-group">
+                  <div class="action-btn" onclick="toggleLike(this, '${post.id}')">
+                    <span class="ic">♡</span><span class="cnt">${likes}</span>
+                  </div>
+                  <div class="action-btn" onclick="toggleComments(this, '${post.id}')">
+                    <span class="ic">💬</span><span>${comments}</span>
+                  </div>
+                  <div class="action-btn" onclick="sharePost('${encodeURIComponent(bookUrl)}','${encodeURIComponent(bookTitle)}')">
+                    <span class="ic">↗</span>
+                  </div>
+                </div>
+                <div class="save-btn" onclick="toggleSave(this, '${post.id}')">🔖</div>
+              </div>
+              <div class="post-comments" id="comments-${post.id}">
+                <!-- комментарии будут загружены отдельно -->
+                <div class="view-comments" onclick="loadComments('${post.id}')">Дидани шарҳҳо</div>
+                <div class="comment-input-row">
+                  <div class="av"><div class="av-inner">${esc(avatarEmoji)}</div></div>
+                  <input class="comment-input" type="text" id="commentInput-${post.id}" placeholder="Шарҳ нависед...">
+                  <div class="send-ic" onclick="addComment('${post.id}')">➤</div>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        html += `</div>`;
+        scroll.innerHTML = html;
+
+      } catch(e) {
+        console.error(e);
+        scroll.innerHTML = `<div class="empty-feed"><h3>Хатогӣ</h3><p>${esc(e.message)}</p></div>`;
+      }
+    }
+
+    // ===== Вспомогательные функции =====
+
+    function formatTime(dateStr) {
+      if(!dateStr) return '';
+      const date = new Date(dateStr);
+      const now = new Date();
+      const diff = Math.floor((now - date) / 1000);
+      if(diff < 60) return 'ҳозир';
+      if(diff < 3600) return Math.floor(diff/60) + ' дақ';
+      if(diff < 86400) return Math.floor(diff/3600) + ' соат';
+      if(diff < 604800) return Math.floor(diff/86400) + ' рӯз';
+      return date.toLocaleDateString('tg');
+    }
+
+    function openBook(url, name) {
+      if(url) location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}`;
+      else location.href = 'kitobho.html';
+    }
+
+    function toggleLike(btn, postId) {
+      const icon = btn.querySelector('.ic');
+      const cnt = btn.querySelector('.cnt');
+      const liked = btn.classList.toggle('liked');
+      icon.textContent = liked ? '♥' : '♡';
+      cnt.textContent = parseInt(cnt.textContent) + (liked ? 1 : -1);
+      // Сохраняем лайк в базу
+      if(currentUser) {
+        // Здесь можно сделать запрос к таблице post_likes
+        // Для простоты пока только локально
+      }
+    }
+
+    function toggleSave(btn, postId) {
+      btn.classList.toggle('saved');
+      // Сохраняем в избранное (user_favorites)
+      // Для простоты пока локально
+    }
+
+    function sharePost(url, name) {
+      if(navigator.share) {
+        navigator.share({ title: name, url: url || window.location.origin });
+      } else {
+        navigator.clipboard.writeText(url || window.location.origin).then(() => alert('Линк нусха бардошта шуд'));
+      }
+    }
+
+    function toggleComments(btn, postId) {
+      const commentsDiv = document.getElementById(`comments-${postId}`);
+      if(commentsDiv) {
+        const viewMore = commentsDiv.querySelector('.view-comments');
+        if(viewMore) viewMore.click();
+      }
+    }
+
+    async function loadComments(postId) {
+      const container = document.getElementById(`comments-${postId}`);
+      if(!container) return;
+      try {
+        const comments = await apiGet('post_comments', {
+          eq: { column: 'post_id', value: postId },
+          order: 'created_at.desc',
+          limit: 5
+        });
+        if(comments && comments.length) {
+          // Показываем комментарии
+          const existing = container.querySelectorAll('.comment-line');
+          existing.forEach(el => el.remove());
+          comments.forEach(c => {
+            const line = document.createElement('div');
+            line.className = 'comment-line';
+            const userName = c.user_name || 'Китобхон';
+            line.innerHTML = `<b>${esc(userName)}:</b> ${esc(c.text)}`;
+            container.insertBefore(line, container.querySelector('.view-comments'));
+          });
+          const viewMore = container.querySelector('.view-comments');
+          if(viewMore) viewMore.textContent = 'Пӯшидан';
+          viewMore.onclick = () => {
+            const lines = container.querySelectorAll('.comment-line');
+            lines.forEach(el => el.remove());
+            viewMore.textContent = 'Дидани шарҳҳо';
+            viewMore.onclick = () => loadComments(postId);
+          };
+        } else {
+          const viewMore = container.querySelector('.view-comments');
+          if(viewMore) viewMore.textContent = 'Шарҳ нест';
+        }
+      } catch(e) {
+        console.warn('Comments load error', e);
+      }
+    }
+
+    async function addComment(postId) {
+      const input = document.getElementById(`commentInput-${postId}`);
+      if(!input || !input.value.trim()) return;
+      const text = input.value.trim();
+      input.value = '';
+      try {
+        await apiPost('post_comments', {
+          post_id: postId,
+          user_id: currentUser.id,
+          text: text,
+          user_name: currentUser.user_metadata?.display_name || 'Китобхон'
+        });
+        // Обновляем комментарии
+        loadComments(postId);
+      } catch(e) {
+        console.warn('Add comment error', e);
+      }
+    }
+
+    // Делаем функции глобальными для onclick
+    window.toggleLike = toggleLike;
+    window.toggleSave = toggleSave;
+    window.sharePost = sharePost;
+    window.toggleComments = toggleComments;
+    window.loadComments = loadComments;
+    window.addComment = addComment;
+    window.openBook = openBook;
+
+    // Инициализация
+    loadFeed();
+
+    // Автообновление каждые 30 сек
+    setInterval(loadFeed, 30000);
+  </script>
+</body>
+</html>

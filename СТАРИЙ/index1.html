@@ -62,25 +62,5 @@ async function loadWinners(){try{const data=await apiGet('v_winners',{order:'val
 $('notifBtn')?.addEventListener('click',()=>{const msg='Китобҳои нав ва пешрафти хондан дар ҳамин ҷо нишон дода мешаванд.';try{if(window.KitobAndroid&&typeof KitobAndroid.showNotification==='function')KitobAndroid.showNotification('Китобхона',msg);else alert(msg)}catch(e){alert(msg)}});
 loadContinue();loadHome();loadWinners();
 if('serviceWorker' in navigator){navigator.serviceWorker.register('sw.js').then(()=>{}).catch(()=>{});}
-
-// ===== ДОБАВЛЯЕМ ПРОВЕРКУ АВТОРИЗАЦИИ =====
-(async function() {
-  try {
-    console.log('Index: checking auth...');
-    const result = await AutoLogin.autoLogin();
-    console.log('Index: auth result:', result);
-    if (!result) {
-      console.warn('Index: no user, redirecting to login');
-      window.location.href = 'login.html';
-      return;
-    }
-    console.log('Index: welcome, user:', result.username || result.userId);
-  } catch (e) {
-    console.error('Index: auth error:', e);
-    // Если ошибка, тоже перенаправляем на логин
-    // window.location.href = 'login.html';
-  }
-})();
-
 </script>
 </body></html>

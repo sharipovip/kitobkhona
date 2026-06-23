@@ -1,0 +1,478 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<title>Вуруд — Китобхона</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="config.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
+
+  :root{
+    --bg:#0B1A2E;
+    --bg-deep:#081323;
+    --card:#142841;
+    --card-hi:#1A314E;
+    --field:#102542;
+    --line: rgba(232,222,199,0.09);
+    --line-soft: rgba(232,222,199,0.06);
+    --gold:#D4A94A;
+    --gold-soft:#E8C879;
+    --gold-dim: rgba(212,169,74,0.14);
+    --cream:#F3EBDA;
+    --cream-dim:#9FB0C5;
+    --cream-faint:#6E7F97;
+    --green:#3F9E63;
+    --red:#C85850;
+  }
+
+  *{ box-sizing:border-box; margin:0; padding:0; -webkit-tap-highlight-color: transparent;}
+  html,body{ height:100%; background:#05090f; }
+  body{
+    font-family:'Noto Sans', sans-serif;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    min-height:100vh;
+    padding:24px;
+    color: var(--cream);
+  }
+
+  .login-container{
+    width:100%;
+    max-width:420px;
+    background: linear-gradient(180deg, var(--bg) 0%, var(--bg-deep) 100%);
+    border-radius:32px;
+    overflow:hidden;
+    box-shadow: 0 0 0 1px rgba(232,222,199,0.08), 0 40px 80px rgba(0,0,0,0.55);
+    display:flex;
+    flex-direction:column;
+    padding: 24px 28px 32px;
+  }
+
+  .brand{
+    text-align:center;
+    margin-bottom:18px;
+  }
+  .brand-mark{
+    width:54px; height:54px; border-radius:16px;
+    background: linear-gradient(145deg, var(--gold-soft), #9C7327);
+    display:flex; align-items:center; justify-content:center;
+    margin:0 auto 10px;
+    box-shadow: 0 8px 20px rgba(212,169,74,0.25);
+  }
+  .brand-name{ font-size:20px; font-weight:800; letter-spacing:0.2px; }
+  .brand-sub{ font-size:12.5px; color: var(--cream-faint); margin-top:3px; }
+
+  .tabs{
+    margin: 6px 0 16px;
+    background: var(--card);
+    border:1px solid var(--line);
+    border-radius:16px;
+    padding:4px;
+    display:flex; position:relative;
+  }
+  .tab{
+    flex:1; text-align:center; padding:11px 0;
+    font-size:13.5px; font-weight:700; color: var(--cream-faint);
+    border-radius:12px; position:relative; z-index:2;
+    cursor:pointer; transition: color .2s;
+  }
+  .tab.active{ color:#1c1404; }
+  .tab-thumb{
+    position:absolute; top:4px; left:4px;
+    width: calc(50% - 4px); height: calc(100% - 8px);
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+    border-radius:12px; z-index:1;
+    transition: transform .28s cubic-bezier(.4,0,.2,1);
+  }
+  .tabs.reg .tab-thumb{ transform: translateX(100%); }
+
+  .scroll{
+    flex:1;
+    overflow-y:auto;
+    padding: 4px 0 8px;
+  }
+  .scroll::-webkit-scrollbar{ display:none; }
+
+  .panel{ display:none; }
+  .panel.show{ display:block; }
+
+  .group-label{
+    font-size:11.5px; font-weight:700; letter-spacing:1.1px; text-transform:uppercase;
+    color: var(--gold-soft);
+    margin: 18px 0 10px 2px;
+  }
+  .group-label:first-child{ margin-top:2px; }
+
+  .field{ margin-bottom:13px; }
+  .field label{
+    display:block; font-size:12.5px; font-weight:600; color: var(--cream-dim);
+    margin-bottom:7px;
+  }
+  .field .opt{
+    font-weight:500; color: var(--cream-faint); text-transform:none; letter-spacing:0;
+  }
+
+  .input-wrap{ position:relative; }
+  input[type=text], input[type=email], input[type=password], input[type=number], select{
+    width:100%; height:48px;
+    background: var(--field);
+    border:1px solid var(--line);
+    border-radius:14px;
+    padding: 0 16px;
+    color: var(--cream);
+    font-family:'Noto Sans'; font-size:14.5px;
+    outline:none;
+    appearance:none; -webkit-appearance:none;
+  }
+  input::placeholder{ color: var(--cream-faint); }
+  input:focus, select:focus{ border-color: var(--gold); background:#102845; }
+
+  select{ padding-right:40px; }
+  .input-wrap.select::after{
+    content:""; position:absolute; right:16px; top:50%; transform:translateY(-50%);
+    width:10px; height:10px;
+    border-right:2px solid var(--cream-faint); border-bottom:2px solid var(--cream-faint);
+    transform: translateY(-65%) rotate(45deg);
+    pointer-events:none;
+  }
+
+  .row2{ display:flex; gap:10px; }
+  .row2 .field{ flex:1; min-width:0; }
+
+  .forgot{
+    text-align:right; font-size:12.5px; color: var(--gold-soft); font-weight:600;
+    margin: -2px 0 18px 0;
+  }
+  .forgot a{ color: var(--gold-soft); text-decoration:none; }
+
+  .notice{
+    display:flex; gap:10px;
+    background: var(--gold-dim);
+    border:1px solid rgba(212,169,74,0.26);
+    border-radius:14px;
+    padding: 12px 14px;
+    margin-top: 6px;
+  }
+  .notice svg{ flex:none; margin-top:1px; }
+  .notice p{
+    font-size:12px; line-height:1.55; color: var(--gold-soft);
+  }
+  .notice p + p{ margin-top:5px; color: var(--cream-dim); }
+
+  .divider-row{
+    display:flex; align-items:center; gap:12px;
+    margin: 22px 0 18px 0;
+  }
+  .divider-row .line{ flex:1; height:1px; background: var(--line); }
+  .divider-row span{ font-size:12px; color: var(--cream-faint); }
+
+  .switch-line{
+    text-align:center; font-size:13px; color: var(--cream-faint);
+    padding-bottom: 6px;
+  }
+  .switch-line b{ color: var(--gold-soft); font-weight:700; cursor:pointer; }
+
+  .error-msg{
+    background: rgba(200,88,80,0.15);
+    border:1px solid var(--red);
+    color: var(--red);
+    border-radius:14px;
+    padding:10px 14px;
+    font-size:13px;
+    margin-bottom:14px;
+    display:none;
+  }
+  .error-msg.show{ display:block; }
+
+  .footer{
+    flex:none;
+    margin-top:10px;
+  }
+  .cta{
+    width:100%; height:52px; border:none; border-radius:16px;
+    background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+    color:#1c1404; font-family:'Noto Sans'; font-size:15px; font-weight:800;
+    letter-spacing:0.2px;
+    cursor:pointer;
+    box-shadow: 0 10px 22px rgba(212,169,74,0.22);
+    transition: transform 0.1s;
+  }
+  .cta:active{ transform:scale(0.97); }
+  .cta:disabled{ opacity:0.5; cursor:not-allowed; }
+</style>
+</head>
+<body>
+
+<div class="login-container">
+
+  <div class="brand">
+    <div class="brand-mark">
+      <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#1c1404" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+    </div>
+    <div class="brand-name">Китобхона</div>
+    <div class="brand-sub">Китобхонаи рақамии тоҷикӣ</div>
+  </div>
+
+  <div class="tabs" id="tabs">
+    <div class="tab-thumb"></div>
+    <div class="tab active" id="tabLogin" onclick="setMode('login')">Вуруд</div>
+    <div class="tab" id="tabReg" onclick="setMode('reg')">Бақайдгирӣ</div>
+  </div>
+
+  <div class="scroll">
+
+    <!-- ===== LOGIN PANEL ===== -->
+    <div class="panel show" id="panelLogin">
+      <div class="error-msg" id="loginError"></div>
+      <div class="field">
+        <label>Почтаи электронӣ</label>
+        <div class="input-wrap">
+          <input type="email" id="loginEmail" placeholder="you@example.com">
+        </div>
+      </div>
+      <div class="field">
+        <label>Парол</label>
+        <div class="input-wrap">
+          <input type="password" id="loginPassword" placeholder="••••••••">
+        </div>
+      </div>
+      <div class="forgot"><a href="#" onclick="alert('Барои барқарорсозӣ ба дастгирӣ муроҷиат кунед')">Рамзро фаромӯш кардед?</a></div>
+      <div class="divider-row"><div class="line"></div><span>ё</span><div class="line"></div></div>
+      <div class="switch-line">Ҳисоб надоред? <b onclick="setMode('reg')">Бақайдгирӣ кунед</b></div>
+    </div>
+
+    <!-- ===== REGISTER PANEL ===== -->
+    <div class="panel" id="panelReg">
+      <div class="error-msg" id="regError"></div>
+      <div class="group-label">Маълумоти шахсӣ</div>
+      <div class="row2">
+        <div class="field">
+          <label>Ном</label>
+          <input type="text" id="regFirstName" placeholder="Фарзона">
+        </div>
+        <div class="field">
+          <label>Насаб</label>
+          <input type="text" id="regLastName" placeholder="Қурбонова">
+        </div>
+      </div>
+      <div class="field">
+        <label>Соли таваллуд</label>
+        <input type="number" id="regBirthYear" placeholder="2008" min="1930" max="2026">
+      </div>
+      <div class="group-label">Ҷойгиршавӣ</div>
+      <div class="field">
+        <label>Вилоят</label>
+        <div class="input-wrap select">
+          <select id="regRegion">
+            <option value="">Интихоб кунед</option>
+            <option value="Шаҳри Душанбе">Шаҳри Душанбе</option>
+            <option value="Вилояти Суғд">Вилояти Суғд</option>
+            <option value="Вилояти Хатлон">Вилояти Хатлон</option>
+            <option value="ВМКБ">ВМКБ</option>
+            <option value="Ноҳияҳои тобеи марказ">Ноҳияҳои тобеи марказ</option>
+          </select>
+        </div>
+      </div>
+      <div class="field">
+        <label>Шаҳр / Ноҳия</label>
+        <input type="text" id="regCity" placeholder="Масалан: Истаравшан">
+      </div>
+      <div class="row2">
+        <div class="field">
+          <label>Ҷамоат</label>
+          <input type="text" id="regJamoat" placeholder="Ҷамоати ...">
+        </div>
+        <div class="field">
+          <label>Деҳа / Маҳалла</label>
+          <input type="text" id="regVillage" placeholder="Деҳаи ...">
+        </div>
+      </div>
+      <div class="group-label">Ҳисоби корбарӣ</div>
+      <div class="field">
+        <label>Логин (username)</label>
+        <input type="text" id="regUsername" placeholder="farzona_q">
+      </div>
+      <div class="field">
+        <label>Почтаи электронӣ</label>
+        <input type="email" id="regEmail" placeholder="you@example.com">
+      </div>
+      <div class="field">
+        <label>Парол</label>
+        <div class="input-wrap">
+          <input type="password" id="regPassword" placeholder="Ҳадди ақал 8 аломат">
+        </div>
+      </div>
+      <div class="notice">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8C879" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="#E8C879"/></svg>
+        <div>
+          <p>Бо почтаи электронӣ метавонед рамзро барқарор кунед.</p>
+          <p>Маълумоти шумо тавассути ҳисоби корбарӣ нигоҳ дошта мешавад.</p>
+        </div>
+      </div>
+      <div class="switch-line" style="margin-top:18px;">Аллакай ҳисоб доред? <b onclick="setMode('login')">Ворид шавед</b></div>
+    </div>
+
+  </div>
+
+  <div class="footer">
+    <button class="cta" id="ctaBtn">Ворид шудан</button>
+  </div>
+
+</div>
+
+<script>
+  // ===== МОДУЛЬ АВТО-ЛОГИНА =====
+  async function autoLogin() {
+    try {
+      const result = await AutoLogin.autoLogin();
+      if (result) {
+        // Успешно — переходим на главную
+        window.location.href = 'index.html';
+      } else {
+        // Если не удалось — показываем форму для ручного входа
+        console.warn('Auto-login failed, showing manual login');
+      }
+    } catch (e) {
+      console.error('Auto-login error:', e);
+    }
+  }
+
+  // ===== РУЧНОЙ ЛОГИН =====
+  async function doLogin() {
+    const email = document.getElementById('loginEmail').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    if (!email || !password) {
+      showError('loginError', 'Лутфан почта ва паролро пур кунед');
+      return;
+    }
+    const btn = document.getElementById('ctaBtn');
+    btn.disabled = true;
+    btn.textContent = 'Интизор...';
+    try {
+      const result = await NEON_API.loginUser(email, password);
+      if (result.userId && result.token) {
+        localStorage.setItem('kk_user_id', result.userId);
+        localStorage.setItem('kk_token', result.token);
+        window.location.href = 'index.html';
+      } else {
+        showError('loginError', 'Хатогӣ ҳангоми вуруд');
+      }
+    } catch (e) {
+      showError('loginError', e.message || 'Почта ё парол нодуруст');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Ворид шудан';
+    }
+  }
+
+  // ===== РУЧНАЯ РЕГИСТРАЦИЯ =====
+  async function doRegister() {
+    const firstName = document.getElementById('regFirstName').value.trim();
+    const lastName = document.getElementById('regLastName').value.trim();
+    const birthYear = parseInt(document.getElementById('regBirthYear').value);
+    const region = document.getElementById('regRegion').value;
+    const city = document.getElementById('regCity').value.trim();
+    const jamoat = document.getElementById('regJamoat').value.trim();
+    const village = document.getElementById('regVillage').value.trim();
+    const username = document.getElementById('regUsername').value.trim();
+    const email = document.getElementById('regEmail').value.trim();
+    const password = document.getElementById('regPassword').value;
+
+    if (!firstName || !lastName || !birthYear || !region || !username || !email || !password) {
+      showError('regError', 'Ҳамаи майдонҳои асосиро пур кунед');
+      return;
+    }
+    if (password.length < 6) {
+      showError('regError', 'Парол бояд на камтар аз 6 аломат бошад');
+      return;
+    }
+    const age = new Date().getFullYear() - birthYear;
+    if (age < 10 || age > 100) {
+      showError('regError', 'Соли таваллуд нодуруст');
+      return;
+    }
+
+    const btn = document.getElementById('ctaBtn');
+    btn.disabled = true;
+    btn.textContent = 'Интизор...';
+    try {
+      const displayName = firstName + ' ' + lastName;
+      const result = await NEON_API.registerUser({
+        email: email,
+        username: username,
+        password: password,
+        display_name: displayName,
+        age: age,
+        region: region,
+        gender: null
+      });
+      if (result.userId && result.token) {
+        localStorage.setItem('kk_user_id', result.userId);
+        localStorage.setItem('kk_token', result.token);
+        localStorage.setItem('kk_username', username);
+        // Сохраняем в Supabase
+        await AutoLogin.syncProfileToSupabase(result.userId, username);
+        window.location.href = 'index.html';
+      } else {
+        showError('regError', 'Хатогӣ ҳангоми бақайдгирӣ');
+      }
+    } catch (e) {
+      showError('regError', e.message || 'Хатогӣ ҳангоми бақайдгирӣ');
+    } finally {
+      btn.disabled = false;
+      btn.textContent = 'Бақайдгирӣ';
+    }
+  }
+
+  // ===== ВСПОМОГАТЕЛЬНЫЕ =====
+  function setMode(mode) {
+    const tabs = document.getElementById('tabs');
+    const tabLogin = document.getElementById('tabLogin');
+    const tabReg = document.getElementById('tabReg');
+    const panelLogin = document.getElementById('panelLogin');
+    const panelReg = document.getElementById('panelReg');
+    const cta = document.getElementById('ctaBtn');
+
+    if (mode === 'login') {
+      tabs.classList.remove('reg');
+      tabLogin.classList.add('active');
+      tabReg.classList.remove('active');
+      panelLogin.classList.add('show');
+      panelReg.classList.remove('show');
+      cta.textContent = 'Ворид шудан';
+      cta.onclick = doLogin;
+    } else {
+      tabs.classList.add('reg');
+      tabReg.classList.add('active');
+      tabLogin.classList.remove('active');
+      panelReg.classList.add('show');
+      panelLogin.classList.remove('show');
+      cta.textContent = 'Бақайдгирӣ';
+      cta.onclick = doRegister;
+    }
+    document.querySelectorAll('.error-msg').forEach(el => { el.classList.remove('show'); el.textContent = ''; });
+  }
+
+  function showError(id, msg) {
+    const el = document.getElementById(id);
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+
+  // ===== ИНИЦИАЛИЗАЦИЯ =====
+  // Проверяем, есть ли уже пользователь
+  if (localStorage.getItem('kk_user_id') && localStorage.getItem('kk_token')) {
+    // Если есть — сразу переходим
+    window.location.href = 'index.html';
+  } else {
+    // Иначе запускаем авто-логин
+    autoLogin();
+  }
+</script>
+</body>
+</html>

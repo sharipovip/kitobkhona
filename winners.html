@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Ғолибон — Китобхона</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700;900&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  /* === Ваши стили (сохраняем дизайн) === */
+  :root{
+    --bg:#0B1726; --bg-2:#0E2034; --card:#152840; --card-2:#1B3150; --card-soft:#10233A;
+    --gold:#DCB55E; --gold-deep:#B68B33; --gold-soft:rgba(220,181,94,0.14);
+    --green:#4F9D70; --red:#BD5650; --teal:#4C92AE;
+    --silver:#C9CDD3; --silver-deep:#8B919B;
+    --bronze:#C98F5C; --bronze-deep:#8A5B33;
+    --white-mot:#EDE7D6; --cream:#F3ECDD; --cream-dim:#C9C0AC; --muted:#8CA0B8;
+    --line:rgba(220,181,94,0.16); --shadow:0 18px 40px -12px rgba(0,0,0,0.55);
+    --radius-lg:20px; --radius-md:14px; --radius-sm:9px;
+  }
+  [data-theme="light"]{
+    --bg:#F3EEE2; --bg-2:#EAE2D2; --card:#FFFFFF; --card-2:#FBF7EE; --card-soft:#F4EEE0;
+    --gold:#B6863A; --gold-deep:#8F6A28; --gold-soft:rgba(182,134,58,0.12);
+    --green:#3F7E58; --red:#A8463F; --teal:#386E83;
+    --white-mot:#FFFFFF; --cream:#23211B; --cream-dim:#5C5749; --muted:#7B7563;
+    --line:rgba(182,134,58,0.22); --shadow:0 14px 30px -10px rgba(60,50,30,0.25);
+  }
+
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;height:100%;}
+  body{
+    font-family:'Noto Sans', sans-serif;
+    background:radial-gradient(circle at 20% 0%, #16304a 0%, transparent 45%), radial-gradient(circle at 85% 90%, #0c1c2e 0%, transparent 50%), #0a1320;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    padding:20px;
+    color:var(--cream);
+  }
+  [data-theme="light"] body{background:radial-gradient(circle at 20% 0%, #fbf4e3 0%, transparent 45%), radial-gradient(circle at 85% 90%, #efe3c8 0%, transparent 50%), #f0e8d6;}
+
+  .theme-btn{
+    position:fixed; top:16px; right:16px;
+    width:38px; height:38px; border-radius:50%;
+    border:1px solid rgba(220,181,94,0.3);
+    background:rgba(255,255,255,0.04);
+    color:var(--cream);
+    cursor:pointer; font-size:15px;
+    display:flex; align-items:center; justify-content:center;
+    backdrop-filter:blur(6px);
+    z-index:100;
+  }
+
+  .winners-container{
+    width:100%; max-width:420px;
+    background:var(--bg);
+    border-radius:32px;
+    overflow:hidden;
+    box-shadow:0 0 0 1px rgba(232,222,199,0.08), 0 40px 80px rgba(0,0,0,0.55);
+    display:flex;
+    flex-direction:column;
+    padding: 20px 0 12px;
+  }
+
+  .topbar{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:0 18px 10px;
+  }
+  .topbar h2{font-size:19px; color:var(--cream);}
+  .trophy-ic{font-size:18px;}
+
+  .filters-wrap{padding:0 18px 8px;}
+  .segmented{display:flex; background:var(--card-soft); border:1px solid var(--line); border-radius:12px; padding:3px; gap:2px;}
+  .segmented button{
+    flex:1; padding:8px 0; border:none; background:transparent; color:var(--muted); font-size:12px; font-weight:600; border-radius:9px; cursor:pointer; font-family:'Noto Sans';
+  }
+  .segmented button.active{background:var(--card-2); color:var(--gold); box-shadow:inset 0 0 0 1px var(--line);}
+
+  .chip-row{display:flex; gap:8px; margin-top:10px; overflow-x:auto; scrollbar-width:none;}
+  .chip-row::-webkit-scrollbar{display:none;}
+  .select-chip{position:relative; flex:0 0 auto;}
+  .select-chip select{
+    appearance:none; -webkit-appearance:none; -moz-appearance:none;
+    background:var(--card-soft); border:1px solid var(--line); border-radius:999px;
+    padding:8px 30px 8px 14px; font-size:12px; color:var(--cream); font-family:'Noto Sans'; cursor:pointer;
+  }
+  .select-chip select:focus{outline:2px solid var(--gold); outline-offset:1px;}
+  .select-chip::after{content:"⌄"; position:absolute; right:12px; top:50%; transform:translateY(-58%); color:var(--gold); font-size:12px; pointer-events:none;}
+
+  .podium{
+    display:flex;
+    align-items:flex-end;
+    justify-content:center;
+    gap:8px;
+    padding:22px 14px 6px;
+  }
+  .podium-col{display:flex; flex-direction:column; align-items:center; flex:1; min-width:0;}
+  .podium-crown{font-size:20px; margin-bottom:2px;}
+  .pav-wrap{position:relative;}
+  .pav{
+    border-radius:50%;
+    padding:2.5px;
+  }
+  .pav.gold{width:72px; height:72px; background:conic-gradient(var(--gold), #fff3cf, var(--gold));}
+  .pav.silver{width:56px; height:56px; background:conic-gradient(var(--silver), #fff, var(--silver));}
+  .pav.bronze{width:56px; height:56px; background:conic-gradient(var(--bronze), #f0c9a4, var(--bronze));}
+  .pav-inner{
+    width:100%; height:100%;
+    border-radius:50%;
+    background:var(--card-2);
+    border:2.5px solid var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:22px;
+  }
+  .pmedal{
+    position:absolute; bottom:-3px; right:-3px;
+    width:22px; height:22px;
+    border-radius:50%;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:11px; font-weight:800;
+    border:2px solid var(--bg);
+  }
+  .pmedal.m1{background:linear-gradient(180deg,#F3D896,var(--gold-deep)); color:#221a05;}
+  .pmedal.m2{background:linear-gradient(180deg,#E9ECEF,var(--silver-deep)); color:#1c1f22;}
+  .pmedal.m3{background:linear-gradient(180deg,#E3B084,var(--bronze-deep)); color:#241404;}
+
+  .pname{font-size:12.5px; font-weight:700; color:var(--cream); margin-top:8px; text-align:center; max-width:84px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap;}
+  .pcity{font-size:10.5px; color:var(--muted);}
+  .pstats{display:flex; gap:6px; margin-top:4px; font-size:10px; color:var(--cream-dim);}
+  .pstats span{display:flex; align-items:center; gap:2px;}
+
+  .step{
+    width:100%;
+    margin-top:10px;
+    border-radius:10px 10px 4px 4px;
+    display:flex;
+    align-items:flex-start;
+    justify-content:center;
+    padding-top:6px;
+    font-family:'Noto Serif';
+    font-weight:800;
+  }
+  .step-1{height:62px; background:linear-gradient(180deg,#F3D896,var(--gold-deep)); color:#241a05; font-size:22px;}
+  .step-2{height:44px; background:linear-gradient(180deg,#EDEFF1,var(--silver-deep)); color:#1c1f22; font-size:18px;}
+  .step-3{height:34px; background:linear-gradient(180deg,#E9C09A,var(--bronze-deep)); color:#241404; font-size:18px;}
+
+  .list-head{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:18px 18px 6px;
+  }
+  .eyebrow{font-size:11px; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
+  .top100-badge{font-size:10.5px; font-weight:700; color:var(--gold); background:var(--gold-soft); border:1px solid var(--line); padding:3px 9px; border-radius:999px;}
+
+  .col-labels{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:2px 18px 6px;
+    font-size:10px;
+    color:var(--muted);
+  }
+  .col-labels .sp-rank{width:26px;}
+  .col-labels .sp-av{width:38px;}
+  .col-labels .sp-info{flex:1;}
+  .col-labels .sp-age{width:30px; text-align:center;}
+  .col-labels .sp-stats{width:64px; text-align:right;}
+
+  .rank-list{
+    padding:0 14px 18px;
+    display:flex;
+    flex-direction:column;
+  }
+  .rank-row{
+    display:flex;
+    align-items:center;
+    gap:11px;
+    padding:9px 4px;
+    border-bottom:1px solid var(--line);
+  }
+  .rank-row:last-child{border-bottom:none;}
+  .rank-num-wrap{width:26px; text-align:center; flex:0 0 auto;}
+  .rank-num{font-size:13.5px; font-weight:700; color:var(--muted);}
+  .rank-delta{display:block; font-size:8.5px; font-weight:700; margin-top:1px;}
+  .delta-up{color:var(--green);}
+  .delta-down{color:var(--red);}
+  .rav{width:38px; height:38px; border-radius:50%; padding:2px; background:var(--line); flex:0 0 auto;}
+  .rav-inner{
+    width:100%; height:100%;
+    border-radius:50%;
+    background:var(--card-2);
+    border:2px solid var(--bg);
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:18px;
+  }
+  .rank-info{flex:1; min-width:0;}
+  .rank-name{font-size:12.5px; font-weight:700; color:var(--cream); white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .rank-city{font-size:10.5px; color:var(--muted);}
+  .rank-age{width:30px; text-align:center; font-size:11.5px; color:var(--muted); flex:0 0 auto;}
+  .rank-stats{width:64px; text-align:right; flex:0 0 auto;}
+  .rank-stats .hours{font-size:12px; font-weight:700; color:var(--gold); display:block;}
+  .rank-stats .books{font-size:9.5px; color:var(--muted);}
+
+  .empty-msg{padding:30px 18px; text-align:center; font-size:12.5px; color:var(--muted);}
+  .loading-spinner{
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    padding:20px 0;
+    color:var(--muted);
+    gap:10px;
+  }
+  .spinner{width:20px; height:20px; border:2px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite;}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  .bottom-nav{
+    flex:0 0 auto;
+    display:flex;
+    justify-content:space-around;
+    align-items:center;
+    padding: 10px 0 0;
+    border-top:1px solid var(--line);
+    margin-top:8px;
+  }
+  .nav-item{
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    gap:3px;
+    font-size:10.5px;
+    color:var(--muted);
+    cursor:pointer;
+  }
+  .nav-item .ic{font-size:18px; line-height:1;}
+  .nav-item.active{color:var(--gold); font-weight:700;}
+
+  @media (max-width:430px){body{padding:10px;}}
+</style>
+</head>
+<body>
+  <button class="theme-btn" id="themeToggle">🌙</button>
+
+  <div class="winners-container">
+    <div class="topbar">
+      <h2>Ғолибон</h2>
+      <span class="trophy-ic">🏆</span>
+    </div>
+
+    <div class="filters-wrap">
+      <div class="segmented" id="periodSwitch">
+        <button class="active" data-period="week">Ҳафта</button>
+        <button data-period="month">Моҳ</button>
+        <button data-period="all">Ҳама вақт</button>
+      </div>
+      <div class="chip-row">
+        <div class="select-chip">
+          <select id="ageFilter">
+            <option value="all">Синну сол: ҳама</option>
+            <option value="7-12">7–12 сола</option>
+            <option value="13-17">13–17 сола</option>
+            <option value="18-25">18–25 сола</option>
+            <option value="26-40">26–40 сола</option>
+            <option value="40+">Болои 40</option>
+          </select>
+        </div>
+        <div class="select-chip">
+          <select id="regionFilter">
+            <option value="all">Вилоят: ҳама</option>
+            <option value="dushanbe">Шаҳри Душанбе</option>
+            <option value="sughd">Вилояти Суғд</option>
+            <option value="khatlon">Вилояти Хатлон</option>
+            <option value="gbao">ВМКБ</option>
+            <option value="markaz">Ноҳияҳои тобеи марказ</option>
+          </select>
+        </div>
+      </div>
+    </div>
+
+    <div class="scroll" id="winnersScroll">
+      <div class="loading-spinner"><div class="spinner"></div> Боргирӣ...</div>
+    </div>
+
+    <div class="bottom-nav">
+      <div class="nav-item" onclick="location.href='index.html'"><span class="ic">🏠</span><span>Асосӣ</span></div>
+      <div class="nav-item" onclick="location.href='kitobho.html'"><span class="ic">📚</span><span>Китобҳо</span></div>
+      <div class="nav-item active" onclick="location.href='winners.html'"><span class="ic">🏆</span><span>Ғолибон</span></div>
+      <div class="nav-item" onclick="location.href='profile.html'"><span class="ic">👤</span><span>Профил</span></div>
+    </div>
+  </div>
+
+  <script>
+    const $ = id => document.getElementById(id);
+    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+    // Theme
+    const themeBtn = document.getElementById('themeToggle');
+    themeBtn.addEventListener('click', ()=>{
+      const isDark = document.body.dataset.theme === 'dark';
+      document.body.dataset.theme = isDark ? 'light' : 'dark';
+      themeBtn.textContent = isDark ? '☀️' : '🌙';
+    });
+    if(localStorage.getItem('kk_theme') === 'light'){
+      document.body.dataset.theme = 'light';
+      themeBtn.textContent = '☀️';
+    }
+
+    let winnersData = [];
+    let currentPeriod = 'week';
+
+    // Загрузка рейтинга
+    async function loadWinners() {
+      const scroll = document.getElementById('winnersScroll');
+
+      try {
+        const { data } = await AUTH.getUser();
+        if(!data.user) {
+          scroll.innerHTML = `
+            <div class="empty-msg">
+              <p>Барои дидани Ғолибон ворид шавед</p>
+              <button class="btn btn-primary" style="margin-top:12px;" onclick="location.href='login.html'">Ворид шудан</button>
+            </div>
+          `;
+          return;
+        }
+
+        // Загружаем данные из представления v_winners (или из таблицы reading_sessions)
+        // Если представления нет, используем агрегацию из reading_sessions
+        let data = [];
+        try {
+          // Пытаемся получить из v_winners
+          data = await apiGet('v_winners', { order: 'valid_seconds.desc', limit: 100 });
+        } catch(e) {
+          // Если представления нет — делаем агрегацию вручную (можно расширить)
+          console.warn('v_winners not found, using fallback');
+          const sessions = await apiGet('reading_sessions', { 
+            eq: { column: 'status', value: 'completed' },
+            order: 'created_at.desc',
+            limit: 200
+          });
+          // Группируем по user_id
+          const map = {};
+          sessions.forEach(s => {
+            if(!map[s.user_id]) map[s.user_id] = { user_id: s.user_id, total_seconds: 0, books: new Set() };
+            map[s.user_id].total_seconds += (s.duration || 0);
+            map[s.user_id].books.add(s.book_id);
+          });
+          data = Object.values(map).map(item => ({
+            user_id: item.user_id,
+            valid_seconds: item.total_seconds,
+            books_count: item.books.size
+          })).sort((a,b) => b.valid_seconds - a.valid_seconds);
+        }
+
+        winnersData = data;
+        renderWinners(data);
+
+      } catch(e) {
+        console.error(e);
+        scroll.innerHTML = `<div class="empty-msg">Хатогӣ: ${esc(e.message)}</div>`;
+      }
+    }
+
+    // Отрисовка рейтинга
+    function renderWinners(data) {
+      const scroll = document.getElementById('winnersScroll');
+
+      if(!data || data.length === 0) {
+        scroll.innerHTML = `<div class="empty-msg">Ҳоло ғолибон нестанд</div>`;
+        return;
+      }
+
+      // Топ-3
+      const top3 = data.slice(0, 3);
+      const medals = ['👑', '🥈', '🥉'];
+      const steps = ['step-1', 'step-2', 'step-3'];
+      const pavs = ['gold', 'silver', 'bronze'];
+
+      let html = `<div class="podium">`;
+
+      // Второе место (индекс 1)
+      if(top3[1]) {
+        html += podiumCol(top3[1], 1, '🥈', 'silver', 'step-2');
+      }
+      // Первое место (индекс 0)
+      if(top3[0]) {
+        html += podiumCol(top3[0], 0, '👑', 'gold', 'step-1');
+      }
+      // Третье место (индекс 2)
+      if(top3[2]) {
+        html += podiumCol(top3[2], 2, '🥉', 'bronze', 'step-3');
+      }
+
+      html += `</div>`;
+
+      // Остальные
+      const rest = data.slice(3);
+      html += `
+        <div class="list-head">
+          <div class="eyebrow">Рейтинги пурра</div>
+          <div class="top100-badge">ТОП ${Math.min(data.length, 100)}</div>
+        </div>
+        <div class="col-labels">
+          <div class="sp-rank"></div><div class="sp-av"></div>
+          <div class="sp-info"></div>
+          <div class="sp-age">сол</div>
+          <div class="sp-stats">соат / китоб</div>
+        </div>
+        <div class="rank-list" id="rankList">
+      `;
+
+      rest.forEach((item, idx) => {
+        const rank = idx + 4;
+        const age = item.birth_year ? new Date().getFullYear() - item.birth_year : '—';
+        const hours = Math.round((item.valid_seconds || 0) / 3600);
+        const books = item.books_count || 0;
+        const name = item.display_name || item.full_name || 'Китобхон';
+        const city = item.city || item.region || '—';
+        html += `
+          <div class="rank-row">
+            <div class="rank-num-wrap"><span class="rank-num">${rank}</span></div>
+            <div class="rav"><div class="rav-inner">👤</div></div>
+            <div class="rank-info"><div class="rank-name">${esc(name)}</div><div class="rank-city">${esc(city)}</div></div>
+            <div class="rank-age">${age}</div>
+            <div class="rank-stats"><span class="hours">${hours}с</span><span class="books">${books} китоб</span></div>
+          </div>
+        `;
+      });
+
+      html += `</div>`;
+      scroll.innerHTML = html;
+
+      // Фильтры
+      applyFilters();
+    }
+
+    function podiumCol(item, index, emoji, pavClass, stepClass) {
+      const name = item.display_name || item.full_name || 'Китобхон';
+      const city = item.city || item.region || '—';
+      const hours = Math.round((item.valid_seconds || 0) / 3600);
+      const books = item.books_count || 0;
+      return `
+        <div class="podium-col">
+          ${index === 0 ? '<div class="podium-crown">👑</div>' : ''}
+          <div class="pav-wrap">
+            <div class="pav ${pavClass}"><div class="pav-inner">👤</div></div>
+            <div class="pmedal m${index+1}">${index+1}</div>
+          </div>
+          <div class="pname">${esc(name)}</div>
+          <div class="pcity">${esc(city)}</div>
+          <div class="pstats"><span>⏱ ${hours}с</span><span>📚 ${books}</span></div>
+          <div class="step ${stepClass}">${index+1}</div>
+        </div>
+      `;
+    }
+
+    // Фильтры (демо, работают на клиенте)
+    function applyFilters() {
+      const ageFilter = document.getElementById('ageFilter').value;
+      const regionFilter = document.getElementById('regionFilter').value;
+      const rows = document.querySelectorAll('.rank-row');
+      // Если есть данные, фильтруем
+      // Для простоты пока оставляем как есть, так как данные из БД могут не содержать возраст и регион
+      // Можно расширить позже
+    }
+
+    // Переключение периода
+    document.getElementById('periodSwitch').addEventListener('click', (e) => {
+      const btn = e.target.closest('button[data-period]');
+      if(!btn) return;
+      document.querySelectorAll('#periodSwitch button').forEach(b => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentPeriod = btn.dataset.period;
+      // Перезагружаем с новым периодом
+      loadWinners();
+    });
+
+    // Фильтры
+    document.getElementById('ageFilter').addEventListener('change', applyFilters);
+    document.getElementById('regionFilter').addEventListener('change', applyFilters);
+
+    // Инициализация
+    loadWinners();
+  </script>
+</body>
+</html>

@@ -1,0 +1,462 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<title>Китобхона — Ғолибон</title>
+<script src="config.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700;900&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0B1726;
+    --bg-2: #0E2034;
+    --card: #152840;
+    --card-2: #1B3150;
+    --card-soft: #10233A;
+    --gold: #DCB55E;
+    --gold-deep: #B68B33;
+    --gold-soft: rgba(220,181,94,0.14);
+    --green: #4F9D70;
+    --red: #BD5650;
+    --cream: #F3ECDD;
+    --cream-dim: #C9C0AC;
+    --muted: #8CA0B8;
+    --line: rgba(220,181,94,0.16);
+    --shadow: 0 18px 40px -12px rgba(0,0,0,0.55);
+    --border: rgba(220,181,94,0.12);
+    --glass: rgba(13,27,42,0.85);
+  }
+  [data-theme="light"] {
+    --bg: #F3EEE2;
+    --bg-2: #EAE2D2;
+    --card: #FFFFFF;
+    --card-2: #FBF7EE;
+    --card-soft: #F4EEE0;
+    --gold: #B6863A;
+    --gold-deep: #8F6A28;
+    --gold-soft: rgba(182,134,58,0.12);
+    --green: #3F7E58;
+    --red: #A8463F;
+    --cream: #23211B;
+    --cream-dim: #5C5749;
+    --muted: #7B7563;
+    --line: rgba(182,134,58,0.22);
+    --shadow: 0 14px 30px -10px rgba(60,50,30,0.25);
+    --border: rgba(182,134,58,0.18);
+    --glass: rgba(243,238,226,0.85);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    width: 100%;
+    min-height: 100vh;
+    background: var(--bg);
+    color: var(--cream);
+    font-family: 'Noto Sans', sans-serif;
+  }
+
+  /* ============ PHONE WRAPPER (как index.html) ============ */
+  .phone-wrapper {
+    max-width: 430px;
+    margin: 0 auto;
+    min-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    position: relative;
+  }
+
+  /* ============ TOP HEADER ============ */
+  .top-header {
+    flex: 0 0 auto;
+    padding: 12px 16px;
+    background: var(--glass);
+    backdrop-filter: blur(18px);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    position: sticky;
+    top: 0;
+    z-index: 50;
+  }
+  .header-title {
+    font-size: 18px;
+    font-weight: 900;
+    color: var(--cream);
+  }
+  .header-actions { display: flex; gap: 8px; }
+  .header-btn {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+  }
+
+  /* ============ MAIN CONTENT ============ */
+  .main-content {
+    flex: 1;
+    padding: 16px;
+    overflow-y: auto;
+    scrollbar-width: none;
+  }
+  .main-content::-webkit-scrollbar { display: none; }
+
+  /* ============ FILTERS ============ */
+  .filters {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .filter-select {
+    background: var(--card-soft);
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    padding: 8px 14px;
+    color: var(--cream);
+    font-size: 12px;
+    font-family: 'Noto Sans';
+    cursor: pointer;
+  }
+
+  /* ============ PODIUM ============ */
+  .podium {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+  .podium-item {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 16px 12px;
+    text-align: center;
+    position: relative;
+  }
+  .podium-item.gold { border-color: rgba(220,181,94,0.5); background: linear-gradient(180deg, var(--card), rgba(220,181,94,0.08)); }
+  .podium-item .medal { font-size: 28px; margin-bottom: 8px; }
+  .podium-item .name { font-size: 13px; font-weight: 700; color: var(--cream); margin-bottom: 4px; }
+  .podium-item .meta { font-size: 11px; color: var(--muted); margin-bottom: 6px; }
+  .podium-item .stats { font-size: 11px; color: var(--cream-dim); }
+
+  /* ============ RANK LIST ============ */
+  .list-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .list-head h2 { font-size: 16px; font-family: 'Noto Serif', serif; color: var(--cream); }
+  .badge {
+    background: var(--gold-soft);
+    color: var(--gold);
+    border: 1px solid var(--line);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 10px;
+    font-weight: 700;
+  }
+
+  .rank-list { display: flex; flex-direction: column; gap: 8px; }
+  .rank-item {
+    display: grid;
+    grid-template-columns: 40px 1fr 70px;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+  }
+  .rank-item .rank { font-size: 16px; font-weight: 800; color: var(--gold); text-align: center; }
+  .rank-item .user { display: flex; flex-direction: column; min-width: 0; }
+  .rank-item .user strong { font-size: 13px; color: var(--cream); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .rank-item .user span { font-size: 11px; color: var(--muted); }
+  .rank-item .hours { font-size: 12px; color: var(--cream-dim); text-align: right; }
+
+  /* ============ EMPTY ============ */
+  .empty-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: var(--muted);
+  }
+  .empty-state .icon { font-size: 48px; margin-bottom: 12px; }
+  .empty-state h3 { font-size: 16px; color: var(--cream); margin-bottom: 8px; }
+
+  /* ============ BOTTOM NAV ============ */
+  .bottom-nav {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 8px 12px 16px;
+    background: linear-gradient(transparent, var(--bg) 30%);
+    z-index: 80;
+  }
+  .bottom-nav-inner {
+    max-width: 430px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 6px;
+    backdrop-filter: blur(18px);
+  }
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 2px;
+    border-radius: 14px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 700;
+    cursor: pointer;
+  }
+  .nav-item .ic { font-size: 20px; }
+  .nav-item.active { background: rgba(220,181,94,0.12); color: var(--gold); }
+
+  .content-spacer { height: 80px; }
+</style>
+</head>
+<body>
+<div class="phone-wrapper">
+  <!-- TOP HEADER -->
+  <header class="top-header">
+    <div class="header-title">🏆 Ғолибон</div>
+    <div class="header-actions">
+      <div class="header-btn" id="themeBtn">🌙</div>
+    </div>
+  </header>
+
+  <!-- MAIN CONTENT -->
+  <main class="main-content" id="mainContent">
+    <!-- Content will be loaded here -->
+  </main>
+
+  <!-- BOTTOM NAV -->
+  <nav class="bottom-nav">
+    <div class="bottom-nav-inner">
+      <div class="nav-item" onclick="location.href='index.html'">
+        <div class="ic">🏠</div>
+        <div>Асосӣ</div>
+      </div>
+      <div class="nav-item" onclick="location.href='kitobho.html'">
+        <div class="ic">📚</div>
+        <div>Китобҳо</div>
+      </div>
+      <div class="nav-item active">
+        <div class="ic">🏆</div>
+        <div>Ғолибон</div>
+      </div>
+      <div class="nav-item" onclick="location.href='Lenta.html'">
+        <div class="ic">📰</div>
+        <div>Лента</div>
+      </div>
+      <div class="nav-item" onclick="location.href='profile.html'">
+        <div class="ic">👤</div>
+        <div>Профил</div>
+      </div>
+    </div>
+  </nav>
+</div>
+
+<script>
+const esc = s => String(s ?? '').replace(/[&<>'']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c] || c));
+
+// Theme toggle
+document.getElementById('themeBtn')?.addEventListener('click', () => {
+  const isDark = document.body.dataset.theme !== 'light';
+  document.body.dataset.theme = isDark ? 'light' : 'dark';
+  localStorage.setItem('kk_theme', isDark ? 'light' : 'dark');
+  document.getElementById('themeBtn').textContent = isDark ? '☀️' : '🌙';
+});
+if (localStorage.getItem('kk_theme') === 'light') {
+  document.body.dataset.theme = 'light';
+  document.getElementById('themeBtn').textContent = '☀️';
+}
+
+// Format hours
+function formatHours(seconds) {
+  const hours = Math.round((seconds || 0) / 3600);
+  return hours + ' соат';
+}
+
+// Get age from birth year
+function getAge(birth_year) {
+  if (!birth_year) return null;
+  if (String(birth_year).length === 4) {
+    return new Date().getFullYear() - Number(birth_year);
+  }
+  return Number(birth_year);
+}
+
+// Render winners
+function renderWinners(data) {
+  if (!data || !data.length) {
+    document.getElementById('mainContent').innerHTML = `
+      <div class="empty-state">
+        <div class="icon">🏆</div>
+        <h3>Ғолибон нестанд</h3>
+        <p>Барои дидани ғолибон, китобҳо хонед!</p>
+      </div>
+      <div class="content-spacer"></div>
+    `;
+    return;
+  }
+
+  let html = '';
+  
+  // Filters
+  html += `
+    <div class="filters">
+      <select class="filter-select" id="ageFilter">
+        <option value="all">Синну сол: ҳама</option>
+        <option value="7-12">7–12 сола</option>
+        <option value="13-17">13–17 сола</option>
+        <option value="18-25">18–25 сола</option>
+        <option value="26-40">26–40 сола</option>
+        <option value="40+">Болои 40</option>
+      </select>
+      <select class="filter-select" id="regionFilter">
+        <option value="all">Вилоят: ҳама</option>
+        <option value="dushanbe">Шаҳри Душанбе</option>
+        <option value="sughd">Вилояти Суғд</option>
+        <option value="khatlon">Вилояти Хатлон</option>
+        <option value="gbao">ВМКБ</option>
+        <option value="markaz">Ноҳияҳои тобеи марказ</option>
+      </select>
+    </div>
+  `;
+  
+  // Podium (top 3)
+  const top3 = data.slice(0, 3);
+  const medals = ['🥈', '👑', '🥉'];
+  
+  html += `<div class="podium">`;
+  top3.forEach((item, index) => {
+    const age = getAge(item.birth_year);
+    html += `
+      <div class="podium-item ${index === 1 ? 'gold' : ''}">
+        <div class="medal">${medals[index]}</div>
+        <div class="name">${esc(item.display_name || item.full_name || 'Китобхон')}</div>
+        <div class="meta">${esc(item.city || item.region || 'Тоҷикистон')}</div>
+        <div class="stats">${formatHours(item.valid_seconds)}</div>
+        ${age ? `<div class="stats">${age} сол</div>` : ''}
+      </div>
+    `;
+  });
+  html += `</div>`;
+  
+  // Full list
+  html += `
+    <div class="list-head">
+      <h2>Рейтинги пурра</h2>
+      <div class="badge">Ҳама номи воқеӣ</div>
+    </div>
+    <div class="rank-list" id="rankList">
+  `;
+  
+  data.forEach((item, index) => {
+    const age = getAge(item.birth_year);
+    html += `
+      <div class="rank-item" onclick="location.href='profile.html?user=${item.id}'">
+        <div class="rank">${index + 1}</div>
+        <div class="user">
+          <strong>${esc(item.display_name || item.full_name || 'Китобхон')}</strong>
+          <span>${esc(item.city || item.region || 'Тоҷикистон')}</span>
+        </div>
+        <div class="hours">${formatHours(item.valid_seconds)}</div>
+      </div>
+    `;
+  });
+  
+  html += '</div>';
+  html += '<div class="content-spacer"></div>';
+  
+  document.getElementById('mainContent').innerHTML = html;
+  
+  // Filter functionality
+  document.getElementById('ageFilter')?.addEventListener('change', () => filterList(data));
+  document.getElementById('regionFilter')?.addEventListener('change', () => filterList(data));
+}
+
+function filterList(data) {
+  const ageFilter = document.getElementById('ageFilter').value;
+  const regionFilter = document.getElementById('regionFilter').value;
+  
+  let filtered = [...data];
+  
+  // Age filter
+  if (ageFilter !== 'all') {
+    filtered = filtered.filter(item => {
+      const age = getAge(item.birth_year);
+      if (age === null) return false;
+      if (ageFilter === '40+') return age > 40;
+      const [min, max] = ageFilter.split('-').map(Number);
+      return age >= min && age <= max;
+    });
+  }
+  
+  // Region filter
+  if (regionFilter !== 'all') {
+    const region = item => (item.region || '').toLowerCase().includes(regionFilter);
+    filtered = filtered.filter(region);
+  }
+  
+  // Re-render list
+  const rankList = document.getElementById('rankList');
+  if (rankList) {
+    rankList.innerHTML = filtered.map((item, index) => `
+      <div class="rank-item" onclick="location.href='profile.html?user=${item.id}'">
+        <div class="rank">${index + 1}</div>
+        <div class="user">
+          <strong>${esc(item.display_name || item.full_name || 'Китобхон')}</strong>
+          <span>${esc(item.city || item.region || 'Тоҷикистон')}</span>
+        </div>
+        <div class="hours">${formatHours(item.valid_seconds)}</div>
+      </div>
+    `).join('');
+  }
+}
+
+// Load winners
+async function loadWinners() {
+  try {
+    const data = await apiGet('v_winners', {order: 'valid_seconds.desc', limit: 50});
+    renderWinners(data || []);
+  } catch(e) {
+    console.log('Error:', e);
+    // Fallback sample data
+    const fallback = [
+      {display_name: 'Иброҳим Шарипов', city: 'Душанбе', valid_seconds: 756000},
+      {display_name: 'Парвина Ҳакимова', city: 'Хуҷанд', valid_seconds: 702000},
+      {display_name: 'Рустам Назриев', city: 'Кӯлоб', valid_seconds: 640800},
+      {display_name: 'Тоҳири Назаров', city: 'Хуҷанд', valid_seconds: 511200},
+      {display_name: 'Гулнора Эргашева', city: 'Кӯлоб', valid_seconds: 496800}
+    ];
+    renderWinners(fallback);
+  }
+}
+
+// Init
+loadWinners();
+</script>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a0f43f67ab2a9dca',t:'MTc4MjA1Nzg1Mg=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</html>

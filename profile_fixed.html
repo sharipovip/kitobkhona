@@ -495,32 +495,51 @@
 
       // Кнопка редактирования (топбар + дублирующая кнопка в action-row)
       const editHandlers = [$('openEdit2'), $('openEdit2b')].filter(Boolean);
-      editHandlers.forEach(btn => btn.addEventListener('click', openSheet));
+      editHandlers.forEach(btn => {
+        btn.addEventListener('click', () => {
+          // Заполняем форму перед открытием
+          if (isOwn && profile) {
+            const firstName = profile.display_name ? profile.display_name.split(' ')[0] : '';
+            const lastName = profile.display_name ? profile.display_name.split(' ')[1] || '' : '';
+            $('editName').value = firstName;
+            $('editSurname').value = lastName;
+            $('editBirthYear').value = profile.age ? new Date().getFullYear() - profile.age : '';
+            $('editRegion').value = profile.region || '';
+            $('editCity').value = profile.city || '';
+            $('editJamoat').value = '';
+            $('editVillage').value = '';
+            $('editEmail').value = profile.email || '';
+          }
+          openSheet();
+        });
+      });
 
       loadTabsData(userId);
     }
 
     // ---- Загрузка данных для вкладок ----
-    // ВНИМАНИЕ: эти три источника (reading_sessions / user_favorites / user_achievements)
-    // живут в базе Neon, а apiGet() ходит в Supabase, где этих таблиц нет.
-    // Поэтому запросы ожидаемо могут падать — показываем понятное сообщение,
-    // а не вечный спиннер, пока не появится подтверждённый маршрут на backend.
     async function loadTabsData(userId) {
       const panelBooks = $('panelBooks');
       const panelMarks = $('panelMarks');
       const panelAch = $('panelAch');
-      const notReady = '<div class="empty-state">Маълумот ҳоло дастрас нест</div>';
+      const token = localStorage.getItem('kk_token');
 
+      // BOOKS (reading_sessions > 5 минут)
       try {
-        const sessions = await apiGet('reading_sessions', { eq: { column: 'user_id', value: userId }, order: 'created_at.desc', limit: 9 });
-        if (sessions && sessions.length) {
+        const response = await fetch(`${KITOB_CONFIG.NEON_API_BASE}/api/reading-sessions`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const sessions = await response.json();
+        const filtered = sessions.filter(s => s.duration >= 5).slice(0, 9);
+        
+        if (filtered && filtered.length) {
           const colors = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
           panelBooks.innerHTML = `
             <div class="book-grid">
-              ${sessions.map((s, i) => `
+              ${filtered.map((s, i) => `
                 <div class="book-cover ${colors[i % colors.length]}">
                   <div class="book-title">${esc(s.book_title || 'Китоб')}</div>
-                  <div class="book-author">${esc(s.book_author || '')}</div>
+                  <div class="book-author">${s.duration} мин</div>
                 </div>
               `).join('')}
             </div>`;
@@ -529,18 +548,22 @@
         }
       } catch (e) {
         console.warn('reading_sessions error:', e);
-        panelBooks.innerHTML = notReady;
+        panelBooks.innerHTML = '<div class="empty-state">Маълумот ҳоло дастрас нест</div>';
       }
 
+      // FAVORITES (хатбаракҳо)
       try {
-        const favs = await apiGet('user_favorites', { eq: { column: 'user_id', value: userId }, limit: 9 });
-        if (favs && favs.length) {
+        const response = await fetch(`${KITOB_CONFIG.NEON_API_BASE}/api/favorites`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const favBookIds = await response.json();
+        
+        if (favBookIds && favBookIds.length) {
           panelMarks.innerHTML = `
             <div class="book-grid">
-              ${favs.slice(0, 9).map((f, i) => `
+              ${favBookIds.slice(0, 9).map((bookId, i) => `
                 <div class="book-cover c${(i % 9) + 1}">
-                  <div class="book-title">${esc(f.book_title || 'Китоб')}</div>
-                  <div class="book-author">${esc(f.book_author || '')}</div>
+                  <div class="book-title">${esc(bookId)}</div>
                 </div>
               `).join('')}
             </div>`;
@@ -549,11 +572,16 @@
         }
       } catch (e) {
         console.warn('user_favorites error:', e);
-        panelMarks.innerHTML = notReady;
+        panelMarks.innerHTML = '<div class="empty-state">Маълумот ҳоло дастрас нест</div>';
       }
 
+      // ACHIEVEMENTS (дастовардҳо)
       try {
-        const ach = await apiGet('user_achievements', { eq: { column: 'user_id', value: userId } });
+        const response = await fetch(`${KITOB_CONFIG.NEON_API_BASE}/api/user-achievements`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const ach = await response.json();
+        
         if (ach && ach.length) {
           panelAch.innerHTML = `
             <div class="ach-list">
@@ -569,7 +597,7 @@
         }
       } catch (e) {
         console.warn('user_achievements error:', e);
-        panelAch.innerHTML = notReady;
+        panelAch.innerHTML = '<div class="empty-state">Маълумот ҳоло дастрас нест</div>';
       }
     }
 
@@ -597,9 +625,6 @@
       const lastName = $('editSurname').value.trim();
       const birthYear = parseInt($('editBirthYear').value);
       const region = $('editRegion').value;
-      const city = $('editCity').value.trim();
-      const jamoat = $('editJamoat').value.trim();
-      const village = $('editVillage').value.trim();
 
       if (!firstName || !lastName || !birthYear || !region) {
         alert('Лутфан ҳамаи майдонҳои асосиро пур кунед');
@@ -608,24 +633,30 @@
 
       try {
         const token = localStorage.getItem('kk_token');
-        const userId = localStorage.getItem('kk_user_id');
-        if (!token || !userId) throw new Error('Ворид шавед');
+        if (!token) throw new Error('Ворид шавед');
 
-        await NEON_API.updateProfile(userId, {
-          first_name: firstName,
-          last_name: lastName,
-          birth_year: birthYear,
-          region: region,
-          city: city,
-          jamoat: jamoat,
-          village: village,
-          display_name: firstName + ' ' + lastName
-        }, token);
+        const displayName = firstName + ' ' + lastName;
+        const age = birthYear ? new Date().getFullYear() - birthYear : null;
 
-        // Поле email/логин сейчас НЕ отправляется на сервер: смена логина/пароля
-        // требует отдельного подтверждённого маршрута на backend, которого пока нет.
+        const response = await fetch(`${KITOB_CONFIG.NEON_API_BASE}/api/profiles`, {
+          method: 'PUT',
+          headers: {
+            'Authorization': `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            display_name: displayName,
+            age: age,
+            region: region
+          })
+        });
+
+        if (!response.ok) {
+          throw new Error(`API error: ${response.status}`);
+        }
 
         closeSheet();
+        alert('Профил нигоҳ дошта шуд ✓');
         loadProfile();
       } catch (e) {
         alert('Хатогӣ: ' + e.message);

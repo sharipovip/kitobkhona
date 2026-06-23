@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+  <meta charset="UTF-8">
+  <title>Вуруд — Китобхона</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+    
+    :root {
+      --bg: #0B1A2E;
+      --bg-deep: #081323;
+      --gold: #D4A94A;
+      --gold-soft: #E8C879;
+      --cream: #F3EBDA;
+      --cream-dim: #9FB0C5;
+      --green: #3F9E63;
+      --red: #C85850;
+      --card: #142841;
+      --field: #102542;
+    }
+    
+    body {
+      font-family: 'Noto Sans', sans-serif;
+      background: var(--bg);
+      color: var(--cream);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+    }
+    
+    /* Phone wrapper */
+    .phone-wrapper {
+      width: 100%;
+      max-width: 420px;
+      min-height: calc(100vh - 40px);
+      display: flex;
+      flex-direction: column;
+    }
+    
+    /* Header */
+    .header {
+      text-align: center;
+      padding: 30px 0;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--gold-soft), #9C7327);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 15px;
+      font-size: 36px;
+    }
+    
+    .app-name {
+      font-size: 28px;
+      font-weight: 800;
+      color: var(--gold);
+    }
+    
+    .app-sub {
+      font-size: 14px;
+      color: var(--cream-dim);
+      margin-top: 5px;
+    }
+    
+    /* Content */
+    .content {
+      flex: 1;
+      padding: 20px;
+    }
+    
+    /* Auto login message */
+    .auto-login-card {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 25px;
+      text-align: center;
+      margin-bottom: 20px;
+    }
+    
+    .auto-login-icon {
+      font-size: 48px;
+      margin-bottom: 15px;
+    }
+    
+    .auto-login-title {
+      font-size: 18px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+    
+    .auto-login-sub {
+      font-size: 13px;
+      color: var(--cream-dim);
+    }
+    
+    .username-display {
+      background: var(--field);
+      padding: 15px;
+      border-radius: 12px;
+      margin: 15px 0;
+      font-size: 20px;
+      font-weight: 700;
+      color: var(--gold);
+    }
+    
+    /* Form */
+    .login-form {
+      background: var(--card);
+      border-radius: 16px;
+      padding: 25px;
+    }
+    
+    .form-title {
+      font-size: 16px;
+      font-weight: 700;
+      margin-bottom: 20px;
+      text-align: center;
+    }
+    
+    .input-group {
+      margin-bottom: 15px;
+    }
+    
+    .input-group label {
+      display: block;
+      font-size: 12px;
+      color: var(--cream-dim);
+      margin-bottom: 6px;
+      font-weight: 600;
+    }
+    
+    .input-group input {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--field);
+      border: 1px solid rgba(232,222,199,0.1);
+      border-radius: 12px;
+      color: var(--cream);
+      font-size: 15px;
+      font-family: 'Noto Sans', sans-serif;
+    }
+    
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--gold);
+    }
+    
+    /* Buttons */
+    .btn {
+      width: 100%;
+      padding: 16px;
+      border: none;
+      border-radius: 12px;
+      font-family: 'Noto Sans', sans-serif;
+      font-size: 15px;
+      font-weight: 700;
+      cursor: pointer;
+      margin-bottom: 12px;
+      transition: all 0.2s;
+    }
+    
+    .btn-gold {
+      background: linear-gradient(135deg, var(--gold-soft), var(--gold));
+      color: #1c1404;
+    }
+    
+    .btn-gold:active {
+      transform: scale(0.98);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      border: 1px solid rgba(232,222,199,0.2);
+      color: var(--cream-dim);
+    }
+    
+    .btn-outline:active {
+      background: rgba(232,222,199,0.1);
+    }
+    
+    /* Profile edit modal */
+    .modal {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0,0,0,0.8);
+      z-index: 100;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+    
+    .modal.show {
+      display: flex;
+    }
+    
+    .modal-content {
+      background: var(--card);
+      border-radius: 20px;
+      padding: 25px;
+      width: 100%;
+      max-width: 380px;
+      max-height: 90vh;
+      overflow-y: auto;
+    }
+    
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+    }
+    
+    .modal-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    
+    .modal-close {
+      width: 32px;
+      height: 32px;
+      background: var(--field);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      font-size: 18px;
+      color: var(--cream-dim);
+    }
+    
+    /* Select */
+    .input-group select {
+      width: 100%;
+      padding: 14px 16px;
+      background: var(--field);
+      border: 1px solid rgba(232,222,199,0.1);
+      border-radius: 12px;
+      color: var(--cream);
+      font-size: 15px;
+      font-family: 'Noto Sans', sans-serif;
+      cursor: pointer;
+    }
+    
+    .input-group select option {
+      background: var(--bg);
+      color: var(--cream);
+    }
+    
+    /* Navigation */
+    .nav-bar {
+      display: flex;
+      justify-content: space-around;
+      padding: 12px 0;
+      border-top: 1px solid rgba(232,222,199,0.1);
+      background: var(--bg-deep);
+      margin-top: auto;
+    }
+    
+    .nav-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 8px 12px;
+      color: var(--cream-dim);
+      text-decoration: none;
+      font-size: 10px;
+      font-weight: 600;
+    }
+    
+    .nav-btn svg {
+      width: 24px;
+      height: 24px;
+      margin-bottom: 4px;
+    }
+    
+    .nav-btn.active {
+      color: var(--gold);
+    }
+    
+    /* Error */
+    .error-msg {
+      background: rgba(200,88,80,0.2);
+      color: var(--red);
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: none;
+    }
+    
+    .error-msg.show {
+      display: block;
+    }
+    
+    /* Success */
+    .success-msg {
+      background: rgba(63,158,99,0.2);
+      color: var(--green);
+      padding: 12px;
+      border-radius: 10px;
+      font-size: 13px;
+      margin-bottom: 15px;
+      text-align: center;
+      display: none;
+    }
+    
+    .success-msg.show {
+      display: block;
+    }
+    
+    /* Loading */
+    .loading {
+      display: none;
+      text-align: center;
+      padding: 20px;
+    }
+    
+    .loading.show {
+      display: block;
+    }
+    
+    .spinner {
+      width: 40px;
+      height: 40px;
+      border: 3px solid var(--field);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 10px;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
+</head>
+<body>
+
+<div class="phone-wrapper">
+  
+  <!-- Header -->
+  <div class="header">
+    <div class="logo">📚</div>
+    <div class="app-name">Китобхона</div>
+    <div class="app-sub">Китобхонӣ — роҳи омӯзиш</div>
+  </div>
+  
+  <!-- Content -->
+  <div class="content">
+    
+    <!-- Auto Login Card (для новых пользователей) -->
+    <div class="auto-login-card" id="autoLoginCard">
+      <div class="auto-login-icon">👋</div>
+      <div class="auto-login-title">Хуш омадед!</div>
+      <div class="auto-login-sub">Шумо ба таври автоматӣ ворид шудед</div>
+      <div class="username-display" id="autoUsername">Китобхон 1</div>
+      <button class="btn btn-outline" onclick="openEditModal()">
+        ✏️ Редактировать профил
+      </button>
+    </div>
+    
+    <!-- Login Form -->
+    <div class="login-form" id="loginForm">
+      <div class="form-title">Вуруд ба система</div>
+      
+      <div class="error-msg" id="errorMsg"></div>
+      <div class="success-msg" id="successMsg"></div>
+      
+      <div class="input-group">
+        <label>Логин</label>
+        <input type="text" id="loginUsername" placeholder="Китобхон 1">
+      </div>
+      
+      <div class="input-group">
+        <label>Пароль</label>
+        <input type="password" id="loginPassword" placeholder="Пароли шумо">
+      </div>
+      
+      <button class="btn btn-gold" onclick="doLogin()">
+        🔐 Вуруд
+      </button>
+      
+      <button class="btn btn-outline" onclick="openEditModal()">
+        ✏️ Редактировать профил
+      </button>
+    </div>
+    
+    <div class="loading" id="loading">
+      <div class="spinner"></div>
+      <div>Интизор...</div>
+    </div>
+    
+  </div>
+  
+  <!-- Navigation -->
+  <div class="nav-bar">
+    <a href="index.html" class="nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
+      </svg>
+      Асосӣ
+    </a>
+    <a href="kitobho.html" class="nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+      </svg>
+      Китобҳо
+    </a>
+    <a href="winners.html" class="nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="6"/>
+        <path d="M8.5 13.5 7 22l5-3 5 3-1.5-8.5"/>
+      </svg>
+      Ғолибон
+    </a>
+    <a href="Lenta.html" class="nav-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <path d="M4 11a9 9 0 0 1 9 9"/>
+        <path d="M4 4a16 16 0 0 1 16 16"/>
+        <circle cx="5" cy="19" r="1"/>
+      </svg>
+      Лента
+    </a>
+    <a href="login.html" class="nav-btn active">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <circle cx="12" cy="8" r="4"/>
+        <path d="M4 21c0-4 3.6-7 8-7s8 3 8 7"/>
+      </svg>
+      Профил
+    </a>
+  </div>
+</div>
+
+<!-- Edit Profile Modal -->
+<div class="modal" id="editModal">
+  <div class="modal-content">
+    <div class="modal-header">
+      <div class="modal-title">Редактировать профил</div>
+      <div class="modal-close" onclick="closeEditModal()">×</div>
+    </div>
+    
+    <div class="success-msg" id="saveSuccess">
+      ✅ Профил сабт шуд! Соати чат кушоед.
+    </div>
+    
+    <div class="input-group">
+      <label>Номи пурра</label>
+      <input type="text" id="editFullName" placeholder="Номи шумо">
+    </div>
+    
+    <div class="input-group">
+      <label>Соли таваллуд</label>
+      <input type="number" id="editBirthYear" placeholder="2007" min="1950" max="2015">
+    </div>
+    
+    <div class="input-group">
+      <label>Ҷинс</label>
+      <select id="editGender">
+        <option value="">Интихор кунед</option>
+        <option value="male">Мард</option>
+        <option value="female">Занона</option>
+      </select>
+    </div>
+    
+    <div class="input-group">
+      <label>Вилоят / шаҳр</label>
+      <select id="editRegion">
+        <option value="">Интихор кунед</option>
+        <option value="Душанбе">Душанбе</option>
+        <option value="Хуҷанд">Хуҷанд</option>
+        <option value="Бухоро">Бухоро</option>
+        <option value="Самарқанд">Самарқанд</option>
+        <option value="Қӯқанд">Қӯқанд</option>
+        <option value="Истаравшан">Истаравшан</option>
+        <option value="Панҷакент">Панҷакент</option>
+        <option value="Кулоб">Кулоб</option>
+        <option value="Хорог">Хорог</option>
+        <option value="Ваҳдат">Ваҳдат</option>
+        <option value="Бохтар">Бохтар</option>
+        <option value="Нуреkat">Нуреkat</option>
+        <option value="Исфара">Исфара</option>
+        <option value="Турсунзода">Турсунзода</option>
+        <option value="Рӯдакӣ">Рӯдакӣ</option>
+        <option value="Фархор">Фархор</option>
+        <option value="Данғара">Данғара</option>
+        <option value="Кӯлоб">Кӯлоб</option>
+        <option value="Хашат">Хашат</option>
+      </select>
+    </div>
+    
+    <button class="btn btn-gold" onclick="saveProfile()">
+      💾 Захира кардан
+    </button>
+  </div>
+</div>
+
+<script src="config.js"></script>
+<script>
+  // Инициализация
+  document.addEventListener('DOMContentLoaded', init);
+  
+  async function init() {
+    showLoading(true);
+    
+    // Проверяем авторизацию
+    const user = await KITOB.Auth.autoLogin();
+    
+    if (user) {
+      // Пользователь авторизован
+      showAutoLogin(user.username);
+    } else {
+      // Новый пользователь - создаём автоматически
+      const username = generateUsername();
+      showAutoLogin(username);
+    }
+    
+    showLoading(false);
+  }
+  
+  function showLoading(show) {
+    document.getElementById('loading').classList.toggle('show', show);
+    document.getElementById('loginForm').style.display = show ? 'none' : 'block';
+    document.getElementById('autoLoginCard').style.display = show ? 'none' : 'block';
+  }
+  
+  function showAutoLogin(username) {
+    document.getElementById('autoUsername').textContent = username;
+    localStorage.setItem(KITOB.STORAGE.USERNAME, username);
+  }
+  
+  async function doLogin() {
+    const username = document.getElementById('loginUsername').value.trim();
+    const password = document.getElementById('loginPassword').value;
+    
+    if (!username || !password) {
+      showError('Логин ва парольро пур кунед');
+      return;
+    }
+    
+    showLoading(true);
+    hideError();
+    
+    try {
+      await KITOB.Auth.login(username, password);
+      showSuccess('Вуруд муваффақ!转移到...');
+      setTimeout(() => window.location.href = 'index.html', 1000);
+    } catch (e) {
+      showError(e.message || 'Хато рух дод');
+      showLoading(false);
+    }
+  }
+  
+  function openEditModal() {
+    // Загружаем текущие данные
+    loadCurrentProfile();
+    document.getElementById('editModal').classList.add('show');
+    document.getElementById('saveSuccess').classList.remove('show');
+  }
+  
+  function closeEditModal() {
+    document.getElementById('editModal').classList.remove('show');
+  }
+  
+  async function loadCurrentProfile() {
+    const userId = KITOB.Auth.getUserId();
+    if (!userId) return;
+    
+    try {
+      const profiles = await KITOB.SUPABASE.get('profiles', { column: 'server_user_id', value: userId });
+      if (profiles.length > 0) {
+        const p = profiles[0];
+        document.getElementById('editFullName').value = p.full_name || '';
+        document.getElementById('editBirthYear').value = p.birth_year || '';
+        document.getElementById('editGender').value = p.gender || '';
+        document.getElementById('editRegion').value = p.region || '';
+      }
+    } catch (e) {
+      console.error('Load profile error:', e);
+    }
+  }
+  
+  async function saveProfile() {
+    const fullName = document.getElementById('editFullName').value.trim();
+    const birthYear = parseInt(document.getElementById('editBirthYear').value);
+    const gender = document.getElementById('editGender').value;
+    const region = document.getElementById('editRegion').value;
+    
+    if (!birthYear || !gender || !region) {
+      showError('Ҳамаи майдонҳоро пур кунед');
+      return;
+    }
+    
+    // Проверяем возраст
+    const age = new Date().getFullYear() - birthYear;
+    if (age < 18) {
+      showError('Барои чат синни 18+ лозим');
+      return;
+    }
+    
+    const userId = KITOB.Auth.getUserId();
+    
+    try {
+      // Обновляем в Supabase
+      let profiles = await KITOB.SUPABASE.get('profiles', { column: 'server_user_id', value: userId });
+      
+      if (profiles.length > 0) {
+        await KITOB.SUPABASE.patch('profiles', profiles[0].id, {
+          full_name: fullName,
+          birth_year: birthYear,
+          gender: gender,
+          region: region,
+          is_complete: true
+        });
+      } else {
+        await KITOB.SUPABASE.post('profiles', {
+          username: localStorage.getItem(KITOB.STORAGE.USERNAME) || 'user',
+          full_name: fullName,
+          birth_year: birthYear,
+          gender: gender,
+          region: region,
+          is_complete: true,
+          server_user_id: userId,
+          auto_created: true
+        });
+      }
+      
+      // Обновляем в Neon
+      await KITOB.NEON.query(
+        `UPDATE users SET is_complete = true, birth_year = $1, gender = $2, region = $3, full_name = $4 WHERE id = $5`,
+        [birthYear, gender, region, fullName, userId]
+      );
+      
+      document.getElementById('saveSuccess').classList.add('show');
+      
+      setTimeout(() => {
+        closeEditModal();
+        window.location.href = 'index.html';
+      }, 1500);
+      
+    } catch (e) {
+      showError('Хато: ' + e.message);
+    }
+  }
+  
+  function showError(msg) {
+    const el = document.getElementById('errorMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+    setTimeout(() => el.classList.remove('show'), 3000);
+  }
+  
+  function hideError() {
+    document.getElementById('errorMsg').classList.remove('show');
+  }
+  
+  function showSuccess(msg) {
+    const el = document.getElementById('successMsg');
+    el.textContent = msg;
+    el.classList.add('show');
+  }
+  
+  // Закрыть модал при клике вне
+  document.getElementById('editModal').addEventListener('click', function(e) {
+    if (e.target === this) closeEditModal();
+  });
+</script>
+
+</body>
+</html>
