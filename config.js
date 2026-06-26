@@ -41,302 +41,149 @@ function getDeviceFingerprint() {
 }
 
 // ================================================================
-// ============ AUTH (АВТОРИЗАЦИЯ И ПРОФИЛИ) ============
+// ============ ФУНКЦИИ ДЛЯ РАБОТЫ С ФАЙЛАМИ (ШАРИНГ И СКАЧИВАНИЕ) ============
 // ================================================================
-const AUTH = {
-  // Получить данные текущего пользователя (аналог AutoLogin.currentUser, но с профилем)
-  getUser: async function() {
-    const token = localStorage.getItem('kk_token');
-    const userId = localStorage.getItem('kk_user_id');
-    if (!token || !userId) {
-      return { data: { user: null } };
-    }
-    try {
-      const profile = await NEON_API.getProfile(userId);
-      return {
-        data: {
-          user: {
-            id: userId,
-            username: localStorage.getItem('kk_username') || profile.username || 'user',
-            display_name: profile.display_name || profile.username || 'Китобхон',
-            ...profile
-          }
-        }
-      };
-    } catch (e) {
-      // Если не удалось получить профиль, возвращаем хотя бы базовые данные
-      return {
-        data: {
-          user: {
-            id: userId,
-            username: localStorage.getItem('kk_username') || 'user',
-            display_name: localStorage.getItem('kk_username') || 'Китобхон'
-          }
-        }
-      };
-    }
-  },
 
-  // Получить профиль другого пользователя по ID
-  getProfileFromRailway: async function(userId) {
-    try {
-      return await NEON_API.getProfile(userId);
-    } catch (e) {
-      console.warn('getProfileFromRailway error:', e);
-      return null;
-    }
-  },
-
-  // Автовход (обёртка над AutoLogin.autoLogin)
-  autoLogin: async function(showChoice) {
-    return await AutoLogin.autoLogin(showChoice);
-  },
-
-  // Выход
-  logout: function() {
-    AutoLogin.logout();
+// Проверка, запущено ли приложение в Android-обёртке с мостом KitobAndroid
+function isAndroid() {
+  try {
+    return !!(window.KitobAndroid && 
+      (KitobAndroid.isAndroidApp === true || 
+       (typeof KitobAndroid.isAndroidApp === 'function' && KitobAndroid.isAndroidApp()))
+    );
+  } catch(e) {
+    return false;
   }
-};
+}
 
-// ================================================================
-// ============ CHAT API ============
-// ================================================================
-const ChatAPI = {
-  // Получить список друзей (возвращает массив ID)
-  getFriends: async function(userId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/friends',
-      { headers: { 'Authorization': 'Bearer ' + token } },
-      8000
-    );
-    if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
-    const data = await r.json();
-    return data.map(f => f.id);
-  },
+// Конвертирует Blob в base64 (для передачи в Android-мост)
+function blobToBase64(blob) {
+  return new Promise((resolve, reject) => {
+    const fr = new FileReader();
+    fr.onload = () => resolve(String(fr.result).split(',')[1]);
+    fr.onerror = reject;
+    fr.readAsDataURL(blob);
+  });
+}
 
-  // Получить входящие заявки в друзья
-  getFriendRequests: async function(userId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests',
-      { headers: { 'Authorization': 'Bearer ' + token } },
-      8000
-    );
-    if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
-    return await r.json();
-  },
-
-  // Принять заявку по ID отправителя
-  acceptFriendRequestByUser: async function(fromUserId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept',
-      {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ from_user: fromUserId })
-      },
-      8000
-    );
-    if (!r.ok) throw new Error('Ошибка при приёме заявки: ' + r.status);
-    return await r.json();
-  },
-
-  // Отклонить заявку (удалить запись)
-  declineFriendRequest: async function(requestId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/' + requestId,
-      {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      },
-      8000
-    );
-    if (!r.ok) throw new Error('Ошибка при отклонении заявки: ' + r.status);
-    return await r.json();
-  },
-
-  // Получить историю сообщений между двумя пользователями
-  getMessages: async function(user1, user2) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const url = KITOB_CONFIG.NEON_API_BASE + '/api/messages?user1=' + user1 + '&user2=' + user2;
-    const r = await fetchWithTimeout(url, {
-      headers: { 'Authorization': 'Bearer ' + token }
-    }, 8000);
-    if (!r.ok) throw new Error('Ошибка получения сообщений: ' + r.status);
-    return await r.json();
-  },
-
-  // Отправить сообщение
-  sendMessage: async function(senderId, receiverId, text) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/messages',
-      {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ receiver_id: receiverId, text })
-      },
-      8000
-    );
-    if (!r.ok) throw new Error('Ошибка отправки сообщения: ' + r.status);
-    return await r.json();
-  },
-
-  // Отправить жалобу на пользователя
-  sendReport: async function(reporterId, reportedUserId, reason) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/reports',
-      {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ reported_user_id: reportedUserId, reason })
-      },
-      8000
-    );
-    if (!r.ok) throw new Error('Ошибка отправки жалобы: ' + r.status);
-    return await r.json();
-  }
-};
-
-// ================================================================
-// ============ NEON API (основные методы) ============
-// ================================================================
-const NEON_API = {
-  getProfile: async function(userId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + userId,
-      { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } },
-      8000
-    );
-    if (!r.ok) {
-      const err = await r.json().catch(() => ({}));
-      throw new Error(err.error || ('Ошибка профиля: ' + r.status));
+// Универсальная функция для шаринга PDF-файла
+async function shareFile(url, name) {
+  try {
+    let blob = null;
+    // 1. Сначала проверяем кэш
+    if ('caches' in window) {
+      const cache = await caches.open('kitobkhona-pdf-cache-v1');
+      const hit = await cache.match(url);
+      if (hit) {
+        blob = await hit.blob();
+      }
     }
-    return await r.json();
-  },
-
-  updateProfile: async function(profileData) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/profiles',
-      {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify(profileData)
-      },
-      8000
-    );
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || ('Ошибка сохранения: ' + r.status));
-    return data;
-  },
-
-  getReadingSessions: async function() {
-    const token = localStorage.getItem('kk_token');
-    const userId = localStorage.getItem('kk_user_id');
-    if (!token || !userId) return [];
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions?user_id=' + userId,
-      { headers: { 'Authorization': 'Bearer ' + token } },
-      8000
-    );
-    if (!r.ok) return [];
-    return await r.json();
-  },
-
-  getFavorites: async function() {
-    const token = localStorage.getItem('kk_token');
-    const userId = localStorage.getItem('kk_user_id');
-    if (!token || !userId) return [];
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId,
-      { headers: { 'Authorization': 'Bearer ' + token } },
-      8000
-    );
-    if (!r.ok) return [];
-    return await r.json();
-  },
-
-  getUserAchievements: async function() {
-    const token = localStorage.getItem('kk_token');
-    const userId = localStorage.getItem('kk_user_id');
-    if (!token || !userId) return [];
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/user-achievements?user_id=' + userId,
-      { headers: { 'Authorization': 'Bearer ' + token } },
-      8000
-    );
-    if (!r.ok) return [];
-    return await r.json();
-  },
-
-  checkResetEligibility: async function(identifier) {
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/auth/check-reset-eligibility',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier })
-      },
-      8000
-    );
-    return await r.json();
-  },
-
-  resetPassword: async function(identifier, newPassword) {
-    const r = await fetchWithTimeout(
-      KITOB_CONFIG.NEON_API_BASE + '/api/auth/reset-password',
-      {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ identifier, newPassword })
-      },
-      8000
-    );
-    const data = await r.json().catch(() => ({}));
-    if (!r.ok) throw new Error(data.error || ('Ошибка сброса: ' + r.status));
-    return data;
-  }
-};
-
-// ================================================================
-// ============ SUPABASE (для цитат, объявлений и т.п.) ============
-// ================================================================
-async function apiGet(table, opts) {
-  opts = opts || {};
-  const eq = opts.eq, order = opts.order, limit = opts.limit;
-  let url = KITOB_CONFIG.SUPABASE_REST + '/' + table;
-  const params = new URLSearchParams();
-  if (eq) params.append(eq.column + '=eq.' + eq.value);
-  if (order) params.append('order', order);
-  if (limit) params.append('limit', limit);
-  const fullUrl = params.toString() ? (url + '?' + params) : url;
-  const r = await fetchWithTimeout(fullUrl, {
-    headers: {
-      'apikey': KITOB_CONFIG.SUPABASE_KEY,
-      'Authorization': 'Bearer ' + KITOB_CONFIG.SUPABASE_KEY
+    // 2. Если нет в кэше — скачиваем
+    if (!blob) {
+      // Показываем уведомление только если скачиваем
+      const toastEl = document.getElementById('toast');
+      if (toastEl) {
+        toastEl.textContent = 'Омодасозии китоб...';
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 3000);
+      }
+      const r = await fetch(url, { cache: 'force-cache' });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      blob = await r.blob();
+      // Сохраняем в кэш для будущего использования
+      try {
+        const cache = await caches.open('kitobkhona-pdf-cache-v1');
+        await cache.put(url, new Response(blob.clone(), { headers: { 'Content-Type': 'application/pdf' } }));
+      } catch(e) {}
     }
-  }, 6000);
-  if (!r.ok) throw new Error('Supabase ' + table + ': ' + r.status);
-  return await r.json();
+    const fileName = (name || 'kitob') + '.pdf';
+    // 3. Если есть Android-мост — используем его
+    if (isAndroid() && typeof KitobAndroid.shareFile === 'function') {
+      const b64 = await blobToBase64(blob);
+      KitobAndroid.shareFile(b64, fileName, 'application/pdf');
+      return;
+    }
+    // 4. Пробуем Web Share API (с файлами)
+    if (navigator.canShare && navigator.share) {
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [file] })) {
+        await navigator.share({ title: name, files: [file] });
+        return;
+      }
+    }
+    // 5. Fallback: скачиваем файл через ссылку
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = fileName;
+    document.body.appendChild(a);
+    a.click();
+    setTimeout(() => document.body.removeChild(a), 5000);
+    const toastEl = document.getElementById('toast');
+    if (toastEl) {
+      toastEl.textContent = 'Файл боргирӣ шуд';
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 3000);
+    }
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      const toastEl = document.getElementById('toast');
+      if (toastEl) {
+        toastEl.textContent = 'Мубодила нашуд: ' + e.message;
+        toastEl.classList.add('show');
+        setTimeout(() => toastEl.classList.remove('show'), 3000);
+      }
+    }
+  }
+}
+
+// Функция для скачивания файла (сохраняет в кэш и на диск)
+async function downloadFile(url, name) {
+  try {
+    const toastEl = document.getElementById('toast');
+    if (toastEl) {
+      toastEl.textContent = 'Ҳифз шуда истодааст...';
+      toastEl.classList.add('show');
+    }
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const blob = await r.blob();
+    // Сохраняем в кэш
+    if ('caches' in window) {
+      const cache = await caches.open('kitobkhona-pdf-cache-v1');
+      await cache.put(url, new Response(blob.clone(), { headers: { 'Content-Type': 'application/pdf' } }));
+    }
+    // Сохраняем метаданные в localStorage
+    const m = JSON.parse(localStorage.getItem('kk_cached_books') || '{}');
+    m[url] = { url, name, cover: '', ts: Date.now(), size: blob.size };
+    localStorage.setItem('kk_cached_books', JSON.stringify(m));
+    // Скачиваем на устройство
+    if (isAndroid() && typeof KitobAndroid.saveFile === 'function') {
+      const b64 = await blobToBase64(blob);
+      KitobAndroid.saveFile(b64, (name || 'kitob') + '.pdf', 'application/pdf');
+    } else {
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = (name || 'kitob') + '.pdf';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(() => document.body.removeChild(a), 5000);
+    }
+    if (toastEl) {
+      toastEl.textContent = '✓ Китоб ҳифз шуд';
+      setTimeout(() => toastEl.classList.remove('show'), 2000);
+    }
+  } catch(e) {
+    const toastEl = document.getElementById('toast');
+    if (toastEl) {
+      toastEl.textContent = 'Ҳифз нашуд: ' + e.message;
+      toastEl.classList.add('show');
+      setTimeout(() => toastEl.classList.remove('show'), 3000);
+    }
+  }
 }
 
 // ================================================================
-// ============ AutoLogin (автоматический вход и гостевой режим) ============
+// ============ АВТОВХОД И УПРАВЛЕНИЕ АККАУНТОМ ============
 // ================================================================
 const AutoLogin = {
   currentUser: null,
@@ -509,6 +356,289 @@ const AutoLogin = {
 };
 
 // ================================================================
+// ============ AUTH (обёртка для удобства) ============
+// ================================================================
+const AUTH = {
+  getUser: async function() {
+    const token = localStorage.getItem('kk_token');
+    const userId = localStorage.getItem('kk_user_id');
+    if (!token || !userId) {
+      return { data: { user: null } };
+    }
+    try {
+      const profile = await NEON_API.getProfile(userId);
+      return {
+        data: {
+          user: {
+            id: userId,
+            username: localStorage.getItem('kk_username') || profile.username || 'user',
+            display_name: profile.display_name || profile.username || 'Китобхон',
+            ...profile
+          }
+        }
+      };
+    } catch (e) {
+      return {
+        data: {
+          user: {
+            id: userId,
+            username: localStorage.getItem('kk_username') || 'user',
+            display_name: localStorage.getItem('kk_username') || 'Китобхон'
+          }
+        }
+      };
+    }
+  },
+
+  getProfileFromRailway: async function(userId) {
+    try {
+      return await NEON_API.getProfile(userId);
+    } catch (e) {
+      console.warn('getProfileFromRailway error:', e);
+      return null;
+    }
+  },
+
+  autoLogin: async function(showChoice) {
+    return await AutoLogin.autoLogin(showChoice);
+  },
+
+  logout: function() {
+    AutoLogin.logout();
+  }
+};
+
+// ================================================================
+// ============ CHAT API ============
+// ================================================================
+const ChatAPI = {
+  getFriends: async function(userId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/friends',
+      { headers: { 'Authorization': 'Bearer ' + token } },
+      8000
+    );
+    if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
+    const data = await r.json();
+    return data.map(f => f.id);
+  },
+
+  getFriendRequests: async function(userId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests',
+      { headers: { 'Authorization': 'Bearer ' + token } },
+      8000
+    );
+    if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
+    return await r.json();
+  },
+
+  acceptFriendRequestByUser: async function(fromUserId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept',
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ from_user: fromUserId })
+      },
+      8000
+    );
+    if (!r.ok) throw new Error('Ошибка при приёме заявки: ' + r.status);
+    return await r.json();
+  },
+
+  declineFriendRequest: async function(requestId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/' + requestId,
+      {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token }
+      },
+      8000
+    );
+    if (!r.ok) throw new Error('Ошибка при отклонении заявки: ' + r.status);
+    return await r.json();
+  },
+
+  getMessages: async function(user1, user2) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const url = KITOB_CONFIG.NEON_API_BASE + '/api/messages?user1=' + user1 + '&user2=' + user2;
+    const r = await fetchWithTimeout(url, {
+      headers: { 'Authorization': 'Bearer ' + token }
+    }, 8000);
+    if (!r.ok) throw new Error('Ошибка получения сообщений: ' + r.status);
+    return await r.json();
+  },
+
+  sendMessage: async function(senderId, receiverId, text) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/messages',
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiver_id: receiverId, text })
+      },
+      8000
+    );
+    if (!r.ok) throw new Error('Ошибка отправки сообщения: ' + r.status);
+    return await r.json();
+  },
+
+  sendReport: async function(reporterId, reportedUserId, reason) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/reports',
+      {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reported_user_id: reportedUserId, reason })
+      },
+      8000
+    );
+    if (!r.ok) throw new Error('Ошибка отправки жалобы: ' + r.status);
+    return await r.json();
+  }
+};
+
+// ================================================================
+// ============ NEON API ============
+// ================================================================
+const NEON_API = {
+  getProfile: async function(userId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + userId,
+      { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } },
+      8000
+    );
+    if (!r.ok) {
+      const err = await r.json().catch(() => ({}));
+      throw new Error(err.error || ('Ошибка профиля: ' + r.status));
+    }
+    return await r.json();
+  },
+
+  updateProfile: async function(profileData) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/profiles',
+      {
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify(profileData)
+      },
+      8000
+    );
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Ошибка сохранения: ' + r.status));
+    return data;
+  },
+
+  getReadingSessions: async function() {
+    const token = localStorage.getItem('kk_token');
+    const userId = localStorage.getItem('kk_user_id');
+    if (!token || !userId) return [];
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions?user_id=' + userId,
+      { headers: { 'Authorization': 'Bearer ' + token } },
+      8000
+    );
+    if (!r.ok) return [];
+    return await r.json();
+  },
+
+  getFavorites: async function() {
+    const token = localStorage.getItem('kk_token');
+    const userId = localStorage.getItem('kk_user_id');
+    if (!token || !userId) return [];
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId,
+      { headers: { 'Authorization': 'Bearer ' + token } },
+      8000
+    );
+    if (!r.ok) return [];
+    return await r.json();
+  },
+
+  getUserAchievements: async function() {
+    const token = localStorage.getItem('kk_token');
+    const userId = localStorage.getItem('kk_user_id');
+    if (!token || !userId) return [];
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/user-achievements?user_id=' + userId,
+      { headers: { 'Authorization': 'Bearer ' + token } },
+      8000
+    );
+    if (!r.ok) return [];
+    return await r.json();
+  },
+
+  checkResetEligibility: async function(identifier) {
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/auth/check-reset-eligibility',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier })
+      },
+      8000
+    );
+    return await r.json();
+  },
+
+  resetPassword: async function(identifier, newPassword) {
+    const r = await fetchWithTimeout(
+      KITOB_CONFIG.NEON_API_BASE + '/api/auth/reset-password',
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identifier, newPassword })
+      },
+      8000
+    );
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Ошибка сброса: ' + r.status));
+    return data;
+  }
+};
+
+// ================================================================
+// ============ SUPABASE API ============
+// ================================================================
+async function apiGet(table, opts) {
+  opts = opts || {};
+  const eq = opts.eq, order = opts.order, limit = opts.limit;
+  let url = KITOB_CONFIG.SUPABASE_REST + '/' + table;
+  const params = new URLSearchParams();
+  if (eq) params.append(eq.column + '=eq.' + eq.value);
+  if (order) params.append('order', order);
+  if (limit) params.append('limit', limit);
+  const fullUrl = params.toString() ? (url + '?' + params) : url;
+  const r = await fetchWithTimeout(fullUrl, {
+    headers: {
+      'apikey': KITOB_CONFIG.SUPABASE_KEY,
+      'Authorization': 'Bearer ' + KITOB_CONFIG.SUPABASE_KEY
+    }
+  }, 6000);
+  if (!r.ok) throw new Error('Supabase ' + table + ': ' + r.status);
+  return await r.json();
+}
+
+// ================================================================
 // ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
 // ================================================================
 function esc(str) {
@@ -521,4 +651,6 @@ function esc(str) {
     .replace(/'/g, '&#39;');
 }
 
-function el(id) { return document.getElementById(id); }
+function el(id) {
+  return document.getElementById(id);
+}
