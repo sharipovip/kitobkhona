@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="config.js"></script>
 <style>
+  /* ===== СТИЛИ (те же, что и раньше) ===== */
   @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
 
   :root{
@@ -279,7 +280,8 @@
 
 <script>
   const $ = id => document.getElementById(id);
-  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  // Используем глобальную esc из config.js
+  // const esc = ... удалено
 
   const clsList = ['c1','c2','c3','c4','c5','c6'];
   const getCls = i => clsList[Math.abs(i) % clsList.length];
@@ -333,31 +335,23 @@
         requests = await ChatAPI.getFriendRequests(currentUser.id);
       } catch(e) { console.warn('Requests load error', e); }
 
-      // Получение профилей друзей (из Neon через AUTH)
+      // Получение профилей отправителей заявок
+      const requestProfiles = {};
+      for (const req of requests) {
+        try {
+          const p = await AUTH.getProfileFromRailway(req.from_user);
+          if(p) requestProfiles[req.from_user] = p;
+        } catch(e) {}
+      }
+
+      // Получение профилей друзей (только для отображения, без последнего сообщения для простоты)
       const friendProfiles = {};
-      await Promise.all(friends.map(async (id) => {
+      for (const id of friends) {
         try {
           const p = await AUTH.getProfileFromRailway(id);
           if(p) friendProfiles[id] = p;
         } catch(e) {}
-      }));
-
-      // Сборка данных для отображения
-      const friendItems = friends.map(id => {
-        const p = friendProfiles[id] || {};
-        const name = p.display_name || p.full_name || 'Китобхон';
-        const avatarEmoji = p.avatar_emoji || '👤';
-        return {
-          id,
-          name,
-          avatarEmoji,
-          cls: getCls(id.charCodeAt(0) || 0),
-          online: Math.random() > 0.6, // демо, позже через Socket.IO
-          lastMsg: 'Паёмҳо баъди навиштан',
-          time: ''
-        };
-      });
-      friendsCache = friendItems;
+      }
 
       // Формируем HTML
       let html = '';
@@ -373,17 +367,16 @@
         `;
         for(const req of requests) {
           const fromId = req.from_user;
-          let profile = null;
-          try { profile = await AUTH.getProfileFromRailway(fromId); } catch(e) {}
-          const name = profile?.display_name || profile?.full_name || 'Китобхон';
+          const profile = requestProfiles[fromId] || {};
+          const name = profile.display_name || profile.username || 'Китобхон';
           const initials = getInitials(name);
           const cls = getCls(fromId.charCodeAt(0) || 0);
           html += `
-            <div class="req-card" data-request-id="${req.id}">
+            <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
               <div class="req-avatar ${cls}">${esc(initials)}</div>
               <div class="req-name">${esc(name)}</div>
               <div class="req-actions">
-                <button class="btn-mini accept" onclick="acceptRequest('${req.id}')">Қабул</button>
+                <button class="btn-mini accept" onclick="acceptRequest('${fromId}')">Қабул</button>
                 <button class="btn-mini decline" onclick="declineRequest('${req.id}')">Рад</button>
               </div>
             </div>
@@ -396,28 +389,34 @@
       html += `
         <div class="section-label">
           <div class="t">Дӯстон</div>
-          <div class="count" id="friendCount">${friendItems.length} фаъол</div>
+          <div class="count" id="friendCount">${friends.length} дӯст</div>
         </div>
         <div class="chat-list" id="chatList">
       `;
 
-      if(friendItems.length === 0) {
+      if(friends.length === 0) {
         html += `<div class="empty-hint">Барои оғози чат аввал дӯст ҷӯед</div>`;
       } else {
-        for(const f of friendItems) {
+        for(const id of friends) {
+          const profile = friendProfiles[id] || {};
+          const name = profile.display_name || profile.username || 'Китобхон';
+          const initials = getInitials(name);
+          const cls = getCls(id.charCodeAt(0) || 0);
+          // Для демонстрации показываем статический статус онлайн (можно убрать)
+          const online = Math.random() > 0.6;
           html += `
-            <div class="chat-item" onclick="openChat('${f.id}','${esc(f.name)}')">
+            <div class="chat-item" onclick="openChat('${id}','${esc(name)}')">
               <div class="avatar-wrap">
-                <div class="avatar ${f.cls} ${f.online ? 'ring' : ''}">${esc(f.avatarEmoji)}</div>
-                ${f.online ? '<div class="online-dot"></div>' : ''}
+                <div class="avatar ${cls} ${online ? 'ring' : ''}">${esc(initials)}</div>
+                ${online ? '<div class="online-dot"></div>' : ''}
               </div>
               <div class="chat-mid">
                 <div class="chat-top">
-                  <div class="chat-name">${esc(f.name)}</div>
-                  <div class="chat-time">${f.time}</div>
+                  <div class="chat-name">${esc(name)}</div>
+                  <div class="chat-time"></div>
                 </div>
                 <div class="chat-bottom">
-                  <div class="chat-msg">${esc(f.lastMsg)}</div>
+                  <div class="chat-msg">Паёмҳо баъди навиштан</div>
                 </div>
               </div>
             </div>
@@ -428,14 +427,8 @@
 
       // Поиск
       const searchInput = document.getElementById('searchInput');
-      searchInput.addEventListener('input', function() {
-        const q = this.value.trim().toLowerCase();
-        const items = document.querySelectorAll('.chat-item');
-        items.forEach(item => {
-          const name = item.querySelector('.chat-name')?.textContent?.toLowerCase() || '';
-          item.style.display = name.includes(q) ? 'flex' : 'none';
-        });
-      });
+      searchInput.removeEventListener('input', handleSearch);
+      searchInput.addEventListener('input', handleSearch);
 
       scroll.innerHTML = html;
 
@@ -445,10 +438,19 @@
     }
   }
 
+  function handleSearch() {
+    const q = this.value.trim().toLowerCase();
+    const items = document.querySelectorAll('.chat-item');
+    items.forEach(item => {
+      const name = item.querySelector('.chat-name')?.textContent?.toLowerCase() || '';
+      item.style.display = name.includes(q) ? 'flex' : 'none';
+    });
+  }
+
   // Принять заявку
-  async function acceptRequest(requestId) {
+  async function acceptRequest(fromUserId) {
     try {
-      await ChatAPI.acceptFriendRequest(requestId);
+      await ChatAPI.acceptFriendRequestByUser(fromUserId);
       loadData();
     } catch(e) {
       alert('Хатогӣ: ' + e.message);

@@ -6,52 +6,384 @@
 <meta name="theme-color" content="#0D1B2A">
 <title>Китобхона — Хондан</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="config.js"></script>
 <style>
-:root{--bg:#111;--panel:rgba(13,27,42,.95);--page:#F5F0E8;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--border:rgba(201,168,76,.22);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}.light-reading{--bg:#E8E2D5;--panel:rgba(245,240,232,.96);--page:#FFFEF7;--text:#1A2D44;--muted:#4A5D73}*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{width:100%;height:100%;overflow:hidden;background:#05070a;color:var(--text);font-family:'Segoe UI',Arial,sans-serif;position:fixed;inset:0}.reader-wrapper{width:100%;max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 0 60px rgba(0,0,0,.55)}.reader-top-bar{position:absolute;top:0;left:0;right:0;z-index:100;background:var(--panel);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:calc(8px + var(--safe-top)) 12px 9px;display:flex;align-items:center;gap:10px;transition:.25s}.reader-top-bar.hidden{transform:translateY(-110%)}.btn-back,.top-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;font-size:18px;cursor:pointer}.book-title-block{flex:1;min-width:0}.reading-book-title{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reading-book-author{font-size:11px;color:var(--muted);margin-top:2px}.top-actions{display:flex;gap:6px}.reader-main{flex:1;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 40%,rgba(201,168,76,.08),transparent 40%),var(--bg)}.page-stage{position:absolute;inset:0;display:grid;place-items:center;padding:calc(58px + var(--safe-top)) 5px calc(72px + var(--safe-bottom));touch-action:pan-y}.page-container{max-width:100%;max-height:100%;display:grid;place-items:center;transition:transform .15s}.page-container canvas{max-width:100%;max-height:100%;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);background:var(--page)}.page-nav-area{position:absolute;top:0;bottom:0;width:28%;z-index:20}.page-nav-left{left:0}.page-nav-right{right:0}.reader-bottom-bar{position:absolute;bottom:0;left:0;right:0;z-index:100;background:var(--panel);backdrop-filter:blur(18px);border-top:1px solid var(--border);padding:8px 14px calc(10px + var(--safe-bottom));transition:.25s}.reader-bottom-bar.hidden{transform:translateY(110%)}.reading-progress{height:4px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;margin-bottom:9px}.reading-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0}.reader-controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}.control-left,.control-right{display:flex;gap:8px}.control-right{justify-content:flex-end}.control-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;font-size:17px;cursor:pointer}.control-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1b1202;border-color:var(--gold)}.page-info{text-align:center;font-size:12px;color:var(--muted);font-weight:800}.loading{position:absolute;inset:0;z-index:90;display:none;place-items:center;background:rgba(0,0,0,.20)}.loading.on{display:grid}.progress-ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--gold) calc(var(--p,0)*1%),rgba(201,168,76,.16) 0);display:grid;place-items:center;box-shadow:0 10px 32px rgba(0,0,0,.45)}.progress-ring:before{content:"";position:absolute;width:50px;height:50px;border-radius:50%;background:var(--panel);border:1px solid var(--border)}.progress-ring span{position:relative;z-index:1;font-size:12px;font-weight:900;color:var(--gold2)}@keyframes spin{to{transform:rotate(360deg)}}.panel{position:absolute;z-index:160;background:var(--panel);border:1px solid var(--border);box-shadow:0 16px 42px rgba(0,0,0,.5);display:none}.panel.open{display:block}.settings-panel{top:calc(58px + var(--safe-top));right:10px;bottom:calc(76px + var(--safe-bottom));width:min(320px,calc(100% - 20px));border-radius:20px;padding:10px;overflow:auto}.search-panel{left:10px;right:10px;top:calc(64px + var(--safe-top));bottom:calc(76px + var(--safe-bottom));border-radius:20px;padding:14px;overflow:auto}.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.panel-title{font-weight:900;color:var(--gold2)}.close-panel{width:32px;height:32px;border-radius:11px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;cursor:pointer}.settings-group{border-top:1px solid rgba(255,255,255,.08);padding:8px 0}.settings-group-title{font-size:11px;color:var(--gold2);font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.setting-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:8px;margin-bottom:6px}.setting-label{display:flex;align-items:center;gap:8px;font-weight:800}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--border);border-radius:99px;background:rgba(255,255,255,.05);color:var(--text);padding:6px 10px;font-weight:800;cursor:pointer;font-size:12px}.pill.active{background:var(--gold);color:#1b1202}.range{width:100%;margin:3px 0}.find-nav{display:flex;align-items:center;gap:8px;margin-top:10px}.find-count{flex:1;text-align:center;color:var(--gold2);font-weight:900;font-size:12px}.find-results{margin-top:10px;max-height:48vh;overflow:auto;border-top:1px solid rgba(255,255,255,.08)}.find-item{padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer}.find-item.on{background:rgba(201,168,76,.12);border-radius:10px}.find-page{font-weight:900;color:var(--gold2);font-size:12px}.find-snippet{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}.stars{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.star{font-size:24px;color:#64748b;cursor:pointer;transition:.12s}.star.on{color:var(--gold)}.star:hover{transform:scale(1.12)}.toast{position:fixed;left:50%;bottom:calc(92px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);z-index:300;background:var(--panel);border:1px solid var(--border);border-radius:99px;padding:10px 15px;color:var(--text);font-size:12px;opacity:0;transition:.25s;max-width:90%;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.error{padding:20px;text-align:center;color:#fca5a5;max-width:320px}
+  :root{--bg:#111;--panel:rgba(13,27,42,.95);--page:#F5F0E8;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--border:rgba(201,168,76,.22);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+  .light-reading{--bg:#E8E2D5;--panel:rgba(245,240,232,.96);--page:#FFFEF7;--text:#1A2D44;--muted:#4A5D73}*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{width:100%;height:100%;overflow:hidden;background:#05070a;color:var(--text);font-family:'Segoe UI',Arial,sans-serif;position:fixed;inset:0}.reader-wrapper{width:100%;max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 0 60px rgba(0,0,0,.55)}.reader-top-bar{position:absolute;top:0;left:0;right:0;z-index:100;background:var(--panel);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:calc(8px + var(--safe-top)) 12px 9px;display:flex;align-items:center;gap:10px;transition:.25s}.reader-top-bar.hidden{transform:translateY(-110%)}.btn-back,.top-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;font-size:18px;cursor:pointer}.book-title-block{flex:1;min-width:0}.reading-book-title{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reading-book-author{font-size:11px;color:var(--muted);margin-top:2px}.top-actions{display:flex;gap:6px}.reader-main{flex:1;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 40%,rgba(201,168,76,.08),transparent 40%),var(--bg)}.page-stage{position:absolute;inset:0;display:grid;place-items:center;padding:calc(58px + var(--safe-top)) 5px calc(100px + var(--safe-bottom));touch-action:pan-y}.page-container{max-width:100%;max-height:100%;display:grid;place-items:center;transition:transform .15s}.page-container canvas{max-width:100%;max-height:100%;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);background:var(--page)}.page-nav-area{position:absolute;top:0;bottom:0;width:28%;z-index:20}.page-nav-left{left:0}.page-nav-right{right:0}.reader-bottom-bar{position:absolute;bottom:0;left:0;right:0;z-index:100;background:var(--panel);backdrop-filter:blur(18px);border-top:1px solid var(--border);padding:8px 14px calc(10px + var(--safe-bottom));transition:.25s}.reader-bottom-bar.hidden{transform:translateY(110%)}.reading-progress{height:4px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;margin-bottom:9px}.reading-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0}.reader-controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}.control-left,.control-right{display:flex;gap:8px}.control-right{justify-content:flex-end}.control-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;font-size:17px;cursor:pointer}.control-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1b1202;border-color:var(--gold)}.page-info{text-align:center;font-size:12px;color:var(--muted);font-weight:800}.loading{position:absolute;inset:0;z-index:90;display:none;place-items:center;background:rgba(0,0,0,.20)}.loading.on{display:grid}.progress-ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--gold) calc(var(--p,0)*1%),rgba(201,168,76,.16) 0);display:grid;place-items:center;box-shadow:0 10px 32px rgba(0,0,0,.45)}.progress-ring:before{content:"";position:absolute;width:50px;height:50px;border-radius:50%;background:var(--panel);border:1px solid var(--border)}.progress-ring span{position:relative;z-index:1;font-size:12px;font-weight:900;color:var(--gold2)}@keyframes spin{to{transform:rotate(360deg)}}.panel{position:absolute;z-index:160;background:var(--panel);border:1px solid var(--border);box-shadow:0 16px 42px rgba(0,0,0,.5);display:none}.panel.open{display:block}.settings-panel{top:calc(58px + var(--safe-top));right:10px;bottom:calc(76px + var(--safe-bottom));width:min(320px,calc(100% - 20px));border-radius:20px;padding:10px;overflow:auto}.search-panel{left:10px;right:10px;top:calc(64px + var(--safe-top));bottom:calc(76px + var(--safe-bottom));border-radius:20px;padding:14px;overflow:auto}.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.panel-title{font-weight:900;color:var(--gold2)}.close-panel{width:32px;height:32px;border-radius:11px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;cursor:pointer}.settings-group{border-top:1px solid rgba(255,255,255,.08);padding:8px 0}.settings-group-title{font-size:11px;color:var(--gold2);font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.setting-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:8px;margin-bottom:6px}.setting-label{display:flex;align-items:center;gap:8px;font-weight:800}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--border);border-radius:99px;background:rgba(255,255,255,.05);color:var(--text);padding:6px 10px;font-weight:800;cursor:pointer;font-size:12px}.pill.active{background:var(--gold);color:#1b1202}.range{width:100%;margin:3px 0}.find-nav{display:flex;align-items:center;gap:8px;margin-top:10px}.find-count{flex:1;text-align:center;color:var(--gold2);font-weight:900;font-size:12px}.find-results{margin-top:10px;max-height:48vh;overflow:auto;border-top:1px solid rgba(255,255,255,.08)}.find-item{padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer}.find-item.on{background:rgba(201,168,76,.12);border-radius:10px}.find-page{font-weight:900;color:var(--gold2);font-size:12px}.find-snippet{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}.stars{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.star{font-size:24px;color:#64748b;cursor:pointer;transition:.12s}.star.on{color:var(--gold)}.star:hover{transform:scale(1.12)}.toast{position:fixed;left:50%;bottom:calc(92px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);z-index:300;background:var(--panel);border:1px solid var(--border);border-radius:99px;padding:10px 15px;color:var(--text);font-size:12px;opacity:0;transition:.25s;max-width:90%;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.error{padding:20px;text-align:center;color:#fca5a5;max-width:320px}
+
+/* ============ НОВЫЙ БЛОК РЕАКЦИЙ ============ */
+.reaction-bar{
+  display:flex;align-items:center;justify-content:space-between;gap:6px;
+  margin-top:6px;padding-top:6px;border-top:1px solid var(--border);
+}
+.reaction-group{display:flex;gap:10px;align-items:center;}
+.reaction-btn{
+  background:transparent;border:none;font-size:22px;cursor:pointer;
+  transition:transform .12s;color:var(--muted);padding:2px 4px;line-height:1;
+}
+.reaction-btn.active{color:var(--gold);}
+.reaction-btn:hover{transform:scale(1.2);}
+.reaction-btn .cnt{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px;display:inline-block;}
+.reaction-btn.active .cnt{color:var(--gold);}
+.rating-stars{display:flex;gap:3px;align-items:center;}
+.rating-stars .star{font-size:18px;color:var(--muted);cursor:pointer;transition:.12s;}
+.rating-stars .star.on{color:var(--gold);}
+.rating-stars .star:hover{transform:scale(1.2);}
+.rating-label{font-size:11px;color:var(--muted);font-weight:600;margin-right:4px;}
 </style>
 </head>
 <body>
 <div class="reader-wrapper">
 <div class="reader-top-bar" id="topBar"><button class="btn-back" onclick="goBack()">←</button><div class="book-title-block"><div class="reading-book-title" id="bookTitle">Китоб</div><div class="reading-book-author" id="bookSub">Китобхона</div></div><div class="top-actions"><button class="top-btn" onclick="toggleSearch()">🔍</button><button class="top-btn" id="bmBtn" onclick="toggleBookmark()">🔖</button><button class="top-btn" onclick="shareCurrent()">↗</button><button class="top-btn" onclick="toggleSettings()">⚙️</button></div></div>
 <main class="reader-main" id="readerMain"><div class="page-stage" id="stage"><div class="page-container" id="pageContainer"></div></div><div class="page-nav-area page-nav-left" onclick="turnPage(-1)"></div><div class="page-nav-area page-nav-right" onclick="turnPage(1)"></div><div class="loading on" id="loading"><div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div></div></main>
-<div class="reader-bottom-bar" id="bottomBar"><div class="reading-progress"><div class="reading-progress-fill" id="progressFill"></div></div><div class="reader-controls"><div class="control-left"><button class="control-btn" onclick="jumpPage(1)">⏮</button><button class="control-btn primary" onclick="turnPage(-1)">‹</button></div><div class="page-info" id="pageInfo">— / —</div><div class="control-right"><button class="control-btn primary" onclick="turnPage(1)">›</button><button class="control-btn" onclick="jumpPage(pages)">⏭</button></div></div></div>
+<div class="reader-bottom-bar" id="bottomBar">
+  <div class="reading-progress"><div class="reading-progress-fill" id="progressFill"></div></div>
+  <!-- ===== НОВЫЙ БЛОК: РЕАКЦИИ И ЗВЁЗДЫ ===== -->
+  <div class="reaction-bar" id="reactionBar">
+    <div class="reaction-group">
+      <button class="reaction-btn" data-reaction="like" title="Лайк">👍<span class="cnt" id="likeCount">0</span></button>
+      <button class="reaction-btn" data-reaction="love" title="Муҳаббат">❤️<span class="cnt" id="loveCount">0</span></button>
+      <button class="reaction-btn" data-reaction="dislike" title="Нописанд">👎<span class="cnt" id="dislikeCount">0</span></button>
+    </div>
+    <div class="rating-stars" id="ratingStars">
+      <span class="rating-label">⭐</span>
+      <span class="star" data-rating="1">☆</span>
+      <span class="star" data-rating="2">☆</span>
+      <span class="star" data-rating="3">☆</span>
+      <span class="star" data-rating="4">☆</span>
+      <span class="star" data-rating="5">☆</span>
+      <span class="star" data-rating="6">☆</span>
+      <span class="star" data-rating="7">☆</span>
+      <span class="star" data-rating="8">☆</span>
+      <span class="star" data-rating="9">☆</span>
+      <span class="star" data-rating="10">☆</span>
+    </div>
+  </div>
+  <div class="reader-controls">
+    <div class="control-left"><button class="control-btn" onclick="jumpPage(1)">⏮</button><button class="control-btn primary" onclick="turnPage(-1)">‹</button></div>
+    <div class="page-info" id="pageInfo">— / —</div>
+    <div class="control-right"><button class="control-btn primary" onclick="turnPage(1)">›</button><button class="control-btn" onclick="jumpPage(pages)">⏭</button></div>
+  </div>
+</div>
 <div class="panel settings-panel" id="settingsPanel"><div class="settings-header"><div class="panel-title">⚙️ Танзимот</div><button class="close-panel" onclick="toggleSettings(false)">✕</button></div>
 <div class="settings-group"><div class="settings-group-title">Намуди хондан</div><div class="setting-item"><div class="setting-label">🌓 Мавзӯъ</div><div class="row"><button class="pill" onclick="setTheme('light')">☀️ Рӯз</button><button class="pill active" onclick="setTheme('dark')">🌙 Шаб</button></div></div></div>
 <div class="settings-group"><div class="settings-group-title">Дурахшонӣ</div><div class="setting-item" style="display:block"><div class="setting-label">💡 Танзими дурахшонӣ</div><input class="range" id="brightnessRange" type="range" min="45" max="120" value="100" oninput="setBrightness(this.value)"></div></div>
 <div class="settings-group"><div class="settings-group-title">Андоза</div><div class="setting-item" style="display:block"><div class="setting-label">🔍 Калонсозӣ</div><input class="range" type="range" min="70" max="150" value="100" oninput="setZoom(this.value)"><div id="zoomText" style="text-align:center;color:var(--gold2);font-weight:900">100%</div></div></div>
-<div class="settings-group"><div class="settings-group-title">Имконот</div><div class="setting-item" onclick="showBookmarks()"><div class="setting-label">🔖 Хатбаракҳо</div><div id="bmCount">0</div></div><div class="setting-item" onclick="showStats()"><div class="setting-label">📊 Омори хондан</div><div>›</div></div><div class="setting-item" onclick="rateBook()"><div class="setting-label">⭐ Баҳо додан</div><div id="ratingText">›</div></div><div class="setting-item" onclick="downloadCurrent()"><div class="setting-label">⬇ Зеркашӣ кардан</div><div>📥</div></div></div></div>
+<div class="settings-group"><div class="settings-group-title">Имконот</div><div class="setting-item" onclick="showBookmarks()"><div class="setting-label">🔖 Хатбаракҳо</div><div id="bmCount">0</div></div><div class="setting-item" onclick="showStats()"><div class="setting-label">📊 Омори хондан</div><div>›</div></div><div class="setting-item" onclick="downloadCurrent()"><div class="setting-label">⬇ Зеркашӣ кардан</div><div>📥</div></div></div></div>
 <div class="panel search-panel" id="searchPanel"><div class="settings-header"><div class="panel-title">🔍 Ҷустуҷӯ</div><button class="close-panel" onclick="toggleSearch(false)">✕</button></div><form onsubmit="event.preventDefault();findText()" class="row"><input id="findInput" style="flex:1;min-width:170px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);border-radius:12px;padding:10px;outline:none" placeholder="Калима..."><button class="pill">Ёфтан</button></form><div class="find-nav"><button class="pill" onclick="prevFind()">↑ Пешина</button><div class="find-count" id="findCount">0 / 0</div><button class="pill" onclick="nextFind()">↓ Баъдӣ</button></div><div id="findResult" class="find-results"></div></div>
 <div class="toast" id="toast"></div>
 </div>
 <script>
-pdfjsLib.GlobalWorkerOptions.workerSrc='https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
-const $=id=>document.getElementById(id);const qs=new URL(location.href).searchParams;const safeDecode=s=>{try{return decodeURIComponent(s)}catch(e){return s}};let url=qs.get('url')||qs.get('open')||'',name=qs.get('name')||'Китоб',cover=qs.get('cover')||'',pdf=null,page=1,pages=0,rendering=false,bars=true,zoom=1,curCanvas=null;url=safeDecode(url);name=safeDecode(name);cover=safeDecode(cover);$('bookTitle').textContent=name;
+pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+const $ = id => document.getElementById(id);
+const qs = new URL(location.href).searchParams;
+const safeDecode = s => { try { return decodeURIComponent(s) } catch(e) { return s } };
+let url = qs.get('url') || qs.get('open') || '';
+let name = qs.get('name') || 'Китоб';
+let cover = qs.get('cover') || '';
+let pdf = null, page = 1, pages = 0, rendering = false, bars = true, zoom = 1, curCanvas = null;
+url = safeDecode(url);
+name = safeDecode(name);
+cover = safeDecode(cover);
+$('bookTitle').textContent = name;
+
+// ================================================================
+// ============ BOOK ID ============
+function getBookId() {
+  try {
+    const u = new URL(url);
+    const path = u.pathname.split('/').filter(Boolean);
+    const contentPath = path.slice(3).join('/');
+    let clean = contentPath.replace(/^books\//, '');
+    if (!clean) {
+      const fileName = path.slice(3).pop() || '';
+      return fileName;
+    }
+    return clean;
+  } catch(e) {
+    return name;
+  }
+}
+
+// ================================================================
+// ============ СЕССИЯ ЧТЕНИЯ ============
+let sessionInterval = null;
+let totalSeconds = 0;
+const SESSION_INTERVAL = 30;
+const MIN_READ_TIME = 120;
+let sessionStarted = false;
+
+async function sendReadingSession(duration, status, pages = page) {
+  const token = localStorage.getItem('kk_token');
+  if (!token) return;
+  const bookId = getBookId();
+  if (!bookId || bookId === 'undefined' || bookId === 'null') return;
+  const payload = {
+    book_id: bookId,
+    book_title: name,
+    duration: duration || 0,
+    status: status || 'viewed',
+    pages_read: pages || 0
+  };
+  try {
+    const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
+    if (!r.ok) console.error('[Reader] Session error:', r.status);
+  } catch(e) { console.error('[Reader] Session network error:', e); }
+}
+
+function startReadingSession() {
+  if (sessionStarted) return;
+  sessionStarted = true;
+  sendReadingSession(0, 'viewed');
+  sessionInterval = setInterval(() => {
+    totalSeconds += SESSION_INTERVAL;
+    if (totalSeconds >= MIN_READ_TIME) {
+      sendReadingSession(totalSeconds, 'active');
+    }
+  }, SESSION_INTERVAL * 1000);
+}
+
+function stopReadingSession() {
+  if (sessionInterval) {
+    clearInterval(sessionInterval);
+    sessionInterval = null;
+    if (totalSeconds >= MIN_READ_TIME) {
+      sendReadingSession(totalSeconds, 'completed');
+    }
+    totalSeconds = 0;
+    sessionStarted = false;
+  }
+}
+
+window.addEventListener('load', function() {
+  setTimeout(startReadingSession, 1000);
+  loadReactions(); // загружаем реакции при открытии
+});
+window.addEventListener('beforeunload', stopReadingSession);
+document.addEventListener('visibilitychange', function() {
+  if (document.hidden) stopReadingSession();
+  else startReadingSession();
+});
+
+window.goBack = function() {
+  stopReadingSession();
+  if (history.length > 1) history.back();
+  else location.href = 'kitobho.html';
+};
+
+// ================================================================
+// ============ РЕАКЦИИ И РЕЙТИНГ ============
+// ================================================================
+let currentReaction = null;
+let currentRating = 0;
+
+async function loadReactions() {
+  const token = localStorage.getItem('kk_token');
+  if (!token) return;
+  const bookId = getBookId();
+  if (!bookId) return;
+  try {
+    // Получаем реакцию пользователя
+    const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    if (data.reaction) {
+      currentReaction = data.reaction;
+      document.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.reaction === data.reaction);
+      });
+    }
+    if (data.rating) {
+      currentRating = data.rating;
+      updateStarsUI(data.rating);
+    }
+
+    // Получаем общую статистику
+    const statsResp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
+    if (!statsResp.ok) throw new Error('HTTP '+statsResp.status);
+    const stats = await statsResp.json();
+    $('likeCount').textContent = stats.likes || 0;
+    $('loveCount').textContent = stats.loves || 0;
+    $('dislikeCount').textContent = stats.dislikes || 0;
+    if (stats.avg_rating) {
+      // отображаем средний рейтинг как звёзды (половинчатые не делаем, просто показываем число)
+      const avg = parseFloat(stats.avg_rating) || 0;
+      // можно показать среднюю оценку текстом или закрасить звёзды
+    }
+  } catch(e) {
+    console.warn('Failed to load reactions:', e);
+  }
+}
+
+async function saveReaction(reaction) {
+  const token = localStorage.getItem('kk_token');
+  if (!token) { toast('Ворид шавед'); return; }
+  const bookId = getBookId();
+  if (!bookId) return;
+  try {
+    const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book_id: bookId, reaction })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const stats = await resp.json();
+    // обновляем счётчики
+    $('likeCount').textContent = stats.likes || 0;
+    $('loveCount').textContent = stats.loves || 0;
+    $('dislikeCount').textContent = stats.dislikes || 0;
+    // обновляем активную кнопку
+    document.querySelectorAll('.reaction-btn').forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.reaction === reaction);
+    });
+    currentReaction = reaction;
+    toast('Реакция сабт шуд');
+  } catch(e) {
+    console.error('Save reaction error:', e);
+    toast('Хатогӣ: ' + e.message);
+  }
+}
+
+async function saveRating(rating) {
+  const token = localStorage.getItem('kk_token');
+  if (!token) { toast('Ворид шавед'); return; }
+  const bookId = getBookId();
+  if (!bookId) return;
+  try {
+    const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book_id: bookId, rating })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const stats = await resp.json();
+    currentRating = rating;
+    updateStarsUI(rating);
+    toast('Баҳо сабт шуд (⭐ ' + rating + '/10)');
+  } catch(e) {
+    console.error('Save rating error:', e);
+    toast('Хатогӣ: ' + e.message);
+  }
+}
+
+function updateStarsUI(rating) {
+  document.querySelectorAll('.rating-stars .star').forEach(el => {
+    const val = parseInt(el.dataset.rating);
+    el.classList.toggle('on', val <= rating);
+    el.textContent = val <= rating ? '★' : '☆';
+  });
+}
+
+// Обработчики реакций
+document.querySelectorAll('.reaction-btn').forEach(btn => {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const reaction = this.dataset.reaction;
+    // если уже активна — снимаем (т.е. удаляем реакцию)
+    if (this.classList.contains('active')) {
+      // отправляем null, чтобы удалить реакцию
+      saveReaction(null);
+      this.classList.remove('active');
+      currentReaction = null;
+    } else {
+      saveReaction(reaction);
+    }
+  });
+});
+
+// Обработчики звёзд
+document.querySelectorAll('.rating-stars .star').forEach(el => {
+  el.addEventListener('click', function(e) {
+    e.stopPropagation();
+    const rating = parseInt(this.dataset.rating);
+    if (currentRating === rating) {
+      // если уже выбрано — снимаем (удаляем рейтинг)
+      saveRating(0);
+    } else {
+      saveRating(rating);
+    }
+  });
+});
+
+// ================================================================
+// ============ ОСТАЛЬНЫЕ ФУНКЦИИ READER ============
+// ================================================================
 function toast(msg,d=2200){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
-function isAndroid(){try{return !!(window.KitobAndroid&&(KitobAndroid.isAndroidApp===true||(typeof KitobAndroid.isAndroidApp==='function'&&KitobAndroid.isAndroidApp())))}catch(e){return false}}
 function setLoadProgress(p){p=Math.max(0,Math.min(100,Math.round(p||0)));$('progressRing')?.style.setProperty('--p',p);if($('loadPct'))$('loadPct').textContent=p+'%'}
-function cdnPdfUrl(u){try{const x=new URL(u);if(x.hostname==='raw.githubusercontent.com'){const parts=x.pathname.split('/').filter(Boolean);if(parts.length>=4){const owner=parts[0],repo=parts[1],branch=parts[2],path=parts.slice(3).map(encodeURIComponent).join('/');return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`}}}catch(e){}return u}
-function cachedMap(){try{return JSON.parse(localStorage.getItem('kk_cached_books')||'{}')}catch(e){return {}}}function saveCachedMeta(pdfUrl,bytes=0){try{const m=cachedMap();const meta={url,name,cover,ts:Date.now(),size:bytes};m[url]=meta;m[pdfUrl]={...meta,url:pdfUrl};localStorage.setItem('kk_cached_books',JSON.stringify(m))}catch(e){}}async function cachedPdfData(pdfUrl){try{if(!('caches' in window))return null;const c=await caches.open('kitobkhona-pdf-cache-v1');let hit=await c.match(pdfUrl)||await c.match(url)||await c.match(cdnPdfUrl(url));if(!hit)return null;setLoadProgress(100);const ab=await hit.arrayBuffer();saveCachedMeta(pdfUrl,ab.byteLength);return ab}catch(e){return null}}
+
+function cdnPdfUrl(u){
+  try {
+    const x = new URL(u);
+    if (x.hostname === 'raw.githubusercontent.com') {
+      const parts = x.pathname.split('/').filter(Boolean);
+      if (parts.length >= 4) {
+        const owner = parts[0], repo = parts[1], branch = parts[2];
+        const pathParts = parts.slice(3).map(p => encodeURIComponent(decodeURIComponent(p)));
+        const path = pathParts.join('/');
+        return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`;
+      }
+    }
+    return u;
+  } catch(e) { return u; }
+}
+
+function cachedMap(){try{return JSON.parse(localStorage.getItem('kk_cached_books')||'{}')}catch(e){return {}}}
+function saveCachedMeta(pdfUrl,bytes=0){try{const m=cachedMap();const meta={url,name,cover,ts:Date.now(),size:bytes};m[url]=meta;m[pdfUrl]={...meta,url:pdfUrl};localStorage.setItem('kk_cached_books',JSON.stringify(m))}catch(e){}}
+async function cachedPdfData(pdfUrl){try{if(!('caches' in window))return null;const c=await caches.open('kitobkhona-pdf-cache-v1');let hit=await c.match(pdfUrl)||await c.match(url)||await c.match(cdnPdfUrl(url));if(!hit)return null;setLoadProgress(100);const ab=await hit.arrayBuffer();saveCachedMeta(pdfUrl,ab.byteLength);return ab}catch(e){return null}}
 function cachePdfBackground(pdfUrl){try{if(!('caches' in window))return;setTimeout(async()=>{try{const c=await caches.open('kitobkhona-pdf-cache-v1');if(await c.match(pdfUrl))return;const r=await fetch(pdfUrl,{cache:'no-store'});if(r.ok){const clone=r.clone();await c.put(pdfUrl,r.clone());if(pdfUrl!==url)await c.put(url,clone.clone());const b=await clone.blob();saveCachedMeta(pdfUrl,b.size)}}catch(e){}},1200)}catch(e){}}
 async function loadPdfFrom(pdfUrl){setLoadProgress(0);const cached=await cachedPdfData(pdfUrl);if(cached)return await pdfjsLib.getDocument({data:cached}).promise;const task=pdfjsLib.getDocument({url:pdfUrl,rangeChunkSize:65536,disableStream:false,disableRange:false,disableAutoFetch:false});task.onProgress=pr=>{if(pr&&pr.total)setLoadProgress(pr.loaded/pr.total*100);else setLoadProgress(35)};const doc=await task.promise;cachePdfBackground(pdfUrl);return doc}
+
 async function openPdf(){
-  console.log('[Reader] openPdf called, url=', url, 'name=', name);
-  if(!url){$('pageContainer').innerHTML='<div class="error">URL-и китоб нест</div>';$('loading').classList.remove('on');return}
-  const urls=[cdnPdfUrl(url),url].filter((v,i,a)=>v&&a.indexOf(v)===i);
-  console.log('[Reader] Trying URLs:', urls);
-  try{let lastErr=null;for(const u of urls){try{console.log('[Reader] Loading from:', u);pdf=await loadPdfFrom(u);console.log('[Reader] PDF loaded, pages=', pdf?.numPages);break}catch(e){lastErr=e;console.warn('[Reader] PDF source failed',u,e)}}if(!pdf)throw lastErr||new Error('PDF дастрас нест');setLoadProgress(100);pages=pdf.numPages;const pr=getProgress();page=pr?Math.min(pr.page,pages):1;await renderPage(page)}catch(e){console.error('[Reader] Error:', e);$('pageContainer').innerHTML='<div class="error">Хатогӣ ҳангоми кушодани PDF<br>'+String(e.message||e)+'</div>'}finally{$('loading').classList.remove('on')}
+  if(!url){ $('pageContainer').innerHTML = '<div class="error">URL-и китоб нест</div>'; $('loading').classList.remove('on'); return; }
+  if (!url.includes('raw.githubusercontent.com') && !url.includes('cdn.jsdelivr.net')) {
+    $('pageContainer').innerHTML = '<div class="error">URL-и китоб нодуруст аст</div>'; $('loading').classList.remove('on'); return;
+  }
+  const cleanUrl = url;
+  const urls = [cdnPdfUrl(cleanUrl), cleanUrl].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  try{
+    let lastErr=null;
+    for(const u of urls){
+      try{ pdf=await loadPdfFrom(u); break; }catch(e){ lastErr=e; }
+    }
+    if(!pdf) throw lastErr || new Error('PDF дастрас нест');
+    setLoadProgress(100);
+    pages=pdf.numPages;
+    const pr=getProgress();
+    page=pr?Math.min(pr.page,pages):1;
+    await renderPage(page);
+  }catch(e){
+    console.error('[Reader] Error:', e);
+    $('pageContainer').innerHTML = '<div class="error">Хатогӣ ҳангоми кушодани PDF<br>'+String(e.message||e)+'</div>';
+  }finally{ $('loading').classList.remove('on'); }
 }
-function getProgress(){try{return JSON.parse(localStorage.getItem('kk_reader_progress')||'{}')[url]}catch(e){return null}}function saveProgress(){try{const o=JSON.parse(localStorage.getItem('kk_reader_progress')||'{}');o[url]={name,page,pages,cover,ts:Date.now()};localStorage.setItem('kk_reader_progress',JSON.stringify(o))}catch(e){}}
+
+function getProgress(){try{return JSON.parse(localStorage.getItem('kk_reader_progress')||'{}')[url]}catch(e){return null}}
+function saveProgress(){try{const o=JSON.parse(localStorage.getItem('kk_reader_progress')||'{}');o[url]={name,page,pages,cover,ts:Date.now()};localStorage.setItem('kk_reader_progress',JSON.stringify(o))}catch(e){}}
+
 async function renderPage(n){if(!pdf||rendering)return;rendering=true;$('loading').classList.add('on');try{const p=await pdf.getPage(n);const st=$('stage'),nat=p.getViewport({scale:1});const dpr=Math.min(devicePixelRatio||1,2);const fit=Math.min((st.clientWidth-10)/nat.width,(st.clientHeight-10)/nat.height)*zoom;const vp=p.getViewport({scale:fit*dpr});const cv=document.createElement('canvas');cv.width=vp.width;cv.height=vp.height;cv.style.width=(vp.width/dpr)+'px';cv.style.height=(vp.height/dpr)+'px';const ctx=cv.getContext('2d',{alpha:false});ctx.fillStyle=getComputedStyle(document.documentElement).getPropertyValue('--page')||'#fff';ctx.fillRect(0,0,cv.width,cv.height);await p.render({canvasContext:ctx,viewport:vp}).promise;$('pageContainer').innerHTML='';$('pageContainer').appendChild(cv);curCanvas=cv;page=n;$('pageInfo').textContent=page+' / '+pages;$('progressFill').style.width=(pages?Math.round(page/pages*100):0)+'%';saveProgress();updateBm()}catch(e){toast('Хатогӣ: '+(e.message||e),3000)}finally{rendering=false;$('loading').classList.remove('on')}}
-function turnPage(d){const n=page+d;if(n<1||n>pages)return;renderPage(n)}function jumpPage(n){n=Math.max(1,Math.min(pages,n||1));renderPage(n)}
+function turnPage(d){const n=page+d;if(n<1||n>pages)return;renderPage(n)}
+function jumpPage(n){n=Math.max(1,Math.min(pages,n||1));renderPage(n)}
+
 $('readerMain').addEventListener('click',e=>{if(e.target.closest('.page-nav-area'))return;bars=!bars;$('topBar').classList.toggle('hidden',!bars);$('bottomBar').classList.toggle('hidden',!bars)});
 let sx=0,sy=0,drag=false;const pc=$('pageContainer');$('stage').addEventListener('touchstart',e=>{if(e.touches.length!==1)return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;drag=true;pc.style.transition='none'},{passive:true});$('stage').addEventListener('touchmove',e=>{if(!drag||e.touches.length!==1)return;const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>8){pc.style.transform=`translateX(${dx}px) scale(.985)`;}},{passive:true});$('stage').addEventListener('touchend',e=>{if(!drag)return;drag=false;const dx=e.changedTouches[0].clientX-sx;pc.style.transition='transform .22s ease';pc.style.transform='translateX(0) scale(1)';if(Math.abs(dx)>55)turnPage(dx<0?1:-1);setTimeout(()=>pc.style.transition='',240)},{passive:true});
+
 function setTheme(t){document.body.classList.toggle('light-reading',t==='light');localStorage.setItem('kk_reader_theme',t);if(pdf)renderPage(page)}setTheme(localStorage.getItem('kk_reader_theme')||'dark');function setZoom(v){zoom=Number(v)/100;if($('zoomText'))$('zoomText').textContent=v+'%';if(pdf)renderPage(page)}function setBrightness(v){$('pageContainer').style.filter='brightness('+(Number(v)/100)+')';localStorage.setItem('kk_reader_brightness',v)}setBrightness(localStorage.getItem('kk_reader_brightness')||100);
-function toggleSettings(force){$('settingsPanel').classList.toggle('open',force===undefined?!$('settingsPanel').classList.contains('open'):!!force);$('searchPanel').classList.remove('open')}function toggleSearch(force){$('searchPanel').classList.toggle('open',force===undefined?!$('searchPanel').classList.contains('open'):!!force);$('settingsPanel').classList.remove('open');setTimeout(()=>$('findInput').focus(),80)}
-function bmList(){try{return JSON.parse(localStorage.getItem('kk_bookmarks')||'{}')}catch(e){return {}}}function toggleBookmark(){const all=bmList(),arr=all[url]||[];const i=arr.indexOf(page);if(i>=0){arr.splice(i,1);toast('Хатчӯб гирифта шуд')}else{arr.push(page);arr.sort((a,b)=>a-b);toast('🔖 Хатчӯб гузошта шуд')}all[url]=arr;localStorage.setItem('kk_bookmarks',JSON.stringify(all));updateBm()}function updateBm(){const arr=bmList()[url]||[];$('bmBtn').textContent=arr.includes(page)?'⭐':'🔖';if($('bmCount'))$('bmCount').textContent=arr.length}
+
+function toggleSettings(force){$('settingsPanel').classList.toggle('open',force===undefined?!$('settingsPanel').classList.contains('open'):!!force);$('searchPanel').classList.remove('open')}
+function toggleSearch(force){$('searchPanel').classList.toggle('open',force===undefined?!$('searchPanel').classList.contains('open'):!!force);$('settingsPanel').classList.remove('open');setTimeout(()=>$('findInput').focus(),80)}
+
+function bmList(){try{return JSON.parse(localStorage.getItem('kk_bookmarks')||'{}')}catch(e){return {}}}
+function toggleBookmark(){const all=bmList(),arr=all[url]||[];const i=arr.indexOf(page);if(i>=0){arr.splice(i,1);toast('Хатчӯб гирифта шуд')}else{arr.push(page);arr.sort((a,b)=>a-b);toast('🔖 Хатчӯб гузошта шуд')}all[url]=arr;localStorage.setItem('kk_bookmarks',JSON.stringify(all));updateBm()}
+function updateBm(){const arr=bmList()[url]||[];$('bmBtn').textContent=arr.includes(page)?'⭐':'🔖';if($('bmCount'))$('bmCount').textContent=arr.length}
+
 async function downloadCurrent(){
   try{
-    console.log('[Reader] downloadCurrent, url=', url);
-    // Force cache the PDF
     if('caches' in window && url){
       toast('Ҳифз шуда истодааст...');
       const own=await caches.open('kitobkhona-pdf-cache-v1');
@@ -59,7 +391,6 @@ async function downloadCurrent(){
       let swKey=keys.find(k=>k.startsWith('kk-pdfs-'));
       if(!swKey) swKey='kitobkhona-pdf-cache-v1';
       const swc=await caches.open(swKey);
-
       const r=await fetch(url,{cache:'no-store'}).catch(()=>fetch(cdnPdfUrl(url),{cache:'no-store'}));
       if(r && r.ok){
         await own.put(url,r.clone());
@@ -70,12 +401,12 @@ async function downloadCurrent(){
         return;
       }
     }
-    if(isAndroid()){toast('Омодасозии файл...');const r=await fetch(url);const blob=await r.blob();const b64=await blobToBase64(blob);KitobAndroid.saveFile(b64,name+'.pdf','application/pdf');return}
     const a=document.createElement('a');a.href=url;a.download=name+'.pdf';a.click()
   }catch(e){toast('Хатогии боргирӣ: '+(e.message||e),3000)}
 }
-function blobToBase64(blob){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)})}
-async function shareCurrent(){try{$('loading').classList.add('on');setLoadProgress(5);toast('Омодасозии китоб...');let blob=null;if('caches' in window){const c=await caches.open('kitobkhona-pdf-cache-v1');const hit=await c.match(url)||await c.match(cdnPdfUrl(url));if(hit){blob=await hit.blob();setLoadProgress(80)}}if(!blob){const r=await fetch(cdnPdfUrl(url),{cache:'force-cache'}).catch(()=>fetch(url,{cache:'force-cache'}));if(!r.ok)throw new Error('HTTP '+r.status);blob=await r.blob();setLoadProgress(85);try{const c=await caches.open('kitobkhona-pdf-cache-v1');await c.put(url,new Response(blob.clone(),{headers:{'Content-Type':'application/pdf'}}));saveCachedMeta(url,blob.size)}catch(e){}}const fileName=(name||'kitob')+'.pdf';setLoadProgress(95);if(isAndroid()&&typeof KitobAndroid.shareFile==='function'){const b64=await blobToBase64(blob);setLoadProgress(100);KitobAndroid.shareFile(b64,fileName,'application/pdf');return}if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:'application/pdf'});if(navigator.canShare({files:[file]})){setLoadProgress(100);await navigator.share({title:name,files:[file]});return}}toast('Мубодилаи файл дар ин браузер дастгирӣ намешавад.',3500)}catch(e){if(e.name!=='AbortError')toast('Мубодила нашуд: '+(e.message||''),2500)}finally{$('loading').classList.remove('on')}}
+
+async function shareCurrent(){try{$('loading').classList.add('on');setLoadProgress(5);toast('Омодасозии китоб...');let blob=null;if('caches' in window){const c=await caches.open('kitobkhona-pdf-cache-v1');const hit=await c.match(url)||await c.match(cdnPdfUrl(url));if(hit){blob=await hit.blob();setLoadProgress(80)}}if(!blob){const r=await fetch(cdnPdfUrl(url),{cache:'force-cache'}).catch(()=>fetch(url,{cache:'force-cache'}));if(!r.ok)throw new Error('HTTP '+r.status);blob=await r.blob();setLoadProgress(85);try{const c=await caches.open('kitobkhona-pdf-cache-v1');await c.put(url,new Response(blob.clone(),{headers:{'Content-Type':'application/pdf'}}));saveCachedMeta(url,blob.size)}catch(e){}}const fileName=(name||'kitob')+'.pdf';setLoadProgress(95);if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:'application/pdf'});if(navigator.canShare({files:[file]})){setLoadProgress(100);await navigator.share({title:name,files:[file]});return}}toast('Мубодилаи файл дастгирӣ намешавад.',3500)}catch(e){if(e.name!=='AbortError')toast('Мубодила нашуд: '+(e.message||''),2500)}finally{$('loading').classList.remove('on')}}
+
 let findHits=[],findIndex=-1;
 async function findText(){
   const q=$('findInput').value.trim();
@@ -114,43 +445,12 @@ function goFind(i){
 function nextFind(){if(findHits.length)goFind(findIndex+1)}
 function prevFind(){if(findHits.length)goFind(findIndex-1)}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+
 function showBookmarks(){const arr=bmList()[url]||[];if(!arr.length){toast('Хатбарак нест');return}const n=prompt('Хатбаракҳо: '+arr.join(', ')+'\nСаҳифаро нависед:',arr[0]);if(n)jumpPage(Number(n))}
 function showStats(){const pr=getProgress();alert('Китоб: '+name+'\nСаҳифа: '+page+' / '+pages+'\nПрогресс: '+(pages?Math.round(page/pages*100):0)+'%'+(pr?.ts?'\nОхирин хондан: '+new Date(pr.ts).toLocaleString():''))}
-function rateBook(){const key='kk_rating_'+url;let old=Number(localStorage.getItem(key)||0);const panel=document.createElement('div');panel.className='panel open';panel.style.cssText='left:12px;right:12px;bottom:calc(82px + var(--safe-bottom));border-radius:20px;padding:14px;z-index:250';panel.innerHTML='<div class="settings-header"><div class="panel-title">⭐ Баҳо додан</div><button class="close-panel">✕</button></div><div class="hint">Аз 1 то 10 ситора интихоб кунед</div><div class="stars"></div>';document.body.appendChild(panel);const stars=panel.querySelector('.stars');function draw(v){stars.innerHTML='';for(let i=1;i<=10;i++){const sp=document.createElement('span');sp.className='star '+(i<=v?'on':'');sp.textContent='★';sp.onclick=()=>{localStorage.setItem(key,String(i));$('ratingText').textContent='★ '+i+'/10';toast('Баҳо нигоҳ дошта шуд');panel.remove()};stars.appendChild(sp)}}draw(old);panel.querySelector('.close-panel').onclick=()=>panel.remove()}
-function goBack(){if(history.length>1)history.back();else location.href='kitobho.html'}window.addEventListener('resize',()=>{if(pdf)renderPage(page)});document.addEventListener('keydown',e=>{if(e.key==='ArrowRight')turnPage(1);if(e.key==='ArrowLeft')turnPage(-1);if(e.key==='Escape')goBack()});window.KitobAppBack=function(){goBack();return true};openPdf();
+
+// Запуск PDF
+openPdf();
 </script>
 </body>
 </html>
-
-// === READING SESSION TRACKING ===
-// Start tracking when reader opens
-window.addEventListener('load', async () => {
-  // Extract book ID from URL or name
-  const bookId = name || url || 'unknown';
-  ReadingSession.start(bookId);
-  console.log('[Reader] Reading session started for:', bookId);
-});
-
-// Stop tracking when user leaves
-window.addEventListener('beforeunload', () => {
-  ReadingSession.stop();
-});
-
-// Also track visibility change (tab switch)
-document.addEventListener('visibilitychange', () => {
-  if (document.hidden) {
-    // User switched tabs - save session
-    ReadingSession.stop();
-  } else {
-    // User returned - restart tracking
-    const bookId = name || url || 'unknown';
-    ReadingSession.start(bookId);
-  }
-});
-
-// Override goBack to save session first
-const originalGoBack = goBack;
-goBack = function() {
-  ReadingSession.stop();
-  originalGoBack();
-};

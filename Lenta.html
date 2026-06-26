@@ -2,38 +2,21 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Лента — Китобхона</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Китобхона — Лента</title>
 <script src="config.js"></script>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Noto+Serif:wght@500;600;700;900&family=Noto+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
-  /* === Ваши стили (сохраняем дизайн) === */
+  /* ===== СТИЛИ (обновлены) ===== */
   :root{
-    --bg:#0B1726;
-    --bg-2:#0E2034;
-    --card:#152840;
-    --card-2:#1B3150;
-    --card-soft:#10233A;
-    --gold:#DCB55E;
-    --gold-deep:#B68B33;
-    --gold-soft:rgba(220,181,94,0.14);
-    --green:#4F9D70;
-    --green-soft:rgba(79,157,112,0.16);
-    --red:#BD5650;
-    --red-soft:rgba(189,86,80,0.16);
-    --teal:#4C92AE;
-    --teal-soft:rgba(76,146,174,0.16);
-    --white-mot:#EDE7D6;
-    --cream:#F3ECDD;
-    --cream-dim:#C9C0AC;
-    --muted:#8CA0B8;
+    --bg:#0B1726; --bg-2:#0E2034; --card:#152840; --card-2:#1B3150; --card-soft:#10233A;
+    --gold:#DCB55E; --gold-deep:#B68B33; --gold-soft:rgba(220,181,94,0.14);
+    --green:#4F9D70; --green-soft:rgba(79,157,112,0.16);
+    --red:#BD5650; --red-soft:rgba(189,86,80,0.16);
+    --teal:#4C92AE; --teal-soft:rgba(76,146,174,0.16);
+    --cream:#F3ECDD; --cream-dim:#C9C0AC; --muted:#8CA0B8;
     --line:rgba(220,181,94,0.16);
     --shadow:0 18px 40px -12px rgba(0,0,0,0.55);
-    --radius-lg:20px;
-    --radius-md:14px;
-    --radius-sm:9px;
+    --radius-lg:20px; --radius-md:14px; --radius-sm:9px;
   }
   [data-theme="light"]{
     --bg:#F3EEE2; --bg-2:#EAE2D2; --card:#FFFFFF; --card-2:#FBF7EE; --card-soft:#F4EEE0;
@@ -41,637 +24,1046 @@
     --green:#3F7E58; --green-soft:rgba(63,126,88,0.12);
     --red:#A8463F; --red-soft:rgba(168,70,63,0.12);
     --teal:#386E83; --teal-soft:rgba(56,110,131,0.12);
-    --white-mot:#FFFFFF; --cream:#23211B; --cream-dim:#5C5749; --muted:#7B7563;
+    --cream:#23211B; --cream-dim:#5C5749; --muted:#7B7563;
     --line:rgba(182,134,58,0.22); --shadow:0 14px 30px -10px rgba(60,50,30,0.25);
   }
 
   *{box-sizing:border-box;}
-  html,body{margin:0;padding:0;height:100%;}
+  html,body{margin:0;padding:0;height:100%;overflow:hidden;}
   body{
     font-family:'Noto Sans', sans-serif;
-    background:radial-gradient(circle at 20% 0%, #16304a 0%, transparent 45%), radial-gradient(circle at 85% 90%, #0c1c2e 0%, transparent 50%), #0a1320;
-    min-height:100vh;
+    background:#0a1320;
+    color:var(--cream);
     display:flex;
     flex-direction:column;
     align-items:center;
-    padding:20px;
-    color:var(--cream);
+    justify-content:center;
+    background:radial-gradient(circle at 20% 0%,#16304a 0%,transparent 45%),
+               radial-gradient(circle at 85% 90%,#0c1c2e 0%,transparent 50%),
+               #0a1320;
   }
-  [data-theme="light"] body{background:radial-gradient(circle at 20% 0%, #fbf4e3 0%, transparent 45%), radial-gradient(circle at 85% 90%, #efe3c8 0%, transparent 50%), #f0e8d6;}
-
-  .theme-btn{
-    position:fixed; top:16px; right:16px;
-    width:38px; height:38px; border-radius:50%;
-    border:1px solid rgba(220,181,94,0.3);
-    background:rgba(255,255,255,0.04);
-    color:var(--cream);
-    cursor:pointer; font-size:15px;
-    display:flex; align-items:center; justify-content:center;
-    backdrop-filter:blur(6px);
-    z-index:100;
+  [data-theme="light"] body{
+    background:radial-gradient(circle at 20% 0%,#fbf4e3 0%,transparent 45%),
+               radial-gradient(circle at 85% 90%,#efe3c8 0%,transparent 50%),
+               #f0e8d6;
   }
 
-  .lenta-container{
-    width:100%; max-width:420px;
+  .app{
+    width:100%;
+    max-width:430px;
+    height:100vh;
+    max-height:860px;
     background:var(--bg);
-    border-radius:32px;
-    overflow:hidden;
-    box-shadow:0 0 0 1px rgba(232,222,199,0.08), 0 40px 80px rgba(0,0,0,0.55);
     display:flex;
     flex-direction:column;
-    padding: 20px 0 12px;
+    position:relative;
+    box-shadow:0 0 0 1px rgba(232,222,199,0.06), 0 20px 60px rgba(0,0,0,0.55);
+    border-radius:0;
+    overflow:hidden;
+  }
+  @media(min-width:600px){
+    body{padding:20px 0;}
+    .app{border-radius:32px; max-height:800px;}
   }
 
   .top-app-bar{
     display:flex;
     align-items:center;
     justify-content:space-between;
-    padding:0 18px 10px;
-  }
-  .brand-mini{
-    display:flex;
-    align-items:center;
-    gap:8px;
-  }
-  .brand-mini svg{width:24px; height:24px;}
-  .brand-mini span{font-family:'Noto Serif'; font-size:18px; font-weight:700; color:var(--gold);}
-
-  .scroll{
-    flex:1;
-    overflow-y:auto;
-    padding:0 0 12px;
-  }
-  .scroll::-webkit-scrollbar{display:none;}
-
-  /* Stories (демо) */
-  .stories-rail{
-    display:flex;
-    gap:14px;
-    padding:6px 18px 16px;
-    overflow-x:auto;
-    scrollbar-width:none;
-  }
-  .stories-rail::-webkit-scrollbar{display:none;}
-  .story-item{
+    padding:10px 18px 8px;
     flex:0 0 auto;
-    width:60px;
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:6px;
-    cursor:pointer;
+    border-bottom:1px solid var(--line);
   }
-  .story-ring{
-    width:58px; height:58px;
-    border-radius:50%;
-    padding:2.5px;
-    background:conic-gradient(var(--gold), var(--red), var(--green), var(--gold));
+  .brand-mini{display:flex;align-items:center;gap:8px;}
+  .brand-mini svg{width:28px;height:28px;}
+  .brand-mini span{font-family:'Noto Serif',serif;font-size:20px;font-weight:700;color:var(--gold);}
+  .top-actions{display:flex;gap:6px;}
+  .icon-btn{
+    width:38px;height:38px;border-radius:50%;background:var(--card-soft);border:1px solid var(--line);
+    display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold);cursor:pointer;transition:0.15s;
   }
-  .story-ring.seen{background:var(--line);}
-  .story-ring.add{background:transparent; border:1.6px dashed var(--gold); display:flex; align-items:center; justify-content:center;}
-  .story-inner{
-    width:100%; height:100%;
-    border-radius:50%;
-    background:var(--card-2);
-    border:2.5px solid var(--bg);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:22px;
-  }
-  .story-name{font-size:10px; color:var(--cream-dim); max-width:60px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
+  .icon-btn:hover{background:var(--card-2);}
 
-  /* Feed */
-  .feed{
-    display:flex;
-    flex-direction:column;
-    gap:14px;
-    padding:2px 14px 6px;
-  }
+  .screen-area{flex:1 1 auto;overflow:hidden;position:relative;}
+  .screen{position:absolute;inset:0;overflow-y:auto;scrollbar-width:none;padding-bottom:12px;}
+  .screen::-webkit-scrollbar{display:none;}
+  .screen[hidden]{display:none;}
 
+  .feed{display:flex;flex-direction:column;gap:14px;padding:6px 14px 10px;}
   .post-card{
-    background:var(--card);
-    border:1px solid var(--line);
-    border-radius:var(--radius-lg);
-    padding:13px;
-    display:flex;
-    flex-direction:column;
-    gap:11px;
+    background:var(--card);border:1px solid var(--line);border-radius:var(--radius-lg);
+    padding:14px;display:flex;flex-direction:column;gap:10px;
   }
-  .post-card.achieve{border-color:rgba(220,181,94,0.4);}
+  .post-card:hover{border-color:var(--gold);}
 
-  .post-head{
-    display:flex;
-    align-items:center;
-    gap:10px;
-  }
-  .av{
-    width:40px; height:40px;
-    border-radius:50%;
-    padding:2px;
-    background:conic-gradient(var(--gold), var(--teal), var(--green), var(--gold));
-    flex:0 0 auto;
-  }
-  .av-inner{
-    width:100%; height:100%;
-    border-radius:50%;
-    background:var(--card-2);
-    border:2px solid var(--bg);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:18px;
-  }
-  .post-head-text{flex:1; min-width:0;}
-  .post-name{font-size:13.5px; font-weight:700; color:var(--cream);}
-  .post-time{font-size:11px; color:var(--muted);}
+  .post-head{display:flex;align-items:center;gap:10px;}
+  .av{width:40px;height:40px;border-radius:50%;padding:2px;background:conic-gradient(var(--gold),var(--teal),var(--green),var(--gold));flex:0 0 auto;cursor:pointer;}
+  .av-inner{width:100%;height:100%;border-radius:50%;background:var(--card-2);border:2px solid var(--bg);display:flex;align-items:center;justify-content:center;overflow:hidden;}
+  .av-inner img{width:100%;height:100%;object-fit:cover;border-radius:50%;}
+  .av-inner svg{width:20px;height:20px;}
+  .post-head-text{flex:1;min-width:0;cursor:pointer;}
+  .post-head-text:hover .post-name{color:var(--gold);}
+  .post-name{font-size:13.5px;font-weight:700;color:var(--cream);transition:0.1s;}
+  .post-time{font-size:11px;color:var(--muted);}
 
-  .post-caption{font-size:13px; color:var(--cream-dim); line-height:1.45;}
+  .post-caption{font-size:13px;color:var(--cream-dim);line-height:1.45;word-break:break-word;}
 
   .book-block{
-    display:flex;
-    gap:11px;
-    align-items:center;
-    background:var(--card-soft);
-    border:1px solid var(--line);
-    border-radius:var(--radius-md);
-    padding:10px;
-    cursor:pointer;
+    display:flex;gap:11px;align-items:center;background:var(--card-soft);border:1px solid var(--line);
+    border-radius:var(--radius-md);padding:10px;cursor:pointer;transition:0.1s;
   }
+  .book-block:hover{background:var(--card-2);}
   .thumb{
-    position:relative;
-    width:54px; height:76px;
-    border-radius:7px;
-    flex:0 0 auto;
-    overflow:hidden;
-    box-shadow:0 6px 14px -6px rgba(0,0,0,0.55);
+    position:relative;width:54px;height:76px;border-radius:7px;flex:0 0 auto;overflow:hidden;
+    box-shadow:0 6px 14px -6px rgba(0,0,0,0.55);background:var(--card-2);
   }
-  .thumb img{width:100%; height:100%; object-fit:cover;}
-  .thumb .fallback{
-    width:100%; height:100%;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    font-size:24px;
-    background:linear-gradient(160deg, var(--card-2), var(--bg-2));
-  }
-  .book-info{flex:1; min-width:0; display:flex; flex-direction:column; gap:4px;}
-  .book-title{font-family:'Noto Serif'; font-size:14px; font-weight:700; color:var(--cream); line-height:1.2;}
-  .book-author{font-size:11.5px; color:var(--muted);}
+  .thumb img{width:100%;height:100%;object-fit:cover;}
+  .thumb::before{content:"";position:absolute;left:0;top:0;bottom:0;width:16%;background:rgba(0,0,0,0.3);}
+  .book-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px;}
+  .book-title{font-family:'Noto Serif',serif;font-size:14px;font-weight:700;color:var(--cream);line-height:1.2;}
+  .book-author{font-size:11.5px;color:var(--muted);}
   .status-chip{
-    display:inline-flex;
-    align-items:center;
-    gap:4px;
-    font-size:10.5px;
-    font-weight:700;
-    padding:3px 8px;
-    border-radius:999px;
-    width:fit-content;
-    margin-top:2px;
+    display:inline-flex;align-items:center;gap:4px;font-size:10.5px;font-weight:700;padding:3px 8px;
+    border-radius:999px;width:fit-content;margin-top:2px;
   }
-  .chip-reading{color:var(--teal); background:var(--teal-soft); border:1px solid rgba(76,146,174,0.3);}
-  .chip-finished{color:var(--green); background:var(--green-soft); border:1px solid rgba(79,157,112,0.3);}
-  .chip-achieve{color:var(--gold); background:var(--gold-soft); border:1px solid var(--line);}
-  .progress-track{height:5px; border-radius:4px; background:var(--line); margin-top:4px; overflow:hidden;}
-  .progress-fill{height:100%; background:linear-gradient(90deg, var(--gold-deep), var(--gold)); border-radius:4px;}
+  .chip-reading{color:var(--teal);background:var(--teal-soft);border:1px solid rgba(76,146,174,0.3);}
+  .chip-finished{color:var(--green);background:var(--green-soft);border:1px solid rgba(79,157,112,0.3);}
+  .chip-achieve{color:var(--gold);background:var(--gold-soft);border:1px solid var(--line);}
+  .progress-track{height:5px;border-radius:4px;background:var(--line);margin-top:4px;overflow:hidden;}
+  .progress-fill{height:100%;background:linear-gradient(90deg,var(--gold-deep),var(--gold));border-radius:4px;}
 
-  .post-actions{
-    display:flex;
-    align-items:center;
-    justify-content:space-between;
-    padding-top:9px;
-    border-top:1px solid var(--line);
+  /* ===== REACTIONS & RATINGS ===== */
+  .reaction-area{
+    display:flex;align-items:center;justify-content:space-between;margin-top:6px;padding-top:6px;border-top:1px solid var(--line);flex-wrap:wrap;gap:4px;
   }
-  .action-group{display:flex; gap:16px;}
-  .action-btn{
-    display:flex;
-    align-items:center;
-    gap:5px;
-    font-size:12.5px;
-    color:var(--muted);
-    cursor:pointer;
-    user-select:none;
+  .reaction-group{display:flex;gap:10px;align-items:center;}
+  .reaction-btn{
+    background:transparent;border:none;font-size:20px;cursor:pointer;transition:transform .12s;color:var(--muted);
+    padding:2px 4px;line-height:1;display:flex;align-items:center;gap:2px;
   }
-  .action-btn .ic{font-size:17px; transition:transform .12s;}
-  .action-btn.liked{color:var(--red);}
-  .action-btn.liked .ic{transform:scale(1.08);}
-  .save-btn{color:var(--muted); font-size:17px; cursor:pointer;}
-  .save-btn.saved{color:var(--gold);}
+  .reaction-btn.active{color:var(--gold);}
+  .reaction-btn:hover{transform:scale(1.2);}
+  .reaction-btn .cnt{font-size:11px;font-weight:700;color:var(--muted);}
+  .reaction-btn.active .cnt{color:var(--gold);}
+  .rating-stars{display:flex;gap:3px;align-items:center;}
+  .rating-stars .star{font-size:16px;color:var(--muted);cursor:pointer;transition:.12s;line-height:1;}
+  .rating-stars .star.on{color:var(--gold);}
+  .rating-stars .star:hover{transform:scale(1.2);}
+  .rating-label{font-size:11px;color:var(--muted);font-weight:600;margin-right:4px;}
 
-  .post-comments{display:flex; flex-direction:column; gap:5px;}
-  .comment-line{font-size:12px; color:var(--cream-dim); line-height:1.4;}
-  .comment-line b{color:var(--cream); font-weight:700;}
-  .view-comments{font-size:11.5px; color:var(--muted); cursor:pointer;}
+  /* ===== ЛАЙКИ (постов) ===== */
+  .like-btn{
+    background:transparent;border:none;font-size:18px;cursor:pointer;display:flex;align-items:center;gap:4px;color:var(--muted);padding:2px 4px;
+  }
+  .like-btn.liked{color:var(--red);}
+  .like-btn .cnt{font-size:12px;font-weight:700;}
+
+  /* ===== КОММЕНТАРИИ ===== */
+  .comments-wrapper{
+    margin-top:8px;border-top:1px solid var(--line);padding-top:8px;
+  }
+  .comments-list{display:flex;flex-direction:column;gap:5px;}
+  .comment-line{font-size:12px;color:var(--cream-dim);}
+  .comment-line b{color:var(--cream);font-weight:700;}
+  .show-comments-btn{
+    font-size:11.5px;color:var(--muted);cursor:pointer;font-weight:600;margin-bottom:4px;display:inline-block;
+  }
+  .show-comments-btn:hover{color:var(--gold);}
   .comment-input-row{
-    display:flex;
-    align-items:center;
-    gap:8px;
-    margin-top:3px;
+    display:flex;align-items:center;gap:8px;margin-top:4px;
   }
-  .comment-input-row .av{width:26px; height:26px; padding:1.5px;}
+  .comment-input-row .av{width:26px;height:26px;padding:1.5px;}
   .comment-input-row .av-inner{border-width:1.5px;}
+  .comment-input-row .av-inner svg{width:13px;height:13px;}
   .comment-input{
-    flex:1;
-    background:var(--card-soft);
-    border:1px solid var(--line);
-    border-radius:999px;
-    padding:6px 13px;
-    font-size:12px;
-    color:var(--cream-dim);
-    outline:none;
+    flex:1;background:var(--card-soft);border:1px solid var(--line);border-radius:999px;
+    padding:7px 13px;font-size:12px;color:var(--cream);font-family:'Noto Sans';outline:none;
   }
   .comment-input:focus{border-color:var(--gold);}
-  .send-ic{color:var(--gold); font-size:16px; cursor:pointer;}
-
-  .empty-feed{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    justify-content:center;
-    gap:14px;
-    padding:40px 20px;
-    text-align:center;
-  }
-  .empty-feed h3{font-size:17px; color:var(--cream);}
-  .empty-feed p{font-size:13px; color:var(--muted); line-height:1.55;}
-
-  .btn{
-    padding:10px 18px;
-    border-radius:14px;
-    font-family:'Noto Sans';
-    font-size:13.5px;
-    font-weight:700;
-    border:none;
-    cursor:pointer;
-  }
-  .btn-outline{background:transparent; color:var(--cream); border:1.4px solid rgba(220,181,94,0.45);}
-  .btn-primary{background:linear-gradient(180deg, #E8C778, var(--gold-deep)); color:#1A1206; box-shadow:0 10px 22px -8px rgba(220,181,94,0.55);}
+  .send-ic{color:var(--gold);font-size:16px;cursor:pointer;padding:4px;}
 
   .bottom-nav{
-    flex:0 0 auto;
-    display:flex;
-    justify-content:space-around;
-    align-items:center;
-    padding: 10px 0 0;
-    border-top:1px solid var(--line);
-    margin-top:8px;
+    flex:0 0 auto;display:flex;justify-content:space-around;align-items:center;padding:8px 6px 16px;
+    background:var(--card);border-top:1px solid var(--line);
   }
   .nav-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:3px;
-    font-size:10.5px;
-    color:var(--muted);
-    cursor:pointer;
+    display:flex;flex-direction:column;align-items:center;gap:2px;font-size:10.5px;color:var(--muted);
+    cursor:pointer;padding:4px 12px;border-radius:12px;transition:0.15s;
   }
-  .nav-item .ic{font-size:18px; line-height:1;}
-  .nav-item.active{color:var(--gold); font-weight:700;}
+  .nav-item .ic{font-size:18px;line-height:1;}
+  .nav-item.active{color:var(--gold);font-weight:700;}
+  .nav-item:hover{background:var(--card-soft);}
 
-  .loading-spinner{
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px 0;
-    color:var(--muted);
-    gap:10px;
+  .empty-feed{
+    height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:14px;padding:0 40px;text-align:center;
   }
-  .spinner{width:20px; height:20px; border:2px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite;}
+  .empty-feed svg{width:64px;height:64px;opacity:0.5;}
+  .empty-feed h3{font-size:17px;color:var(--cream);}
+  .empty-feed p{font-size:13px;color:var(--muted);line-height:1.55;margin:0;}
+  .empty-feed .btn{margin-top:6px;}
+  .btn{padding:11px 20px;border-radius:13px;font-family:'Noto Sans';font-size:13.5px;font-weight:700;border:none;cursor:pointer;}
+  .btn-outline{background:transparent;color:var(--cream);border:1.4px solid rgba(220,181,94,0.45);}
+  .btn-primary{background:linear-gradient(180deg,#E8C778,var(--gold-deep));color:#1A1206;}
+
+  .modal-overlay{position:absolute;inset:0;z-index:100;background:rgba(0,0,0,0.6);display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .22s ease;}
+  .modal-overlay.open{opacity:1;pointer-events:auto;}
+  .modal-sheet{width:100%;max-height:85%;background:var(--bg-2);border-radius:24px 24px 0 0;border-top:1px solid var(--line);display:flex;flex-direction:column;transform:translateY(100%);transition:transform .26s cubic-bezier(.32,.72,0,1);padding-bottom:12px;}
+  .modal-overlay.open .modal-sheet{transform:translateY(0%);}
+  .modal-handle{width:38px;height:4px;border-radius:3px;background:var(--line);margin:10px auto 4px;}
+  .modal-head{display:flex;align-items:center;justify-content:space-between;padding:6px 18px 10px;}
+  .modal-head h3{font-size:16px;color:var(--cream);margin:0;}
+  .modal-body{padding:6px 18px 10px;overflow-y:auto;flex:1;}
+  .modal-body textarea{width:100%;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px;font-size:13px;color:var(--cream);font-family:'Noto Sans';resize:vertical;min-height:80px;outline:none;}
+  .modal-body textarea:focus{border-color:var(--gold);}
+  .book-select-row{display:flex;align-items:center;gap:8px;margin:10px 0 8px;}
+  .book-select-row select{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:13px;color:var(--cream);font-family:'Noto Sans';outline:none;}
+  .book-select-row select:focus{border-color:var(--gold);}
+  .book-select-row input{flex:1;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:10px 12px;font-size:13px;color:var(--cream);font-family:'Noto Sans';outline:none;}
+  .book-select-row input:focus{border-color:var(--gold);}
+  .modal-footer{display:flex;gap:10px;padding:8px 18px 4px;}
+  .modal-footer .btn{flex:1;padding:12px;font-size:14px;}
+
+  .loader{display:flex;justify-content:center;padding:20px;}
+  .spinner{width:28px;height:28px;border:3px solid var(--line);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite;}
   @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* Адаптация под мобильные */
-  @media (max-width:430px){
-    body{padding:10px;}
-  }
+  .toast{position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:var(--card-2);color:var(--cream);padding:10px 20px;border-radius:99px;border:1px solid var(--line);font-size:13px;font-weight:600;box-shadow:0 8px 24px rgba(0,0,0,0.4);z-index:200;opacity:0;transition:0.2s;pointer-events:none;}
+  .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
-<body>
-  <button class="theme-btn" id="themeToggle">🌙</button>
+<body data-theme="dark">
 
-  <div class="lenta-container">
-    <div class="top-app-bar">
-      <div class="brand-mini">
-        <svg viewBox="0 0 48 48" fill="none">
-          <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-          <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
-        </svg>
-        <span>Китобхона</span>
-      </div>
-      <div class="icon-btn" onclick="location.href='profile.html'" style="width:36px;height:36px;border-radius:50%;background:var(--card-soft);border:1px solid var(--line);display:flex;align-items:center;justify-content:center;font-size:16px;color:var(--gold);cursor:pointer;">👤</div>
+<div class="app" id="app">
+  <div class="top-app-bar">
+    <div class="brand-mini">
+      <svg viewBox="0 0 48 48" fill="none">
+        <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+        <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
+      </svg>
+      <span>Китобхона</span>
     </div>
-
-    <div class="scroll" id="feedScroll">
-      <div class="loading-spinner"><div class="spinner"></div> Боргирӣ...</div>
-    </div>
-
-    <div class="bottom-nav">
-      <div class="nav-item" onclick="location.href='index.html'"><span class="ic">🏠</span><span>Асосӣ</span></div>
-      <div class="nav-item" onclick="location.href='kitobho.html'"><span class="ic">📚</span><span>Китобҳо</span></div>
-      <div class="nav-item active" onclick="location.href='Lenta.html'"><span class="ic">📰</span><span>Лента</span></div>
-      <div class="nav-item" onclick="location.href='profile.html'"><span class="ic">👤</span><span>Профил</span></div>
+    <div class="top-actions">
+      <div class="icon-btn" id="createPostBtn" title="Навиштани пост">✏️</div>
     </div>
   </div>
 
-  <script>
-    const $ = id => document.getElementById(id);
-    const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  <div class="screen-area">
+    <div class="screen" id="feedScreen">
+      <div class="feed" id="feedContainer">
+        <div class="loader" id="feedLoader"><div class="spinner"></div></div>
+      </div>
+    </div>
+  </div>
 
-    // Theme toggle
-    const themeBtn = document.getElementById('themeToggle');
-    themeBtn.addEventListener('click', ()=>{
-      const isDark = document.body.dataset.theme === 'dark';
-      document.body.dataset.theme = isDark ? 'light' : 'dark';
-      themeBtn.textContent = isDark ? '☀️' : '🌙';
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="location.href='Lenta.html'"><div class="ic">📰</div>Лента</div>
+    <div class="nav-item" onclick="location.href='winners.html'"><div class="ic">🏆</div>Ғолибон</div>
+    <div class="nav-item" onclick="location.href='profile.html'"><div class="ic">👤</div>Профил</div>
+  </div>
+
+  <div class="modal-overlay" id="postModal">
+    <div class="modal-sheet">
+      <div class="modal-handle"></div>
+      <div class="modal-head"><h3>📝 Эҷоди пост</h3><div class="icon-btn" id="closeModalBtn">✕</div></div>
+      <div class="modal-body">
+        <textarea id="postContent" placeholder="Чӣ хел мегузарад? Дар бораи китобе, ки мехонед, нависед..."></textarea>
+        <div class="book-select-row">
+          <label style="font-size:12px;color:var(--muted);font-weight:600;">Номи китоб:</label>
+          <select id="postBookSelect"><option value="">Интихоб кунед (ихтиёрӣ)</option></select>
+        </div>
+        <div class="book-select-row">
+          <label style="font-size:12px;color:var(--muted);font-weight:600;">Муаллиф:</label>
+          <input type="text" id="postBookAuthor" placeholder="Номи муаллиф">
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" id="cancelPostBtn">Бекор</button>
+        <button class="btn btn-primary" id="submitPostBtn">📤 Интишор</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+// ================================================================
+// ============ ФУНКЦИИ ДЛЯ РАБОТЫ С ПУТЯМИ ============
+// ================================================================
+function enc(p) {
+  if (!p) return '';
+  return String(p).split('/').map(encodeURIComponent).join('/');
+}
+
+function rawUrl(folder, file) {
+  const repo = 'sharipovip/books';
+  const branch = 'main';
+  let fileName = file;
+  if (!fileName.includes('.')) fileName += '.pdf';
+  let cleanFolder = String(folder).replace(/^main\//,'').replace(/^books\//,'');
+  if (!cleanFolder || cleanFolder === 'books') cleanFolder = '';
+  const encodedParts = cleanFolder ? enc(cleanFolder) : '';
+  const base = `https://raw.githubusercontent.com/${repo}/${branch}/books`;
+  const decodedFile = decodeURIComponent(fileName);
+  return encodedParts ? `${base}/${encodedParts}/${encodeURIComponent(decodedFile)}` : `${base}/${encodeURIComponent(decodedFile)}`;
+}
+
+function coverListFromPdfUrl(pdfUrl) {
+  try {
+    const x = new URL(pdfUrl);
+    if (!x.hostname.includes('githubusercontent.com')) return [];
+    const parts = x.pathname.split('/').filter(Boolean);
+    if (parts.length < 5) return [];
+    const owner = parts[0], repo = parts[1], branch = parts[2];
+    const path = parts.slice(3);
+    const file = decodeURIComponent(path.pop() || '').replace(/\.pdf$/i, '.jpg');
+    let folder = path.join('/');
+    let clean = folder.replace(/^books\//, '');
+    const base = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}`;
+    return [
+      `${base}/covers/${enc(clean)}/${encodeURIComponent(file)}`,
+      `${base}/covers/books/${enc(clean)}/${encodeURIComponent(file)}`,
+      `${base}/covers/${enc(folder)}/${encodeURIComponent(file)}`
+    ];
+  } catch(e) { return []; }
+}
+
+function getCoverForBook(book) {
+  const folder = book.folder || 'books';
+  const file = book.file || book.book_id;
+  if (!file) return 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+  const url = rawUrl(folder, file);
+  const coverList = coverListFromPdfUrl(url);
+  return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+}
+
+const API_BASE = KITOB_CONFIG.NEON_API_BASE;
+const $ = id => document.getElementById(id);
+
+// ================================================================
+// ============ ТЕМА, TOAST, ТОКЕН ============
+// ================================================================
+(function initTheme(){
+  const saved = localStorage.getItem('kk_theme') || 'dark';
+  document.body.dataset.theme = saved;
+})();
+
+let toastTimer = null;
+function showToast(msg){
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+function getToken(){ return localStorage.getItem('kk_token'); }
+function openUserProfile(userId) {
+  if (!userId) return;
+  location.href = `profile.html?user=${userId}`;
+}
+function openBookFromPost(bookId, bookTitle) {
+  if (!bookId) return;
+  let folder = 'books', file = bookId;
+  if (bookId.includes('/')) {
+    const parts = bookId.split('/');
+    file = parts.pop();
+    folder = parts.join('/');
+    if (!folder.startsWith('books/')) folder = 'books/' + folder;
+  }
+  const url = rawUrl(folder, file);
+  const name = bookTitle || file.replace(/\.pdf$/i, '') || 'Китоб';
+  const cover = getCoverForBook({ folder, file, book_id: bookId });
+  location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
+}
+
+// ================================================================
+// ============ ГЛОБАЛЬНЫЕ ДАННЫЕ ============
+// ================================================================
+let postsData = [];
+let currentUserId = null;
+let bookProgressMap = {};
+let bookReactions = {};
+
+// ================================================================
+// ============ ЗАГРУЗКА СЕССИЙ ЧТЕНИЯ (ПРОГРЕСС) ============
+// ================================================================
+async function loadReadingSessions(){
+  const token = getToken();
+  if (!token) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/reading-sessions', {
+      headers: { 'Authorization': 'Bearer ' + token }
     });
-    if(localStorage.getItem('kk_theme') === 'light'){
-      document.body.dataset.theme = 'light';
-      themeBtn.textContent = '☀️';
-    }
-
-    let currentUser = null;
-
-    async function loadFeed() {
-      const scroll = document.getElementById('feedScroll');
-
-      try {
-        const { data } = await AUTH.getUser();
-        currentUser = data.user;
-        if(!currentUser) {
-          scroll.innerHTML = `
-            <div class="empty-feed">
-              <h3>Лента холӣ аст</h3>
-              <p>Барои дидани лента ворид шавед</p>
-              <button class="btn btn-primary" onclick="location.href='login.html'">Ворид шудан</button>
-            </div>
-          `;
-          return;
-        }
-
-        // Загружаем посты из таблицы posts
-        // Сначала получаем друзей, чтобы фильтровать только друзей для visibility='friends'
-        const friends = await ChatAPI.getFriends(currentUser.id).catch(() => []);
-        const friendIds = friends.map(id => `'${id}'`).join(',');
-
-        // Запрос к таблице posts через Supabase
-        // Показываем публичные посты и посты друзей
-        let posts = [];
-        try {
-          // Получаем все посты
-          const allPosts = await apiGet('posts', {
-            order: 'created_at.desc',
-            limit: 50
-          });
-          // Фильтруем: публичные или друзья
-          const filtered = allPosts.filter(p => {
-            if(p.visibility === 'public') return true;
-            if(p.visibility === 'friends' && friends.includes(p.user_id)) return true;
-            return false;
-          });
-          posts = filtered;
-        } catch(e) {
-          console.warn('Posts load error', e);
-        }
-
-        // Если постов нет — показываем пустое состояние
-        if(!posts || posts.length === 0) {
-          scroll.innerHTML = `
-            <div class="empty-feed">
-              <h3>Лента холӣ аст</h3>
-              <p>Вақте ки шумо ё дӯстонатон дар бораи китобе нависанд, он дар ин ҷо намоён мешавад.</p>
-              <button class="btn btn-outline" onclick="location.href='kitobho.html'">Китобҳоро дидан</button>
-            </div>
-          `;
-          return;
-        }
-
-        // Получаем профили пользователей для постов
-        const userIds = [...new Set(posts.map(p => p.user_id))];
-        const profiles = {};
-        await Promise.all(userIds.map(async (id) => {
-          try {
-            const p = await AUTH.getProfileFromRailway(id);
-            if(p) profiles[id] = p;
-          } catch(e) {}
-        }));
-
-        // Загружаем лайки и комментарии (для каждого поста)
-        // Для простоты пока используем счётчики из таблицы posts
-        // Но можно сделать отдельные запросы для подсчёта
-
-        // Формируем HTML
-        const colors = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
-        let html = '';
-
-        // Stories (демо)
-        html += `
-          <div class="stories-rail">
-            <div class="story-item" onclick="location.href='kitobho.html'">
-              <div class="story-ring add"><div class="story-inner">+</div></div>
-              <div class="story-name">Нав</div>
-            </div>
-          </div>
-        `;
-
-        // Посты
-        html += `<div class="feed">`;
-        for(const post of posts) {
-          const profile = profiles[post.user_id] || {};
-          const displayName = profile.display_name || profile.full_name || 'Китобхон';
-          const avatarEmoji = profile.avatar_emoji || '👤';
-          const timeAgo = formatTime(post.created_at);
-          const bookTitle = post.book_title || 'Китоб';
-          const bookAuthor = post.book_author || '';
-          const bookUrl = post.book_url || '';
-          const bookCover = post.book_cover || '';
-          const status = post.status || 'reading';
-          const progress = post.progress || 0;
-          const likes = post.likes_count || 0;
-          const comments = post.comments_count || 0;
-          const content = post.content || '';
-
-          html += `
-            <div class="post-card ${status === 'achievement' ? 'achieve' : ''}">
-              <div class="post-head">
-                <div class="av"><div class="av-inner">${esc(avatarEmoji)}</div></div>
-                <div class="post-head-text">
-                  <div class="post-name">${esc(displayName)}</div>
-                  <div class="post-time">${timeAgo}</div>
-                </div>
-              </div>
-              ${content ? `<div class="post-caption">${esc(content)}</div>` : ''}
-              <div class="book-block" onclick="openBook('${encodeURIComponent(bookUrl)}','${encodeURIComponent(bookTitle)}')">
-                <div class="thumb">
-                  ${bookCover ? `<img src="${esc(bookCover)}" alt="${esc(bookTitle)}">` : `<div class="fallback">📖</div>`}
-                </div>
-                <div class="book-info">
-                  <div class="book-title">${esc(bookTitle)}</div>
-                  ${bookAuthor ? `<div class="book-author">${esc(bookAuthor)}</div>` : ''}
-                  <div class="status-chip ${status === 'finished' ? 'chip-finished' : status === 'achievement' ? 'chip-achieve' : 'chip-reading'}">
-                    ${status === 'finished' ? '✅ Хатм кард' : status === 'achievement' ? '🏆 Дастовард' : '📖 Дар ҳоли хондан'}
-                  </div>
-                  ${progress > 0 ? `<div class="progress-track"><div class="progress-fill" style="width:${Math.min(progress,100)}%"></div></div>` : ''}
-                </div>
-              </div>
-              <div class="post-actions">
-                <div class="action-group">
-                  <div class="action-btn" onclick="toggleLike(this, '${post.id}')">
-                    <span class="ic">♡</span><span class="cnt">${likes}</span>
-                  </div>
-                  <div class="action-btn" onclick="toggleComments(this, '${post.id}')">
-                    <span class="ic">💬</span><span>${comments}</span>
-                  </div>
-                  <div class="action-btn" onclick="sharePost('${encodeURIComponent(bookUrl)}','${encodeURIComponent(bookTitle)}')">
-                    <span class="ic">↗</span>
-                  </div>
-                </div>
-                <div class="save-btn" onclick="toggleSave(this, '${post.id}')">🔖</div>
-              </div>
-              <div class="post-comments" id="comments-${post.id}">
-                <!-- комментарии будут загружены отдельно -->
-                <div class="view-comments" onclick="loadComments('${post.id}')">Дидани шарҳҳо</div>
-                <div class="comment-input-row">
-                  <div class="av"><div class="av-inner">${esc(avatarEmoji)}</div></div>
-                  <input class="comment-input" type="text" id="commentInput-${post.id}" placeholder="Шарҳ нависед...">
-                  <div class="send-ic" onclick="addComment('${post.id}')">➤</div>
-                </div>
-              </div>
-            </div>
-          `;
-        }
-        html += `</div>`;
-        scroll.innerHTML = html;
-
-      } catch(e) {
-        console.error(e);
-        scroll.innerHTML = `<div class="empty-feed"><h3>Хатогӣ</h3><p>${esc(e.message)}</p></div>`;
-      }
-    }
-
-    // ===== Вспомогательные функции =====
-
-    function formatTime(dateStr) {
-      if(!dateStr) return '';
-      const date = new Date(dateStr);
-      const now = new Date();
-      const diff = Math.floor((now - date) / 1000);
-      if(diff < 60) return 'ҳозир';
-      if(diff < 3600) return Math.floor(diff/60) + ' дақ';
-      if(diff < 86400) return Math.floor(diff/3600) + ' соат';
-      if(diff < 604800) return Math.floor(diff/86400) + ' рӯз';
-      return date.toLocaleDateString('tg');
-    }
-
-    function openBook(url, name) {
-      if(url) location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}`;
-      else location.href = 'kitobho.html';
-    }
-
-    function toggleLike(btn, postId) {
-      const icon = btn.querySelector('.ic');
-      const cnt = btn.querySelector('.cnt');
-      const liked = btn.classList.toggle('liked');
-      icon.textContent = liked ? '♥' : '♡';
-      cnt.textContent = parseInt(cnt.textContent) + (liked ? 1 : -1);
-      // Сохраняем лайк в базу
-      if(currentUser) {
-        // Здесь можно сделать запрос к таблице post_likes
-        // Для простоты пока только локально
-      }
-    }
-
-    function toggleSave(btn, postId) {
-      btn.classList.toggle('saved');
-      // Сохраняем в избранное (user_favorites)
-      // Для простоты пока локально
-    }
-
-    function sharePost(url, name) {
-      if(navigator.share) {
-        navigator.share({ title: name, url: url || window.location.origin });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const sessions = await resp.json();
+    const map = {};
+    sessions.forEach(s => {
+      if (!s.book_id) return;
+      const key = s.book_id;
+      if (!map[key]) map[key] = { totalDuration: 0, status: s.status || 'active' };
+      map[key].totalDuration += s.duration || 0;
+      if (s.status === 'completed') map[key].status = 'completed';
+    });
+    Object.keys(map).forEach(key => {
+      const item = map[key];
+      if (item.status === 'completed') {
+        item.progress = 100;
+        item.statusText = 'finished';
       } else {
-        navigator.clipboard.writeText(url || window.location.origin).then(() => alert('Линк нусха бардошта шуд'));
+        let prog = Math.min(95, Math.round((item.totalDuration / 60) * 100));
+        if (prog < 1 && item.totalDuration > 0) prog = 1;
+        item.progress = prog;
+        item.statusText = 'reading';
       }
+    });
+    bookProgressMap = map;
+  } catch(e) { console.warn('Failed to load reading sessions', e); }
+}
+
+// ================================================================
+// ============ ЗАГРУЗКА РЕАКЦИЙ (книг) ============
+// ================================================================
+async function loadBookReactions(bookIds){
+  if (!bookIds || bookIds.length === 0) return;
+  const token = getToken();
+  if (!token) {
+    try {
+      const resp = await fetch(API_BASE + '/api/book-stats-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ book_ids: bookIds })
+      });
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      const data = await resp.json();
+      bookIds.forEach(id => {
+        if (!bookReactions[id]) bookReactions[id] = {};
+        bookReactions[id].stats = data[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
+        bookReactions[id].user = { reaction: null, rating: null };
+      });
+    } catch(e) { console.warn('Failed to load stats (no token)', e); }
+    return;
+  }
+  try {
+    const resp = await fetch(API_BASE + '/api/book-reactions/batch', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book_ids: bookIds })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    bookIds.forEach(id => {
+      if (!bookReactions[id]) bookReactions[id] = {};
+      bookReactions[id].stats = data.stats[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
+      bookReactions[id].user = data.user_reactions[id] || { reaction: null, rating: null };
+    });
+  } catch(e) {
+    console.warn('Failed to load reactions batch', e);
+  }
+}
+
+// ================================================================
+// ============ ЗАГРУЗКА ПОСТОВ ============
+// ================================================================
+async function loadPosts(){
+  const feed = $('feedContainer');
+  const loader = $('feedLoader');
+  loader.style.display = 'flex';
+  try {
+    const token = getToken();
+    if(!token){
+      feed.innerHTML = '<div class="empty-feed"><h3>Лента ҳанӯз холӣ аст</h3><p>Барои дидани лента, ворид шавед.</p></div>';
+      loader.style.display = 'none';
+      return;
+    }
+    await loadReadingSessions();
+    const resp = await fetch(API_BASE + '/api/posts', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const posts = await resp.json();
+    postsData = posts;
+    currentUserId = localStorage.getItem('kk_user_id');
+
+    const bookIds = [...new Set(posts.map(p => p.book_id).filter(Boolean))];
+    if (bookIds.length > 0) {
+      await loadBookReactions(bookIds);
     }
 
-    function toggleComments(btn, postId) {
-      const commentsDiv = document.getElementById(`comments-${postId}`);
-      if(commentsDiv) {
-        const viewMore = commentsDiv.querySelector('.view-comments');
-        if(viewMore) viewMore.click();
-      }
+    renderPosts(posts);
+  } catch(e){
+    console.error('loadPosts error:', e);
+    feed.innerHTML = '<div class="empty-feed"><h3>Хатогӣ дар боргирӣ</h3><p>' + e.message + '</p></div>';
+  } finally { loader.style.display = 'none'; }
+}
+
+// ================================================================
+// ============ РЕНДЕРИНГ ПОСТОВ ============
+// ================================================================
+function renderPosts(posts){
+  const feed = $('feedContainer');
+  if(!posts || posts.length === 0){
+    feed.innerHTML = `<div class="empty-feed">
+      <svg viewBox="0 0 64 64" fill="none"><path d="M10 16c8-3 18-3 22 1v34c-4-4-14-4-22-1z" stroke="var(--muted)" stroke-width="2.2" stroke-linejoin="round"/><path d="M54 16c-8-3-18-3-22 1v34c4-4 14-4 22-1z" stroke="var(--muted)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="46" cy="14" r="9" fill="var(--bg)" stroke="var(--gold)" stroke-width="2"/><path d="M42.5 14h7M46 10.5v7" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/></svg>
+      <h3>Лента ҳанӯз холӣ аст</h3>
+      <p>Вақте ки шумо ё дӯстонатон дар бораи китобе нависанд, он дар ин ҷо намоён мешавад.</p>
+      <button class="btn btn-outline" onclick="openPostModal()">Навиштани пост</button>
+    </div>`;
+    return;
+  }
+
+  let html = '';
+  const userId = currentUserId;
+  posts.forEach(post => {
+    const timeAgo = timeSince(post.created_at);
+    const displayName = post.display_name || post.username || 'Корбар';
+    const avatarHtml = post.avatar_url
+      ? `<img src="${post.avatar_url}" alt="">`
+      : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+
+    let progressData = null;
+    if (post.book_id && bookProgressMap[post.book_id]) {
+      progressData = bookProgressMap[post.book_id];
     }
 
-    async function loadComments(postId) {
-      const container = document.getElementById(`comments-${postId}`);
-      if(!container) return;
-      try {
-        const comments = await apiGet('post_comments', {
-          eq: { column: 'post_id', value: postId },
-          order: 'created_at.desc',
-          limit: 5
-        });
-        if(comments && comments.length) {
-          // Показываем комментарии
-          const existing = container.querySelectorAll('.comment-line');
-          existing.forEach(el => el.remove());
-          comments.forEach(c => {
-            const line = document.createElement('div');
-            line.className = 'comment-line';
-            const userName = c.user_name || 'Китобхон';
-            line.innerHTML = `<b>${esc(userName)}:</b> ${esc(c.text)}`;
-            container.insertBefore(line, container.querySelector('.view-comments'));
-          });
-          const viewMore = container.querySelector('.view-comments');
-          if(viewMore) viewMore.textContent = 'Пӯшидан';
-          viewMore.onclick = () => {
-            const lines = container.querySelectorAll('.comment-line');
-            lines.forEach(el => el.remove());
-            viewMore.textContent = 'Дидани шарҳҳо';
-            viewMore.onclick = () => loadComments(postId);
-          };
-        } else {
-          const viewMore = container.querySelector('.view-comments');
-          if(viewMore) viewMore.textContent = 'Шарҳ нест';
+    let statusHtml = '', progressHtml = '';
+    if (progressData) {
+      const statusText = progressData.statusText === 'finished' ? '✅ Хатм кард' : '📖 Дар ҳоли хондан';
+      const chipClass = progressData.statusText === 'finished' ? 'chip-finished' : 'chip-reading';
+      statusHtml = `<div class="status-chip ${chipClass}">${statusText}</div>`;
+      const prog = progressData.progress || 0;
+      progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
+    }
+
+    let bookBlock = '';
+    if (post.book_id) {
+      const coverUrl = getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id });
+      const author = post.book_author || '';
+      bookBlock = `
+        <div class="book-block" onclick="openBookFromPost('${post.book_id}','${post.book_title||''}')">
+          <div class="thumb" style="background:var(--card-2);"><img src="${coverUrl}" alt="" onerror="this.style.display='none'"></div>
+          <div class="book-info">
+            <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
+            <div class="book-author">${escHtml(author)}</div>
+            ${statusHtml}${progressHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== ЛАЙКИ (постов) =====
+    const liked = post.liked ? 'liked' : '';
+    const likeCount = post.likes_count || 0;
+    const likeBtnHtml = `
+      <button class="like-btn ${liked}" data-post="${post.id}">
+        <span>${liked ? '❤️' : '🤍'}</span>
+        <span class="cnt">${likeCount}</span>
+      </button>
+    `;
+
+    // ===== РЕАКЦИИ (книг) =====
+    let reactionsHtml = '';
+    if (post.book_id) {
+      const stats = bookReactions[post.book_id]?.stats || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
+      const userReact = bookReactions[post.book_id]?.user || { reaction: null, rating: null };
+      const activeReaction = userReact.reaction;
+      const userRating = userReact.rating || 0;
+
+      const reactions = [
+        { id: 'like', emoji: '👍', label: 'Лайк' },
+        { id: 'love', emoji: '❤️', label: 'Муҳаббат' },
+        { id: 'dislike', emoji: '👎', label: 'Нописанд' }
+      ];
+      let reactBtns = '';
+      reactions.forEach(r => {
+        const active = activeReaction === r.id ? 'active' : '';
+        const cnt = stats[r.id] || 0;
+        reactBtns += `<button class="reaction-btn ${active}" data-book="${post.book_id}" data-reaction="${r.id}">${r.emoji}<span class="cnt">${cnt}</span></button>`;
+      });
+
+      let starsHtml = '';
+      for (let i = 1; i <= 10; i++) {
+        const on = i <= userRating ? 'on' : '';
+        starsHtml += `<span class="star ${on}" data-book="${post.book_id}" data-rating="${i}">${i <= userRating ? '★' : '☆'}</span>`;
+      }
+      const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
+
+      reactionsHtml = `
+        <div class="reaction-area">
+          <div class="reaction-group">${reactBtns}</div>
+          <div class="rating-stars">
+            <span class="rating-label">${avgRating}</span>
+            ${starsHtml}
+          </div>
+        </div>
+      `;
+    }
+
+    // ===== КОММЕНТАРИИ (последние 3) =====
+    const comments = post.comments || []; // если сервер не возвращает комментарии, будем загружать отдельно
+    // Для простоты: загрузим все комментарии при клике на кнопку показать, но покажем только 3 из них в списке.
+    // Но чтобы показывать последние 3, нам нужно знать их. Лучше загружать комментарии асинхронно по клику, но мы можем сохранить 3 последних в data-атрибуты или сделать запрос.
+    // Сделаем как раньше: при клике на "Дидани боз X шарҳ" загружаем все комментарии и показываем их. Пока же показываем пустой список.
+    // Но чтобы отобразить последние 3 сразу, можем при рендеринге загрузить комментарии для каждого поста (если их немного) или использовать API.
+    // Я реализую: при рендеринге для каждого поста делаем запрос на комментарии (ограничим 3), а кнопка "Дидани боз X" загружает все.
+    // Это может быть много запросов, но для 50 постов ок.
+    // Чтобы упростить, я покажу только кнопку и при клике загружу все.
+
+    const commentCount = post.comments_count || 0;
+    const showCommentsText = commentCount > 0 ? `Дидани боз ${commentCount} шарҳ` : 'Аввалин шарҳро нависед';
+
+    const commentsBlock = `
+      <div class="comments-wrapper" data-post="${post.id}">
+        <div class="show-comments-btn" data-post="${post.id}">${showCommentsText}</div>
+        <div class="comments-list" data-post="${post.id}"></div>
+        <div class="comment-input-row">
+          <div class="av"><div class="av-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.4"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round"/></svg></div></div>
+          <input class="comment-input" placeholder="Шарҳ нависед..." data-post="${post.id}">
+          <div class="send-ic" data-post="${post.id}">➤</div>
+        </div>
+      </div>
+    `;
+
+    html += `
+      <div class="post-card" data-post-id="${post.id}">
+        <div class="post-head">
+          <div class="av" onclick="openUserProfile('${post.user_id}')">
+            <div class="av-inner">${avatarHtml}</div>
+          </div>
+          <div class="post-head-text" onclick="openUserProfile('${post.user_id}')">
+            <div class="post-name">${escHtml(displayName)}</div>
+            <div class="post-time">${timeAgo}</div>
+          </div>
+          ${userId && post.user_id === userId ? `<div class="icon-btn" style="width:30px;height:30px;font-size:14px;background:transparent;border:none;color:var(--red);cursor:pointer;" onclick="deletePost('${post.id}')">🗑</div>` : ''}
+        </div>
+        ${post.content ? `<div class="post-caption">${escHtml(post.content)}</div>` : ''}
+        ${bookBlock}
+        <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
+          ${likeBtnHtml}
+          <span style="color:var(--muted);font-size:14px;">💬 <span class="comment-count">${commentCount}</span></span>
+        </div>
+        ${reactionsHtml}
+        ${commentsBlock}
+      </div>
+    `;
+  });
+  feed.innerHTML = html;
+
+  // ==== НАВЕШИВАЕМ СОБЫТИЯ ====
+  // Лайки постов
+  document.querySelectorAll('.like-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const postId = this.dataset.post;
+      togglePostLike(postId, this);
+    });
+  });
+
+  // Реакции книг
+  document.querySelectorAll('.reaction-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const bookId = this.dataset.book;
+      const reaction = this.dataset.reaction;
+      handleBookReaction(bookId, reaction, this);
+    });
+  });
+
+  // Звёзды
+  document.querySelectorAll('.rating-stars .star').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const bookId = this.dataset.book;
+      const rating = parseInt(this.dataset.rating);
+      handleBookRating(bookId, rating, this);
+    });
+  });
+
+  // Показать комментарии
+  document.querySelectorAll('.show-comments-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const postId = this.dataset.post;
+      toggleComments(postId, this);
+    });
+  });
+
+  // Отправка комментария
+  document.querySelectorAll('.send-ic').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const postId = this.dataset.post;
+      const input = document.querySelector(`.comment-input[data-post="${postId}"]`);
+      if (input) sendComment(postId, input);
+    });
+  });
+  document.querySelectorAll('.comment-input').forEach(inp => {
+    inp.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const postId = this.dataset.post;
+        sendComment(postId, this);
+      }
+    });
+  });
+}
+
+// ================================================================
+// ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
+// ================================================================
+function escHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+function timeSince(dateStr){
+  const now = Date.now();
+  const then = new Date(dateStr).getTime();
+  const diff = Math.floor((now - then) / 1000);
+  if(diff < 60) return 'ҳозир';
+  if(diff < 3600) return Math.floor(diff/60) + ' дақиқа пеш';
+  if(diff < 86400) return Math.floor(diff/3600) + ' соат пеш';
+  if(diff < 604800) return Math.floor(diff/86400) + ' рӯз пеш';
+  return new Date(dateStr).toLocaleDateString('tg-TJ');
+}
+
+// ================================================================
+// ============ ЛАЙКИ ПОСТОВ ============
+// ================================================================
+async function togglePostLike(postId, btn) {
+  const token = getToken();
+  if (!token) { showToast('Лутфан ворид шавед'); return; }
+  const icon = btn.querySelector('span:first-child');
+  const cnt = btn.querySelector('.cnt');
+  const currentlyLiked = btn.classList.contains('liked');
+  // optimistic
+  btn.classList.toggle('liked');
+  icon.textContent = currentlyLiked ? '🤍' : '❤️';
+  cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? -1 : 1);
+
+  try {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/like', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const data = await resp.json();
+    cnt.textContent = data.likes_count;
+    if (data.liked) {
+      btn.classList.add('liked');
+      icon.textContent = '❤️';
+    } else {
+      btn.classList.remove('liked');
+      icon.textContent = '🤍';
+    }
+    // обновить в postsData
+    const post = postsData.find(p => p.id == postId);
+    if (post) post.likes_count = data.likes_count;
+  } catch(e) {
+    console.error('Like error:', e);
+    // revert
+    btn.classList.toggle('liked');
+    icon.textContent = currentlyLiked ? '❤️' : '🤍';
+    cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? 1 : -1);
+    showToast('Хатогӣ дар лайк: ' + e.message);
+  }
+}
+
+// ================================================================
+// ============ РЕАКЦИИ И ОЦЕНКИ КНИГ ============
+// ================================================================
+async function handleBookReaction(bookId, reaction, btn) {
+  const token = getToken();
+  if (!token) { showToast('Лутфан ворид шавед'); return; }
+  const currentlyActive = btn.classList.contains('active');
+  const newReaction = currentlyActive ? null : reaction;
+  try {
+    const resp = await fetch(API_BASE + '/api/book-reactions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book_id: bookId, reaction: newReaction })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const stats = await resp.json();
+    if (!bookReactions[bookId]) bookReactions[bookId] = { stats: {}, user: {} };
+    bookReactions[bookId].stats = stats;
+    bookReactions[bookId].user.reaction = newReaction;
+    const container = btn.closest('.post-card');
+    if (container) {
+      container.querySelectorAll('.reaction-btn').forEach(b => {
+        b.classList.remove('active');
+        const cntSpan = b.querySelector('.cnt');
+        if (cntSpan) {
+          const rid = b.dataset.reaction;
+          cntSpan.textContent = stats[rid] || 0;
         }
-      } catch(e) {
-        console.warn('Comments load error', e);
+      });
+      if (newReaction) {
+        btn.classList.add('active');
+        const cntSpan = btn.querySelector('.cnt');
+        if (cntSpan) cntSpan.textContent = stats[reaction] || 0;
+      }
+      const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
+      const ratingLabel = container.querySelector('.rating-label');
+      if (ratingLabel) ratingLabel.textContent = avgRating;
+    }
+    showToast('Реакция сабт шуд');
+  } catch(e) {
+    console.error('Reaction error:', e);
+    showToast('Хатогӣ: ' + e.message);
+  }
+}
+
+async function handleBookRating(bookId, rating, starEl) {
+  const token = getToken();
+  if (!token) { showToast('Лутфан ворид шавед'); return; }
+  const container = starEl.closest('.post-card');
+  const allStars = container.querySelectorAll('.rating-stars .star');
+  const currentRating = bookReactions[bookId]?.user?.rating || 0;
+  const newRating = (currentRating === rating) ? 0 : rating;
+  try {
+    const resp = await fetch(API_BASE + '/api/book-reactions', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ book_id: bookId, rating: newRating })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const stats = await resp.json();
+    if (!bookReactions[bookId]) bookReactions[bookId] = { stats: {}, user: {} };
+    bookReactions[bookId].stats = stats;
+    bookReactions[bookId].user.rating = newRating;
+    allStars.forEach(s => {
+      const val = parseInt(s.dataset.rating);
+      if (val <= newRating) {
+        s.classList.add('on');
+        s.textContent = '★';
+      } else {
+        s.classList.remove('on');
+        s.textContent = '☆';
+      }
+    });
+    const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
+    const ratingLabel = container.querySelector('.rating-label');
+    if (ratingLabel) ratingLabel.textContent = avgRating;
+    showToast('Баҳо сабт шуд (⭐ ' + newRating + '/10)');
+  } catch(e) {
+    console.error('Rating error:', e);
+    showToast('Хатогӣ: ' + e.message);
+  }
+}
+
+// ================================================================
+// ============ КОММЕНТАРИИ ============
+// ================================================================
+async function toggleComments(postId, btn) {
+  const list = document.querySelector(`.comments-list[data-post="${postId}"]`);
+  if (!list) return;
+  const isOpen = list.dataset.open === 'true';
+  if (isOpen) {
+    list.dataset.open = 'false';
+    list.style.display = 'none';
+    btn.textContent = btn.textContent.replace('Пинҳон кардан', '').trim() || 'Дидани шарҳҳо';
+    return;
+  }
+  // загружаем все комментарии
+  if (list.children.length === 0) {
+    await loadComments(postId, list);
+  }
+  list.dataset.open = 'true';
+  list.style.display = 'flex';
+  btn.textContent = 'Пинҳон кардан шарҳҳо';
+}
+
+async function loadComments(postId, list) {
+  const token = getToken();
+  if (!token) { list.innerHTML = '<div class="comment-line">Ворид шавед барои дидани шарҳҳо</div>'; return; }
+  try {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comments', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const comments = await resp.json();
+    if (comments.length === 0) {
+      list.innerHTML = '<div class="comment-line">Шарҳе нест</div>';
+      return;
+    }
+    let html = '';
+    comments.forEach(c => {
+      const author = c.display_name || c.username || 'Корбар';
+      html += `<div class="comment-line"><b>${escHtml(author)}:</b> ${escHtml(c.text)}</div>`;
+    });
+    list.innerHTML = html;
+  } catch(e) {
+    console.error('Load comments error:', e);
+    list.innerHTML = '<div class="comment-line">Хатогӣ дар боргирӣ</div>';
+  }
+}
+
+async function sendComment(postId, input) {
+  const text = input.value.trim();
+  if (!text) return;
+  const token = getToken();
+  if (!token) { showToast('Лутфан ворид шавед'); return; }
+  try {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comment', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text })
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const newComment = await resp.json();
+    // добавляем в список
+    const list = document.querySelector(`.comments-list[data-post="${postId}"]`);
+    if (list) {
+      // удаляем заглушку если есть
+      if (list.children.length === 1 && list.children[0].textContent.includes('Шарҳе нест')) {
+        list.innerHTML = '';
+      }
+      const line = document.createElement('div');
+      line.className = 'comment-line';
+      const author = newComment.display_name || newComment.username || 'Шумо';
+      line.innerHTML = `<b>${escHtml(author)}:</b> ${escHtml(newComment.text)}`;
+      list.appendChild(line);
+    }
+    // обновляем счётчик
+    const countSpan = document.querySelector(`.comment-count[data-post="${postId}"]`);
+    if (countSpan) {
+      const current = parseInt(countSpan.textContent) || 0;
+      countSpan.textContent = current + 1;
+    }
+    // обновляем postsData
+    const post = postsData.find(p => p.id == postId);
+    if (post) post.comments_count = (post.comments_count || 0) + 1;
+    input.value = '';
+    showToast('Шарҳ илова шуд');
+  } catch(e) {
+    console.error('Send comment error:', e);
+    showToast('Хатогӣ: ' + e.message);
+  }
+}
+
+// ================================================================
+// ============ УДАЛЕНИЕ ПОСТА ============
+// ================================================================
+async function deletePost(postId){
+  if(!confirm('Шумо воқеан мехоҳед ин постро нест кунед?')) return;
+  const token = getToken();
+  if(!token) { showToast('Лутфан ворид шавед'); return; }
+  try {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId, {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    showToast('Пост нест карда шуд');
+    loadPosts(); // мгновенное обновление
+  } catch(e){ showToast('Хатогӣ: ' + e.message); }
+}
+
+// ================================================================
+// ============ СОЗДАНИЕ ПОСТА ============
+// ================================================================
+async function openPostModal(bookId){
+  const modal = $('postModal');
+  modal.classList.add('open');
+  const select = $('postBookSelect');
+  const authorInput = $('postBookAuthor');
+  const token = getToken();
+  if(!token) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/reading-sessions', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    const sessions = await resp.json();
+    const bookMap = {};
+    sessions.forEach(s => {
+      if(s.book_id && s.book_title) {
+        const key = s.book_id;
+        if(!bookMap[key]) bookMap[key] = { id: s.book_id, title: s.book_title, author: s.book_author || '' };
+      }
+    });
+    const books = Object.values(bookMap);
+    select.innerHTML = '<option value="">Интихоб кунед (ихтиёрӣ)</option>';
+    books.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.title + (b.author ? ' — ' + b.author : '');
+      opt.dataset.author = b.author;
+      select.appendChild(opt);
+    });
+    if(bookId){
+      for(let opt of select.options){
+        if(opt.value === bookId){
+          opt.selected = true;
+          authorInput.value = opt.dataset.author || '';
+          break;
+        }
       }
     }
+    select.onchange = function(){
+      const selected = this.options[this.selectedIndex];
+      authorInput.value = selected?.dataset?.author || '';
+    };
+  } catch(e){ console.warn('Failed to load books for modal', e); }
+}
 
-    async function addComment(postId) {
-      const input = document.getElementById(`commentInput-${postId}`);
-      if(!input || !input.value.trim()) return;
-      const text = input.value.trim();
-      input.value = '';
-      try {
-        await apiPost('post_comments', {
-          post_id: postId,
-          user_id: currentUser.id,
-          text: text,
-          user_name: currentUser.user_metadata?.display_name || 'Китобхон'
-        });
-        // Обновляем комментарии
-        loadComments(postId);
-      } catch(e) {
-        console.warn('Add comment error', e);
-      }
-    }
+function closePostModal(){
+  $('postModal').classList.remove('open');
+  $('postContent').value = '';
+  $('postBookSelect').value = '';
+  $('postBookAuthor').value = '';
+}
 
-    // Делаем функции глобальными для onclick
-    window.toggleLike = toggleLike;
-    window.toggleSave = toggleSave;
-    window.sharePost = sharePost;
-    window.toggleComments = toggleComments;
-    window.loadComments = loadComments;
-    window.addComment = addComment;
-    window.openBook = openBook;
+document.getElementById('createPostBtn').addEventListener('click', () => openPostModal());
+document.getElementById('closeModalBtn').addEventListener('click', closePostModal);
+document.getElementById('cancelPostBtn').addEventListener('click', closePostModal);
+$('postModal').addEventListener('click', function(e){ if(e.target === this) closePostModal(); });
 
-    // Инициализация
-    loadFeed();
+document.getElementById('submitPostBtn').addEventListener('click', async function(){
+  const content = $('postContent').value.trim();
+  const book_id = $('postBookSelect').value;
+  const book_author = $('postBookAuthor').value.trim();
+  let book_title = '';
+  // Получаем название книги из выбранного option
+  const select = $('postBookSelect');
+  const selectedOption = select.options[select.selectedIndex];
+  if (selectedOption && selectedOption.value) {
+    book_title = selectedOption.text.split(' — ')[0].trim(); // берём название до " — "
+  }
+  if(!content && !book_id) {
+    showToast('Лутфан матн ё китоб интихоб кунед');
+    return;
+  }
+  const token = getToken();
+  if(!token) { showToast('Лутфан ворид шавед'); return; }
+  this.disabled = true; this.textContent = '...';
+  try {
+    const resp = await fetch(API_BASE + '/api/posts', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ content, book_id, book_title, book_author, visibility: 'public' })
+    });
+    if(!resp.ok) throw new Error('HTTP '+resp.status);
+    showToast('Пост нашр шуд!');
+    closePostModal();
+    loadPosts(); // мгновенное обновление
+  } catch(e){ showToast('Хатогӣ: ' + e.message); }
+  finally { this.disabled = false; this.textContent = '📤 Интишор'; }
+});
 
-    // Автообновление каждые 30 сек
-    setInterval(loadFeed, 30000);
-  </script>
+// ================================================================
+// ============ ЗАПУСК ============
+// ================================================================
+document.addEventListener('DOMContentLoaded', function(){
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('action') === 'post'){
+    const bookId = localStorage.getItem('kk_publish_book');
+    if(bookId){ localStorage.removeItem('kk_publish_book'); setTimeout(() => openPostModal(bookId), 300); }
+    else { setTimeout(openPostModal, 300); }
+  }
+  loadPosts();
+});
+
+window.addEventListener('pageshow', function(e){ if(e.persisted) loadPosts(); });
+</script>
 </body>
 </html>
