@@ -8,28 +8,29 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="config.js"></script>
 <style>
+  /* ===== ВАШИ СТИЛИ (как в предыдущей версии с реакциями) ===== */
   :root{--bg:#111;--panel:rgba(13,27,42,.95);--page:#F5F0E8;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--border:rgba(201,168,76,.22);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
   .light-reading{--bg:#E8E2D5;--panel:rgba(245,240,232,.96);--page:#FFFEF7;--text:#1A2D44;--muted:#4A5D73}*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}html,body{width:100%;height:100%;overflow:hidden;background:#05070a;color:var(--text);font-family:'Segoe UI',Arial,sans-serif;position:fixed;inset:0}.reader-wrapper{width:100%;max-width:430px;margin:0 auto;height:100dvh;display:flex;flex-direction:column;position:relative;overflow:hidden;background:var(--bg);box-shadow:0 0 0 1px rgba(255,255,255,.04),0 0 60px rgba(0,0,0,.55)}.reader-top-bar{position:absolute;top:0;left:0;right:0;z-index:100;background:var(--panel);backdrop-filter:blur(18px);border-bottom:1px solid var(--border);padding:calc(8px + var(--safe-top)) 12px 9px;display:flex;align-items:center;gap:10px;transition:.25s}.reader-top-bar.hidden{transform:translateY(-110%)}.btn-back,.top-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;font-size:18px;cursor:pointer}.book-title-block{flex:1;min-width:0}.reading-book-title{font-size:14px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reading-book-author{font-size:11px;color:var(--muted);margin-top:2px}.top-actions{display:flex;gap:6px}.reader-main{flex:1;position:relative;display:grid;place-items:center;overflow:hidden;background:radial-gradient(circle at 50% 40%,rgba(201,168,76,.08),transparent 40%),var(--bg)}.page-stage{position:absolute;inset:0;display:grid;place-items:center;padding:calc(58px + var(--safe-top)) 5px calc(100px + var(--safe-bottom));touch-action:pan-y}.page-container{max-width:100%;max-height:100%;display:grid;place-items:center;transition:transform .15s}.page-container canvas{max-width:100%;max-height:100%;border-radius:6px;box-shadow:0 12px 40px rgba(0,0,0,.55);background:var(--page)}.page-nav-area{position:absolute;top:0;bottom:0;width:28%;z-index:20}.page-nav-left{left:0}.page-nav-right{right:0}.reader-bottom-bar{position:absolute;bottom:0;left:0;right:0;z-index:100;background:var(--panel);backdrop-filter:blur(18px);border-top:1px solid var(--border);padding:8px 14px calc(10px + var(--safe-bottom));transition:.25s}.reader-bottom-bar.hidden{transform:translateY(110%)}.reading-progress{height:4px;background:rgba(255,255,255,.13);border-radius:99px;overflow:hidden;margin-bottom:9px}.reading-progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));width:0}.reader-controls{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:10px}.control-left,.control-right{display:flex;gap:8px}.control-right{justify-content:flex-end}.control-btn{width:38px;height:38px;border:1px solid var(--border);border-radius:13px;background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;font-size:17px;cursor:pointer}.control-btn.primary{background:linear-gradient(135deg,var(--gold),var(--gold2));color:#1b1202;border-color:var(--gold)}.page-info{text-align:center;font-size:12px;color:var(--muted);font-weight:800}.loading{position:absolute;inset:0;z-index:90;display:none;place-items:center;background:rgba(0,0,0,.20)}.loading.on{display:grid}.progress-ring{width:64px;height:64px;border-radius:50%;background:conic-gradient(var(--gold) calc(var(--p,0)*1%),rgba(201,168,76,.16) 0);display:grid;place-items:center;box-shadow:0 10px 32px rgba(0,0,0,.45)}.progress-ring:before{content:"";position:absolute;width:50px;height:50px;border-radius:50%;background:var(--panel);border:1px solid var(--border)}.progress-ring span{position:relative;z-index:1;font-size:12px;font-weight:900;color:var(--gold2)}@keyframes spin{to{transform:rotate(360deg)}}.panel{position:absolute;z-index:160;background:var(--panel);border:1px solid var(--border);box-shadow:0 16px 42px rgba(0,0,0,.5);display:none}.panel.open{display:block}.settings-panel{top:calc(58px + var(--safe-top));right:10px;bottom:calc(76px + var(--safe-bottom));width:min(320px,calc(100% - 20px));border-radius:20px;padding:10px;overflow:auto}.search-panel{left:10px;right:10px;top:calc(64px + var(--safe-top));bottom:calc(76px + var(--safe-bottom));border-radius:20px;padding:14px;overflow:auto}.settings-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}.panel-title{font-weight:900;color:var(--gold2)}.close-panel{width:32px;height:32px;border-radius:11px;border:1px solid var(--border);background:rgba(255,255,255,.05);color:var(--text);display:grid;place-items:center;cursor:pointer}.settings-group{border-top:1px solid rgba(255,255,255,.08);padding:8px 0}.settings-group-title{font-size:11px;color:var(--gold2);font-weight:900;text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}.setting-item{display:flex;align-items:center;justify-content:space-between;gap:8px;background:rgba(255,255,255,.045);border:1px solid rgba(255,255,255,.06);border-radius:13px;padding:8px;margin-bottom:6px}.setting-label{display:flex;align-items:center;gap:8px;font-weight:800}.row{display:flex;gap:8px;flex-wrap:wrap}.pill{border:1px solid var(--border);border-radius:99px;background:rgba(255,255,255,.05);color:var(--text);padding:6px 10px;font-weight:800;cursor:pointer;font-size:12px}.pill.active{background:var(--gold);color:#1b1202}.range{width:100%;margin:3px 0}.find-nav{display:flex;align-items:center;gap:8px;margin-top:10px}.find-count{flex:1;text-align:center;color:var(--gold2);font-weight:900;font-size:12px}.find-results{margin-top:10px;max-height:48vh;overflow:auto;border-top:1px solid rgba(255,255,255,.08)}.find-item{padding:9px 4px;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer}.find-item.on{background:rgba(201,168,76,.12);border-radius:10px}.find-page{font-weight:900;color:var(--gold2);font-size:12px}.find-snippet{font-size:12px;color:var(--muted);margin-top:3px;line-height:1.35}.stars{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}.star{font-size:24px;color:#64748b;cursor:pointer;transition:.12s}.star.on{color:var(--gold)}.star:hover{transform:scale(1.12)}.toast{position:fixed;left:50%;bottom:calc(92px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);z-index:300;background:var(--panel);border:1px solid var(--border);border-radius:99px;padding:10px 15px;color:var(--text);font-size:12px;opacity:0;transition:.25s;max-width:90%;text-align:center}.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}.error{padding:20px;text-align:center;color:#fca5a5;max-width:320px}
 
-/* ============ НОВЫЙ БЛОК РЕАКЦИЙ ============ */
-.reaction-bar{
-  display:flex;align-items:center;justify-content:space-between;gap:6px;
-  margin-top:6px;padding-top:6px;border-top:1px solid var(--border);
-}
-.reaction-group{display:flex;gap:10px;align-items:center;}
-.reaction-btn{
-  background:transparent;border:none;font-size:22px;cursor:pointer;
-  transition:transform .12s;color:var(--muted);padding:2px 4px;line-height:1;
-}
-.reaction-btn.active{color:var(--gold);}
-.reaction-btn:hover{transform:scale(1.2);}
-.reaction-btn .cnt{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px;display:inline-block;}
-.reaction-btn.active .cnt{color:var(--gold);}
-.rating-stars{display:flex;gap:3px;align-items:center;}
-.rating-stars .star{font-size:18px;color:var(--muted);cursor:pointer;transition:.12s;}
-.rating-stars .star.on{color:var(--gold);}
-.rating-stars .star:hover{transform:scale(1.2);}
-.rating-label{font-size:11px;color:var(--muted);font-weight:600;margin-right:4px;}
+  /* ===== РЕАКЦИИ ===== */
+  .reaction-bar{
+    display:flex;align-items:center;justify-content:space-between;gap:6px;
+    margin-top:6px;padding-top:6px;border-top:1px solid var(--border);
+  }
+  .reaction-group{display:flex;gap:10px;align-items:center;}
+  .reaction-btn{
+    background:transparent;border:none;font-size:22px;cursor:pointer;
+    transition:transform .12s;color:var(--muted);padding:2px 4px;line-height:1;
+  }
+  .reaction-btn.active{color:var(--gold);}
+  .reaction-btn:hover{transform:scale(1.2);}
+  .reaction-btn .cnt{font-size:11px;font-weight:700;color:var(--muted);margin-left:2px;display:inline-block;}
+  .reaction-btn.active .cnt{color:var(--gold);}
+  .rating-stars{display:flex;gap:3px;align-items:center;}
+  .rating-stars .star{font-size:18px;color:var(--muted);cursor:pointer;transition:.12s;}
+  .rating-stars .star.on{color:var(--gold);}
+  .rating-stars .star:hover{transform:scale(1.2);}
+  .rating-label{font-size:11px;color:var(--muted);font-weight:600;margin-right:4px;}
 </style>
 </head>
 <body>
@@ -38,7 +39,7 @@
 <main class="reader-main" id="readerMain"><div class="page-stage" id="stage"><div class="page-container" id="pageContainer"></div></div><div class="page-nav-area page-nav-left" onclick="turnPage(-1)"></div><div class="page-nav-area page-nav-right" onclick="turnPage(1)"></div><div class="loading on" id="loading"><div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div></div></main>
 <div class="reader-bottom-bar" id="bottomBar">
   <div class="reading-progress"><div class="reading-progress-fill" id="progressFill"></div></div>
-  <!-- ===== НОВЫЙ БЛОК: РЕАКЦИИ И ЗВЁЗДЫ ===== -->
+  <!-- ===== РЕАКЦИИ ===== -->
   <div class="reaction-bar" id="reactionBar">
     <div class="reaction-group">
       <button class="reaction-btn" data-reaction="like" title="Лайк">👍<span class="cnt" id="likeCount">0</span></button>
@@ -161,7 +162,7 @@ function stopReadingSession() {
 
 window.addEventListener('load', function() {
   setTimeout(startReadingSession, 1000);
-  loadReactions(); // загружаем реакции при открытии
+  loadReactions();
 });
 window.addEventListener('beforeunload', stopReadingSession);
 document.addEventListener('visibilitychange', function() {
@@ -176,7 +177,7 @@ window.goBack = function() {
 };
 
 // ================================================================
-// ============ РЕАКЦИИ И РЕЙТИНГ ============
+// ============ РЕАКЦИИ И РЕЙТИНГ (из предыдущей версии) ============
 // ================================================================
 let currentReaction = null;
 let currentRating = 0;
@@ -187,7 +188,6 @@ async function loadReactions() {
   const bookId = getBookId();
   if (!bookId) return;
   try {
-    // Получаем реакцию пользователя
     const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
       headers: { 'Authorization': 'Bearer ' + token }
     });
@@ -203,19 +203,12 @@ async function loadReactions() {
       currentRating = data.rating;
       updateStarsUI(data.rating);
     }
-
-    // Получаем общую статистику
     const statsResp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
     if (!statsResp.ok) throw new Error('HTTP '+statsResp.status);
     const stats = await statsResp.json();
     $('likeCount').textContent = stats.likes || 0;
     $('loveCount').textContent = stats.loves || 0;
     $('dislikeCount').textContent = stats.dislikes || 0;
-    if (stats.avg_rating) {
-      // отображаем средний рейтинг как звёзды (половинчатые не делаем, просто показываем число)
-      const avg = parseFloat(stats.avg_rating) || 0;
-      // можно показать среднюю оценку текстом или закрасить звёзды
-    }
   } catch(e) {
     console.warn('Failed to load reactions:', e);
   }
@@ -234,11 +227,9 @@ async function saveReaction(reaction) {
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const stats = await resp.json();
-    // обновляем счётчики
     $('likeCount').textContent = stats.likes || 0;
     $('loveCount').textContent = stats.loves || 0;
     $('dislikeCount').textContent = stats.dislikes || 0;
-    // обновляем активную кнопку
     document.querySelectorAll('.reaction-btn').forEach(btn => {
       btn.classList.toggle('active', btn.dataset.reaction === reaction);
     });
@@ -280,14 +271,11 @@ function updateStarsUI(rating) {
   });
 }
 
-// Обработчики реакций
 document.querySelectorAll('.reaction-btn').forEach(btn => {
   btn.addEventListener('click', function(e) {
     e.stopPropagation();
     const reaction = this.dataset.reaction;
-    // если уже активна — снимаем (т.е. удаляем реакцию)
     if (this.classList.contains('active')) {
-      // отправляем null, чтобы удалить реакцию
       saveReaction(null);
       this.classList.remove('active');
       currentReaction = null;
@@ -297,13 +285,11 @@ document.querySelectorAll('.reaction-btn').forEach(btn => {
   });
 });
 
-// Обработчики звёзд
 document.querySelectorAll('.rating-stars .star').forEach(el => {
   el.addEventListener('click', function(e) {
     e.stopPropagation();
     const rating = parseInt(this.dataset.rating);
     if (currentRating === rating) {
-      // если уже выбрано — снимаем (удаляем рейтинг)
       saveRating(0);
     } else {
       saveRating(rating);
@@ -312,9 +298,10 @@ document.querySelectorAll('.rating-stars .star').forEach(el => {
 });
 
 // ================================================================
-// ============ ОСТАЛЬНЫЕ ФУНКЦИИ READER ============
+// ============ ОСТАЛЬНЫЕ ФУНКЦИИ READER (с исправленным шарингом) ============
 // ================================================================
 function toast(msg,d=2200){const t=$('toast');t.textContent=msg;t.classList.add('show');setTimeout(()=>t.classList.remove('show'),d)}
+function isAndroid(){try{return !!(window.KitobAndroid&&(KitobAndroid.isAndroidApp===true||(typeof KitobAndroid.isAndroidApp==='function'&&KitobAndroid.isAndroidApp())))}catch(e){return false}}
 function setLoadProgress(p){p=Math.max(0,Math.min(100,Math.round(p||0)));$('progressRing')?.style.setProperty('--p',p);if($('loadPct'))$('loadPct').textContent=p+'%'}
 
 function cdnPdfUrl(u){
@@ -340,12 +327,11 @@ function cachePdfBackground(pdfUrl){try{if(!('caches' in window))return;setTimeo
 async function loadPdfFrom(pdfUrl){setLoadProgress(0);const cached=await cachedPdfData(pdfUrl);if(cached)return await pdfjsLib.getDocument({data:cached}).promise;const task=pdfjsLib.getDocument({url:pdfUrl,rangeChunkSize:65536,disableStream:false,disableRange:false,disableAutoFetch:false});task.onProgress=pr=>{if(pr&&pr.total)setLoadProgress(pr.loaded/pr.total*100);else setLoadProgress(35)};const doc=await task.promise;cachePdfBackground(pdfUrl);return doc}
 
 async function openPdf(){
-  if(!url){ $('pageContainer').innerHTML = '<div class="error">URL-и китоб нест</div>'; $('loading').classList.remove('on'); return; }
+  if(!url){$('pageContainer').innerHTML='<div class="error">URL-и китоб нест</div>';$('loading').classList.remove('on');return}
   if (!url.includes('raw.githubusercontent.com') && !url.includes('cdn.jsdelivr.net')) {
-    $('pageContainer').innerHTML = '<div class="error">URL-и китоб нодуруст аст</div>'; $('loading').classList.remove('on'); return;
+    $('pageContainer').innerHTML='<div class="error">URL-и китоб нодуруст аст</div>';$('loading').classList.remove('on');return;
   }
-  const cleanUrl = url;
-  const urls = [cdnPdfUrl(cleanUrl), cleanUrl].filter((v,i,a)=>v&&a.indexOf(v)===i);
+  const urls = [cdnPdfUrl(url), url].filter((v,i,a)=>v&&a.indexOf(v)===i);
   try{
     let lastErr=null;
     for(const u of urls){
@@ -359,8 +345,8 @@ async function openPdf(){
     await renderPage(page);
   }catch(e){
     console.error('[Reader] Error:', e);
-    $('pageContainer').innerHTML = '<div class="error">Хатогӣ ҳангоми кушодани PDF<br>'+String(e.message||e)+'</div>';
-  }finally{ $('loading').classList.remove('on'); }
+    $('pageContainer').innerHTML='<div class="error">Хатогӣ ҳангоми кушодани PDF<br>'+String(e.message||e)+'</div>';
+  }finally{$('loading').classList.remove('on');}
 }
 
 function getProgress(){try{return JSON.parse(localStorage.getItem('kk_reader_progress')||'{}')[url]}catch(e){return null}}
@@ -384,6 +370,7 @@ function updateBm(){const arr=bmList()[url]||[];$('bmBtn').textContent=arr.inclu
 
 async function downloadCurrent(){
   try{
+    console.log('[Reader] downloadCurrent, url=', url);
     if('caches' in window && url){
       toast('Ҳифз шуда истодааст...');
       const own=await caches.open('kitobkhona-pdf-cache-v1');
@@ -401,12 +388,73 @@ async function downloadCurrent(){
         return;
       }
     }
+    if(isAndroid()){toast('Омодасозии файл...');const r=await fetch(url);const blob=await r.blob();const b64=await blobToBase64(blob);KitobAndroid.saveFile(b64,name+'.pdf','application/pdf');return}
     const a=document.createElement('a');a.href=url;a.download=name+'.pdf';a.click()
   }catch(e){toast('Хатогии боргирӣ: '+(e.message||e),3000)}
 }
+function blobToBase64(blob){return new Promise((res,rej)=>{const fr=new FileReader();fr.onload=()=>res(String(fr.result).split(',')[1]);fr.onerror=rej;fr.readAsDataURL(blob)})}
 
-async function shareCurrent(){try{$('loading').classList.add('on');setLoadProgress(5);toast('Омодасозии китоб...');let blob=null;if('caches' in window){const c=await caches.open('kitobkhona-pdf-cache-v1');const hit=await c.match(url)||await c.match(cdnPdfUrl(url));if(hit){blob=await hit.blob();setLoadProgress(80)}}if(!blob){const r=await fetch(cdnPdfUrl(url),{cache:'force-cache'}).catch(()=>fetch(url,{cache:'force-cache'}));if(!r.ok)throw new Error('HTTP '+r.status);blob=await r.blob();setLoadProgress(85);try{const c=await caches.open('kitobkhona-pdf-cache-v1');await c.put(url,new Response(blob.clone(),{headers:{'Content-Type':'application/pdf'}}));saveCachedMeta(url,blob.size)}catch(e){}}const fileName=(name||'kitob')+'.pdf';setLoadProgress(95);if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:'application/pdf'});if(navigator.canShare({files:[file]})){setLoadProgress(100);await navigator.share({title:name,files:[file]});return}}toast('Мубодилаи файл дастгирӣ намешавад.',3500)}catch(e){if(e.name!=='AbortError')toast('Мубодила нашуд: '+(e.message||''),2500)}finally{$('loading').classList.remove('on')}}
+// ===== ИСПРАВЛЕННАЯ ФУНКЦИЯ ПОДЕЛИТЬСЯ (из reader1.html) =====
+async function shareCurrent(){
+  try {
+    $('loading').classList.add('on');
+    setLoadProgress(5);
+    toast('Омодасозии китоб...');
+    let blob = null;
+    // Сначала пытаемся взять из кэша
+    if ('caches' in window) {
+      const c = await caches.open('kitobkhona-pdf-cache-v1');
+      const hit = await c.match(url) || await c.match(cdnPdfUrl(url));
+      if (hit) {
+        blob = await hit.blob();
+        setLoadProgress(80);
+      }
+    }
+    // Если нет в кэше — скачиваем
+    if (!blob) {
+      const r = await fetch(cdnPdfUrl(url), { cache: 'force-cache' }).catch(() => fetch(url, { cache: 'force-cache' }));
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      blob = await r.blob();
+      setLoadProgress(85);
+      // Сохраняем в кэш для будущих шарингов
+      try {
+        const c = await caches.open('kitobkhona-pdf-cache-v1');
+        await c.put(url, new Response(blob.clone(), { headers: { 'Content-Type': 'application/pdf' } }));
+        saveCachedMeta(url, blob.size);
+      } catch(e) {}
+    }
+    const fileName = (name || 'kitob') + '.pdf';
+    setLoadProgress(95);
+    // 1) Пытаемся поделиться через нативный Android-мост (если есть)
+    if (isAndroid() && typeof KitobAndroid.shareFile === 'function') {
+      const b64 = await blobToBase64(blob);
+      setLoadProgress(100);
+      KitobAndroid.shareFile(b64, fileName, 'application/pdf');
+      return;
+    }
+    // 2) Пытаемся через Web Share API (если поддерживает файлы)
+    if (navigator.canShare && navigator.share) {
+      const file = new File([blob], fileName, { type: 'application/pdf' });
+      if (navigator.canShare({ files: [file] })) {
+        setLoadProgress(100);
+        await navigator.share({ title: name, files: [file] });
+        return;
+      }
+    }
+    // 3) Fallback: если файл нельзя поделиться, предлагаем скачать
+    toast('Мубодилаи файл дар ин браузер дастгирӣ намешавад.', 3500);
+  } catch(e) {
+    if (e.name !== 'AbortError') {
+      toast('Мубодила нашуд: ' + (e.message || ''), 2500);
+    }
+  } finally {
+    $('loading').classList.remove('on');
+  }
+}
 
+// ================================================================
+// ============ ПОИСК, ЗАКЛАДКИ, СТАТИСТИКА ============
+// ================================================================
 let findHits=[],findIndex=-1;
 async function findText(){
   const q=$('findInput').value.trim();
@@ -445,11 +493,10 @@ function goFind(i){
 function nextFind(){if(findHits.length)goFind(findIndex+1)}
 function prevFind(){if(findHits.length)goFind(findIndex-1)}
 function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
-
 function showBookmarks(){const arr=bmList()[url]||[];if(!arr.length){toast('Хатбарак нест');return}const n=prompt('Хатбаракҳо: '+arr.join(', ')+'\nСаҳифаро нависед:',arr[0]);if(n)jumpPage(Number(n))}
 function showStats(){const pr=getProgress();alert('Китоб: '+name+'\nСаҳифа: '+page+' / '+pages+'\nПрогресс: '+(pages?Math.round(page/pages*100):0)+'%'+(pr?.ts?'\nОхирин хондан: '+new Date(pr.ts).toLocaleString():''))}
+function rateBook(){const key='kk_rating_'+url;let old=Number(localStorage.getItem(key)||0);const panel=document.createElement('div');panel.className='panel open';panel.style.cssText='left:12px;right:12px;bottom:calc(82px + var(--safe-bottom));border-radius:20px;padding:14px;z-index:250';panel.innerHTML='<div class="settings-header"><div class="panel-title">⭐ Баҳо додан</div><button class="close-panel">✕</button></div><div class="hint">Аз 1 то 10 ситора интихоб кунед</div><div class="stars"></div>';document.body.appendChild(panel);const stars=panel.querySelector('.stars');function draw(v){stars.innerHTML='';for(let i=1;i<=10;i++){const sp=document.createElement('span');sp.className='star '+(i<=v?'on':'');sp.textContent='★';sp.onclick=()=>{localStorage.setItem(key,String(i));$('ratingText').textContent='★ '+i+'/10';toast('Баҳо нигоҳ дошта шуд');panel.remove()};stars.appendChild(sp)}}draw(old);panel.querySelector('.close-panel').onclick=()=>panel.remove()}
 
-// Запуск PDF
 openPdf();
 </script>
 </body>
