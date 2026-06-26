@@ -317,7 +317,31 @@ function cachedMap(){try{return JSON.parse(localStorage.getItem('kk_cached_books
 function saveCachedMeta(pdfUrl,bytes=0){try{const m=cachedMap();const meta={url,name,cover,ts:Date.now(),size:bytes};m[url]=meta;m[pdfUrl]={...meta,url:pdfUrl};localStorage.setItem('kk_cached_books',JSON.stringify(m))}catch(e){}}
 async function cachedPdfData(pdfUrl){try{if(!('caches' in window))return null;const c=await caches.open('kitobkhona-pdf-cache-v1');let hit=await c.match(pdfUrl)||await c.match(url)||await c.match(cdnPdfUrl(url));if(!hit)return null;setLoadProgress(100);const ab=await hit.arrayBuffer();saveCachedMeta(pdfUrl,ab.byteLength);return ab}catch(e){return null}}
 function cachePdfBackground(pdfUrl){try{if(!('caches' in window))return;setTimeout(async()=>{try{const c=await caches.open('kitobkhona-pdf-cache-v1');if(await c.match(pdfUrl))return;const r=await fetch(pdfUrl,{cache:'no-store'});if(r.ok){const clone=r.clone();await c.put(pdfUrl,r.clone());if(pdfUrl!==url)await c.put(url,clone.clone());const b=await clone.blob();saveCachedMeta(pdfUrl,b.size)}}catch(e){}},1200)}catch(e){}}
-async function loadPdfFrom(pdfUrl){setLoadProgress(0);const cached=await cachedPdfData(pdfUrl);if(cached)return await pdfjsLib.getDocument({data:cached}).promise;const task=pdfjsLib.getDocument({url:pdfUrl,rangeChunkSize:65536,disableStream:false,disableRange:false,disableAutoFetch:false});task.onProgress=pr=>{if(pr&&pr.total)setLoadProgress(pr.loaded/pr.total*100);else setLoadProgress(35)};const doc=await task.promise;cachePdfBackground(pdfUrl);return doc}
+
+// ===== ИСПРАВЛЕННАЯ ЗАГРУЗКА PDF (С ПРОГРЕССОМ) =====
+async function loadPdfFrom(pdfUrl) {
+  setLoadProgress(0);
+  // Сначала проверяем кэш
+  const cached = await cachedPdfData(pdfUrl);
+  if (cached) {
+    setLoadProgress(100);
+    return await pdfjsLib.getDocument({ data: cached }).promise;
+  }
+  // Загружаем с прогрессом
+  const loadingTask = pdfjsLib.getDocument(pdfUrl);
+  loadingTask.onProgress = (progressData) => {
+    if (progressData.total) {
+      setLoadProgress(progressData.loaded / progressData.total * 100);
+    } else {
+      setLoadProgress(30);
+    }
+  };
+  const doc = await loadingTask.promise;
+  setLoadProgress(100);
+  // Фоновое кеширование
+  cachePdfBackground(pdfUrl);
+  return doc;
+}
 
 async function openPdf(){
   if(!url){$('pageContainer').innerHTML='<div class="error">URL-и китоб нест</div>';$('loading').classList.remove('on');return}
@@ -331,7 +355,6 @@ async function openPdf(){
       try{ pdf=await loadPdfFrom(u); break; }catch(e){ lastErr=e; }
     }
     if(!pdf) throw lastErr || new Error('PDF дастрас нест');
-    setLoadProgress(100);
     pages=pdf.numPages;
     const pr=getProgress();
     page=pr?Math.min(pr.page,pages):1;
@@ -372,18 +395,49 @@ async function shareCurrent(){
 
 // ================================================================
 // ============ ПОИСК, ЗАКЛАДКИ, СТАТИСТИКА ============
-// ... (остальной код без изменений, он длинный, но я приведу его для полноты)
-// Но чтобы не дублировать, я оставлю его как в вашем файле.
-// В вашем текущем файле он уже есть, так что я просто добавлю эти две функции.
-// На самом деле, чтобы не путать, я даю полный код, но он очень длинный.
-// Учитывая ограничение, я перечислю только изменённые части:
-// - Удалены isAndroid, blobToBase64
-// - Добавлены downloadCurrent и shareCurrent как выше
-// Остальной код остаётся без изменений.
-// Поэтому вместо полного файла я даю патч:
-// 1. Удалите функции isAndroid, blobToBase64
-// 2. Замените shareCurrent и downloadCurrent на вызовы глобальных функций.
-// Ваш текущий reader.html уже почти правильный, просто удалите дубликаты.
+let findHits=[],findIndex=-1;
+async function findText(){
+  const q=$('findInput').value.trim();
+  if(!q||!pdf)return;
+  $('findCount').textContent='Ҷустуҷӯ...';
+  $('findResult').innerHTML='<div class="find-item"><div class="find-page">Ҷустуҷӯ...</div><div class="find-snippet">Лутфан интизор шавед</div></div>';
+  findHits=[]; findIndex=-1;
+  const lo=q.toLowerCase();
+  for(let i=1;i<=pages;i++){
+    try{
+      const pg=await pdf.getPage(i);
+      const tc=await pg.getTextContent();
+      const text=tc.items.map(x=>x.str).join(' ');
+      const pos=text.toLowerCase().indexOf(lo);
+      if(pos>=0){
+        const snip=(pos>35?'…':'')+text.slice(Math.max(0,pos-35),Math.min(text.length,pos+q.length+55))+(pos+q.length+55<text.length?'…':'');
+        findHits.push({page:i,snippet:snip});
+      }
+    }catch(e){}
+    if(i%8===0)await new Promise(r=>setTimeout(r,1));
+  }
+  renderFindResults();
+  if(findHits.length){findIndex=0;goFind(0)}
+}
+function renderFindResults(){
+  $('findCount').textContent=findHits.length?`${Math.max(findIndex+1,1)} / ${findHits.length}`:'0 / 0';
+  $('findResult').innerHTML=findHits.length?findHits.map((h,i)=>`<div class="find-item ${i===findIndex?'on':''}" onclick="goFind(${i})"><div class="find-page">Саҳифаи ${h.page}</div><div class="find-snippet">${escapeHtml(h.snippet)}</div></div>`).join(''):'<div class="find-item"><div class="find-page">Ёфт нашуд</div><div class="find-snippet">Калимаи дигар нависед</div></div>';
+}
+function goFind(i){
+  if(!findHits.length)return;
+  findIndex=(i+findHits.length)%findHits.length;
+  const hit=findHits[findIndex];
+  renderPage(hit.page);
+  renderFindResults();
+}
+function nextFind(){if(findHits.length)goFind(findIndex+1)}
+function prevFind(){if(findHits.length)goFind(findIndex-1)}
+function escapeHtml(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));}
+function showBookmarks(){const arr=bmList()[url]||[];if(!arr.length){toast('Хатбарак нест');return}const n=prompt('Хатбаракҳо: '+arr.join(', ')+'\nСаҳифаро нависед:',arr[0]);if(n)jumpPage(Number(n))}
+function showStats(){const pr=getProgress();alert('Китоб: '+name+'\nСаҳифа: '+page+' / '+pages+'\nПрогресс: '+(pages?Math.round(page/pages*100):0)+'%'+(pr?.ts?'\nОхирин хондан: '+new Date(pr.ts).toLocaleString():''))}
+function rateBook(){const key='kk_rating_'+url;let old=Number(localStorage.getItem(key)||0);const panel=document.createElement('div');panel.className='panel open';panel.style.cssText='left:12px;right:12px;bottom:calc(82px + var(--safe-bottom));border-radius:20px;padding:14px;z-index:250';panel.innerHTML='<div class="settings-header"><div class="panel-title">⭐ Баҳо додан</div><button class="close-panel">✕</button></div><div class="hint">Аз 1 то 10 ситора интихоб кунед</div><div class="stars"></div>';document.body.appendChild(panel);const stars=panel.querySelector('.stars');function draw(v){stars.innerHTML='';for(let i=1;i<=10;i++){const sp=document.createElement('span');sp.className='star '+(i<=v?'on':'');sp.textContent='★';sp.onclick=()=>{localStorage.setItem(key,String(i));$('ratingText').textContent='★ '+i+'/10';toast('Баҳо нигоҳ дошта шуд');panel.remove()};stars.appendChild(sp)}}draw(old);panel.querySelector('.close-panel').onclick=()=>panel.remove()}
+
+openPdf();
 </script>
 </body>
 </html>
