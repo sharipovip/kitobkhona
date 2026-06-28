@@ -1,289 +1,310 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Чат — Китобхона</title>
-<script src="config.js"></script>
-<style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0D1B2A">
+  <title>Чат — Китобхона</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="config.js"></script>
+  <link rel="stylesheet" href="assets/css/index.css">
+  <style>
+    /* ===== СТИЛИ ЧАТА ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
 
-  :root{
-    --wa-header:#075E54;
-    --wa-chat-bg:#ECE5DD;
-    --wa-bubble-in:#FFFFFF;
-    --wa-bubble-out:#DCF8C6;
-    --wa-text:#111B21;
-    --wa-muted:#667781;
-    --wa-check-grey:#8696A0;
-    --wa-check-blue:#34B7F1;
-    --wa-compose-bg:#F0F0F0;
-    --wa-pill-bg:#FFFFFF;
-    --shadow:0 18px 40px -12px rgba(0,0,0,0.55);
-  }
-  [data-theme="dark"]{
-    --wa-header:#1F2C34;
-    --wa-chat-bg:#0B141A;
-    --wa-bubble-in:#1F2C34;
-    --wa-bubble-out:#005C4B;
-    --wa-text:#E9EDEF;
-    --wa-muted:#8696A0;
-    --wa-compose-bg:#1F2C34;
-    --wa-pill-bg:#2A3942;
-  }
+    :root {
+      --wa-header: #075E54;
+      --wa-chat-bg: #ECE5DD;
+      --wa-bubble-in: #FFFFFF;
+      --wa-bubble-out: #DCF8C6;
+      --wa-text: #111B21;
+      --wa-muted: #667781;
+      --wa-check-grey: #8696A0;
+      --wa-check-blue: #34B7F1;
+      --wa-compose-bg: #F0F0F0;
+      --wa-pill-bg: #FFFFFF;
+      --shadow: 0 18px 40px -12px rgba(0,0,0,0.55);
+    }
+    [data-theme="dark"] {
+      --wa-header: #1F2C34;
+      --wa-chat-bg: #0B141A;
+      --wa-bubble-in: #1F2C34;
+      --wa-bubble-out: #005C4B;
+      --wa-text: #E9EDEF;
+      --wa-muted: #8696A0;
+      --wa-compose-bg: #1F2C34;
+      --wa-pill-bg: #2A3942;
+    }
 
-  *{box-sizing:border-box; margin:0; padding:0;}
-  html,body{margin:0;padding:0;height:100%;}
-  body{
-    font-family:'Noto Sans', sans-serif;
-    background:radial-gradient(circle at 20% 0%, #16304a 0%, transparent 45%), radial-gradient(circle at 85% 90%, #0c1c2e 0%, transparent 50%), #0a1320;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    padding:20px;
-    color:#F3ECDD;
-  }
+    /* Переопределяем обёртку – убираем отступ для навигации */
+    .phone-wrapper {
+      padding-bottom: 0 !important; /* убираем отступ, т.к. навигации нет */
+      height: 100vh;
+      background: var(--wa-chat-bg);
+    }
 
-  .chat-container{
-    width:100%; max-width:420px;
-    height:90vh;
-    background:var(--wa-chat-bg);
-    border-radius:32px;
-    overflow:hidden;
-    display:flex;
-    flex-direction:column;
-    box-shadow:0 0 0 1px rgba(232,222,199,0.08), 0 40px 80px rgba(0,0,0,0.55);
-  }
+    .main-content {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
 
-  .chat-header{
-    flex:0 0 auto;
-    background:var(--wa-header);
-    color:#fff;
-    display:flex;
-    align-items:center;
-    gap:10px;
-    padding:12px 14px;
-  }
-  .back-btn{
-    font-size:24px;
-    cursor:pointer;
-    padding:2px 6px 2px 0;
-    background:none;
-    border:none;
-    color:#fff;
-  }
-  .head-avatar{
-    width:38px; height:38px;
-    border-radius:50%;
-    background:#0a4a42;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex:0 0 auto;
-    overflow:hidden;
-    font-size:16px;
-    color:#fff;
-  }
-  .head-info{flex:1; min-width:0;}
-  .head-name{font-size:15.5px; font-weight:700; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;}
-  .head-status{font-size:11.5px; color:rgba(255,255,255,0.78); display:flex; align-items:center; gap:5px; margin-top:1px;}
-  .online-dot{width:7px; height:7px; border-radius:50%; background:#4ADE80; flex:0 0 auto;}
-  .menu-btn{
-    font-size:21px;
-    cursor:pointer;
-    padding:2px 6px;
-    transform:rotate(90deg);
-    background:none;
-    border:none;
-    color:#fff;
-  }
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--wa-chat-bg);
+      height: 100%;
+      overflow: hidden;
+    }
 
-  .messages{
-    flex:1 1 auto;
-    overflow-y:auto;
-    padding:14px 12px 10px;
-    display:flex;
-    flex-direction:column;
-    gap:3px;
-    scrollbar-width:none;
-  }
-  .messages::-webkit-scrollbar{display:none;}
+    .chat-header {
+      flex: 0 0 auto;
+      background: var(--wa-header);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 12px 14px;
+    }
+    .back-btn {
+      font-size: 24px;
+      cursor: pointer;
+      padding: 2px 6px 2px 0;
+      background: none;
+      border: none;
+      color: #fff;
+    }
+    .head-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: #0a4a42;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      overflow: hidden;
+      font-size: 16px;
+      color: #fff;
+    }
+    .head-info { flex: 1; min-width: 0; }
+    .head-name { font-size: 15.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .head-status { font-size: 11.5px; color: rgba(255,255,255,0.78); display: flex; align-items: center; gap: 5px; margin-top: 1px; }
+    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; flex: 0 0 auto; }
+    .menu-btn {
+      font-size: 21px;
+      cursor: pointer;
+      padding: 2px 6px;
+      transform: rotate(90deg);
+      background: none;
+      border: none;
+      color: #fff;
+    }
 
-  .date-sep{align-self:center; background:rgba(0,0,0,0.08); color:var(--wa-muted); font-size:11.5px; font-weight:600; padding:4px 12px; border-radius:8px; margin:6px 0 12px;}
-  [data-theme="dark"] .date-sep{background:rgba(255,255,255,0.07);}
+    .messages {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 14px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      scrollbar-width: none;
+    }
+    .messages::-webkit-scrollbar { display: none; }
 
-  .msg-row{display:flex; margin:3px 0;}
-  .msg-row.in{justify-content:flex-start;}
-  .msg-row.out{justify-content:flex-end;}
+    .date-sep {
+      align-self: center;
+      background: rgba(0,0,0,0.08);
+      color: var(--wa-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 8px;
+      margin: 6px 0 12px;
+    }
+    [data-theme="dark"] .date-sep { background: rgba(255,255,255,0.07); }
 
-  .bubble{
-    max-width:78%;
-    padding:6px 9px 7px 9px;
-    font-size:14.5px;
-    line-height:1.35;
-    color:var(--wa-text);
-    box-shadow:0 1px 1px rgba(0,0,0,0.12);
-    white-space:pre-wrap;
-    word-break:break-word;
-    position:relative;
-  }
-  .bubble.in{background:var(--wa-bubble-in); border-radius:9px 9px 9px 2px;}
-  .bubble.out{background:var(--wa-bubble-out); border-radius:9px 9px 2px 9px;}
+    .msg-row { display: flex; margin: 3px 0; }
+    .msg-row.in { justify-content: flex-start; }
+    .msg-row.out { justify-content: flex-end; }
 
-  .bubble-text{margin-right:46px;}
-  .bubble-meta{
-    position:absolute; right:9px; bottom:5px;
-    display:flex; align-items:center; gap:3px;
-    font-size:10.5px; color:var(--wa-muted); white-space:nowrap;
-  }
-  .check{font-size:13px; line-height:1; color:var(--wa-check-grey);}
-  .check.read{color:var(--wa-check-blue);}
+    .bubble {
+      max-width: 78%;
+      padding: 6px 9px 7px 9px;
+      font-size: 14.5px;
+      line-height: 1.35;
+      color: var(--wa-text);
+      box-shadow: 0 1px 1px rgba(0,0,0,0.12);
+      white-space: pre-wrap;
+      word-break: break-word;
+      position: relative;
+    }
+    .bubble.in { background: var(--wa-bubble-in); border-radius: 9px 9px 9px 2px; }
+    .bubble.out { background: var(--wa-bubble-out); border-radius: 9px 9px 2px 9px; }
 
-  .composer{
-    flex:0 0 auto;
-    background:var(--wa-compose-bg);
-    display:flex;
-    flex-direction:column;
-    gap:4px;
-    padding:8px 10px 12px;
-  }
-  .word-counter{
-    font-size:11px;
-    color:var(--wa-muted);
-    text-align:right;
-    padding-right:4px;
-  }
-  .word-counter.alert{
-    color:#e74c3c;
-    font-weight:600;
-  }
-  .input-row{
-    display:flex;
-    align-items:flex-end;
-    gap:8px;
-  }
-  .input-pill{
-    flex:1;
-    display:flex;
-    align-items:flex-end;
-    gap:6px;
-    background:var(--wa-pill-bg);
-    border-radius:22px;
-    padding:6px 6px 6px 12px;
-    min-height:40px;
-  }
-  .emoji-btn{font-size:20px; cursor:pointer; flex:0 0 auto; padding-bottom:3px; line-height:1;}
-  .msg-input{
-    flex:1;
-    border:none;
-    outline:none;
-    background:transparent;
-    resize:none;
-    font-family:'Noto Sans';
-    font-size:14.5px;
-    color:var(--wa-text);
-    line-height:1.4;
-    max-height:100px;
-    overflow-y:auto;
-    padding:5px 4px;
-    scrollbar-width:none;
-  }
-  .msg-input::-webkit-scrollbar{display:none;}
-  .msg-input::placeholder{color:var(--wa-muted);}
-  .send-btn{
-    width:40px; height:40px;
-    border-radius:50%;
-    background:var(--wa-header);
-    display:flex;
-    align-items:center;
-    justify-content:center;
-    flex:0 0 auto;
-    cursor:pointer;
-    color:#fff;
-    font-size:17px;
-    border:none;
-    transition:transform .1s;
-  }
-  .send-btn:active{transform:scale(.92);}
-  .send-btn:disabled{opacity:0.4; pointer-events:none;}
+    .bubble-text { margin-right: 46px; }
+    .bubble-meta {
+      position: absolute;
+      right: 9px;
+      bottom: 5px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10.5px;
+      color: var(--wa-muted);
+      white-space: nowrap;
+    }
+    .check { font-size: 13px; line-height: 1; color: var(--wa-check-grey); }
+    .check.read { color: var(--wa-check-blue); }
 
-  .loading-msg{display:flex; align-items:center; justify-content:center; padding:40px 20px; color:var(--wa-muted); font-size:14px;}
-  .spinner{width:20px; height:20px; border:2px solid var(--line); border-top-color:var(--gold); border-radius:50%; animation:spin 0.8s linear infinite; margin-right:10px;}
-  @keyframes spin{to{transform:rotate(360deg)}}
+    .composer {
+      flex: 0 0 auto;
+      background: var(--wa-compose-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      padding: 8px 10px 12px;
+      border-top: 1px solid rgba(0,0,0,0.05);
+    }
+    .word-counter {
+      font-size: 11px;
+      color: var(--wa-muted);
+      text-align: right;
+      padding-right: 4px;
+    }
+    .word-counter.alert { color: #e74c3c; font-weight: 600; }
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .input-pill {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      background: var(--wa-pill-bg);
+      border-radius: 22px;
+      padding: 6px 6px 6px 12px;
+      min-height: 40px;
+    }
+    .emoji-btn { font-size: 20px; cursor: pointer; flex: 0 0 auto; padding-bottom: 3px; line-height: 1; }
+    .msg-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      resize: none;
+      font-family: 'Noto Sans';
+      font-size: 14.5px;
+      color: var(--wa-text);
+      line-height: 1.4;
+      max-height: 100px;
+      overflow-y: auto;
+      padding: 5px 4px;
+      scrollbar-width: none;
+    }
+    .msg-input::-webkit-scrollbar { display: none; }
+    .msg-input::placeholder { color: var(--wa-muted); }
+    .send-btn {
+      width: 40px; height: 40px;
+      border-radius: 50%;
+      background: var(--wa-header);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      cursor: pointer;
+      color: #fff;
+      font-size: 17px;
+      border: none;
+      transition: transform .1s;
+    }
+    .send-btn:active { transform: scale(.92); }
+    .send-btn:disabled { opacity: 0.4; pointer-events: none; }
 
-  .bottom-nav{
-    flex:0 0 auto;
-    background:#0B1A2E;
-    border-top:1px solid rgba(232,222,199,0.08);
-    display:flex;
-    justify-content:space-around;
-    padding:6px 0 12px;
-  }
-  .nav-item{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:2px;
-    color:#6E7F97;
-    font-size:10px;
-    font-weight:600;
-    cursor:pointer;
-    padding:4px 8px;
-  }
-  .nav-item.active{color:#E8C879;}
-  .nav-icon{font-size:18px;}
-</style>
+    .loading-msg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--wa-muted);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--line);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Светлая тема */
+    .light-theme .chat-container {
+      background: #ECE5DD;
+    }
+    .light-theme .composer {
+      background: #F0F0F0;
+    }
+    .light-theme .input-pill {
+      background: #FFFFFF;
+    }
+  </style>
 </head>
 <body data-theme="dark">
 
-<div class="chat-container">
-  <div class="chat-header">
-    <button class="back-btn" onclick="goBack()">‹</button>
-    <div class="head-avatar" id="chatAvatar">👤</div>
-    <div class="head-info">
-      <div class="head-name" id="headName">Чат</div>
-      <div class="head-status" id="headStatus"><span class="online-dot"></span>Дӯст</div>
-    </div>
-    <button class="menu-btn" id="reportBtn">⋮</button>
-  </div>
+<div class="phone-wrapper">
 
-  <div class="messages" id="messages">
-    <div class="loading-msg"><div class="spinner"></div> Боргирӣ...</div>
-  </div>
-
-  <div class="composer">
-    <div class="word-counter" id="wordCounter">Боқӣ: 100 калима</div>
-    <div class="input-row">
-      <div class="input-pill">
-        <div class="emoji-btn">😊</div>
-        <textarea class="msg-input" id="msgInput" placeholder="Паём нависед..." rows="1"></textarea>
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ (без навигации) ===== -->
+  <main class="main-content">
+    <div class="chat-container">
+      <!-- Шапка чата -->
+      <div class="chat-header">
+        <button class="back-btn" onclick="goBack()">‹</button>
+        <div class="head-avatar" id="chatAvatar">👤</div>
+        <div class="head-info">
+          <div class="head-name" id="headName">Чат</div>
+          <div class="head-status" id="headStatus"><span class="online-dot"></span>Дӯст</div>
+        </div>
+        <button class="menu-btn" id="reportBtn">⋮</button>
       </div>
-      <button class="send-btn" id="sendBtn">➤</button>
-    </div>
-  </div>
 
-  <div class="bottom-nav">
-    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">🏠</span><span>Асосӣ</span></div>
-    <div class="nav-item" onclick="location.href='kitobho.html'"><span class="nav-icon">📚</span><span>Китобҳо</span></div>
-    <div class="nav-item active" onclick="location.href='chats.html'"><span class="nav-icon">💬</span><span>Чатҳо</span></div>
-    <div class="nav-item" onclick="location.href='profile.html'"><span class="nav-icon">👤</span><span>Профил</span></div>
-  </div>
+      <!-- Область сообщений -->
+      <div class="messages" id="messages">
+        <div class="loading-msg"><div class="spinner"></div> Боргирӣ...</div>
+      </div>
+
+      <!-- Композер (поле ввода) — теперь внизу экрана -->
+      <div class="composer">
+        <div class="word-counter" id="wordCounter">Боқӣ: 100 калима</div>
+        <div class="input-row">
+          <div class="input-pill">
+            <div class="emoji-btn">😊</div>
+            <textarea class="msg-input" id="msgInput" placeholder="Паём нависед..." rows="1"></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn">➤</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
 </div>
 
 <script>
-  // ===== Параметры URL =====
+  // ===== КОД ЧАТА (без изменений) =====
   const qs = new URL(location.href).searchParams;
   const peerId = qs.get('to') || '';
   const peerName = decodeURIComponent(qs.get('name') || 'Чат');
 
   document.getElementById('headName').textContent = peerName;
 
-  // ===== Состояние =====
   let currentUserId = null;
   let pollInterval = null;
 
-  // ===== Загрузка сообщений через REST =====
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
     try {
@@ -329,7 +350,6 @@
         const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
         if(isAtBottom) scrollToBottom();
       }
-      // Обновляем счётчик слов
       updateWordCounter();
     } catch(e) {
       console.error(e);
@@ -358,7 +378,6 @@
     }, 50);
   }
 
-  // ===== Счётчик слов =====
   async function updateWordCounter() {
     try {
       const token = localStorage.getItem('kk_token');
@@ -373,13 +392,11 @@
         el.textContent = 'Боқӣ: ' + remaining + ' калима';
         if (remaining < 10) el.classList.add('alert');
         else el.classList.remove('alert');
-        // Блокируем отправку, если лимит исчерпан
         document.getElementById('sendBtn').disabled = (remaining <= 0);
       }
     } catch(e) {}
   }
 
-  // ===== Отправка сообщения =====
   async function sendMessage() {
     const input = document.getElementById('msgInput');
     const text = input.value.trim();
@@ -387,7 +404,6 @@
     input.value = '';
     input.style.height = 'auto';
 
-    // Оптимистично добавляем сообщение
     const time = timeLabel(new Date().toISOString());
     const msgContainer = document.getElementById('messages');
     const dateLabel = formatDate(new Date().toISOString());
@@ -428,7 +444,6 @@
     }
   }
 
-  // ===== Обработчики UI =====
   document.getElementById('sendBtn').addEventListener('click', sendMessage);
   document.getElementById('msgInput').addEventListener('keydown', (e) => {
     if(e.key === 'Enter' && !e.shiftKey) {
@@ -441,7 +456,6 @@
     this.style.height = Math.min(this.scrollHeight, 100) + 'px';
   });
 
-  // ===== Жалоба =====
   document.getElementById('reportBtn').addEventListener('click', async () => {
     if(!currentUserId || !peerId) return;
     if(!confirm('Барои ин корбар жалоба фиристан?')) return;
@@ -453,13 +467,11 @@
     }
   });
 
-  // ===== Назад =====
   function goBack() {
     if(history.length > 1) history.back();
     else location.href = 'chats.html';
   }
 
-  // ===== Периодическое обновление (polling) =====
   function startPolling() {
     if(pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(() => {
@@ -468,7 +480,6 @@
     }, 5000);
   }
 
-  // ===== Инициализация =====
   async function init() {
     const { data } = await AUTH.getUser();
     if(!data.user) {
@@ -485,6 +496,12 @@
   window.addEventListener('beforeunload', () => {
     if(pollInterval) clearInterval(pollInterval);
   });
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
 </script>
+
 </body>
 </html>

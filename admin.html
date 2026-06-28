@@ -1,587 +1,1138 @@
 <!DOCTYPE html>
-<html lang="tg">
+<html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Идоракунӣ — Китобхона</title>
-<script src="config.js"></script>
+<title>Китобхона — Админ-панель</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap');
-  :root{--bg:#0B1A2E;--bg-deep:#081323;--bg-rail:#091a30;--card:#142841;--card-hi:#1A314E;--field:#102542;--line:rgba(232,222,199,0.09);--line-soft:rgba(232,222,199,0.05);--gold:#D4A94A;--gold-soft:#E8C879;--gold-dim:rgba(212,169,74,0.14);--cream:#F3EBDA;--cream-dim:#9FB0C5;--cream-faint:#6E7F97;--green:#3F9E63;--green-dim:rgba(63,158,99,0.14);--red:#C85850;--red-dim:rgba(200,88,80,0.14);--sidebar-w:256px;}
-  *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
-  html,body{height:100%;}
-  body{font-family:'Noto Sans',sans-serif;background:var(--bg-deep);color:var(--cream);display:flex;min-height:100vh;}
-  ::-webkit-scrollbar{width:10px;height:10px;}
-  ::-webkit-scrollbar-thumb{background:rgba(232,222,199,0.12);border-radius:10px;}
-  ::-webkit-scrollbar-track{background:transparent;}
-  .sidebar{width:var(--sidebar-w);flex:none;background:var(--bg-rail);border-right:1px solid var(--line);display:flex;flex-direction:column;padding:22px 14px;position:sticky;top:0;height:100vh;}
-  .logo{display:flex;align-items:center;gap:11px;padding:4px 8px 22px 8px;}
-  .logo-mark{width:38px;height:38px;border-radius:11px;background:linear-gradient(145deg,var(--gold-soft),#9C7327);display:flex;align-items:center;justify-content:center;flex:none;}
-  .logo-text{font-size:16px;font-weight:800;line-height:1.2;}
-  .logo-text small{display:block;font-size:10.5px;font-weight:600;color:var(--cream-faint);letter-spacing:0.4px;text-transform:uppercase;}
-  .nav{display:flex;flex-direction:column;gap:3px;margin-top:6px;}
-  .nav-item{display:flex;align-items:center;gap:12px;padding:11px 12px;border-radius:12px;color:var(--cream-dim);font-size:13.5px;font-weight:600;cursor:pointer;border:1px solid transparent;position:relative;}
-  .nav-item svg{flex:none;}
-  .nav-item span.label{white-space:nowrap;}
-  .nav-item:hover{background:rgba(232,222,199,0.04);color:var(--cream);}
-  .nav-item.active{background:var(--gold-dim);border-color:rgba(212,169,74,0.3);color:var(--gold-soft);}
-  .sidebar-foot{margin-top:auto;padding-top:16px;border-top:1px solid var(--line);}
-  .admin-chip{display:flex;align-items:center;gap:10px;padding:8px;border-radius:12px;}
-  .admin-avatar{width:34px;height:34px;border-radius:50%;flex:none;background:linear-gradient(135deg,#9AB6D9,#4E7AA8);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:13px;color:#0B1A2E;}
-  .admin-meta{line-height:1.3;min-width:0;}
-  .admin-meta .name{font-size:13px;font-weight:700;}
-  .admin-meta .role{font-size:11px;color:var(--cream-faint);}
-  .main{flex:1;min-width:0;display:flex;flex-direction:column;}
-  .topbar{flex:none;height:74px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;border-bottom:1px solid var(--line);background:var(--bg-deep);position:sticky;top:0;z-index:10;}
-  .topbar-title{font-size:19px;font-weight:800;}
-  .topbar-sub{font-size:12.5px;color:var(--cream-faint);margin-top:2px;}
-  .content{flex:1;padding:28px 32px 60px 32px;max-width:1280px;}
-  .view{display:none;}
-  .view.show{display:block;animation:fadein .25s ease;}
-  @keyframes fadein{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:none;}}
-  .section-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;gap:16px;flex-wrap:wrap;}
-  .section-head h2{font-size:15px;font-weight:700;}
-  .section-head p{font-size:12.5px;color:var(--cream-faint);margin-top:3px;}
-  .btn{border:none;border-radius:12px;font-family:'Noto Sans';font-weight:700;font-size:13px;padding:10px 18px;cursor:pointer;display:inline-flex;align-items:center;gap:7px;}
-  .btn-gold{background:linear-gradient(135deg,var(--gold-soft),var(--gold));color:#1c1404;box-shadow:0 8px 18px rgba(212,169,74,0.2);}
-  .btn-ghost{background:var(--card);border:1px solid var(--line);color:var(--cream-dim);}
-  .btn-danger{background:var(--red-dim);border:1px solid var(--red);color:var(--red);}
-  .btn-sm{padding:6px 12px;font-size:12px;}
-  .icon-btn{width:34px;height:34px;border-radius:10px;border:1px solid var(--line);background:var(--card);display:flex;align-items:center;justify-content:center;cursor:pointer;}
-  .icon-btn:hover{border-color:var(--gold);}
-  .card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:20px;}
-  .kpi-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:24px;}
-  .kpi-card{display:flex;flex-direction:column;gap:10px;}
-  .kpi-top{display:flex;align-items:center;justify-content:space-between;}
-  .kpi-icon{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;}
-  .kpi-num{font-family:'JetBrains Mono';font-size:28px;font-weight:700;}
-  .kpi-label{font-size:12.5px;color:var(--cream-faint);font-weight:600;}
-  .filters{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap;}
-  .chip{padding:7px 14px;border-radius:10px;font-size:12.5px;font-weight:700;border:1px solid var(--line);color:var(--cream-faint);cursor:pointer;}
-  .chip.active{background:var(--gold-dim);border-color:rgba(212,169,74,0.35);color:var(--gold-soft);}
-  table{width:100%;border-collapse:collapse;font-size:12.5px;}
-  thead th{text-align:left;font-size:10.5px;font-weight:700;letter-spacing:0.6px;text-transform:uppercase;color:var(--cream-faint);padding:0 12px 8px 12px;border-bottom:1px solid var(--line);}
-  tbody td{padding:10px 12px;border-bottom:1px solid var(--line-soft);vertical-align:middle;}
-  tbody tr:hover{background:rgba(232,222,199,0.02);}
-  .user-cell{display:flex;align-items:center;gap:11px;}
-  .u-avatar{width:34px;height:34px;border-radius:50%;flex:none;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#0B1A2E;}
-  .u-name{font-weight:700;font-size:13px;}
-  .u-login{font-size:10.5px;color:var(--cream-faint);font-family:'JetBrains Mono';}
-  .badge-status{font-size:10px;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px;}
-  .badge-status.ok{background:var(--green-dim);color:var(--green);}
-  .badge-status.warn{background:var(--red-dim);color:var(--red);}
-  .badge-status.pending{background:var(--gold-dim);color:var(--gold-soft);}
-  .action-group{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end;}
-  .modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:1000;display:none;align-items:center;justify-content:center;backdrop-filter:blur(4px);}
-  .modal-overlay.open{display:flex;}
-  .modal-card{background:var(--card);border:1px solid var(--line);border-radius:18px;width:100%;max-width:480px;padding:24px;position:relative;box-shadow:0 20px 40px rgba(0,0,0,0.5);animation:modalFadeIn 0.2s ease;max-height:90vh;overflow-y:auto;}
-  @keyframes modalFadeIn{from{opacity:0;transform:scale(0.95);}to{opacity:1;transform:scale(1);}}
-  .modal-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;}
-  .modal-header h3{font-size:16px;font-weight:700;color:var(--gold-soft);}
-  .close-modal{background:none;border:none;color:var(--cream-faint);font-size:20px;cursor:pointer;}
-  .modal-body{display:flex;flex-direction:column;gap:12px;}
-  .modal-info{font-size:13px;color:var(--cream-dim);line-height:1.5;background:var(--field);padding:12px;border-radius:10px;border:1px solid var(--line-soft);}
-  .status-msg{font-size:13px;font-weight:600;text-align:center;padding:10px;border-radius:8px;display:none;}
-  .status-msg.success{background:var(--green-dim);color:var(--green);display:block;}
-  .status-msg.error{background:var(--red-dim);color:var(--red);display:block;}
-  .empty-row{text-align:center;padding:30px;color:var(--cream-faint);font-size:13px;}
-  .tab-actions{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap;}
-  .quote-item{background:var(--field);border:1px solid var(--line-soft);border-radius:12px;padding:12px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;gap:12px;}
-  .quote-text{flex:1;font-size:13px;}
-  .quote-actions{display:flex;gap:6px;}
-  @media(max-width:1100px){:root{--sidebar-w:78px;}.logo-text,.nav-item .label,.admin-meta{display:none;}.logo{justify-content:center;padding-right:0;}.nav-item{justify-content:center;}.admin-chip{justify-content:center;}}
-  @media(max-width:720px){.content{padding:16px;}.topbar{padding:0 16px;}.sidebar{width:60px;padding:14px 8px;}}
+:root{
+  --ink:#1F3A34; --ink-dark:#142824; --ink-soft:#2C4D45;
+  --gold:#C9A227; --gold-soft:#E7C766; --gold-pale:#F4E9C8;
+  --paper:#F6F4EE; --surface:#FFFFFF; --border:#E5E0D2;
+  --text:#1A1A1A; --muted:#6E726C;
+  --danger:#B3261E; --danger-soft:#F6E3E1;
+  --success:#2E7D32; --success-soft:#E3EFE3;
+  --shadow-sm:0 1px 2px rgba(20,40,36,.05), 0 1px 1px rgba(20,40,36,.04);
+  --shadow-md:0 10px 28px rgba(20,40,36,.07), 0 2px 6px rgba(20,40,36,.05);
+  --bg-body: var(--paper);
+  --bg-surface: var(--surface);
+  --border-color: var(--border);
+  --text-color: var(--text);
+  --muted-color: var(--muted);
+  --sidebar-bg: var(--ink-dark);
+  --sidebar-text: #EFEAE0;
+  --sidebar-hover: rgba(255,255,255,0.05);
+  --sidebar-active-bg: rgba(201,162,39,0.12);
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --input-bg: #FCFBF8;
+  --table-hover: #FBF9F4;
+  --tag-ok-bg: var(--success-soft);
+  --tag-ok-color: var(--success);
+  --tag-block-bg: var(--danger-soft);
+  --tag-block-color: var(--danger);
+  --tag-guest-bg: var(--gold-pale);
+  --tag-guest-color: #8a6d10;
+  --kpi-stamp-border: var(--gold);
+  --kpi-num-color: var(--ink);
+}
+[data-theme="dark"] {
+  --ink:#D4D7D2; --ink-dark:#0F1A18; --ink-soft:#2C4D45;
+  --gold:#D4AA3A; --gold-soft:#E7C766; --gold-pale:#2A2A1A;
+  --paper:#121A18; --surface:#1E2A26; --border:#2E3F3A;
+  --text:#EAE8E0; --muted:#A0A89E;
+  --danger:#E85C54; --danger-soft:#3A1F1C;
+  --success:#5BAF6B; --success-soft:#1A2E1A;
+  --bg-body: var(--paper);
+  --bg-surface: var(--surface);
+  --border-color: var(--border);
+  --text-color: var(--text);
+  --muted-color: var(--muted);
+  --sidebar-bg: #0A1210;
+  --sidebar-text: #C2C9C0;
+  --sidebar-hover: rgba(255,255,255,0.04);
+  --sidebar-active-bg: rgba(201,162,39,0.18);
+  --card-bg: var(--surface);
+  --card-border: var(--border);
+  --input-bg: #1E2A26;
+  --table-hover: rgba(255,255,255,0.03);
+  --tag-ok-bg: #1A2E1A;
+  --tag-ok-color: #5BAF6B;
+  --tag-block-bg: #3A1F1C;
+  --tag-block-color: #E85C54;
+  --tag-guest-bg: #2A2A1A;
+  --tag-guest-color: #D4AA3A;
+  --kpi-stamp-border: var(--gold);
+  --kpi-num-color: var(--gold-soft);
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;font-family:var(--font-body);
+  background-color:var(--bg-body);
+  color:var(--text-color);
+  background-image:
+    radial-gradient(circle at 100% 0%, rgba(201,162,39,.05), transparent 40%),
+    repeating-linear-gradient(0deg, rgba(31,58,52,.012) 0px, rgba(31,58,52,.012) 1px, transparent 1px, transparent 3px);
+  -webkit-font-smoothing:antialiased;
+  transition:background-color .25s, color .25s;
+}
+.hidden{display:none !important;}
+a{color:inherit;}
+.field{margin-bottom:16px;}
+.field label{display:block;font-size:11.5px;color:var(--muted-color);margin-bottom:6px;text-transform:uppercase;letter-spacing:.6px;font-weight:500;}
+.field input,.field select,.field textarea{width:100%;padding:10px 13px;border:1px solid var(--border-color);border-radius:8px;font-family:var(--font-body);font-size:14px;background:var(--input-bg);color:var(--text-color);transition:border-color .15s, box-shadow .15s;}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--gold);box-shadow:0 0 0 3px var(--gold-pale);}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:10px 18px;border-radius:8px;border:1px solid transparent;font-family:var(--font-body);font-weight:600;font-size:13px;letter-spacing:.1px;cursor:pointer;transition:transform .08s, box-shadow .18s, background .18s;}
+.btn:active{transform:translateY(1px);}
+.btn-primary{background:var(--ink);color:#fff;box-shadow:var(--shadow-sm);}
+.btn-primary:hover{background:var(--ink-soft);box-shadow:var(--shadow-md);}
+.btn-gold{background:var(--gold);color:var(--ink-dark);box-shadow:var(--shadow-sm);}
+.btn-gold:hover{box-shadow:0 0 0 4px var(--gold-pale);}
+.btn-outline{background:transparent;border-color:var(--border-color);color:var(--text-color);}
+.btn-outline:hover{border-color:var(--ink);background:rgba(31,58,52,.03);}
+.btn-danger{background:var(--danger-soft);color:var(--danger);}
+.btn-danger:hover{background:var(--danger);color:#fff;}
+.btn-sm{padding:6px 12px;font-size:12px;}
+.btn-block{width:100%;}
+
+#app{display:grid;grid-template-columns:236px 1fr;min-height:100vh;}
+.sidebar{background:var(--sidebar-bg);color:var(--sidebar-text);display:flex;flex-direction:column;padding:22px 0;transition:background .25s, color .25s;}
+.brand{padding:0 22px 22px;border-bottom:1px solid rgba(255,255,255,0.08);margin-bottom:14px;}
+.brand-mark{font-family:var(--font-display);font-size:22px;color:var(--gold-soft);}
+.brand-sub{font-family:var(--font-mono);font-size:10px;letter-spacing:1.5px;color:#9CA8A2;text-transform:uppercase;margin-top:2px;}
+nav.navlist{flex:1;display:flex;flex-direction:column;gap:2px;padding:0 12px;}
+.navitem{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:7px;cursor:pointer;font-size:13.5px;color:#D8D2C4;border-left:3px solid transparent;}
+.navitem .ic{width:18px;text-align:center;font-family:var(--font-mono);color:var(--gold-soft);}
+.navitem:hover{background:var(--sidebar-hover);}
+.navitem.active{background:var(--sidebar-active-bg);border-left-color:var(--gold);color:#fff;}
+.sidebar-foot{padding:14px 22px 0;border-top:1px solid rgba(255,255,255,0.08);margin-top:10px;}
+.sidebar-foot .foot-stamp{font-size:12px;color:#A9B2AC;}
+.sidebar-foot .foot-stamp b{color:#fff;}
+
+main{padding:26px 32px 60px;overflow-x:hidden;}
+.topbar{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:22px;flex-wrap:wrap;gap:10px;}
+.topbar .topbar-left{display:flex;align-items:baseline;gap:16px;flex-wrap:wrap;}
+.topbar .topbar-actions{display:flex;gap:10px;align-items:center;}
+.page-title{font-family:var(--font-display);font-size:26px;margin:0;color:var(--ink);}
+.page-date{font-family:var(--font-mono);font-size:12px;color:var(--muted-color);}
+
+.theme-toggle{
+  width:40px;height:40px;
+  border-radius:50%;
+  border:1px solid var(--border-color);
+  background:var(--card-bg);
+  color:var(--text-color);
+  font-size:20px;
+  cursor:pointer;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  transition:background .2s, border-color .2s, box-shadow .2s;
+  box-shadow:var(--shadow-sm);
+}
+.theme-toggle:hover{
+  border-color:var(--gold);
+  background:var(--gold-pale);
+}
+[data-theme="dark"] .theme-toggle{
+  background:#1E2A26;
+}
+
+.section{display:none;}
+.section.active{display:block;animation:fadeIn .25s ease;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px);} to{opacity:1;transform:translateY(0);}}
+
+.grid{display:grid;gap:16px;}
+.grid-kpi{grid-template-columns:repeat(auto-fit,minmax(150px,1fr));}
+.grid-2{grid-template-columns:1.3fr 1fr;}
+.grid-3{grid-template-columns:repeat(3,1fr);}
+@media (max-width:980px){.grid-2,.grid-3{grid-template-columns:1fr;}}
+
+.card{background:var(--card-bg);border:1px solid var(--card-border);border-radius:var(--radius);padding:18px 20px;position:relative;transition:background .25s, border-color .25s;}
+.card h3{margin:0 0 14px;font-family:var(--font-display);font-size:16px;color:var(--ink);font-weight:600;}
+
+.kpi{padding:16px 16px 14px;}
+.kpi .stamp{position:absolute;top:10px;right:12px;width:30px;height:30px;border:1.5px dashed var(--kpi-stamp-border);border-radius:50%;transform:rotate(8deg);}
+.kpi .num{font-family:var(--font-mono);font-size:28px;font-weight:600;color:var(--kpi-num-color);display:block;}
+.kpi .lbl{font-size:11px;letter-spacing:.5px;text-transform:uppercase;color:var(--muted-color);margin-top:4px;display:block;}
+
+.table-wrap{overflow-x:auto;}
+table{width:100%;border-collapse:collapse;font-size:13px;}
+thead th{text-align:left;font-size:11px;text-transform:uppercase;letter-spacing:.4px;color:var(--muted-color);padding:8px 10px;border-bottom:2px solid var(--card-border);white-space:nowrap;}
+tbody td{padding:9px 10px;border-bottom:1px solid var(--card-border);vertical-align:middle;white-space:nowrap;}
+tbody tr:hover{background:var(--table-hover);}
+.mono{font-family:var(--font-mono);font-size:12px;color:var(--muted-color);}
+.tag{display:inline-block;padding:2px 9px;border-radius:20px;font-size:11px;font-weight:600;}
+.tag-ok{background:var(--tag-ok-bg);color:var(--tag-ok-color);}
+.tag-block{background:var(--tag-block-bg);color:var(--tag-block-color);}
+.tag-guest{background:var(--tag-guest-bg);color:var(--tag-guest-color);}
+.actions-cell{display:flex;gap:6px;flex-wrap:wrap;}
+
+.toolbar{display:flex;gap:10px;margin-bottom:16px;flex-wrap:wrap;align-items:center;}
+.search-input{flex:1;min-width:180px;}
+
+.switch{position:relative;display:inline-block;width:40px;height:22px;flex-shrink:0;}
+.switch input{opacity:0;width:0;height:0;}
+.slider{position:absolute;cursor:pointer;inset:0;background:#D8D2C4;border-radius:22px;transition:.2s;}
+.slider:before{content:"";position:absolute;height:16px;width:16px;left:3px;top:3px;background:#fff;border-radius:50%;transition:.2s;}
+input:checked + .slider{background:var(--success);}
+input:checked + .slider:before{transform:translateX(18px);}
+
+.list-row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--card-border);font-size:13px;}
+.list-row:last-child{border-bottom:none;}
+.muted{color:var(--muted-color);}
+
+.modal-bg{position:fixed;inset:0;background:rgba(20,40,36,0.45);display:flex;align-items:center;justify-content:center;z-index:50;padding:20px;}
+.modal{background:var(--card-bg);border-radius:var(--radius);padding:24px;width:480px;max-width:100%;max-height:85vh;overflow-y:auto;}
+.modal h3{font-family:var(--font-display);margin-top:0;}
+.modal-close-row{display:flex;justify-content:flex-end;gap:8px;margin-top:18px;}
+
+.feedback-item{border:1px solid var(--card-border);border-radius:8px;padding:14px 16px;margin-bottom:12px;}
+.feedback-head{display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;margin-bottom:8px;}
+.feedback-cat{font-family:var(--font-mono);font-size:11px;background:var(--gold-pale);color:#8a6d10;padding:3px 9px;border-radius:5px;}
+.feedback-msg{font-size:13.5px;margin:8px 0;line-height:1.5;}
+.feedback-reply-box{display:flex;gap:8px;margin-top:10px;}
+.feedback-reply-box textarea{flex:1;resize:vertical;min-height:42px;}
+.chat-status-row{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--muted-color);}
+
+.weekday-pick{display:flex;gap:6px;flex-wrap:wrap;margin-top:6px;}
+.wd-btn{padding:7px 10px;border:1px solid var(--card-border);border-radius:6px;font-size:12px;cursor:pointer;background:var(--input-bg);font-family:var(--font-mono);}
+.wd-btn.sel{background:var(--ink);color:#fff;border-color:var(--ink);}
+
+.empty{color:var(--muted-color);font-size:13px;text-align:center;padding:28px 0;}
+.helper{font-size:12px;color:var(--muted-color);margin-top:4px;}
+.inline-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;align-items:end;margin-bottom:16px;}
+.toast{position:fixed;bottom:24px;right:24px;background:var(--ink);color:#fff;padding:12px 18px;border-radius:8px;font-size:13px;box-shadow:0 8px 24px rgba(0,0,0,0.2);z-index:100;animation:fadeIn .2s;}
+.toast.err{background:var(--danger);}
+
+@media (max-width:860px){
+  #app{grid-template-columns:1fr;}
+  .sidebar{position:sticky;top:0;flex-direction:row;overflow-x:auto;padding:10px 8px;align-items:center;z-index:10;}
+  .brand{border-bottom:none;border-right:1px solid rgba(255,255,255,0.1);margin-bottom:0;padding:0 14px;flex-shrink:0;}
+  nav.navlist{flex-direction:row;padding:0 8px;}
+  .navitem{border-left:none;border-bottom:3px solid transparent;flex-shrink:0;}
+  .navitem.active{border-bottom-color:var(--gold);}
+  .sidebar-foot{display:none;}
+  main{padding:18px 16px 50px;}
+}
+
+/* === Стили для редактора цитат === */
+.quote-item {
+  border:1px solid var(--border-color);
+  border-radius:8px;
+  padding:12px 14px;
+  margin-bottom:10px;
+  background:var(--bg-surface);
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  align-items:center;
+  cursor:grab;
+  transition:background .15s, border-color .15s;
+}
+.quote-item.dragging {
+  opacity:0.5;
+  border-color:var(--gold);
+}
+.quote-item.dragover {
+  border-color:var(--gold);
+  background:var(--gold-pale);
+}
+.quote-item .qfld { flex:1 1 140px; min-width:120px; }
+.quote-item .qfld textarea { min-height:80px; resize:vertical; }
+.quote-item .qactions { display:flex; gap:4px; flex-shrink:0; }
+.font-size-controls { display:flex; gap:6px; align-items:center; margin-left:16px; }
+.font-size-controls button { width:32px; height:32px; border-radius:50%; border:1px solid var(--border-color); background:var(--card-bg); cursor:pointer; font-weight:bold; }
+.font-size-controls button:hover { border-color:var(--gold); background:var(--gold-pale); }
+.quote-textarea { font-family:inherit; }
 </style>
 </head>
 <body>
-<div class="sidebar">
-  <div class="logo"><div class="logo-mark"><svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="#1c1404" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg></div><div class="logo-text">Китобхона<small>Идоракунӣ</small></div></div>
-  <div class="nav">
-    <div class="nav-item active" data-view="users"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9FB0C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c0-3.6 2.9-6 6.5-6s6.5 2.4 6.5 6"/><circle cx="18" cy="9" r="2.6"/><path d="M21.5 20c0-2.8-1.7-4.8-4-5.5"/></svg><span class="label">Корбарон</span></div>
-    <div class="nav-item" data-view="reports"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9FB0C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg><span class="label">Шикоятҳо</span></div>
-    <div class="nav-item" data-view="quotes"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9FB0C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg><span class="label">Иқтибосҳо</span></div>
-    <div class="nav-item" data-view="stats"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9FB0C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="20" x2="4" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="20" y1="20" x2="20" y2="14"/></svg><span class="label">Омор</span></div>
-    <div class="nav-item" data-view="reading"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9FB0C5" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 3h6a4 4 0 0 1 4 4v14"/><path d="M22 3h-6a4 4 0 0 0-4 4v14"/></svg><span class="label">Хониш</span></div>
-  </div>
-  <div class="sidebar-foot"><div class="admin-chip"><div class="admin-avatar">А</div><div class="admin-meta"><div class="name">Админ</div><div class="role">Дастраси кушода</div></div></div></div>
-</div>
-<div class="main">
-  <div class="topbar">
-    <div><div class="topbar-title" id="pageTitle">Корбарон</div><div class="topbar-sub" id="pageSub">Идоракунии корбарон</div></div>
-    <div style="font-size:12px;color:var(--cream-faint);">🔓 Открытый доступ — админка без логина</div>
-  </div>
-  <div class="content">
-    <!-- ==================== USERS ==================== -->
-    <div class="view show" id="view-users">
-      <div class="section-head"><div><h2>Корбарон</h2><p>Идоракунии профилҳо — кулдаун, парол, блокировка</p></div></div>
-      <div class="card" style="padding:18px;">
-        <div style="display:flex;gap:14px;align-items:center;margin-bottom:16px;flex-wrap:wrap;">
-          <div style="display:flex;align-items:center;gap:9px;background:var(--card);border:1px solid var(--line);border-radius:12px;padding:9px 14px;width:260px;">
-            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="2"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
-            <input type="text" id="userSearch" placeholder="Ҷустуҷӯи корбар, логин ё шаҳр" style="background:none;border:none;outline:none;color:var(--cream);font-family:'Noto Sans';font-size:13px;width:100%;">
-          </div>
-          <div class="filters" style="margin:0;">
-            <div class="chip active" data-filter="all">Ҳама</div>
-            <div class="chip" data-filter="admin">Админ</div>
-            <div class="chip" data-filter="blocked">Блок</div>
-          </div>
-          <button class="btn btn-ghost btn-sm" onclick="loadAllAdmin()">🔄 Навсозӣ</button>
+<div id="app">
+  <aside class="sidebar">
+    <div class="brand">
+      <div class="brand-mark">Китобхона</div>
+      <div class="brand-sub">Admin Panel</div>
+    </div>
+    <nav class="navlist" id="navlist">
+      <div class="navitem active" data-page="dashboard"><span class="ic">01</span>Дэшборд</div>
+      <div class="navitem" data-page="users"><span class="ic">02</span>Пользователи</div>
+      <div class="navitem" data-page="reports"><span class="ic">03</span>Жалобы</div>
+      <div class="navitem" data-page="blocked"><span class="ic">04</span>Заблокированные</div>
+      <div class="navitem" data-page="feedbacks"><span class="ic">05</span>Обращения</div>
+      <div class="navitem" data-page="quotes"><span class="ic">06</span>Цитаты</div>
+      <div class="navitem" data-page="announce"><span class="ic">07</span>Объявление</div>
+      <div class="navitem" data-page="schedule"><span class="ic">08</span>Уведомления</div>
+      <div class="navitem" data-page="books"><span class="ic">09</span>Книги</div>
+    </nav>
+    <div class="sidebar-foot">
+      <div class="foot-stamp">Каталог обновлён<br><b id="footDate">—</b></div>
+    </div>
+  </aside>
+
+  <main>
+    <div class="topbar">
+      <div class="topbar-left">
+        <h1 class="page-title" id="pageTitle">Дэшборд</h1>
+        <div class="page-date" id="pageDate"></div>
+      </div>
+      <div class="topbar-actions">
+        <button class="theme-toggle" id="themeToggle" title="Переключить тему">🌙</button>
+      </div>
+    </div>
+
+    <!-- ---- DASHBOARD ---- -->
+    <section class="section active" data-page="dashboard">
+      <div class="grid grid-kpi" id="kpiRow" style="margin-bottom:18px;"></div>
+      <div class="grid grid-2" style="margin-bottom:16px;">
+        <div class="card"><h3>Рост пользователей</h3><canvas id="chartGrowth" height="200"></canvas></div>
+        <div class="card"><h3>Пол пользователей</h3><canvas id="chartGender" height="200"></canvas></div>
+      </div>
+      <div class="grid grid-2">
+        <div class="card"><h3>Активность по возрасту</h3><canvas id="chartAge" height="200"></canvas></div>
+        <div class="card">
+          <h3>Топ-5 книг по лайкам</h3>
+          <div id="topBooksList"><div class="empty">Загрузка…</div></div>
         </div>
-        <table>
-          <thead><tr><th>Корбар</th><th>Шаҳр</th><th>Китобҳо</th><th>Ҳолат</th><th style="text-align:right;">Амалҳо</th></tr></thead>
-          <tbody id="usersTbody"><tr><td colspan="5" class="empty-row">Боргирӣ...</td></tr></tbody>
-        </table>
       </div>
-    </div>
+    </section>
 
-    <!-- ==================== REPORTS ==================== -->
-    <div class="view" id="view-reports">
-      <div class="section-head"><div><h2>Шикоятҳо</h2><p>Жалобаҳои корбарон</p></div></div>
-      <div class="card" style="padding:18px;">
-        <table>
-          <thead><tr><th>Аз</th><th>Ба</th><th>Сабаб</th><th>Вақт</th><th style="text-align:right;">Амал</th></tr></thead>
-          <tbody id="reportsTbody"><tr><td colspan="5" class="empty-row">Боргирӣ...</td></tr></tbody>
-        </table>
+    <!-- ---- USERS ---- -->
+    <section class="section" data-page="users">
+      <div class="toolbar">
+        <input type="text" class="search-input" id="userSearch" placeholder="Поиск по логину или имени…">
+        <button class="btn btn-outline btn-sm" id="refreshUsers">Обновить</button>
       </div>
-    </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Логин</th><th>Имя</th><th>Пол</th><th>Город</th><th>Рег.</th><th>Статус</th><th>Действия</th></tr></thead>
+        <tbody id="usersBody"><tr><td colspan="8" class="empty">Загрузка…</td></tr></tbody>
+      </table></div></div>
+    </section>
 
-    <!-- ==================== QUOTES ==================== -->
-    <div class="view" id="view-quotes">
-      <div class="section-head"><div><h2>Иқтибосҳо</h2><p>Цитатаҳои Президент</p></div></div>
-      <div class="card" style="padding:18px;">
-        <div class="tab-actions">
-          <button class="btn btn-gold btn-sm" onclick="showAddQuote()">➕ Илова кардан</button>
-          <button class="btn btn-ghost btn-sm" onclick="loadQuotes()">🔄 Навсозӣ</button>
-        </div>
-        <div id="quotesList"><div class="empty-row">Боргирӣ...</div></div>
-      </div>
-    </div>
+    <!-- ---- REPORTS ---- -->
+    <section class="section" data-page="reports">
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>От кого</th><th>На кого</th><th>Причина</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
+        <tbody id="reportsBody"><tr><td colspan="6" class="empty">Загрузка…</td></tr></tbody>
+      </table></div></div>
+    </section>
 
-    <!-- ==================== STATS ==================== -->
-    <div class="view" id="view-stats">
-      <div class="section-head"><div><h2>Омор</h2><p>Назари умумӣ ба платформа</p></div></div>
-      <div class="kpi-grid" id="statsGrid">
-        <div class="card kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--gold-dim);">👥</div></div><div class="kpi-num" id="kpiUsers">0</div><div class="kpi-label">Корбарон</div></div>
-        <div class="card kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--green-dim);">📖</div></div><div class="kpi-num" id="kpiReading">0</div><div class="kpi-label">Соат хониш</div></div>
-        <div class="card kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:rgba(154,182,217,0.16);">📚</div></div><div class="kpi-num" id="kpiBooks">0</div><div class="kpi-label">Китобҳо хонда</div></div>
-        <div class="card kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:var(--red-dim);">🚫</div></div><div class="kpi-num" id="kpiBlocked">0</div><div class="kpi-label">Блокшуда</div></div>
-      </div>
-      <div class="kpi-grid" id="genderStats" style="margin-top:16px;">
-        <div class="card kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:#4A90D9;">👨</div></div><div class="kpi-num" id="kpiMale">0</div><div class="kpi-label">Мужчины</div></div>
-        <div class="card kpi-card"><div class="kpi-top"><div class="kpi-icon" style="background:#E8728A;">👩</div></div><div class="kpi-num" id="kpiFemale">0</div><div class="kpi-label">Женщины</div></div>
-      </div>
-    </div>
+    <!-- ---- BLOCKED ---- -->
+    <section class="section" data-page="blocked">
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>ID</th><th>Логин</th><th>Имя</th><th>Город</th><th>Зарегистрирован</th><th></th></tr></thead>
+        <tbody id="blockedBody"><tr><td colspan="5" class="empty">Загрузка…</td></tr></tbody>
+      </table></div></div>
+    </section>
 
-    <!-- ==================== READING STATS ==================== -->
-    <div class="view" id="view-reading">
-      <div class="section-head"><div><h2>Омори хониш</h2><p>Статистика по книгам и читателям</p></div></div>
+    <!-- ---- FEEDBACKS ---- -->
+    <section class="section" data-page="feedbacks">
+      <div class="toolbar">
+        <select id="fbCategoryFilter" style="padding:9px 12px;border:1px solid var(--border);border-radius:7px;">
+          <option value="">Все категории</option>
+        </select>
+        <button class="btn btn-outline btn-sm" id="refreshFb">Обновить</button>
+      </div>
+      <div id="feedbackList"><div class="empty">Загрузка…</div></div>
+    </section>
+
+    <!-- ---- QUOTES (ЛОКАЛЬНЫЙ РЕДАКТОР) ---- -->
+    <section class="section" data-page="quotes">
       <div class="card" style="margin-bottom:16px;">
-        <div class="kpi-grid" style="grid-template-columns: repeat(4,1fr);">
-          <div class="kpi-card"><div class="kpi-num" id="totalSessions">0</div><div class="kpi-label">Открытий книг</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="activeSessions">0</div><div class="kpi-label">Активных чтений</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="completedSessions">0</div><div class="kpi-label">Завершённых</div></div>
-          <div class="kpi-card"><div class="kpi-num" id="inProgressBooks">0</div><div class="kpi-label">Книг в процессе</div></div>
+        <div style="display:flex; align-items:center; flex-wrap:wrap; gap:12px;">
+          <h3 style="margin:0;">📝 Редактор цитат (локальный файл)</h3>
+          <div class="font-size-controls">
+            <button id="fontDec" title="Уменьшить шрифт в редакторе">A-</button>
+            <button id="fontInc" title="Увеличить шрифт в редакторе">A+</button>
+          </div>
         </div>
-        <div style="margin-top:12px;">
-          <div><strong>Самая читаемая книга:</strong> <span id="topBookTitle">—</span> (<span id="topBookMinutes">0</span> мин, <span id="topBookReaders">0</span> читателей)</div>
+        <p class="helper">Редактируйте цитаты. После изменений скачайте файл и замените им <code>quotes-data.js</code> в проекте.</p>
+        <div style="display:flex; gap:10px; flex-wrap:wrap; margin-bottom:12px;">
+          <button class="btn btn-gold" id="addQuoteLocal">➕ Добавить цитату</button>
+          <button class="btn btn-primary" id="saveQuotesLocal">💾 Скачать обновлённый файл</button>
+          <button class="btn btn-outline" id="reloadQuotesLocal">🔄 Перезагрузить из файла</button>
+        </div>
+        <div id="quotesContainer"><div class="empty">Загрузка…</div></div>
+      </div>
+    </section>
+
+    <!-- ---- ANNOUNCEMENT (с длительностью) ---- -->
+    <section class="section" data-page="announce">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Новое объявление</h3>
+          <div class="field"><label>Текст объявления</label><textarea id="annText" rows="4"></textarea></div>
+          <div class="field">
+            <label>Длительность активности</label>
+            <select id="annDuration">
+              <option value="3h">3 часа</option>
+              <option value="6h">6 часов</option>
+              <option value="12h">12 часов</option>
+              <option value="24h">24 часа</option>
+              <option value="3d">3 дня</option>
+              <option value="7d">7 дней</option>
+              <option value="always" selected>Всегда</option>
+            </select>
+          </div>
+          <button class="btn btn-gold" id="addAnnBtn">Опубликовать</button>
+          <p class="helper">Новое объявление сразу становится активным, предыдущие деактивируются.</p>
+        </div>
+        <div class="card">
+          <h3>Как это видит пользователь</h3>
+          <div id="annPreview" style="border:1px dashed var(--border);border-radius:8px;padding:14px;font-size:13.5px;">
+            <span class="muted">Нет активного объявления</span>
+          </div>
         </div>
       </div>
-      <div class="card" style="margin-bottom:16px;">
-        <h3 style="margin-bottom:12px;">Статистика по возрасту</h3>
-        <table>
-          <thead><tr><th>Возраст</th><th>Пользователей</th><th>Сессий</th><th>Часов</th></tr></thead>
-          <tbody id="ageStatsBody"><tr><td colspan="4" class="empty-row">Загрузка...</td></tr></tbody>
-        </table>
+      <div class="card" style="margin-top:16px;">
+        <h3>История объявлений</h3>
+        <div id="annHistory"><div class="empty">Загрузка…</div></div>
       </div>
-      <div class="card">
-        <h3 style="margin-bottom:12px;">Последние сессии</h3>
-        <table>
-          <thead><tr><th>Пользователь</th><th>Книга</th><th>Время (сек)</th><th>Статус</th><th>Дата</th></tr></thead>
-          <tbody id="sessionsBody"><tr><td colspan="5" class="empty-row">Загрузка...</td></tr></tbody>
-        </table>
+    </section>
+
+    <!-- ---- SCHEDULE (УВЕДОМЛЕНИЯ) ---- -->
+    <section class="section" data-page="schedule">
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Расписание уведомлений (как будильник)</h3>
+          <div class="field">
+            <label>Повтор</label>
+            <select id="schType">
+              <option value="daily">Каждый день</option>
+              <option value="every_n_days">Каждые N дней</option>
+              <option value="weekly">По дням недели</option>
+            </select>
+          </div>
+          <div class="field hidden" id="schNDaysWrap">
+            <label>Через сколько дней</label>
+            <input type="number" id="schNDays" min="2" max="14" value="3">
+          </div>
+          <div class="field hidden" id="schWeekdaysWrap">
+            <label>Дни недели</label>
+            <div class="weekday-pick" id="weekdayPick"></div>
+          </div>
+          <div class="field"><label>Время отправки</label><input type="time" id="schTime" value="12:00"></div>
+          <div class="field"><label>Заголовок уведомления</label><input type="text" id="schTitle" value="Китобхона"></div>
+          <div class="field"><label>Текст уведомления</label><textarea id="schBody" rows="2"></textarea></div>
+          <div class="field" style="display:flex;align-items:center;gap:10px;">
+            <label class="switch"><input type="checkbox" id="schEnabled"><span class="slider"></span></label>
+            <span>Включить автоматическую отправку</span>
+          </div>
+          <button class="btn btn-gold" id="saveScheduleBtn">Сохранить расписание</button>
+        </div>
+        <div class="card">
+          <h3>Отправить уведомление сейчас</h3>
+          <p class="helper">Разовая рассылка всем пользователям, не зависит от расписания.</p>
+          <div class="field"><label>Заголовок</label><input type="text" id="nowTitle" value="Китобхона"></div>
+          <div class="field"><label>Текст</label><textarea id="nowBody" rows="3"></textarea></div>
+          <button class="btn btn-primary" id="sendNowBtn">Отправить всем</button>
+        </div>
       </div>
-    </div>
-  </div>
+    </section>
+
+    <!-- ---- BOOKS ---- -->
+    <section class="section" data-page="books">
+      <div class="toolbar">
+        <select id="booksPeriod">
+          <option value="all">За всё время</option>
+          <option value="day">Сегодня</option>
+          <option value="week">За неделю</option>
+          <option value="month">За месяц</option>
+        </select>
+      </div>
+      <div class="card"><div class="table-wrap"><table>
+        <thead><tr><th>Книга</th><th>Автор</th><th>Минут прочитано</th><th>Сессий</th></tr></thead>
+        <tbody id="booksBody"><tr><td colspan="4" class="empty">Загрузка…</td></tr></tbody>
+      </table></div></div>
+    </section>
+
+  </main>
 </div>
 
-<!-- ============ MODAL ============ -->
-<div class="modal-overlay" id="modalOverlay">
-  <div class="modal-card">
-    <div class="modal-header"><h3 id="modalTitle">Идоракунии корбар</h3><button class="close-modal" onclick="closeModal()">✕</button></div>
-    <div class="modal-body">
-      <div class="modal-info" id="modalInfo">...</div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap;">
-        <button class="btn btn-danger btn-sm" onclick="actionBlock(1)">🚫 Блок 1 рӯз</button>
-        <button class="btn btn-danger btn-sm" onclick="actionBlock(7)">🚫 Блок 7 рӯз</button>
-        <button class="btn btn-danger btn-sm" onclick="actionBlock(30)">🚫 Блок 30 рӯз</button>
-        <button class="btn btn-danger btn-sm" onclick="actionUnblock()">🔓 Разблок</button>
-        <button class="btn btn-danger btn-sm" onclick="actionDelete()">🗑 Нест кардан</button>
-      </div>
-      <div style="margin-top:6px;font-size:12px;color:var(--cream-dim);">Пароли нав:</div>
-      <input type="text" id="newPasswordInput" style="width:100%;background:var(--field);border:1px solid var(--line);border-radius:10px;padding:10px;color:var(--cream);font-family:'Noto Sans';margin-bottom:12px;" placeholder="Ҳадди ақал 6 аломат">
-      <button class="btn btn-gold" style="width:100%;justify-content:center;" onclick="actionResetPassword()">Тағйири парол</button>
-      <div id="statusMessage" class="status-msg"></div>
+<!-- Reply modal -->
+<div class="modal-bg hidden" id="replyModalBg">
+  <div class="modal">
+    <h3>Ответить пользователю</h3>
+    <div class="field"><label>Ответ</label><textarea id="replyText" rows="4"></textarea></div>
+    <div class="modal-close-row">
+      <button class="btn btn-outline" id="replyCancel">Отмена</button>
+      <button class="btn btn-gold" id="replySend">Отправить ответ</button>
     </div>
   </div>
 </div>
 
 <script>
-const API = KITOB_CONFIG.NEON_API_BASE;
-function getEl(id){ return document.getElementById(id); }
-function esc(s){ return s != null ? String(s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]) : ''; }
+/* ===================== ТЕМА ===================== */
+(function initTheme() {
+  const saved = localStorage.getItem('admin_theme') || 'light';
+  document.documentElement.setAttribute('data-theme', saved);
+  document.getElementById('themeToggle').textContent = saved === 'dark' ? '☀️' : '🌙';
+})();
 
-// ===== ВСЕ ЗАПРОСЫ БЕЗ АВТОРИЗАЦИИ =====
-async function adminFetch(url, opts){
-  opts = opts || {};
-  opts.headers = Object.assign({}, opts.headers || {}, { 'Content-Type': 'application/json' });
-  const r = await fetch(url, opts);
-  const data = await r.json().catch(() => ({}));
-  if (!r.ok) throw new Error(data.error || 'HTTP ' + r.status);
+document.getElementById('themeToggle').addEventListener('click', function() {
+  const current = document.documentElement.getAttribute('data-theme');
+  const next = current === 'dark' ? 'light' : 'dark';
+  document.documentElement.setAttribute('data-theme', next);
+  localStorage.setItem('admin_theme', next);
+  this.textContent = next === 'dark' ? '☀️' : '🌙';
+});
+
+/* ===================== CONFIG ===================== */
+const API_BASE = 'https://kitobkhona-chat-production.up.railway.app';
+
+/* ===================== HELPERS ===================== */
+async function api(path, method = 'GET', body = null){
+  const headers = { 'Content-Type': 'application/json' };
+  const res = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
+  let data = null;
+  try { data = await res.json(); } catch(e) {}
+  if (!res.ok) throw new Error((data && data.error) || ('Ошибка ' + res.status));
   return data;
 }
 
-// ===== NAVIGATION =====
-const views = ['users','reports','quotes','stats','reading'];
-const titles = {
-  users: ['Корбарон', 'Идоракунии корбарон'],
-  reports: ['Шикоятҳо', 'Жалобаҳои корбарон'],
-  quotes: ['Иқтибосҳо', 'Цитатаҳои Президент'],
-  stats: ['Омор', 'Назари умумӣ'],
-  reading: ['Омори хониш', 'Статистика по книгам и читателям']
+function toast(msg, isErr){
+  const t = document.createElement('div');
+  t.className = 'toast' + (isErr ? ' err' : '');
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => t.remove(), 3200);
+}
+
+function fmtDate(d){
+  if (!d) return '—';
+  const dt = new Date(d);
+  return dt.toLocaleDateString('ru-RU') + ' ' + dt.toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'});
+}
+function escapeHtml(s){
+  return String(s == null ? '' : s).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+function escAttr(s){ return escapeHtml(s); }
+
+/* ===================== BOOT ===================== */
+document.getElementById('pageDate').textContent = new Date().toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
+document.getElementById('footDate').textContent = new Date().toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' });
+loadDashboard();
+
+/* ===================== NAVIGATION ===================== */
+const pageTitles = {
+  dashboard:'Дэшборд', users:'Пользователи', reports:'Жалобы', blocked:'Заблокированные',
+  feedbacks:'Обращения', quotes:'Цитаты президента', announce:'Объявление',
+  schedule:'Уведомления', books:'Книги'
 };
-document.querySelectorAll('.nav-item').forEach(item => {
-  item.addEventListener('click', function(){
-    document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
-    this.classList.add('active');
-    const v = this.dataset.view;
-    document.querySelectorAll('.view').forEach(p => p.classList.remove('show'));
-    getEl('view-' + v).classList.add('show');
-    getEl('pageTitle').textContent = titles[v][0];
-    getEl('pageSub').textContent = titles[v][1];
-    if (v === 'users') loadAllAdmin();
-    if (v === 'reports') loadReports();
-    if (v === 'quotes') loadQuotes();
-    if (v === 'stats') loadStats();
-    if (v === 'reading') {
-      loadReadingStats();
-      loadAgeStats();
-      loadSessions();
-    }
-  });
+document.getElementById('navlist').addEventListener('click', (e) => {
+  const item = e.target.closest('.navitem');
+  if (!item) return;
+  const page = item.dataset.page;
+  document.querySelectorAll('.navitem').forEach(n => n.classList.toggle('active', n === item));
+  document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.dataset.page === page));
+  document.getElementById('pageTitle').textContent = pageTitles[page] || '';
+  const loaders = { dashboard:loadDashboard, users:loadUsers, reports:loadReports, blocked:loadBlocked,
+    feedbacks:loadFeedbacks, quotes:loadQuotesLocal, announce:loadAnnounce, schedule:loadSchedule, books:loadBooks };
+  if (loaders[page]) loaders[page]();
 });
 
-// ===== USERS =====
-let usersData = [];
-async function loadAllAdmin(){
+/* ===================== DASHBOARD ===================== */
+let charts = {};
+function destroyChart(key){ if (charts[key]) { charts[key].destroy(); delete charts[key]; } }
+
+async function loadDashboard(){
   try {
-    const data = await adminFetch(API + '/api/admin/users');
-    usersData = data;
-    renderUsers(data);
-    updateGenderStats(data);
-    if (getEl('view-stats').classList.contains('show')) loadStats();
-  } catch(e){
-    console.error(e);
-    getEl('usersTbody').innerHTML = '<tr><td colspan="5" class="empty-row">Хатогӣ: ' + esc(e.message) + '</td></tr>';
+    const [stats, age] = await Promise.all([
+      api('/api/admin/dashboard-stats'),
+      api('/api/admin/age-stats')
+    ]);
+    renderKpis(stats);
+    renderGrowthChart(stats);
+    renderGenderChart(stats);
+    renderAgeChart(age);
+    renderTopBooks(stats.top_liked_books || []);
+  } catch (e) {
+    toast('Не удалось загрузить дэшборд: ' + e.message, true);
+    document.getElementById('kpiRow').innerHTML = '<div class="card" style="grid-column:1/-1;text-align:center;color:var(--muted);">Ошибка загрузки. Проверьте подключение к серверу.</div>';
   }
 }
 
-function renderUsers(users){
-  const tbody = getEl('usersTbody');
-  if (!users.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Корбарон нест</td></tr>'; return; }
-  tbody.innerHTML = users.map(u => {
-    const displayName = u.display_name || u.username || 'Корбар';
-    const initials = displayName.split(' ').map(s => s[0] || '').slice(0,2).join('').toUpperCase() || 'К';
-    const colors = ['#E8C879,#C9933A','#9AB6D9,#4E7AA8','#7FB8A0,#3F9E63','#E0958C,#C85850','#B8A4D9,#7551A8'];
-    const colorGrad = colors[Math.abs((u.username||'').length) % colors.length];
-    let statusBadge = u.role === 'admin' ? '<span class="badge-status ok">⭐ Админ</span>' :
-                      u.blocked ? '<span class="badge-status warn">🔒 Блок</span>' :
-                      u.is_temporary ? '<span class="badge-status pending">⚠ Бе парол</span>' :
-                      '<span class="badge-status ok">✓ Фаъол</span>';
+function renderKpis(s){
+  const kpis = [
+    ['Всего пользователей', s.total_users],
+    ['Гости', s.guests],
+    ['Активны (7 дней)', s.active_users_7d],
+    ['Отток (>7 дней)', s.churned_users],
+    ['Новых сегодня', s.new_today],
+    ['Новых за неделю', s.new_week],
+  ];
+  document.getElementById('kpiRow').innerHTML = kpis.map(([lbl, num]) => `
+    <div class="card kpi"><div class="stamp"></div>
+      <span class="num">${num ?? 0}</span><span class="lbl">${lbl}</span>
+    </div>`).join('');
+}
+
+function renderGrowthChart(s){
+  destroyChart('growth');
+  const ctx = document.getElementById('chartGrowth');
+  charts.growth = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['Сегодня','Неделя','1 мес','3 мес','6 мес','9 мес','Год'],
+      datasets: [{
+        label: 'Новые пользователи',
+        data: [s.new_today, s.new_week, s.new_month_1, s.new_month_3, s.new_month_6, s.new_month_9, s.new_year],
+        backgroundColor: '#C9A227', borderRadius: 4
+      }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true, ticks:{precision:0}}} }
+  });
+}
+
+function renderGenderChart(s){
+  destroyChart('gender');
+  const g = s.gender || {};
+  const ctx = document.getElementById('chartGender');
+  charts.gender = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels: ['Мужчины','Женщины','Не указан'],
+      datasets: [{ data: [g.male||0, g.female||0, g.unknown||0], backgroundColor: ['#1F3A34','#C9A227','#D8D2C4'] }]
+    },
+    options: { plugins:{legend:{position:'bottom'}} }
+  });
+}
+
+function renderAgeChart(rows){
+  destroyChart('age');
+  const ctx = document.getElementById('chartAge');
+  charts.age = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: rows.map(r => r.age_group),
+      datasets: [{ label:'Часов прочитано', data: rows.map(r => parseFloat(r.total_hours)||0), backgroundColor:'#2C4D45', borderRadius:4 }]
+    },
+    options: { plugins:{legend:{display:false}}, scales:{y:{beginAtZero:true}} }
+  });
+}
+
+function renderTopBooks(list){
+  const box = document.getElementById('topBooksList');
+  if (!list.length) { box.innerHTML = '<div class="empty">Пока нет лайков</div>'; return; }
+  box.innerHTML = list.map((b,i) => `
+    <div class="list-row"><span>${i+1}. ${escapeHtml(b.book_title || b.book_id)}</span>
+    <span class="mono">♥ ${b.total_likes}</span></div>`).join('');
+}
+
+/* ===================== USERS ===================== */
+let allUsers = [];
+async function loadUsers(){
+  try {
+    allUsers = await api('/api/admin/users');
+    renderUsers(allUsers);
+  } catch (e) { toast('Ошибка загрузки пользователей: ' + e.message, true); }
+}
+function renderUsers(list){
+  const body = document.getElementById('usersBody');
+  if (!list.length) { body.innerHTML = '<tr><td colspan="8" class="empty">Нет данных</td></tr>'; return; }
+  body.innerHTML = list.map(u => {
+    const status = u.blocked ? '<span class="tag tag-block">Блок</span>'
+      : (u.is_temporary ? '<span class="tag tag-guest">Гость</span>' : '<span class="tag tag-ok">Активен</span>');
     return `<tr>
-      <td><div class="user-cell"><div class="u-avatar" style="background:linear-gradient(135deg,${colorGrad});">${esc(initials)}</div><div><div class="u-name">${esc(displayName)}</div><div class="u-login">@${esc(u.username)}</div></div></div></td>
-      <td>${esc(u.city || u.region || '—')}</td>
-      <td>${u.books_count || 0}</td>
-      <td>${statusBadge}</td>
-      <td style="text-align:right;"><button class="btn btn-ghost btn-sm" onclick="openUserModal('${u.id}','${esc(displayName)}','${esc(u.username)}')">⚙️</button></td>
+      <td class="mono">${u.id}</td>
+      <td>${escapeHtml(u.username)}</td>
+      <td>${escapeHtml(u.display_name || '—')}</td>
+      <td>${u.gender || '—'}</td>
+      <td>${escapeHtml(u.city || '—')}</td>
+      <td class="mono">${fmtDate(u.created_at)}</td>
+      <td>${status}</td>
+      <td><div class="actions-cell">
+        ${u.blocked
+          ? `<button class="btn btn-sm btn-outline" data-act="unblock" data-id="${u.id}">Разблокировать</button>`
+          : `<button class="btn btn-sm btn-danger" data-act="block" data-id="${u.id}">Заблокировать</button>`}
+        <button class="btn btn-sm btn-outline" data-act="reset" data-id="${u.id}">Сброс пароля</button>
+        <button class="btn btn-sm btn-danger" data-act="delete" data-id="${u.id}">Удалить</button>
+      </div></td>
     </tr>`;
   }).join('');
-  applyFilters();
 }
-
-function updateGenderStats(users){
-  const male = users.filter(u => u.gender === 'male').length;
-  const female = users.filter(u => u.gender === 'female').length;
-  document.getElementById('kpiMale').textContent = male;
-  document.getElementById('kpiFemale').textContent = female;
-}
-
-function applyFilters(){
-  const filter = document.querySelector('.chip.active')?.dataset.filter || 'all';
-  const search = getEl('userSearch').value.toLowerCase().trim();
-  const rows = document.querySelectorAll('#usersTbody tr');
-  rows.forEach(row => {
-    const text = row.textContent.toLowerCase();
-    let show = true;
-    if (filter === 'admin') show = text.includes('админ');
-    else if (filter === 'blocked') show = text.includes('блок');
-    if (search && !text.includes(search)) show = false;
-    row.style.display = show ? '' : 'none';
-  });
-}
-
-document.querySelectorAll('.chip').forEach(chip => {
-  chip.addEventListener('click', function(){
-    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
-    this.classList.add('active');
-    applyFilters();
-  });
+document.getElementById('userSearch').addEventListener('input', (e) => {
+  const q = e.target.value.toLowerCase();
+  renderUsers(allUsers.filter(u => (u.username||'').toLowerCase().includes(q) || (u.display_name||'').toLowerCase().includes(q)));
 });
-getEl('userSearch').addEventListener('input', applyFilters);
-
-// ===== MODAL =====
-let currentModalUserId = null;
-function openUserModal(userId, displayName, username){
-  currentModalUserId = userId;
-  getEl('modalTitle').textContent = 'Идоракунии: ' + displayName;
-  getEl('modalInfo').innerHTML = 'Логин: <b>@' + esc(username) + '</b><br>ID: <span style="font-family:JetBrains Mono;font-size:11px;">' + userId.substring(0,8) + '...</span>';
-  getEl('newPasswordInput').value = '';
-  getEl('statusMessage').className = 'status-msg';
-  getEl('statusMessage').style.display = 'none';
-  getEl('modalOverlay').classList.add('open');
-}
-function closeModal(){ getEl('modalOverlay').classList.remove('open'); currentModalUserId = null; }
-
-function setStatus(msg, type){
-  const div = getEl('statusMessage');
-  div.textContent = msg;
-  div.className = 'status-msg ' + type;
-  div.style.display = 'block';
-}
-
-async function actionBlock(days){
-  if (!currentModalUserId) return;
-  if (!confirm('Блок кардан барои ' + days + ' рӯз?')) return;
+document.getElementById('refreshUsers').addEventListener('click', loadUsers);
+document.getElementById('usersBody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  const id = btn.dataset.id, act = btn.dataset.act;
   try {
-    await adminFetch(API + '/api/admin/users/' + currentModalUserId + '/block-temporary', { method: 'POST', body: JSON.stringify({ days }) });
-    setStatus('✅ Корбар барои ' + days + ' рӯз блок шуд.', 'success');
-    setTimeout(loadAllAdmin, 800);
-  } catch(e){ setStatus('Хатогӣ: ' + e.message, 'error'); }
-}
+    if (act === 'block') {
+      if (!confirm('Заблокировать пользователя?')) return;
+      await api(`/api/admin/users/${id}/block`, 'POST');
+    } else if (act === 'unblock') {
+      await api(`/api/admin/users/${id}/unblock`, 'POST');
+    } else if (act === 'delete') {
+      if (!confirm('Удалить пользователя без возможности восстановления?')) return;
+      await api(`/api/admin/users/${id}`, 'DELETE');
+    } else if (act === 'reset') {
+      const pwd = prompt('Новый пароль (минимум 6 символов):');
+      if (!pwd) return;
+      await api(`/api/admin/users/${id}/reset-password`, 'POST', { newPassword: pwd });
+    }
+    toast('Готово');
+    loadUsers();
+  } catch (err) { toast(err.message, true); }
+});
 
-async function actionUnblock(){
-  if (!currentModalUserId) return;
-  try {
-    await adminFetch(API + '/api/admin/users/' + currentModalUserId + '/unblock', { method: 'POST' });
-    setStatus('✅ Корбар разблок шуд.', 'success');
-    setTimeout(loadAllAdmin, 800);
-  } catch(e){ setStatus('Хатогӣ: ' + e.message, 'error'); }
-}
-
-async function actionDelete(){
-  if (!currentModalUserId) return;
-  if (!confirm('Ҳама маълумоти корбар нест карда шавад?')) return;
-  try {
-    await adminFetch(API + '/api/admin/users/' + currentModalUserId, { method: 'DELETE' });
-    setStatus('✅ Корбар нест карда шуд.', 'success');
-    closeModal();
-    setTimeout(loadAllAdmin, 500);
-  } catch(e){ setStatus('Хатогӣ: ' + e.message, 'error'); }
-}
-
-async function actionResetPassword(){
-  if (!currentModalUserId) return;
-  const newPassword = getEl('newPasswordInput').value.trim();
-  if (!newPassword || newPassword.length < 6) { alert('Парол ҳадди ақал 6 аломат'); return; }
-  try {
-    await adminFetch(API + '/api/admin/users/' + currentModalUserId + '/reset-password', { method: 'POST', body: JSON.stringify({ newPassword }) });
-    setStatus('✅ Парол тағйир ёфт.', 'success');
-    getEl('newPasswordInput').value = '';
-  } catch(e){ setStatus('Хатогӣ: ' + e.message, 'error'); }
-}
-
-// ===== REPORTS =====
+/* ===================== REPORTS ===================== */
 async function loadReports(){
   try {
-    const data = await adminFetch(API + '/api/admin/reports');
-    const tbody = getEl('reportsTbody');
-    if (!data.length) { tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Шикоят нест</td></tr>'; return; }
-    tbody.innerHTML = data.map(r => `
-      <tr>
-        <td>${esc(r.reporter_name || r.reporter_username || '—')}</td>
-        <td>${esc(r.reported_name || r.reported_username || '—')}</td>
-        <td>${esc(r.reason)}</td>
-        <td>${new Date(r.created_at).toLocaleString()}</td>
-        <td style="text-align:right;">${r.status === 'resolved' ? '✅ Ҳал шуд' : '<button class="btn btn-gold btn-sm" onclick="resolveReport(\''+r.id+'\')">Ҳал кардан</button>'}</td>
-      </tr>
-    `).join('');
-  } catch(e){
-    getEl('reportsTbody').innerHTML = '<tr><td colspan="5" class="empty-row">Хатогӣ: ' + esc(e.message) + '</td></tr>';
-  }
+    const list = await api('/api/admin/reports');
+    const body = document.getElementById('reportsBody');
+    if (!list.length) { body.innerHTML = '<tr><td colspan="6" class="empty">Жалоб нет</td></tr>'; return; }
+    body.innerHTML = list.map(r => `<tr>
+      <td>${escapeHtml(r.reporter_name || r.reporter_username || r.reporter_id)}</td>
+      <td>${escapeHtml(r.reported_name || r.reported_username || r.reported_user_id)}</td>
+      <td>${escapeHtml(r.reason)}</td>
+      <td>${r.status === 'resolved' ? '<span class="tag tag-ok">Решено</span>' : '<span class="tag tag-block">Новая</span>'}</td>
+      <td class="mono">${fmtDate(r.created_at)}</td>
+      <td>${r.status === 'resolved' ? '' : `<button class="btn btn-sm btn-outline" data-id="${r.id}">Отметить решённой</button>`}</td>
+    </tr>`).join('');
+  } catch (e) { toast('Ошибка: ' + e.message, true); }
 }
-async function resolveReport(id){
-  try {
-    await adminFetch(API + '/api/admin/reports/' + id + '/resolve', { method: 'POST' });
-    loadReports();
-  } catch(e){ alert('Хатогӣ: ' + e.message); }
-}
-
-// ===== QUOTES =====
-async function loadQuotes(){
-  try {
-    const data = await adminFetch(API + '/api/admin/quotes');
-    const container = getEl('quotesList');
-    if (!data.length) { container.innerHTML = '<div class="empty-row">Иқтибос нест</div>'; return; }
-    container.innerHTML = data.map(q => `
-      <div class="quote-item">
-        <div class="quote-text">${esc(q.text)}${q.book_title ? ' — <i>'+esc(q.book_title)+'</i>' : ''}</div>
-        <div class="quote-actions">
-          <button class="btn btn-ghost btn-sm" onclick="editQuote('${q.id}','${esc(q.text)}','${esc(q.book_title||'')}')">✏️</button>
-          <button class="btn btn-danger btn-sm" onclick="deleteQuote('${q.id}')">🗑</button>
-        </div>
-      </div>
-    `).join('');
-  } catch(e){
-    getEl('quotesList').innerHTML = '<div class="empty-row">Хатогӣ: ' + esc(e.message) + '</div>';
-  }
-}
-
-function showAddQuote(){
-  const text = prompt('Матни иқтибос:');
-  if (text === null) return;
-  const book = prompt('Номи китоб (ихтиёрий):') || '';
-  addQuote(text, book);
-}
-async function addQuote(text, book){
-  try {
-    await adminFetch(API + '/api/admin/quotes', { method: 'POST', body: JSON.stringify({ text, book_title: book }) });
-    loadQuotes();
-  } catch(e){ alert('Хатогӣ: ' + e.message); }
-}
-function editQuote(id, text, book){
-  const newText = prompt('Матни иқтибос:', text);
-  if (newText === null) return;
-  const newBook = prompt('Номи китоб:', book) || '';
-  updateQuote(id, newText, newBook);
-}
-async function updateQuote(id, text, book){
-  try {
-    await adminFetch(API + '/api/admin/quotes/' + id, { method: 'PUT', body: JSON.stringify({ text, book_title: book }) });
-    loadQuotes();
-  } catch(e){ alert('Хатогӣ: ' + e.message); }
-}
-async function deleteQuote(id){
-  if (!confirm('Иқтибос нест карда шавад?')) return;
-  try {
-    await adminFetch(API + '/api/admin/quotes/' + id, { method: 'DELETE' });
-    loadQuotes();
-  } catch(e){ alert('Хатогӣ: ' + e.message); }
-}
-
-// ===== STATS =====
-async function loadStats(){
-  try {
-    const data = await adminFetch(API + '/api/admin/stats');
-    getEl('kpiUsers').textContent = data.users_count || 0;
-    getEl('kpiReading').textContent = data.total_reading_hours || 0;
-    getEl('kpiBooks').textContent = data.total_books_read || 0;
-    getEl('kpiBlocked').textContent = data.blocked_count || 0;
-  } catch(e){ console.warn('Stats error:', e); }
-}
-
-// ===== READING STATS =====
-async function loadReadingStats() {
-  try {
-    const stats = await adminFetch(API + '/api/admin/reading-stats');
-    document.getElementById('totalSessions').textContent = stats.total_sessions || 0;
-    document.getElementById('activeSessions').textContent = stats.active_sessions || 0;
-    document.getElementById('completedSessions').textContent = stats.completed_sessions || 0;
-    document.getElementById('inProgressBooks').textContent = stats.in_progress_books || 0;
-    if (stats.top_book) {
-      document.getElementById('topBookTitle').textContent = stats.top_book.book_title || stats.top_book.book_id;
-      document.getElementById('topBookMinutes').textContent = Math.round(stats.top_book.total_minutes || 0);
-      document.getElementById('topBookReaders').textContent = stats.top_book.readers || 0;
-    } else {
-      document.getElementById('topBookTitle').textContent = '—';
-    }
-  } catch(e) {
-    console.warn('Reading stats error:', e);
-  }
-}
-
-async function loadAgeStats() {
-  try {
-    const data = await adminFetch(API + '/api/admin/age-stats');
-    const tbody = document.getElementById('ageStatsBody');
-    if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="4" class="empty-row">Нет данных</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.map(row => `
-      <tr>
-        <td>${row.age_group}</td>
-        <td>${row.users}</td>
-        <td>${row.sessions}</td>
-        <td>${Math.round(row.total_hours)}</td>
-      </tr>
-    `).join('');
-  } catch(e) {
-    console.warn('Age stats error:', e);
-    document.getElementById('ageStatsBody').innerHTML = '<tr><td colspan="4" class="empty-row">Ошибка загрузки</td></tr>';
-  }
-}
-
-async function loadSessions() {
-  try {
-    const data = await adminFetch(API + '/api/admin/reading-sessions?limit=100');
-    const tbody = document.getElementById('sessionsBody');
-    if (!data.length) {
-      tbody.innerHTML = '<tr><td colspan="5" class="empty-row">Нет сессий</td></tr>';
-      return;
-    }
-    tbody.innerHTML = data.map(s => `
-      <tr>
-        <td>${esc(s.display_name || s.username || s.user_id)}</td>
-        <td>${esc(s.book_title || s.book_id)}</td>
-        <td>${s.duration || 0}</td>
-        <td>${s.status === 'completed' ? '✅ Завершено' : s.status === 'active' ? '🔄 Читает' : '👁 Просмотр'}</td>
-        <td>${new Date(s.created_at).toLocaleDateString()}</td>
-      </tr>
-    `).join('');
-  } catch(e) {
-    console.warn('Sessions list error:', e);
-    document.getElementById('sessionsBody').innerHTML = '<tr><td colspan="5" class="empty-row">Ошибка загрузки</td></tr>';
-  }
-}
-
-// ===== INIT =====
-loadAllAdmin();
-
-getEl('modalOverlay').addEventListener('click', function(e){ if(e.target === this) closeModal(); });
-
-let searchTimer;
-getEl('userSearch').addEventListener('input', function(){
-  clearTimeout(searchTimer);
-  searchTimer = setTimeout(applyFilters, 300);
+document.getElementById('reportsBody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  try { await api(`/api/admin/reports/${btn.dataset.id}/resolve`, 'POST'); toast('Жалоба отмечена решённой'); loadReports(); }
+  catch (err) { toast(err.message, true); }
 });
 
-// Глобальные функции для кнопок
-window.actionBlock = actionBlock;
-window.actionUnblock = actionUnblock;
-window.actionDelete = actionDelete;
-window.actionResetPassword = actionResetPassword;
-window.openUserModal = openUserModal;
-window.closeModal = closeModal;
-window.resolveReport = resolveReport;
-window.showAddQuote = showAddQuote;
-window.editQuote = editQuote;
-window.deleteQuote = deleteQuote;
-window.loadQuotes = loadQuotes;
-window.loadReports = loadReports;
-window.loadStats = loadStats;
-window.loadAllAdmin = loadAllAdmin;
-window.loadReadingStats = loadReadingStats;
-window.loadAgeStats = loadAgeStats;
-window.loadSessions = loadSessions;
+/* ===================== BLOCKED ===================== */
+async function loadBlocked(){
+  try {
+    const list = await api('/api/admin/blocked');
+    const body = document.getElementById('blockedBody');
+    if (!list.length) { body.innerHTML = '<tr><td colspan="5" class="empty">Никто не заблокирован</td></tr>'; return; }
+    body.innerHTML = list.map(u => `<tr>
+      <td class="mono">${u.id}</td><td>${escapeHtml(u.username)}</td>
+      <td>${escapeHtml(u.display_name || '—')}</td><td>${escapeHtml(u.city || '—')}</td>
+      <td><button class="btn btn-sm btn-outline" data-id="${u.id}">Разблокировать</button></td>
+    </tr>`).join('');
+  } catch (e) { toast('Ошибка: ' + e.message, true); }
+}
+document.getElementById('blockedBody').addEventListener('click', async (e) => {
+  const btn = e.target.closest('button'); if (!btn) return;
+  try { await api(`/api/admin/users/${btn.dataset.id}/unblock`, 'POST'); toast('Разблокирован'); loadBlocked(); }
+  catch (err) { toast(err.message, true); }
+});
+
+/* ===================== FEEDBACKS ===================== */
+let activeReplyId = null;
+async function loadFeedbacks(){
+  try {
+    const list = await api('/api/feedbacks');
+    const cats = [...new Set(list.map(f => f.category))];
+    const sel = document.getElementById('fbCategoryFilter');
+    const current = sel.value;
+    sel.innerHTML = '<option value="">Все категории</option>' + cats.map(c => `<option value="${escapeHtml(c)}">${escapeHtml(c)}</option>`).join('');
+    sel.value = current;
+    renderFeedbacks(list, sel.value);
+    sel.onchange = () => renderFeedbacks(list, sel.value);
+  } catch (e) { toast('Ошибка: ' + e.message, true); }
+}
+async function renderFeedbacks(list, filterCat){
+  const filtered = filterCat ? list.filter(f => f.category === filterCat) : list;
+  const box = document.getElementById('feedbackList');
+  if (!filtered.length) { box.innerHTML = '<div class="empty">Обращений нет</div>'; return; }
+  box.innerHTML = filtered.map(f => `
+    <div class="feedback-item" data-uid="${f.user_id}" data-fbid="${f.id}">
+      <div class="feedback-head">
+        <span><b>${escapeHtml(f.display_name || f.username)}</b> <span class="feedback-cat">${escapeHtml(f.category)}</span></span>
+        <span class="mono muted">${fmtDate(f.created_at)} · ${f.status === 'replied' ? 'отвечено' : 'новое'}</span>
+      </div>
+      <div class="feedback-msg">${escapeHtml(f.message)}</div>
+      <div class="feedback-reply-box">
+        <button class="btn btn-sm btn-gold" data-act="open-reply" data-id="${f.id}">Ответить</button>
+        <span class="chat-status-row" data-status-for="${f.user_id}">
+          Чат: <label class="switch"><input type="checkbox" class="chatToggle" data-uid="${f.user_id}"><span class="slider"></span></label>
+          <span class="chatStateLbl">…</span>
+        </span>
+      </div>
+    </div>`).join('');
+  const uids = [...new Set(filtered.map(f => f.user_id))];
+  uids.forEach(async (uid) => {
+    try {
+      const st = await api(`/api/admin/chat-status/${uid}`);
+      document.querySelectorAll(`.chatToggle[data-uid="${uid}"]`).forEach(chk => chk.checked = !!st.is_open);
+      document.querySelectorAll(`[data-status-for="${uid}"] .chatStateLbl`).forEach(lbl => lbl.textContent = st.is_open ? 'открыт' : 'закрыт');
+    } catch(e){}
+  });
+}
+document.getElementById('refreshFb').addEventListener('click', loadFeedbacks);
+document.getElementById('feedbackList').addEventListener('click', (e) => {
+  const btn = e.target.closest('[data-act="open-reply"]');
+  if (btn) { activeReplyId = btn.dataset.id; document.getElementById('replyText').value = ''; document.getElementById('replyModalBg').classList.remove('hidden'); }
+});
+document.getElementById('feedbackList').addEventListener('change', async (e) => {
+  if (!e.target.classList.contains('chatToggle')) return;
+  const uid = e.target.dataset.uid;
+  const isOpen = e.target.checked;
+  try {
+    await api(`/api/admin/chat-status/${uid}`, 'PUT', { is_open: isOpen });
+    document.querySelectorAll(`[data-status-for="${uid}"] .chatStateLbl`).forEach(lbl => lbl.textContent = isOpen ? 'открыт' : 'закрыт');
+    toast(isOpen ? 'Чат открыт' : 'Чат закрыт для пользователя');
+  } catch (err) { toast(err.message, true); e.target.checked = !isOpen; }
+});
+document.getElementById('replyCancel').addEventListener('click', () => document.getElementById('replyModalBg').classList.add('hidden'));
+document.getElementById('replySend').addEventListener('click', async () => {
+  const text = document.getElementById('replyText').value.trim();
+  if (!text || !activeReplyId) return;
+  try {
+    await api(`/api/feedbacks/${activeReplyId}/reply`, 'POST', { reply: text });
+    toast('Ответ отправлен');
+    document.getElementById('replyModalBg').classList.add('hidden');
+    loadFeedbacks();
+  } catch (err) { toast(err.message, true); }
+});
+
+/* ================================================================
+   ==================== QUOTES (ЛОКАЛЬНЫЙ РЕДАКТОР) ====================
+   ================================================================ */
+let localQuotes = [];
+let dragSrcIndex = null;
+
+async function loadQuotesLocal() {
+  const container = document.getElementById('quotesContainer');
+  container.innerHTML = '<div class="empty">Загрузка…</div>';
+  try {
+    const res = await fetch('quotes-data.js?t=' + Date.now());
+    if (!res.ok) throw new Error('Файл не найден');
+    const text = await res.text();
+    const match = text.match(/window\.QUOTES\s*=\s*(\[[\s\S]*?\]);/);
+    if (match) {
+      const arr = eval(match[1]);
+      if (Array.isArray(arr)) {
+        localQuotes = arr;
+        renderQuotesLocal();
+        return;
+      }
+    }
+    throw new Error('Не удалось распарсить файл');
+  } catch (e) {
+    console.warn('Ошибка загрузки quotes-data.js, используем резервный массив', e);
+    localQuotes = [
+      {img:'assets/hero/01-president-official.jpg', topic:'маориф', quote:'Илм фурӯғи маърифат аст...', color:'#ffffff', fontSize:24, displayDuration:12, fontFamily:'Georgia, serif'},
+      // ... можно добавить остальные резервные цитаты
+    ];
+    renderQuotesLocal();
+  }
+}
+
+function renderQuotesLocal() {
+  const container = document.getElementById('quotesContainer');
+  if (!localQuotes.length) {
+    container.innerHTML = '<div class="empty">Нет цитат. Добавьте первую.</div>';
+    return;
+  }
+  container.innerHTML = localQuotes.map((q, i) => `
+    <div class="quote-item" draggable="true" data-index="${i}">
+      <div class="qfld"><input type="text" value="${escAttr(q.img || '')}" placeholder="Путь к изображению" data-field="img"></div>
+      <div class="qfld"><input type="text" value="${escAttr(q.topic || '')}" placeholder="Тема" data-field="topic"></div>
+      <div class="qfld" style="flex:3;"><textarea rows="5" placeholder="Текст цитаты" data-field="quote" class="quote-textarea">${escAttr(q.quote || '')}</textarea></div>
+      <div class="qfld" style="min-width:120px;">
+        <input type="color" value="${escAttr(q.color || '#ffffff')}" data-field="color" title="Цвет текста">
+      </div>
+      <div class="qfld" style="min-width:80px;">
+        <select data-field="fontSize">
+          ${[18,20,22,24,26,28,30,32,36].map(s => `<option value="${s}" ${q.fontSize == s ? 'selected' : ''}>${s}px</option>`).join('')}
+        </select>
+      </div>
+      <div class="qfld" style="min-width:90px;">
+        <select data-field="displayDuration">
+          ${[8,10,12,15,18,20].map(s => `<option value="${s}" ${q.displayDuration == s ? 'selected' : ''}>${s} сек</option>`).join('')}
+        </select>
+      </div>
+      <div class="qfld" style="min-width:130px;">
+        <select data-field="fontFamily">
+          <option value="Arial, sans-serif" ${q.fontFamily && q.fontFamily.includes('Arial') ? 'selected' : ''}>Arial</option>
+          <option value="Georgia, serif" ${q.fontFamily && q.fontFamily.includes('Georgia') ? 'selected' : ''}>Georgia</option>
+          <option value="'Times New Roman', serif" ${q.fontFamily && q.fontFamily.includes('Times') ? 'selected' : ''}>Times New Roman</option>
+          <option value="Verdana, sans-serif" ${q.fontFamily && q.fontFamily.includes('Verdana') ? 'selected' : ''}>Verdana</option>
+          <option value="Tahoma, sans-serif" ${q.fontFamily && q.fontFamily.includes('Tahoma') ? 'selected' : ''}>Tahoma</option>
+          <option value="'Comic Sans MS', cursive" ${q.fontFamily && q.fontFamily.includes('Comic') ? 'selected' : ''}>Comic Sans</option>
+          <option value="'Trebuchet MS', sans-serif" ${q.fontFamily && q.fontFamily.includes('Trebuchet') ? 'selected' : ''}>Trebuchet MS</option>
+          <option value="'Courier New', monospace" ${q.fontFamily && q.fontFamily.includes('Courier') ? 'selected' : ''}>Courier New</option>
+          <option value="Impact, sans-serif" ${q.fontFamily && q.fontFamily.includes('Impact') ? 'selected' : ''}>Impact</option>
+        </select>
+      </div>
+      <div class="qactions">
+        <button class="btn btn-sm btn-danger" data-act="remove" data-idx="${i}">✕</button>
+      </div>
+    </div>
+  `).join('');
+
+  // Drag & Drop handlers
+  const items = container.querySelectorAll('.quote-item');
+  items.forEach(item => {
+    item.addEventListener('dragstart', handleDragStart);
+    item.addEventListener('dragend', handleDragEnd);
+    item.addEventListener('dragover', handleDragOver);
+    item.addEventListener('dragenter', handleDragEnter);
+    item.addEventListener('dragleave', handleDragLeave);
+    item.addEventListener('drop', handleDrop);
+  });
+}
+
+function handleDragStart(e) {
+  dragSrcIndex = parseInt(this.dataset.index);
+  this.classList.add('dragging');
+  e.dataTransfer.effectAllowed = 'move';
+  e.dataTransfer.setData('text/plain', this.dataset.index);
+}
+function handleDragEnd(e) {
+  this.classList.remove('dragging');
+  document.querySelectorAll('.quote-item').forEach(el => el.classList.remove('dragover'));
+}
+function handleDragOver(e) {
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+}
+function handleDragEnter(e) {
+  e.preventDefault();
+  this.classList.add('dragover');
+}
+function handleDragLeave(e) {
+  this.classList.remove('dragover');
+}
+function handleDrop(e) {
+  e.preventDefault();
+  this.classList.remove('dragover');
+  const fromIndex = parseInt(e.dataTransfer.getData('text/plain'));
+  const toIndex = parseInt(this.dataset.index);
+  if (fromIndex === toIndex) return;
+  const item = localQuotes.splice(fromIndex, 1)[0];
+  localQuotes.splice(toIndex, 0, item);
+  renderQuotesLocal();
+}
+
+document.getElementById('quotesContainer').addEventListener('click', (e) => {
+  const btn = e.target.closest('button[data-act="remove"]');
+  if (!btn) return;
+  const idx = parseInt(btn.dataset.idx);
+  if (!confirm('Удалить эту цитату?')) return;
+  localQuotes.splice(idx, 1);
+  renderQuotesLocal();
+});
+
+document.getElementById('addQuoteLocal').addEventListener('click', () => {
+  localQuotes.push({
+    img: '',
+    topic: '',
+    quote: '',
+    color: '#ffffff',
+    fontSize: 24,
+    displayDuration: 12,
+    fontFamily: 'Georgia, serif'
+  });
+  renderQuotesLocal();
+  const items = document.querySelectorAll('.quote-item');
+  if (items.length) items[items.length-1].scrollIntoView({ behavior: 'smooth' });
+});
+
+document.getElementById('saveQuotesLocal').addEventListener('click', () => {
+  const items = document.querySelectorAll('.quote-item');
+  const newQuotes = [];
+  let hasEmpty = false;
+  items.forEach(item => {
+    const img = item.querySelector('[data-field="img"]').value;
+    const topic = item.querySelector('[data-field="topic"]').value;
+    const quote = item.querySelector('[data-field="quote"]').value;
+    const color = item.querySelector('[data-field="color"]').value;
+    const fontSize = parseInt(item.querySelector('[data-field="fontSize"]').value) || 24;
+    const displayDuration = parseInt(item.querySelector('[data-field="displayDuration"]').value) || 12;
+    const fontFamily = item.querySelector('[data-field="fontFamily"]').value;
+    if (!quote.trim()) hasEmpty = true;
+    newQuotes.push({ img, topic, quote, color, fontSize, displayDuration, fontFamily });
+  });
+  if (!newQuotes.length) { toast('Нет цитат для сохранения', true); return; }
+  if (hasEmpty) {
+    if (!confirm('Некоторые цитаты не имеют текста. Продолжить?')) return;
+  }
+  const content = `// quotes-data.js\nwindow.QUOTES = ${JSON.stringify(newQuotes, null, 2)};`;
+  const blob = new Blob([content], { type: 'application/javascript' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'quotes-data.js';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast('Файл скачан. Замените им старый quotes-data.js и сделайте git push.');
+});
+
+document.getElementById('reloadQuotesLocal').addEventListener('click', loadQuotesLocal);
+
+// Управление размером шрифта в редакторе
+let currentFontSize = 14;
+document.getElementById('fontInc').addEventListener('click', () => {
+  currentFontSize = Math.min(24, currentFontSize + 2);
+  document.querySelectorAll('.quote-textarea').forEach(el => el.style.fontSize = currentFontSize + 'px');
+});
+document.getElementById('fontDec').addEventListener('click', () => {
+  currentFontSize = Math.max(10, currentFontSize - 2);
+  document.querySelectorAll('.quote-textarea').forEach(el => el.style.fontSize = currentFontSize + 'px');
+});
+
+/* ================================================================
+   ==================== ANNOUNCEMENTS ====================
+   ================================================================ */
+
+async function loadAnnounce(){
+  try {
+    const [active, history] = await Promise.all([api('/api/announcements/active'), api('/api/announcements')]);
+    const prev = document.getElementById('annPreview');
+    if (active) {
+      prev.innerHTML = escapeHtml(active.text) + 
+        `<div class="muted" style="font-size:11px;margin-top:6px;">Действует до: ${active.expires_at ? fmtDate(active.expires_at) : 'бессрочно'}</div>`;
+    } else {
+      prev.innerHTML = '<span class="muted">Нет активного объявления</span>';
+    }
+    const hist = document.getElementById('annHistory');
+    if (!history.length) { hist.innerHTML = '<div class="empty">Пока нет объявлений</div>'; return; }
+    hist.innerHTML = history.map(a => `
+      <div class="list-row">
+        <span>${escapeHtml(a.text)} <span class="mono muted">· ${fmtDate(a.created_at)}</span>
+        ${a.expires_at ? `<span class="mono muted">до ${fmtDate(a.expires_at)}</span>` : ''}
+        </span>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <label class="switch"><input type="checkbox" class="annToggle" data-id="${a.id}" ${a.is_active ? 'checked' : ''}><span class="slider"></span></label>
+          <button class="btn btn-sm btn-danger" data-act="delete-ann" data-id="${a.id}">✕</button>
+        </div>
+      </div>`).join('');
+  } catch (e) {
+    toast('Ошибка загрузки объявлений: ' + e.message, true);
+  }
+}
+
+document.getElementById('addAnnBtn').addEventListener('click', async () => {
+  const text = document.getElementById('annText').value.trim();
+  if (!text) { toast('Введите текст объявления', true); return; }
+  const duration = document.getElementById('annDuration').value;
+  try {
+    await api('/api/announcements', 'POST', { text, duration });
+    document.getElementById('annText').value = '';
+    toast('Объявление опубликовано');
+    loadAnnounce();
+  } catch (err) { toast(err.message, true); }
+});
+
+document.getElementById('annHistory').addEventListener('change', async (e) => {
+  if (!e.target.classList.contains('annToggle')) return;
+  const id = e.target.dataset.id;
+  const isActive = e.target.checked;
+  try {
+    await api(`/api/announcements/${id}`, 'PUT', { is_active: isActive });
+    toast('Обновлено');
+    loadAnnounce();
+  } catch (err) { toast(err.message, true); e.target.checked = !isActive; }
+});
+
+document.getElementById('annHistory').addEventListener('click', async (e) => {
+  const btn = e.target.closest('[data-act="delete-ann"]');
+  if (!btn) return;
+  const id = btn.dataset.id;
+  if (!confirm('Удалить это объявление безвозвратно?')) return;
+  try {
+    await api(`/api/announcements/${id}`, 'DELETE');
+    toast('Объявление удалено');
+    loadAnnounce();
+  } catch (err) { toast(err.message, true); }
+});
+
+/* ================================================================
+   ==================== SCHEDULE ====================
+   ================================================================ */
+const WD_LABELS = [['Пн',1],['Вт',2],['Ср',3],['Чт',4],['Пт',5],['Сб',6],['Вс',0]];
+let selectedWeekdays = new Set();
+
+document.getElementById('weekdayPick').innerHTML = WD_LABELS.map(([lbl,val]) =>
+  `<button type="button" class="wd-btn" data-val="${val}">${lbl}</button>`
+).join('');
+
+document.getElementById('weekdayPick').addEventListener('click', (e) => {
+  const btn = e.target.closest('.wd-btn'); if (!btn) return;
+  const val = parseInt(btn.dataset.val);
+  if (selectedWeekdays.has(val)) { selectedWeekdays.delete(val); btn.classList.remove('sel'); }
+  else { selectedWeekdays.add(val); btn.classList.add('sel'); }
+});
+
+document.getElementById('schType').addEventListener('change', (e) => {
+  document.getElementById('schNDaysWrap').classList.toggle('hidden', e.target.value !== 'every_n_days');
+  document.getElementById('schWeekdaysWrap').classList.toggle('hidden', e.target.value !== 'weekly');
+});
+
+async function loadSchedule() {
+  try {
+    const s = await api('/api/admin/notification-schedule');
+    document.getElementById('schType').value = s.type || 'daily';
+    document.getElementById('schType').dispatchEvent(new Event('change'));
+    document.getElementById('schNDays').value = s.n_days || 3;
+    document.getElementById('schTime').value = s.time || '12:00';
+    document.getElementById('schTitle').value = s.title || 'Китобхона';
+    document.getElementById('schBody').value = s.body || '';
+    document.getElementById('schEnabled').checked = !!s.enabled;
+    selectedWeekdays = new Set(s.weekdays || []);
+    document.querySelectorAll('.wd-btn').forEach(b => b.classList.toggle('sel', selectedWeekdays.has(parseInt(b.dataset.val))));
+  } catch (e) {
+    toast('Ошибка загрузки расписания: ' + e.message, true);
+  }
+}
+
+document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
+  try {
+    await api('/api/admin/notification-schedule', 'PUT', {
+      type: document.getElementById('schType').value,
+      n_days: parseInt(document.getElementById('schNDays').value) || 3,
+      weekdays: [...selectedWeekdays],
+      time: document.getElementById('schTime').value,
+      title: document.getElementById('schTitle').value,
+      body: document.getElementById('schBody').value,
+      enabled: document.getElementById('schEnabled').checked
+    });
+    toast('Расписание сохранено');
+  } catch (err) { toast(err.message, true); }
+});
+
+document.getElementById('sendNowBtn').addEventListener('click', async () => {
+  const body = document.getElementById('nowBody').value.trim();
+  if (!body) { toast('Введите текст уведомления', true); return; }
+  try {
+    await api('/api/notifications/send-all', 'POST', { type:'system', title: document.getElementById('nowTitle').value, body });
+    toast('Отправлено всем пользователям');
+    document.getElementById('nowBody').value = '';
+  } catch (err) { toast(err.message, true); }
+});
+
+/* ================================================================
+   ==================== BOOKS ====================
+   ================================================================ */
+async function loadBooks(){
+  try {
+    const period = document.getElementById('booksPeriod').value;
+    const list = await api('/api/popular-books?period=' + period);
+    const body = document.getElementById('booksBody');
+    if (!list.length) { body.innerHTML = '<tr><td colspan="4" class="empty">Нет данных</td></tr>'; return; }
+    body.innerHTML = list.map(b => `<tr>
+      <td>${escapeHtml(b.book_title || b.book_id)}</td><td>${escapeHtml(b.book_author || '—')}</td>
+      <td class="mono">${Math.round(b.total_minutes || 0)}</td><td class="mono">${b.sessions_count}</td>
+    </tr>`).join('');
+  } catch (e) { toast('Ошибка загрузки книг: ' + e.message, true); }
+}
+document.getElementById('booksPeriod').addEventListener('change', loadBooks);
+
+// ================================================================
+// ==================== ИНИЦИАЛИЗАЦИЯ ====================
+// ================================================================
+loadAnnounce();
+loadSchedule(); // теперь функция определена
+
 </script>
 </body>
 </html>

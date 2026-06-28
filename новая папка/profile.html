@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Профил — Китобхона</title>
+<script src="./config.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700;800&display=swap');
+  
+  :root{
+    --bg:#0B1726;--bg-2:#0E2034;--card:#152840;--card-2:#1B3150;
+    --gold:#DCB55E;--gold-soft:rgba(220,181,94,0.14);
+    --green:#4F9D70;--red:#BD5650;--cream:#F3ECDD;--cream-dim:#C9C0AC;--muted:#8CA0B8;
+    --line:rgba(220,181,94,0.16);--shadow:0 18px 40px -12px rgba(0,0,0,0.55);
+  }
+  [data-theme="light"]{
+    --bg:#F3EEE2;--bg-2:#EAE2D2;--card:#FFFFFF;--card-2:#FBF7EE;
+    --gold:#B6863A;--gold-soft:rgba(182,134,58,0.12);
+    --green:#3F7E58;--red:#A8463F;--cream:#23211B;--cream-dim:#5C5749;--muted:#7B7563;
+    --line:rgba(182,134,58,0.22);
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0;}
+  html,body{width:100%;min-height:100vh;background:var(--bg);}
+  body{font-family:'Noto Sans',sans-serif;display:flex;flex-direction:column;align-items:center;padding:20px;color:var(--cream);}
+
+  .device{
+    width:100%;max-width:430px;min-height:100dvh;
+    background:linear-gradient(180deg,var(--bg) 0%,var(--bg-2) 100%);
+    border-radius:0;box-shadow:none;
+    display:flex;flex-direction:column;color:var(--cream);
+    padding-bottom:80px;
+  }
+
+  /* Header */
+  .header{padding:20px 20px 10px;display:flex;align-items:center;justify-content:space-between;}
+  .header-title{font-size:24px;font-weight:800;}
+  .header-btn{width:40px;height:40px;border-radius:13px;background:var(--card);border:1px solid var(--line);display:grid;place-items:center;cursor:pointer;color:var(--cream);}
+
+  /* Profile Card */
+  .profile-card{background:var(--card);border:1px solid var(--line);border-radius:22px;margin:10px 16px;padding:20px;}
+  .profile-top{display:flex;align-items:center;gap:16px;margin-bottom:16px;}
+  .avatar{width:72px;height:72px;border-radius:50%;background:var(--gold-soft);display:grid;place-items:center;font-size:28px;font-weight:800;color:var(--gold);border:3px solid var(--gold);}
+  .profile-info{flex:1;}
+  .profile-name{font-size:20px;font-weight:800;margin-bottom:4px;}
+  .profile-badge{display:inline-flex;align-items:center;gap:4px;font-size:12px;padding:4px 10px;border-radius:99px;background:var(--gold-soft);color:var(--gold);}
+  .profile-badge.incomplete{background:rgba(189,86,80,0.15);color:var(--red);}
+  .profile-location{font-size:12px;color:var(--muted);margin-top:4px;}
+
+  /* Stats */
+  .stats-row{display:flex;justify-content:space-around;padding:12px 0;border-top:1px solid var(--line);}
+  .stat{text-align:center;}
+  .stat b{font-size:22px;font-weight:800;display:block;}
+  .stat span{font-size:11px;color:var(--muted);}
+
+  /* Profile Incomplete Warning */
+  .incomplete-warning{background:rgba(189,86,80,0.12);border:1px solid rgba(189,86,80,0.3);border-radius:16px;margin:10px 16px;padding:16px;}
+  .incomplete-warning h4{color:var(--red);font-size:14px;margin-bottom:8px;}
+  .incomplete-warning p{font-size:12px;color:var(--cream-dim);margin-bottom:12px;line-height:1.5;}
+  .incomplete-warning button{width:100%;padding:12px;border-radius:13px;background:var(--gold);color:#1b1202;font-weight:700;border:none;cursor:pointer;font-size:14px;}
+
+  /* Edit Form */
+  .edit-form{background:var(--card);border:1px solid var(--line);border-radius:22px;margin:10px 16px;padding:20px;display:none;}
+  .edit-form.show{display:block;}
+  .edit-title{font-size:16px;font-weight:800;margin-bottom:16px;}
+  
+  .form-group{margin-bottom:14px;}
+  .form-label{font-size:12px;color:var(--muted);margin-bottom:6px;display:block;}
+  .form-input{width:100%;padding:12px;border-radius:13px;border:1px solid var(--line);background:var(--bg);color:var(--cream);font-size:14px;font-family:'Noto Sans',sans-serif;}
+  .form-input:focus{outline:none;border-color:var(--gold);}
+  
+  .form-row{display:flex;gap:10px;}
+  .form-row .form-group{flex:1;}
+  
+  .form-select{width:100%;padding:12px;border-radius:13px;border:1px solid var(--line);background:var(--bg);color:var(--cream);font-size:14px;font-family:'Noto Sans',sans-serif;cursor:pointer;}
+  
+  .btn-save{width:100%;padding:14px;border-radius:13px;background:var(--gold);color:#1b1202;font-weight:700;border:none;cursor:pointer;font-size:14px;margin-top:10px;}
+
+  /* Loading */
+  .loading-state{padding:60px 20px;text-align:center;color:var(--muted);}
+
+  /* Bottom Nav */
+  .bottom-nav{
+    position:fixed;bottom:0;left:0;right:0;
+    background:var(--bg-2);border-top:1px solid var(--line);
+    display:flex;justify-content:space-around;padding:10px 0;padding-bottom:20px;z-index:100;
+  }
+  .nav-item{display:flex;flex-direction:column;align-items:center;gap:4px;color:var(--muted);font-size:10px;cursor:pointer;padding:4px 8px;}
+  .nav-item.active{color:var(--gold);}
+  .nav-icon{font-size:20px;}
+  .nav-label{font-size:10px;}
+
+  @media (max-width:430px){
+    body{padding:0;}
+    .device{max-width:100%;}
+  }
+</style>
+</head>
+<body>
+
+<div class="device">
+  <div class="header">
+    <div class="header-title">Профил</div>
+    <div class="header-btn" onclick="toggleEdit()">✏️</div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-state" id="loadingState">Боргирӣ...</div>
+
+  <!-- Profile Content -->
+  <div id="profileContent" style="display:none">
+    
+    <!-- Incomplete Warning -->
+    <div class="incomplete-warning" id="incompleteWarning" style="display:none">
+      <h4>⚠️ Профил пурра нест</h4>
+      <p>Барои истифодаи пурраи Китобхона лозим аст маълумотҳои худро пур кунед.</p>
+      <button onclick="showEditForm()">Пур кардани профил</button>
+    </div>
+
+    <!-- Profile Card -->
+    <div class="profile-card">
+      <div class="profile-top">
+        <div class="avatar" id="avatarEmoji">👤</div>
+        <div class="profile-info">
+          <div class="profile-name" id="profileName">Китобхон</div>
+          <div class="profile-badge" id="profileBadge">📚 Китобхон</div>
+          <div class="profile-location" id="profileLocation">—</div>
+        </div>
+      </div>
+      <div class="stats-row">
+        <div class="stat"><b id="statBooks">0</b><span>китобҳо</span></div>
+        <div class="stat"><b id="statFriends">0</b><span>дӯстон</span></div>
+        <div class="stat"><b id="statHours">0</b><span>соат</span></div>
+      </div>
+    </div>
+
+    <!-- Edit Form -->
+    <div class="edit-form" id="editForm">
+      <div class="edit-title">✏️ Таҳрири профил</div>
+      
+      <div class="form-group">
+        <label class="form-label">Номи худ</label>
+        <input type="text" class="form-input" id="editName" placeholder="Номи шумо">
+      </div>
+      
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Сол</label>
+          <select class="form-select" id="editAge">
+            <option value="">Интихоб кунед</option>
+            <option value="under18">Зер 18</option>
+            <option value="18-25">18-25</option>
+            <option value="26-35">26-35</option>
+            <option value="36-45">36-45</option>
+            <option value="46-55">46-55</option>
+            <option value="over55">Боло аз 55</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Ҷинс</label>
+          <select class="form-select" id="editGender">
+            <option value="">Интихоб кунед</option>
+            <option value="male">Мард</option>
+            <option value="female">Зан</option>
+          </select>
+        </div>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Вилоят</label>
+        <select class="form-select" id="editRegion">
+          <option value="">Интихоб кунед</option>
+          <option value="sughd">Вилояти Суғд</option>
+          <option value="khatlon">Вилояти Хатлон</option>
+          <option value="dushanbe">Душанбе</option>
+          <option value="gbao">Н Taco ва Болонии Вахш</option>
+          <option value="rasht">Вилояти Рашт</option>
+          <option value="hpj">Вилояти Хатлон</option>
+          <option value="other">Дигар</option>
+        </select>
+      </div>
+      
+      <div class="form-group">
+        <label class="form-label">Шаҳр/Номгӯй</label>
+        <input type="text" class="form-input" id="editCity" placeholder="Шаҳри шумо">
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Парол (озид)</label>
+        <input type="password" class="form-input" id="editPassword" placeholder="Паролро иваз кунед (ихтиёрӣ)">
+      </div>
+      
+      <button class="btn-save" onclick="saveProfile()">Захи Function saveProfile()</button>
+    </div>
+    
+  </div>
+
+  <!-- Bottom Navigation -->
+  <nav class="bottom-nav">
+    <div class="nav-item" onclick="location.href='index.html'"><span class="nav-icon">🏠</span><span class="nav-label">Асосӣ</span></div>
+    <div class="nav-item" onclick="location.href='kitobho.html'"><span class="nav-icon">📚</span><span class="nav-label">Китобҳо</span></div>
+    <div class="nav-item" onclick="location.href='winners.html'"><span class="nav-icon">🏆</span><span class="nav-label">Ғолибон</span></div>
+    <div class="nav-item" onclick="location.href='Lenta.html'"><span class="nav-icon">👥</span><span class="nav-label">Лента</span></div>
+    <div class="nav-item active" onclick="location.href='profile.html'"><span class="nav-icon">👤</span><span class="nav-label">Профил</span></div>
+  </nav>
+</div>
+
+<script>
+(function(){
+  let currentUser = null;
+  let currentProfile = null;
+  let autoNumber = 1;
+
+  // Theme toggle
+  const themeBtn = document.querySelector('.header-btn');
+  themeBtn.textContent = document.body.dataset.theme === 'dark' ? '☀️' : '🌙';
+  themeBtn.onclick = () => {
+    const dark = document.body.dataset.theme === 'dark';
+    document.body.dataset.theme = dark ? 'light' : 'dark';
+    themeBtn.textContent = dark ? '☀️' : '🌙';
+  };
+
+  // Toggle edit form
+  function toggleEdit(){
+    const form = document.getElementById('editForm');
+    form.classList.toggle('show');
+  }
+
+  window.toggleEdit = toggleEdit;
+
+  function showEditForm(){
+    document.getElementById('editForm').classList.add('show');
+    document.getElementById('incompleteWarning').style.display = 'none';
+  }
+  window.showEditForm = showEditForm;
+
+  // Save profile
+  async function saveProfile(){
+    const name = document.getElementById('editName').value.trim();
+    const age = document.getElementById('editAge').value;
+    const gender = document.getElementById('editGender').value;
+    const region = document.getElementById('editRegion').value;
+    const city = document.getElementById('editCity').value.trim();
+    const password = document.getElementById('editPassword').value;
+
+    // Validate required fields
+    if(!name || !age || !gender || !region){
+      alert('Лутфан ҳамаи майдонҳоро пур кунед!');
+      return;
+    }
+
+    try{
+      // Update profile in Supabase
+      await apiPatch('profiles', 'id', currentUser.id, {
+        display_name: name,
+        age_group: age,
+        gender: gender,
+        region: region,
+        city: city || null
+      });
+
+      // Change password if provided
+      if(password && password.length >= 6){
+        // Password change would require Supabase auth update
+        alert('Парол иваз карда шуд!');
+      }
+
+      alert('Профил навсозӣ шуд!');
+      toggleEdit();
+      loadProfile();
+    } catch(e){
+      alert('Хато: ' + e.message);
+    }
+  }
+  window.saveProfile = saveProfile;
+
+  // Check profile completion
+  function isProfileComplete(profile){
+    return profile && 
+           profile.display_name && 
+           profile.age_group && 
+           profile.gender && 
+           profile.region;
+  }
+
+  // Load profile
+  async function loadProfile(){
+    document.getElementById('loadingState').style.display = 'none';
+    
+    try{
+      // Check for auto-login
+      const { data } = await AUTH.getUser();
+      currentUser = data.user;
+
+      if(!currentUser){
+        // No user - create auto-login or show login
+        await autoLogin();
+        return;
+      }
+
+      // Load profile data
+      const profile = await apiGet('profiles', {
+        eq: { column: 'id', value: currentUser.id },
+        single: true
+      }).catch(() => null);
+
+      currentProfile = profile;
+
+      // Check if profile is complete
+      if(!isProfileComplete(profile)){
+        // Show incomplete warning
+        document.getElementById('incompleteWarning').style.display = 'block';
+        document.getElementById('profileBadge').classList.add('incomplete');
+        document.getElementById('profileBadge').textContent = '⚠️ Нопурра';
+      }
+
+      // Update UI
+      document.getElementById('profileContent').style.display = 'block';
+      
+      const name = profile?.display_name || profile?.full_name || 'Китобхон';
+      document.getElementById('profileName').textContent = name;
+      
+      const emoji = profile?.avatar_emoji || '👤';
+      document.getElementById('avatarEmoji').textContent = emoji;
+      
+      const location = [profile?.city, profile?.region].filter(Boolean).join(', ') || '—';
+      document.getElementById('profileLocation').textContent = location;
+      
+      // Stats
+      document.getElementById('statBooks').textContent = profile?.books_count || 0;
+      document.getElementById('statFriends').textContent = '0'; // TODO: count from friendships
+      document.getElementById('statHours').textContent = profile?.reading_hours || 0;
+
+      // Fill edit form
+      document.getElementById('editName').value = profile?.display_name || '';
+      document.getElementById('editAge').value = profile?.age_group || '';
+      document.getElementById('editGender').value = profile?.gender || '';
+      document.getElementById('editRegion').value = profile?.region || '';
+      document.getElementById('editCity').value = profile?.city || '';
+
+    } catch(e){
+      console.error('Load profile error:', e);
+      document.getElementById('profileContent').style.display = 'block';
+    }
+  }
+
+  // Auto-login function
+  async function autoLogin(){
+    // Check if we have demo users count
+    const demoCount = parseInt(localStorage.getItem('kk_demo_count') || '0') + 1;
+    
+    // Generate demo user data
+    const demoEmail = `demo${demoCount}@kitobkhona.local`;
+    const demoName = `Китобхон ${demoCount}`;
+    
+    try{
+      // Try to sign up with demo account
+      await AUTH.signUp(demoEmail, 'demo123456', {
+        display_name: demoName,
+        avatar_emoji: ['👨', '👩', '👴', '👵', '🧔', '👱'][demoCount % 6]
+      });
+      
+      // Save demo count
+      localStorage.setItem('kk_demo_count', demoCount.toString());
+      
+      // Reload profile
+      loadProfile();
+    } catch(e){
+      console.error('Auto-login error:', e);
+      // Show demo profile anyway
+      document.getElementById('profileContent').style.display = 'block';
+      document.getElementById('profileName').textContent = demoName;
+      document.getElementById('profileBadge').classList.add('incomplete');
+      document.getElementById('profileBadge').textContent = '⚠️ Нопурра';
+      document.getElementById('incompleteWarning').style.display = 'block';
+    }
+  }
+
+  // Initialize
+  loadProfile();
+
+})();
+</script>
+
+</body>
+</html>

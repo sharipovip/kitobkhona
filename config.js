@@ -28,7 +28,7 @@ function getDeviceFingerprint() {
 }
 
 // ================================================================
-// ============ ФУНКЦИИ ДЛЯ РАБОТЫ С ФАЙЛАМИ ============
+// ============ ФУНКЦИИ ДЛЯ РАБОТЫ С ФАЙЛАМИ (без изменений) ============
 // ================================================================
 
 function isAndroid() {
@@ -174,7 +174,7 @@ async function downloadFile(url, name, showProgress = true) {
 }
 
 // ================================================================
-// ============ АВТОВХОД И УПРАВЛЕНИЕ АККАУНТОМ ============
+// ============ АВТОВХОД И УПРАВЛЕНИЕ АККАУНТОМ (ИСПРАВЛЕН) ============
 // ================================================================
 const AutoLogin = {
   currentUser: null,
@@ -183,6 +183,7 @@ const AutoLogin = {
     const savedToken = localStorage.getItem('kk_token');
     const savedUserId = localStorage.getItem('kk_user_id');
     const savedUsername = localStorage.getItem('kk_username');
+    // Если есть сохранённый токен – пробуем восстановить
     if (savedToken && savedUserId) {
       try {
         const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
@@ -192,24 +193,38 @@ const AutoLogin = {
           this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
           return this.currentUser;
         }
+        // Если токен недействителен – удаляем
         localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
+        localStorage.removeItem('kk_guest_password');
       } catch (e) {
+        // Если ошибка сети, пробуем использовать старый токен
         this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
         return this.currentUser;
       }
     }
+    // Если нужно показать выбор – возвращаем null
     if (showChoice === true) return null;
+
+    // Гостевой вход
     try {
       const fp = getDeviceFingerprint();
-      const username = 'guest_' + fp.slice(0, 8) + '_' + Date.now().toString(36).slice(-4);
-      const password = 'guest_' + fp + '_' + Date.now().toString(36);
+      // Генерируем стабильный username и password на основе fingerprint
+      const username = 'guest_' + fp.slice(0, 8);
+      let password = localStorage.getItem('kk_guest_password');
+      if (!password) {
+        password = 'guest_' + fp + '_fixed_salt'; // постоянный пароль
+        localStorage.setItem('kk_guest_password', password);
+      }
       const email = username + '@guest.kitobkhona.tj';
+
+      // Пытаемся зарегистрироваться
       const response = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password, display_name: 'Меҳмон', is_temporary: true })
       }, 8000);
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.token) {
+        // Если пользователь уже существует – пробуем войти
         if (response.status === 409) {
           const loginResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
@@ -217,6 +232,7 @@ const AutoLogin = {
           }, 8000);
           const loginData = await loginResp.json().catch(() => ({}));
           if (loginResp.ok && loginData.token) {
+            // Проверяем блокировку
             const profileResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + loginData.userId, {
               headers: { 'Authorization': 'Bearer ' + loginData.token }
             }, 5000);
@@ -234,6 +250,7 @@ const AutoLogin = {
         }
         throw new Error(data.error || ('HTTP ' + response.status));
       }
+      // Успешная регистрация
       localStorage.setItem('kk_token', data.token);
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
@@ -269,6 +286,7 @@ const AutoLogin = {
     localStorage.removeItem('kk_user_id');
     localStorage.removeItem('kk_username');
     localStorage.removeItem('kk_device_blocked');
+    localStorage.removeItem('kk_guest_password');
     this.currentUser = null;
   }
 };
@@ -296,7 +314,7 @@ const AUTH = {
 };
 
 // ================================================================
-// ============ CHAT API ============
+// ============ CHAT API (без изменений) ============
 // ================================================================
 const ChatAPI = {
   getFriends: async function(userId) {
@@ -444,6 +462,63 @@ async function apiGet(table, opts) {
   }, 6000);
   if (!r.ok) throw new Error('Supabase ' + table + ': ' + r.status);
   return await r.json();
+}
+
+// ================================================================
+// ============ НОВЫЕ ФУНКЦИИ ДЛЯ УВЕДОМЛЕНИЙ И ОБЪЯВЛЕНИЙ ============
+// ================================================================
+
+// Получить уведомления пользователя
+async function getNotifications() {
+  const token = localStorage.getItem('kk_token');
+  if (!token) return [];
+  try {
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/notifications', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    }, 5000);
+    if (!r.ok) return [];
+    return await r.json();
+  } catch (e) {
+    console.warn('getNotifications error:', e);
+    return [];
+  }
+}
+
+// Отметить уведомление как прочитанное
+async function markNotificationRead(notificationId) {
+  const token = localStorage.getItem('kk_token');
+  if (!token) return;
+  try {
+    await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/notifications/' + notificationId + '/read', {
+      method: 'PUT', headers: { 'Authorization': 'Bearer ' + token }
+    }, 5000);
+  } catch (e) {
+    console.warn('markNotificationRead error:', e);
+  }
+}
+
+// Получить активное объявление
+async function getActiveAnnouncement() {
+  try {
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/announcements/active', {}, 4000);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) {
+    console.warn('getActiveAnnouncement error:', e);
+    return null;
+  }
+}
+
+// Получить цитаты из админки
+async function getAdminQuotes() {
+  try {
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/admin/quotes', {}, 5000);
+    if (!r.ok) return null;
+    return await r.json();
+  } catch (e) {
+    console.warn('getAdminQuotes error:', e);
+    return null;
+  }
 }
 
 // ================================================================
