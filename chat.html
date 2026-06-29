@@ -36,9 +36,8 @@
       --wa-pill-bg: #2A3942;
     }
 
-    /* Переопределяем обёртку – убираем отступ для навигации */
     .phone-wrapper {
-      padding-bottom: 0 !important; /* убираем отступ, т.к. навигации нет */
+      padding-bottom: 0 !important;
       height: 100vh;
       background: var(--wa-chat-bg);
     }
@@ -67,20 +66,28 @@
       display: flex;
       align-items: center;
       gap: 10px;
-      padding: 12px 14px;
+      padding: 10px 12px;
+      position: relative;
     }
     .back-btn {
-      font-size: 24px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
       cursor: pointer;
-      padding: 2px 6px 2px 0;
-      background: none;
+      background: rgba(255,255,255,0.12);
       border: none;
       color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      transition: background .2s;
     }
+    .back-btn:active { background: rgba(255,255,255,0.22); }
     .head-avatar {
       width: 38px; height: 38px;
       border-radius: 50%;
-      background: #0a4a42;
+      background: linear-gradient(135deg, #0a5a50, #0e7a6e);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -88,20 +95,48 @@
       overflow: hidden;
       font-size: 16px;
       color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     .head-info { flex: 1; min-width: 0; }
     .head-name { font-size: 15.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-    .head-status { font-size: 11.5px; color: rgba(255,255,255,0.78); display: flex; align-items: center; gap: 5px; margin-top: 1px; }
+    .head-status {
+      font-size: 11px;
+      color: rgba(255,255,255,0.78);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+      flex-wrap: nowrap;
+    }
     .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; flex: 0 0 auto; }
+    .word-badge {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      white-space: nowrap;
+      flex-shrink: 1;
+    }
+    .word-badge.alert { background: rgba(231,76,60,0.45); color: #ffc0c0; }
     .menu-btn {
-      font-size: 21px;
+      width: 36px; height: 36px;
+      border-radius: 50%;
       cursor: pointer;
-      padding: 2px 6px;
-      transform: rotate(90deg);
-      background: none;
+      background: rgba(255,255,255,0.12);
       border: none;
       color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background .2s;
+      position: relative;
     }
+    .menu-btn:active { background: rgba(255,255,255,0.22); }
 
     .messages {
       flex: 1 1 auto;
@@ -132,31 +167,70 @@
 
     .bubble {
       max-width: 78%;
-      padding: 6px 9px 7px 9px;
+      padding: 6px 9px 4px 9px;
       font-size: 14.5px;
-      line-height: 1.35;
+      line-height: 1.4;
       color: var(--wa-text);
       box-shadow: 0 1px 1px rgba(0,0,0,0.12);
-      white-space: pre-wrap;
       word-break: break-word;
       position: relative;
+      display: inline-block;
+      border-radius: 9px 9px 9px 2px;
+      /* Ключевое: пузырь сжимается до содержимого */
+      width: fit-content;
+      min-width: 0;
     }
-    .bubble.in { background: var(--wa-bubble-in); border-radius: 9px 9px 9px 2px; }
+    .bubble.in { background: var(--wa-bubble-in); }
     .bubble.out { background: var(--wa-bubble-out); border-radius: 9px 9px 2px 9px; }
 
-    .bubble-text { margin-right: 46px; }
+    /* Текст + мета в одном потоке, как у WhatsApp */
+    .bubble-body {
+      display: block;
+      white-space: pre-wrap;
+    }
+
+    .bubble-text {
+      display: inline;
+      white-space: pre-wrap;
+    }
+
+    /* Невидимый спейсер — резервирует место под мету справа */
+    .bubble-spacer {
+      display: inline-block;
+      width: 50px;
+      height: 1px;
+      vertical-align: bottom;
+    }
+
     .bubble-meta {
-      position: absolute;
-      right: 9px;
-      bottom: 5px;
+      float: right;
+      clear: right;
+      margin-top: -16px;      /* поднимаем к последней строке текста */
+      margin-left: 4px;
+      margin-bottom: 3px;
       display: flex;
       align-items: center;
       gap: 3px;
       font-size: 10.5px;
       color: var(--wa-muted);
       white-space: nowrap;
+      position: relative;
+      z-index: 1;
     }
-    .check { font-size: 13px; line-height: 1; color: var(--wa-check-grey); }
+
+    /* Сброс float после bubble */
+    .bubble::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+    .check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--wa-check-grey);
+      line-height: 1;
+    }
     .check.read { color: var(--wa-check-blue); }
 
     .composer {
@@ -164,17 +238,10 @@
       background: var(--wa-compose-bg);
       display: flex;
       flex-direction: column;
-      gap: 4px;
+      gap: 0;
       padding: 8px 10px 12px;
-      border-top: 1px solid rgba(0,0,0,0.05);
+      border-top: 1px solid rgba(0,0,0,0.08);
     }
-    .word-counter {
-      font-size: 11px;
-      color: var(--wa-muted);
-      text-align: right;
-      padding-right: 4px;
-    }
-    .word-counter.alert { color: #e74c3c; font-weight: 600; }
     .input-row {
       display: flex;
       align-items: flex-end;
@@ -187,31 +254,42 @@
       gap: 6px;
       background: var(--wa-pill-bg);
       border-radius: 22px;
-      padding: 6px 6px 6px 12px;
-      min-height: 40px;
+      padding: 6px 10px 6px 14px;
+      min-height: 44px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
     }
-    .emoji-btn { font-size: 20px; cursor: pointer; flex: 0 0 auto; padding-bottom: 3px; line-height: 1; }
+    .emoji-btn {
+      font-size: 22px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      padding-bottom: 2px;
+      line-height: 1;
+      opacity: 0.75;
+      transition: opacity .2s;
+    }
+    .emoji-btn:active { opacity: 1; }
     .msg-input {
       flex: 1;
       border: none;
       outline: none;
       background: transparent;
       resize: none;
-      font-family: 'Noto Sans';
+      font-family: 'Noto Sans', sans-serif;
       font-size: 14.5px;
       color: var(--wa-text);
-      line-height: 1.4;
-      max-height: 100px;
+      line-height: 1.45;
+      max-height: 110px;
       overflow-y: auto;
-      padding: 5px 4px;
+      padding: 4px 0;
       scrollbar-width: none;
+      height: auto;
     }
     .msg-input::-webkit-scrollbar { display: none; }
     .msg-input::placeholder { color: var(--wa-muted); }
     .send-btn {
-      width: 40px; height: 40px;
+      width: 44px; height: 44px;
       border-radius: 50%;
-      background: var(--wa-header);
+      background: linear-gradient(135deg, var(--wa-header), #0a7a6e);
       display: flex;
       align-items: center;
       justify-content: center;
@@ -220,10 +298,11 @@
       color: #fff;
       font-size: 17px;
       border: none;
-      transition: transform .1s;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      transition: transform .12s, box-shadow .12s;
     }
-    .send-btn:active { transform: scale(.92); }
-    .send-btn:disabled { opacity: 0.4; pointer-events: none; }
+    .send-btn:active { transform: scale(0.9); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    .send-btn:disabled { opacity: 0.35; pointer-events: none; }
 
     .loading-msg {
       display: flex;
@@ -243,7 +322,49 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
-    /* Светлая тема */
+    /* ===== МЕНЮ три точки (вертикальное, красивое) ===== */
+    .popup-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #1a2830;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 6px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.7);
+      z-index: 200;
+      min-width: 175px;
+      flex-direction: column;
+      gap: 2px;
+      animation: menuPop .18s ease;
+    }
+    @keyframes menuPop {
+      from { opacity: 0; transform: scale(0.9) translateY(-6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .popup-menu.open { display: flex; }
+    .popup-menu .item {
+      padding: 11px 13px;
+      font-size: 13.5px;
+      cursor: pointer;
+      color: #E9EDEF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 11px;
+      transition: background 0.15s;
+      font-weight: 500;
+    }
+    .popup-menu .item:hover { background: rgba(255,255,255,0.08); }
+    .popup-menu .item.danger { color: #ff6b6b; }
+    .popup-menu .item .icon { font-size: 17px; width: 22px; text-align: center; }
+    .popup-menu .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 3px 6px;
+    }
+
     .light-theme .chat-container {
       background: #ECE5DD;
     }
@@ -253,24 +374,52 @@
     .light-theme .input-pill {
       background: #FFFFFF;
     }
+    .light-theme .popup-menu {
+      background: #fff;
+      border-color: rgba(0,0,0,0.1);
+    }
+    .light-theme .popup-menu .item {
+      color: #1A2D44;
+    }
+    .light-theme .popup-menu .item:hover {
+      background: #f0f0f0;
+    }
   </style>
 </head>
 <body data-theme="dark">
 
 <div class="phone-wrapper">
 
-  <!-- ===== ОСНОВНОЙ КОНТЕНТ (без навигации) ===== -->
   <main class="main-content">
     <div class="chat-container">
       <!-- Шапка чата -->
       <div class="chat-header">
-        <button class="back-btn" onclick="goBack()">‹</button>
         <div class="head-avatar" id="chatAvatar">👤</div>
         <div class="head-info">
           <div class="head-name" id="headName">Чат</div>
-          <div class="head-status" id="headStatus"><span class="online-dot"></span>Дӯст</div>
+          <div class="head-status" id="headStatus">
+            <span class="online-dot"></span>
+            <span>Дӯст</span>
+            <span class="word-badge" id="wordCounter">Шумо метавонед 100 калимаи дигар фиристед</span>
+          </div>
         </div>
-        <button class="menu-btn" id="reportBtn">⋮</button>
+        <button class="menu-btn" id="menuBtn">⋮</button>
+        <!-- Попап вне кнопки, позиционируется относительно header -->
+        <div class="popup-menu" id="popupMenu">
+          <div class="item" onclick="deleteChat()">
+            <span class="icon">🗑</span>
+            <span>Удалить чат</span>
+          </div>
+          <div class="item" onclick="clearChatLocal()">
+            <span class="icon">🧹</span>
+            <span>Очистить чат</span>
+          </div>
+          <div class="divider"></div>
+          <div class="item danger" onclick="reportUser()">
+            <span class="icon">⚠️</span>
+            <span>Пожаловаться</span>
+          </div>
+        </div>
       </div>
 
       <!-- Область сообщений -->
@@ -278,9 +427,8 @@
         <div class="loading-msg"><div class="spinner"></div> Боргирӣ...</div>
       </div>
 
-      <!-- Композер (поле ввода) — теперь внизу экрана -->
+      <!-- Композер -->
       <div class="composer">
-        <div class="word-counter" id="wordCounter">Боқӣ: 100 калима</div>
         <div class="input-row">
           <div class="input-pill">
             <div class="emoji-btn">😊</div>
@@ -295,7 +443,7 @@
 </div>
 
 <script>
-  // ===== КОД ЧАТА (без изменений) =====
+  // ===== КОД ЧАТА =====
   const qs = new URL(location.href).searchParams;
   const peerId = qs.get('to') || '';
   const peerName = decodeURIComponent(qs.get('name') || 'Чат');
@@ -305,6 +453,72 @@
   let currentUserId = null;
   let pollInterval = null;
 
+  // ===== МЕНЮ =====
+  const menuBtn = document.getElementById('menuBtn');
+  const popupMenu = document.getElementById('popupMenu');
+
+  // Позиционирование попапа относительно header
+  function positionMenu() {
+    const headerRect = document.querySelector('.chat-header').getBoundingClientRect();
+    popupMenu.style.top = (headerRect.height) + 'px';
+    popupMenu.style.right = '10px';
+  }
+
+  menuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    positionMenu();
+    popupMenu.classList.toggle('open');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.menu-btn') && !e.target.closest('.popup-menu')) {
+      popupMenu.classList.remove('open');
+    }
+  });
+
+  // ===== УДАЛИТЬ ЧАТ =====
+  async function deleteChat() {
+    popupMenu.classList.remove('open');
+    if (!currentUserId || !peerId) return;
+    if (!confirm('Удалить всю историю чата?')) return;
+    try {
+      const token = localStorage.getItem('kk_token');
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1: currentUserId, user2: peerId })
+      });
+      if (!resp.ok) throw new Error('Ошибка удаления');
+      alert('Чат удалён.');
+      location.href = 'chats.html';
+    } catch (e) {
+      alert('Ошибка: ' + e.message);
+    }
+  }
+
+  // ===== ОЧИСТИТЬ ЧАТ =====
+  function clearChatLocal() {
+    popupMenu.classList.remove('open');
+    if (!confirm('Очистить сообщения из интерфейса?')) return;
+    const container = document.getElementById('messages');
+    container.innerHTML = '<div class="loading-msg">Чат очищен</div>';
+    setTimeout(() => { loadMessages(false); }, 500);
+  }
+
+  // ===== ПОЖАЛОВАТЬСЯ — только своё предупреждение =====
+  async function reportUser() {
+    popupMenu.classList.remove('open');
+    if (!currentUserId || !peerId) return;
+    if (!confirm('Шумо мехоҳед шикоят фиристед?')) return;
+    try {
+      await ChatAPI.sendReport(currentUserId, peerId, 'Жалоба от пользователя');
+      alert('Шикоят фиристода шуд!');
+    } catch (e) {
+      alert('Хатогӣ: ' + e.message);
+    }
+  }
+
+  // ===== ОСТАЛЬНЫЕ ФУНКЦИИ (без изменений) =====
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
     try {
@@ -326,7 +540,12 @@
       msgs.forEach(m => {
         const isMine = m.sender_id === currentUserId;
         const time = timeLabel(m.created_at);
-        const status = m.status === 'read' ? '✓✓' : '✓';
+        const checkHtml = `<span class="check read" title="Прочитано">
+               <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+                 <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+                 <path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+               </svg>
+             </span>`;
         const dateLabel = formatDate(m.created_at);
         if(dateLabel !== lastDate){
           html += `<div class="date-sep">${dateLabel}</div>`;
@@ -335,10 +554,10 @@
         html += `
           <div class="msg-row ${isMine ? 'out' : 'in'}">
             <div class="bubble ${isMine ? 'out' : 'in'}">
-              <div class="bubble-text">${esc(m.text)}</div>
+              <div class="bubble-body"><span class="bubble-text">${esc(m.text)}</span><span class="bubble-spacer"></span></div>
               <div class="bubble-meta">
                 ${time}
-                ${isMine ? `<span class="check ${status === '✓✓' ? 'read' : ''}">${status}</span>` : ''}
+                ${isMine ? checkHtml : ''}
               </div>
             </div>
           </div>
@@ -389,7 +608,7 @@
         const data = await r.json();
         const remaining = data.remaining;
         const el = document.getElementById('wordCounter');
-        el.textContent = 'Боқӣ: ' + remaining + ' калима';
+        el.textContent = 'Шумо метавонед ' + remaining + ' калимаи дигар фиристед';
         if (remaining < 10) el.classList.add('alert');
         else el.classList.remove('alert');
         document.getElementById('sendBtn').disabled = (remaining <= 0);
@@ -402,7 +621,9 @@
     const text = input.value.trim();
     if(!text || !currentUserId || !peerId) return;
     input.value = '';
-    input.style.height = 'auto';
+    // Сбрасываем высоту textarea до одной строки
+    input.style.height = '0';
+    input.style.height = input.scrollHeight + 'px';
 
     const time = timeLabel(new Date().toISOString());
     const msgContainer = document.getElementById('messages');
@@ -419,11 +640,13 @@
     const bubble = document.createElement('div');
     bubble.className = 'bubble out';
     const textEl = document.createElement('div');
-    textEl.className = 'bubble-text';
-    textEl.textContent = text;
+    textEl.className = 'bubble-body';
+    textEl.innerHTML = '<span class="bubble-text"></span><span class="bubble-spacer"></span>';
+    textEl.querySelector('.bubble-text').textContent = text;
     const meta = document.createElement('div');
     meta.className = 'bubble-meta';
-    meta.innerHTML = time + ' <span class="check">✓</span>';
+    const singleCheck = `<span class="check"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+    meta.innerHTML = time + ' ' + singleCheck;
     bubble.appendChild(textEl);
     bubble.appendChild(meta);
     row.appendChild(bubble);
@@ -433,8 +656,8 @@
     try {
       await ChatAPI.sendMessage(currentUserId, peerId, text);
       const checkSpan = meta.querySelector('.check');
-      checkSpan.textContent = '✓✓';
       checkSpan.className = 'check read';
+      checkSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       loadMessages(true);
     } catch(e) {
       const checkSpan = meta.querySelector('.check');
@@ -452,19 +675,8 @@
     }
   });
   document.getElementById('msgInput').addEventListener('input', function() {
-    this.style.height = 'auto';
-    this.style.height = Math.min(this.scrollHeight, 100) + 'px';
-  });
-
-  document.getElementById('reportBtn').addEventListener('click', async () => {
-    if(!currentUserId || !peerId) return;
-    if(!confirm('Барои ин корбар жалоба фиристан?')) return;
-    try {
-      await ChatAPI.sendReport(currentUserId, peerId, 'Жалоба аз чат');
-      alert('Жалоба фиристо шуд!');
-    } catch(e) {
-      alert('Хатогӣ: ' + e.message);
-    }
+    this.style.height = '0';
+    this.style.height = Math.min(this.scrollHeight, 110) + 'px';
   });
 
   function goBack() {
@@ -501,6 +713,11 @@
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
+
+  // Делаем функции глобальными для onclick в меню
+  window.deleteChat = deleteChat;
+  window.clearChatLocal = clearChatLocal;
+  window.reportUser = reportUser;
 </script>
 
 </body>
