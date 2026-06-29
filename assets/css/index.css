@@ -63,10 +63,11 @@ body:before {
 .phone-wrapper {
   max-width: 430px;
   margin: 0 auto;
-  min-height: 100vh;
-  position: relative;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: var(--bg);
-  padding-bottom: 92px;
+  padding-bottom: 0;
 }
 
 .top-header {
@@ -140,35 +141,64 @@ body:before {
 }
 
 .main-content {
-  padding-bottom: 12px;
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0 0 12px 0;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(201,168,76,0.2) transparent;
+  -webkit-overflow-scrolling: touch;
+}
+.main-content::-webkit-scrollbar {
+  width: 4px;
+}
+.main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+.main-content::-webkit-scrollbar-thumb {
+  background: rgba(201,168,76,0.2);
+  border-radius: 2px;
 }
 
+/* ===== HERO SECTION – СТИКИ ВВЕРХУ С ОТСТУПОМ ===== */
 .hero-section {
-  margin: 14px 16px 16px;
+  position: sticky;
+  top: 2px; /* небольшой отступ сверху, чтобы не обрезалось */
+  z-index: 10;
+  margin: 0 16px 16px;
   border-radius: 28px;
   background: linear-gradient(135deg, rgba(201,168,76,.13), rgba(42,82,152,.10)), var(--card);
   border: 1px solid rgba(201,168,76,.32);
   box-shadow: 0 18px 40px var(--shadow);
-  position: relative;
-  overflow: hidden;
+  overflow: visible;
   padding: 14px;
 }
 
-.hero-flag-stripe {
+.hero-section::before {
+  content: '';
   position: absolute;
-  top: 0;
-  left: 18px;
-  right: 18px;
-  height: 3px;
-  background: linear-gradient(90deg, #D01F2F 0 25%, #fff 38% 58%, #1FA463 72% 100%);
-  background-size: 180% 100%;
-  border-radius: 0 0 8px 8px;
-  animation: flagFlow 5.5s ease-in-out infinite;
+  inset: -3px;
+  border-radius: 30px;
+  padding: 3px;
+  background: linear-gradient(90deg, #D01F2F, #FFFFFF, #1FA463, #D01F2F, #FFFFFF, #1FA463);
+  background-size: 300% 100%;
+  animation: borderFlow 7s ease-in-out infinite alternate;
+  -webkit-mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+  z-index: 1;
 }
 
-@keyframes flagFlow {
-  0%, 100% { background-position: 0 0; opacity: .85; }
-  50% { background-position: 100% 0; opacity: 1; }
+@keyframes borderFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 100% 50%; }
+  100% { background-position: 0% 50%; }
+}
+
+.hero-flag-stripe {
+  display: none !important;
 }
 
 .hero-inner {
@@ -176,40 +206,83 @@ body:before {
   grid-template-columns: 104px 1fr;
   gap: 14px;
   align-items: center;
-}
-
-.president-photo-wrap {
-  text-align: center;
   position: relative;
+  z-index: 2;
 }
 
-.president-photo {
+/* ===== ФОТО ПРЕЗИДЕНТА С НОВОЙ РАМКОЙ ===== */
+/* ===== ФОТО ПРЕЗИДЕНТА — МЯГКИЙ ОРЕОЛ ===== */
+.president-photo-wrap {
+  position: relative;
+  display: inline-block;
+  text-align: center;
   width: 100px;
   height: 100px;
   margin: 0 auto;
+}
+
+/* Сам круг (уменьшен) */
+.president-photo {
+  width: 80px;
+  height: 80px;
+  margin: 10px auto;
   border-radius: 50%;
-  background: conic-gradient(from 0deg, #d01f2f 0 32%, #fff 36% 61%, #1fa463 66% 100%);
-  padding: 4px;
   overflow: hidden;
-  box-shadow: 0 10px 28px rgba(0,0,0,.35);
-  animation: flagRing 7s linear infinite;
+  box-shadow: 0 10px 28px rgba(0,0,0,.35), inset 0 0 20px rgba(201,168,76,0.1);
+  position: relative;
+  z-index: 3;
+  border: 2px solid var(--card);
 }
 
 .president-photo img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  display: block;
+}
+
+/* Первый слой — размытый ореол (туман) */
+.president-photo-wrap::before {
+  content: '';
+  position: absolute;
+  top: -16px;
+  left: -16px;
+  right: -16px;
+  bottom: -16px;
   border-radius: 50%;
-  border: 3px solid var(--card);
-  animation: photoUnspin 7s linear infinite;
+  background: linear-gradient(90deg, #D01F2F, #FFFFFF, #1FA463, #D01F2F, #FFFFFF, #1FA463);
+  background-size: 300% 100%;
+  animation: borderFlow 7s ease-in-out infinite alternate;
+  filter: blur(14px);
+  opacity: 0.6;
+  z-index: 1;
+  pointer-events: none;
 }
 
-@keyframes flagRing {
-  to { filter: hue-rotate(0deg); transform: rotate(360deg); }
+/* Второй слой — более плотное свечение */
+.president-photo-wrap::after {
+  content: '';
+  position: absolute;
+  top: -6px;
+  left: -6px;
+  right: -6px;
+  bottom: -6px;
+  border-radius: 50%;
+  background: linear-gradient(90deg, #D01F2F, #FFFFFF, #1FA463, #D01F2F, #FFFFFF, #1FA463);
+  background-size: 300% 100%;
+  animation: borderFlow 7s ease-in-out infinite alternate;
+  animation-delay: 0.5s;
+  filter: blur(6px);
+  opacity: 0.4;
+  z-index: 2;
+  pointer-events: none;
 }
 
-@keyframes photoUnspin {
-  to { transform: rotate(-360deg); }
+/* Общая анимация движения */
+@keyframes borderFlow {
+  0% { background-position: 0% 50%; }
+  50% { background-position: 50% 50%; }
+  70% { background-position: 0% 40%; }
 }
 
 .president-crown {
@@ -245,7 +318,6 @@ body:before {
   line-height: 1.22;
   font-style: italic;
 }
-
 .hero-kicker b {
   color: var(--gold2);
   font-weight: 900;
@@ -280,7 +352,6 @@ body:before {
   gap: 5px;
   margin-top: 12px;
 }
-
 .hero-dot {
   width: 7px;
   height: 7px;
@@ -288,13 +359,13 @@ body:before {
   background: var(--dim);
   transition: .2s;
 }
-
 .hero-dot.active {
   width: 20px;
   border-radius: 99px;
   background: var(--gold2);
 }
 
+/* ===== ОСТАЛЬНЫЕ ЭЛЕМЕНТЫ (без изменений) ===== */
 .section-header-row,
 .section-row {
   display: flex;
@@ -303,20 +374,17 @@ body:before {
   margin: 20px 16px 10px;
   gap: 9px;
 }
-
 .section-header-row .section-title {
   flex: 1;
   min-width: 0;
   white-space: nowrap;
   font-size: 15px;
 }
-
 .section-title {
   font-family: 'DejaVu Serif', Georgia, 'Times New Roman', serif;
   font-size: 17px;
   font-weight: 900;
 }
-
 .section-title-accent {
   color: var(--gold2);
 }
@@ -332,7 +400,6 @@ body:before {
   min-width: 128px;
   max-width: 154px;
 }
-
 .search-mini input {
   width: 100%;
   background: transparent;
@@ -351,7 +418,6 @@ body:before {
   padding: 2px 10px 12px;
   scrollbar-width: none;
 }
-
 .ozmunho-scroll::-webkit-scrollbar,
 .president-books-scroll::-webkit-scrollbar,
 .books-scroll::-webkit-scrollbar {
@@ -364,7 +430,6 @@ body:before {
   text-align: center;
   cursor: pointer;
 }
-
 .ozmun-circle {
   width: 52px;
   height: 52px;
@@ -378,13 +443,11 @@ body:before {
   box-shadow: 0 10px 22px var(--shadow);
   position: relative;
 }
-
 .ozmun-circle img {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
-
 .ozmun-badge {
   position: absolute;
   right: 0;
@@ -399,7 +462,6 @@ body:before {
   display: grid;
   place-items: center;
 }
-
 .ozmun-label {
   font-size: 8.7px;
   font-weight: 850;
@@ -417,17 +479,14 @@ body:before {
 .winners-section {
   margin: 14px 16px;
 }
-
 .continue-section .section-label {
   display: none;
 }
-
 .section-label {
   font-size: 15px;
   font-weight: 900;
   margin-bottom: 10px;
 }
-
 .continue-card {
   display: flex;
   align-items: center;
@@ -438,7 +497,6 @@ body:before {
   border: 1px solid var(--border);
   box-shadow: 0 10px 26px var(--shadow);
 }
-
 .continue-book-cover {
   width: 48px;
   height: 66px;
@@ -448,12 +506,10 @@ body:before {
   font-size: 24px;
   flex-shrink: 0;
 }
-
 .continue-info {
   flex: 1;
   min-width: 0;
 }
-
 .continue-label-small {
   font-size: 11px;
   color: var(--gold2);
@@ -463,21 +519,18 @@ body:before {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .continue-book-title {
   font-weight: 900;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-
 .continue-author,
 .progress-label {
   font-size: 11px;
   color: var(--muted);
   margin-top: 3px;
 }
-
 .progress-bar-wrap {
   height: 5px;
   background: rgba(255,255,255,.12);
@@ -485,13 +538,11 @@ body:before {
   margin-top: 8px;
   overflow: hidden;
 }
-
 .progress-bar-fill {
   height: 100%;
   background: linear-gradient(90deg, var(--gold), var(--gold2));
   border-radius: 10px;
 }
-
 .continue-btn,
 .see-all-btn {
   border: 1px solid rgba(201,168,76,.35);
@@ -503,7 +554,6 @@ body:before {
   font-size: 11px;
   transition: transform .13s ease, box-shadow .18s ease, background .18s ease;
 }
-
 .continue-btn:active,
 .see-all-btn:active {
   transform: scale(.94);
@@ -519,7 +569,6 @@ body:before {
   position: relative;
   overflow: hidden;
 }
-
 .president-books-header {
   display: flex;
   align-items: flex-start;
@@ -527,7 +576,6 @@ body:before {
   padding: 8px 12px 8px;
   position: relative;
 }
-
 .president-books-title {
   font-family: 'Zapf ChanceC Local', 'DejaVu Serif', 'Times New Roman', Georgia, serif;
   font-weight: 400;
@@ -537,7 +585,6 @@ body:before {
   text-shadow: 0 1px 0 rgba(0,0,0,.34), 0 0 12px rgba(201,168,76,.16);
   padding-right: 0;
 }
-
 .pesvo-all-btn {
   display: inline-flex;
   vertical-align: baseline;
@@ -554,11 +601,9 @@ body:before {
   box-shadow: 0 5px 12px rgba(201,168,76,.16);
   animation: softTap 2s ease-in-out infinite;
 }
-
 .pesvo-all-btn:active {
   transform: scale(.94);
 }
-
 @keyframes softTap {
   0%, 100% { box-shadow: 0 5px 12px rgba(201,168,76,.14); }
   50% { box-shadow: 0 0 0 4px rgba(201,168,76,.09), 0 6px 16px rgba(201,168,76,.24); }
@@ -570,11 +615,9 @@ body:before {
   cursor: pointer;
   transition: transform .18s ease;
 }
-
 .book-card:active {
   transform: scale(.97);
 }
-
 .book-cover {
   height: 154px;
   position: relative;
@@ -592,7 +635,6 @@ body:before {
   font-weight: 900;
   font-size: 10px;
 }
-
 .book-cover:before {
   content: '';
   position: absolute;
@@ -603,12 +645,10 @@ body:before {
   background: linear-gradient(90deg, rgba(0,0,0,.45), rgba(255,255,255,.10), rgba(0,0,0,.18));
   z-index: 2;
 }
-
 .book-cover:active {
   transform: translateY(-4px) rotateY(-8deg) scale(1.02);
   box-shadow: 0 18px 34px rgba(0,0,0,.42);
 }
-
 .book-cover img {
   position: absolute;
   inset: 0;
@@ -616,7 +656,6 @@ body:before {
   height: 100%;
   object-fit: cover;
 }
-
 .book-cover span {
   position: relative;
   z-index: 1;
@@ -625,11 +664,9 @@ body:before {
   padding: 4px;
   backdrop-filter: blur(2px);
 }
-
 .book-cover img:not([src=""])+span {
   opacity: 0;
 }
-
 .book-name {
   font-size: 11px;
   font-weight: 800;
@@ -647,7 +684,6 @@ body:before {
   grid-template-columns: repeat(2, 1fr);
   gap: 10px;
 }
-
 .category-card {
   min-height: 76px;
   border-radius: 17px;
@@ -657,17 +693,14 @@ body:before {
   box-shadow: 0 10px 24px var(--shadow);
   cursor: pointer;
 }
-
 .category-icon {
   font-size: 21px;
 }
-
 .category-name {
   font-weight: 900;
   margin-top: 6px;
   font-size: 13px;
 }
-
 .category-count {
   font-size: 11px;
   color: rgba(255,255,255,.75);
@@ -684,7 +717,6 @@ body:before {
   padding: 10px;
   margin-bottom: 8px;
 }
-
 .winner-rank {
   width: 30px;
   height: 30px;
@@ -695,24 +727,19 @@ body:before {
   color: #1b1202;
   font-weight: 900;
 }
-
 .winner-avatar {
   font-size: 24px;
 }
-
 .winner-info {
   flex: 1;
 }
-
 .winner-name {
   font-weight: 900;
 }
-
 .winner-sub {
   font-size: 11px;
   color: var(--muted);
 }
-
 .winner-score {
   color: var(--gold2);
   font-weight: 900;
@@ -726,7 +753,6 @@ body:before {
   overflow: hidden;
   box-shadow: 0 12px 28px var(--shadow);
 }
-
 .search-result-item {
   display: flex;
   align-items: center;
@@ -735,11 +761,9 @@ body:before {
   border-bottom: 1px solid rgba(255,255,255,.06);
   cursor: pointer;
 }
-
 .search-result-item:last-child {
   border-bottom: 0;
 }
-
 .search-result-icon {
   width: 34px;
   height: 42px;
@@ -750,12 +774,10 @@ body:before {
   color: #1b1202;
   flex-shrink: 0;
 }
-
 .search-result-name {
   font-weight: 900;
   font-size: 13px;
 }
-
 .search-result-sub {
   font-size: 11px;
   color: var(--muted);
@@ -765,7 +787,6 @@ body:before {
 .president-books-section .book-cover {
   position: relative;
 }
-
 .president-books-section .book-cover:after {
   content: '👑';
   position: absolute;
@@ -789,26 +810,12 @@ body:before {
   animation: softTap 2s ease-in-out infinite;
 }
 
-/* ===== НОВАЯ НАВИГАЦИЯ (ТОЧНО КАК В навигации.html) ===== */
-.nav-fixed-wrapper {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 80;
-  padding: 0 12px calc(4px + var(--safe-bottom));
-  background: linear-gradient(transparent, var(--bg) 12%);
-  display: flex;
-  justify-content: center;
-  pointer-events: none;
-}
-
-.nav-fixed-wrapper .nav-bottom {
-  pointer-events: auto;
+/* ===== НАВИГАЦИЯ (единая, как в навигации.html) ===== */
+.nav-bottom {
+  position: relative;
   width: 100%;
-  max-width: 430px;
   height: 52px;
-  margin: 0 auto;
+  flex: 0 0 52px;
   background: linear-gradient(180deg,
     rgba(20, 34, 51, 0.40) 0%,
     rgba(20, 34, 51, 0.35) 20%,
@@ -825,10 +832,10 @@ body:before {
   align-items: center;
   padding: 0 4px;
   overflow: visible;
-  position: relative;
+  z-index: 2;
 }
 
-.nav-fixed-wrapper .nav-bottom::after {
+.nav-bottom::after {
   content: '';
   position: absolute;
   left: 10px;
@@ -852,7 +859,6 @@ body:before {
   pointer-events: none;
   opacity: 0.9;
 }
-
 @keyframes flagFlowNav {
   0% { background-position: 0% 50%; }
   50% { background-position: 100% 50%; }
@@ -885,7 +891,6 @@ body:before {
   flex: 1;
   font-family: inherit;
 }
-
 .nav-item span {
   font-size: 9px;
   color: inherit;
@@ -894,7 +899,6 @@ body:before {
   letter-spacing: 0.1px;
   white-space: nowrap;
 }
-
 .nav-item svg {
   display: block;
   width: 18px;
@@ -902,11 +906,9 @@ body:before {
   color: inherit;
   transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.35s ease;
 }
-
 .nav-item.active {
   color: #D9B23C;
 }
-
 .nav-item.active svg {
   transform: scale(1.2);
   color: #D9B23C;
@@ -920,7 +922,6 @@ body:before {
   width: 24px;
   height: 24px;
 }
-
 .person-icon svg {
   width: 18px;
   height: 18px;
@@ -944,7 +945,6 @@ body:before {
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   box-shadow: 0 2px 4px rgba(0,0,0,0.4);
 }
-
 .book-in-hand::before {
   content: '';
   position: absolute;
@@ -956,7 +956,6 @@ body:before {
   border-radius: 1px;
   box-shadow: 4px 0 0 rgba(255,255,255,0.15);
 }
-
 .nav-item.active .book-in-hand {
   opacity: 1;
   transform: translateX(0) scale(1) rotate(0deg);
@@ -970,7 +969,6 @@ body:before {
   width: 24px;
   height: 24px;
 }
-
 .crown-wrap svg {
   width: 18px;
   height: 18px;
@@ -980,7 +978,6 @@ body:before {
   stroke-linecap: round;
   stroke-linejoin: round;
 }
-
 .crown-icon {
   position: absolute;
   top: -6px;
@@ -991,7 +988,6 @@ body:before {
   transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
   filter: drop-shadow(0 0 4px rgba(217, 178, 60, 0.6));
 }
-
 .nav-item.active .crown-icon {
   opacity: 1;
   transform: scale(1) rotate(0deg);
@@ -1003,23 +999,19 @@ body:before {
   height: 24px;
   margin: 0 auto;
 }
-
 .like-icon {
   position: absolute;
   font-size: 10px;
   opacity: 0;
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
 .like-icon.heart1 { top: -8px; left: -4px; transform: scale(0) rotate(-20deg); }
 .like-icon.heart2 { top: -11px; left: 6px; transform: scale(0) rotate(20deg); }
 .like-icon.heart3 { top: -2px; left: 2px; transform: scale(0) rotate(0deg); }
-
 .nav-item.active .like-icon {
   opacity: 1;
   transform: scale(1) rotate(0deg);
 }
-
 .nav-item.active .like-icon.heart1 { transition-delay: 0.05s; }
 .nav-item.active .like-icon.heart2 { transition-delay: 0.15s; }
 .nav-item.active .like-icon.heart3 { transition-delay: 0.25s; }
@@ -1030,7 +1022,6 @@ body:before {
   height: 20px;
   margin: 0 auto;
 }
-
 .person {
   position: absolute;
   top: 0;
@@ -1038,7 +1029,6 @@ body:before {
   height: 18px;
   transition: transform 0.4s ease;
 }
-
 .person::before {
   content: '';
   position: absolute;
@@ -1050,7 +1040,6 @@ body:before {
   background: #7FA9A8;
   transition: background 0.4s ease;
 }
-
 .person::after {
   content: '';
   position: absolute;
@@ -1062,18 +1051,14 @@ body:before {
   background: #7FA9A8;
   transition: background 0.4s ease;
 }
-
 .person.p1 { left: 0; }
 .person.p2 { right: 0; }
-
 .nav-item.active .person.p1 { transform: translateX(8px); }
 .nav-item.active .person.p2 { transform: translateX(-8px); }
-
 .nav-item.active .person::before,
 .nav-item.active .person::after {
   background: #D9B23C;
 }
-
 .heart-pop {
   position: absolute;
   top: -11px;
@@ -1083,7 +1068,6 @@ body:before {
   transition: opacity 0.3s ease, transform 0.3s ease;
   transform: scale(0.5);
 }
-
 .nav-item.active .heart-pop {
   opacity: 1;
   transform: scale(1);
@@ -1095,13 +1079,11 @@ body:before {
   height: 20px;
   margin: 0 auto;
 }
-
 .person-group {
   position: relative;
   width: 100%;
   height: 100%;
 }
-
 .person-small {
   position: absolute;
   top: 0;
@@ -1109,7 +1091,6 @@ body:before {
   height: 17px;
   transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
-
 .person-small::before {
   content: '';
   position: absolute;
@@ -1121,7 +1102,6 @@ body:before {
   background: #7FA9A8;
   transition: background 0.4s ease;
 }
-
 .person-small::after {
   content: '';
   position: absolute;
@@ -1133,22 +1113,19 @@ body:before {
   background: #7FA9A8;
   transition: background 0.4s ease;
 }
-
 .person-small.ps1 { left: 0; }
 .person-small.ps2 { left: 50%; transform: translateX(-50%); }
 .person-small.ps3 { right: 0; }
-
 .nav-item.active .person-small.ps1 { transform: translateX(10px) scale(0.8); }
 .nav-item.active .person-small.ps2 { transform: translateX(0) scale(1.1); }
 .nav-item.active .person-small.ps3 { transform: translateX(-10px) scale(0.8); }
-
 .nav-item.active .person-small::before,
 .nav-item.active .person-small::after {
   background: #D9B23C;
 }
 
 /* Адаптация для светлой темы */
-.light-theme .nav-fixed-wrapper .nav-bottom {
+.light-theme .nav-bottom {
   background: linear-gradient(180deg,
     rgba(245, 240, 232, 0.85) 0%,
     rgba(245, 240, 232, 0.80) 40%,
@@ -1156,14 +1133,12 @@ body:before {
   );
   border-top-color: rgba(201,168,76,0.25);
 }
-
 .light-theme .person::before,
 .light-theme .person::after,
 .light-theme .person-small::before,
 .light-theme .person-small::after {
   background: var(--muted);
 }
-
 .light-theme .nav-item.active .person::before,
 .light-theme .nav-item.active .person::after,
 .light-theme .nav-item.active .person-small::before,
@@ -1190,7 +1165,6 @@ body:before {
   animation: spin 1s linear infinite;
   margin: 18px auto;
 }
-
 @keyframes spin {
   to { transform: rotate(360deg); }
 }

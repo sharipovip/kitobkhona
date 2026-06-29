@@ -7,7 +7,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "Arial, sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/02-istiqlol-flag.jpg",
@@ -16,7 +16,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 8,
-    "fontFamily": "Georgia, serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/03-vahdat-diplomacy.jpg",
@@ -25,7 +25,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Times New Roman', serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/06-zaboni-millat.jpg",
@@ -34,7 +34,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "Verdana, sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/09-suhanroni.jpg",
@@ -43,6 +43,6 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "Tahoma, sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   }
 ];
