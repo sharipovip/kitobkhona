@@ -1,0 +1,470 @@
+{
+  "version": 3,
+  "updatedAt": "2026-06-20",
+  "repo": "sharipovip/books",
+  "branch": "main",
+  "categories": [
+    {
+      "id": "adabiyoti_klassiki",
+      "name": "Адабиёти классикӣ",
+      "folder_raw": "Адабиёти классикӣ",
+      "emoji": "📜",
+      "color1": "#7c2d12",
+      "color2": "#f97316",
+      "sort_order": 20,
+      "subs": [
+        {
+          "id": "adabiyoti_klassiki_adabiyotshinosi",
+          "name": "Адабиётшиносӣ",
+          "folder_raw": "Адабиётшиносӣ",
+          "folder": "books/Адабиёти классикӣ/Адабиётшиносӣ",
+          "emoji": "📚"
+        },
+        {
+          "id": "adabiyoti_klassiki_din",
+          "name": "Дин",
+          "folder_raw": "Дин",
+          "folder": "books/Адабиёти классикӣ/Дин",
+          "emoji": "🕌"
+        },
+        {
+          "id": "adabiyoti_klassiki_ilmi",
+          "name": "Илмӣ",
+          "folder_raw": "Илмӣ",
+          "folder": "books/Адабиёти классикӣ/Илмӣ",
+          "emoji": "🔬"
+        },
+        {
+          "id": "adabiyoti_klassiki_nasr",
+          "name": "Наср",
+          "folder_raw": "Наср",
+          "folder": "books/Адабиёти классикӣ/Наср",
+          "emoji": "📚"
+        },
+        {
+          "id": "adabiyoti_klassiki_tarih",
+          "name": "Таърих",
+          "folder_raw": "Таърих",
+          "folder": "books/Адабиёти классикӣ/Таърих",
+          "emoji": "🏛"
+        },
+        {
+          "id": "adabiyoti_klassiki_sher",
+          "name": "Шеър",
+          "folder_raw": "Шеър",
+          "folder": "books/Адабиёти классикӣ/Шеър",
+          "emoji": "🌹"
+        }
+      ]
+    },
+    {
+      "id": "adabiyoti_jahon",
+      "name": "Адабиёти ҷаҳон",
+      "folder_raw": "Адабиёти ҷаҳон",
+      "emoji": "🌍",
+      "color1": "#0891b2",
+      "color2": "#22d3ee",
+      "sort_order": 30,
+      "subs": [
+        {
+          "id": "adabiyoti_jahon_nasr",
+          "name": "Наср",
+          "folder_raw": "Наср",
+          "folder": "books/Адабиёти ҷаҳон/Наср",
+          "emoji": "📚"
+        },
+        {
+          "id": "adabiyoti_jahon_falsafa",
+          "name": "Фалсафа",
+          "folder_raw": "Фалсафа",
+          "folder": "books/Адабиёти ҷаҳон/Фалсафа",
+          "emoji": "🤔"
+        }
+      ]
+    },
+    {
+      "id": "adabiyoti_muosir",
+      "name": "Адабиёти муосир",
+      "folder_raw": "Адабиёти муосир",
+      "emoji": "✍️",
+      "color1": "#7c3aed",
+      "color2": "#a78bfa",
+      "sort_order": 31,
+      "subs": [
+        {
+          "id": "adabiyoti_muosir_povest",
+          "name": "Повест",
+          "folder_raw": "Повест",
+          "folder": "books/Адабиёти муосир/Повест",
+          "emoji": "📚"
+        },
+        {
+          "id": "adabiyoti_muosir_publitsistika",
+          "name": "Публитсистика",
+          "folder_raw": "Публитсистика",
+          "folder": "books/Адабиёти муосир/Публитсистика",
+          "emoji": "📚"
+        },
+        {
+          "id": "adabiyoti_muosir_roman",
+          "name": "Роман",
+          "folder_raw": "Роман",
+          "folder": "books/Адабиёти муосир/Роман",
+          "emoji": "📕"
+        },
+        {
+          "id": "adabiyoti_muosir_safarnoma",
+          "name": "Сафарнома",
+          "folder_raw": "Сафарнома",
+          "folder": "books/Адабиёти муосир/Сафарнома",
+          "emoji": "📚"
+        },
+        {
+          "id": "adabiyoti_muosir_sher",
+          "name": "Шеър",
+          "folder_raw": "Шеър",
+          "folder": "books/Адабиёти муосир/Шеър",
+          "emoji": "🌹"
+        }
+      ]
+    },
+    {
+      "id": "chiston",
+      "name": "Чистон",
+      "folder_raw": "Чистон",
+      "emoji": "🧩",
+      "color1": "#0d9488",
+      "color2": "#5eead4",
+      "sort_order": 40,
+      "subs": [
+        {
+          "id": "chiston",
+          "name": "Чистон",
+          "folder_raw": "Чистон",
+          "folder": "books/Чистон",
+          "emoji": "🧩"
+        }
+      ]
+    },
+    {
+      "id": "farhang",
+      "name": "Фарҳанг",
+      "folder_raw": "Фарҳанг",
+      "emoji": "🎨",
+      "color1": "#d97706",
+      "color2": "#fbbf24",
+      "sort_order": 50,
+      "subs": [
+        {
+          "id": "farhang_lughat",
+          "name": "Луғат",
+          "folder_raw": "Луғат",
+          "folder": "books/Фарҳанг/Луғат",
+          "emoji": "📘"
+        }
+      ]
+    },
+    {
+      "id": "zindaginoma",
+      "name": "Зиндагинома",
+      "folder_raw": "Зиндагинома",
+      "emoji": "👤",
+      "color1": "#854d0e",
+      "color2": "#facc15",
+      "sort_order": 51,
+      "subs": [
+        {
+          "id": "zindaginoma_zindaginoma",
+          "name": "Зиндагинома",
+          "folder_raw": "Зиндагинома",
+          "folder": "books/Зиндагинома/Зиндагинома",
+          "emoji": "👤"
+        },
+        {
+          "id": "zindaginoma_yoddosht",
+          "name": "Ёддошт",
+          "folder_raw": "Ёддошт",
+          "folder": "books/Зиндагинома/Ёддошт",
+          "emoji": "📔"
+        }
+      ]
+    },
+    {
+      "id": "zhurnalistika",
+      "name": "Журналистика",
+      "folder_raw": "Журналистика",
+      "emoji": "📰",
+      "color1": "#525252",
+      "color2": "#a3a3a3",
+      "sort_order": 52,
+      "subs": [
+        {
+          "id": "zhurnalistika",
+          "name": "Журналистика",
+          "folder_raw": "Журналистика",
+          "folder": "books/Журналистика",
+          "emoji": "📰"
+        }
+      ]
+    },
+    {
+      "id": "iqtisod",
+      "name": "Иқтисод",
+      "folder_raw": "Иқтисод",
+      "emoji": "💼",
+      "color1": "#0e7490",
+      "color2": "#06b6d4",
+      "sort_order": 60,
+      "subs": [
+        {
+          "id": "iqtisod_buhgalteriya",
+          "name": "Бухгалтерия",
+          "folder_raw": "Бухгалтерия",
+          "folder": "books/Иқтисод/Бухгалтерия",
+          "emoji": "🧾"
+        },
+        {
+          "id": "iqtisod_iqtisodiyot",
+          "name": "Иқтисодиёт",
+          "folder_raw": "Иқтисодиёт",
+          "folder": "books/Иқтисод/Иқтисодиёт",
+          "emoji": "💼"
+        },
+        {
+          "id": "iqtisod_marketing",
+          "name": "Маркетинг",
+          "folder_raw": "Маркетинг",
+          "folder": "books/Иқтисод/Маркетинг",
+          "emoji": "📈"
+        },
+        {
+          "id": "iqtisod_moliya",
+          "name": "Молия",
+          "folder_raw": "Молия",
+          "folder": "books/Иқтисод/Молия",
+          "emoji": "💰"
+        }
+      ]
+    },
+    {
+      "id": "tib",
+      "name": "Тиб",
+      "folder_raw": "Тиб",
+      "emoji": "⚕️",
+      "color1": "#dc2626",
+      "color2": "#f87171",
+      "sort_order": 61,
+      "subs": [
+        {
+          "id": "tib_tibbi_ananavi",
+          "name": "Тибби анъанавӣ",
+          "folder_raw": "Тибби анъанавӣ",
+          "folder": "books/Тиб/Тибби анъанавӣ",
+          "emoji": "⚕️"
+        },
+        {
+          "id": "tib_tibbi_klassiki",
+          "name": "Тибби классикӣ",
+          "folder_raw": "Тибби классикӣ",
+          "folder": "books/Тиб/Тибби классикӣ",
+          "emoji": "⚕️"
+        }
+      ]
+    },
+    {
+      "id": "kitobhoi_darsi",
+      "name": "Kitobhoi darsi",
+      "folder_raw": "Kitobhoi darsi",
+      "emoji": "📚",
+      "color1": "#7c3aed",
+      "color2": "#a78bfa",
+      "sort_order": 110,
+      "subs": [
+        {
+          "id": "kitobhoi_darsi_sinfi_1",
+          "name": "sinfi 1",
+          "folder_raw": "sinfi_1",
+          "folder": "books/Kitobhoi darsi/sinfi_1",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_10",
+          "name": "sinfi 10",
+          "folder_raw": "sinfi_10",
+          "folder": "books/Kitobhoi darsi/sinfi_10",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_11",
+          "name": "sinfi 11",
+          "folder_raw": "sinfi_11",
+          "folder": "books/Kitobhoi darsi/sinfi_11",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_2",
+          "name": "sinfi 2",
+          "folder_raw": "sinfi_2",
+          "folder": "books/Kitobhoi darsi/sinfi_2",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_3",
+          "name": "sinfi 3",
+          "folder_raw": "sinfi_3",
+          "folder": "books/Kitobhoi darsi/sinfi_3",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_4",
+          "name": "sinfi 4",
+          "folder_raw": "sinfi_4",
+          "folder": "books/Kitobhoi darsi/sinfi_4",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_5",
+          "name": "sinfi 5",
+          "folder_raw": "sinfi_5",
+          "folder": "books/Kitobhoi darsi/sinfi_5",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_6",
+          "name": "sinfi 6",
+          "folder_raw": "sinfi_6",
+          "folder": "books/Kitobhoi darsi/sinfi_6",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_7",
+          "name": "sinfi 7",
+          "folder_raw": "sinfi_7",
+          "folder": "books/Kitobhoi darsi/sinfi_7",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_8",
+          "name": "sinfi 8",
+          "folder_raw": "sinfi_8",
+          "folder": "books/Kitobhoi darsi/sinfi_8",
+          "emoji": "📚"
+        },
+        {
+          "id": "kitobhoi_darsi_sinfi_9",
+          "name": "sinfi 9",
+          "folder_raw": "sinfi_9",
+          "folder": "books/Kitobhoi darsi/sinfi_9",
+          "emoji": "📚"
+        }
+      ]
+    },
+    {
+      "id": "ilmi",
+      "name": "Илмӣ",
+      "folder_raw": "Илмӣ",
+      "emoji": "🔬",
+      "color1": "#0d9488",
+      "color2": "#5eead4",
+      "sort_order": 111,
+      "subs": [
+        {
+          "id": "ilmi_informatika",
+          "name": "Информатика",
+          "folder_raw": "Информатика",
+          "folder": "books/Илмӣ/Информатика",
+          "emoji": "📚"
+        },
+        {
+          "id": "ilmi_matematika",
+          "name": "Математика",
+          "folder_raw": "Математика",
+          "folder": "books/Илмӣ/Математика",
+          "emoji": "📚"
+        },
+        {
+          "id": "ilmi_pedagogika",
+          "name": "Педагогика",
+          "folder_raw": "Педагогика",
+          "folder": "books/Илмӣ/Педагогика",
+          "emoji": "📚"
+        },
+        {
+          "id": "ilmi_psihologiya",
+          "name": "Психология",
+          "folder_raw": "Психология",
+          "folder": "books/Илмӣ/Психология",
+          "emoji": "📚"
+        },
+        {
+          "id": "ilmi_siyosatshinosi",
+          "name": "Сиёсатшиносӣ",
+          "folder_raw": "Сиёсатшиносӣ",
+          "folder": "books/Илмӣ/Сиёсатшиносӣ",
+          "emoji": "📚"
+        }
+      ]
+    },
+    {
+      "id": "peshvoi_millat",
+      "name": "Пешвои Миллат",
+      "folder_raw": "Пешвои Миллат",
+      "emoji": "👑",
+      "color1": "#d97706",
+      "color2": "#fbbf24",
+      "sort_order": 112,
+      "subs": [
+        {
+          "id": "peshvoi_millat",
+          "name": "Пешвои Миллат",
+          "folder_raw": "Пешвои Миллат",
+          "folder": "books/Пешвои Миллат",
+          "emoji": "👑"
+        }
+      ]
+    },
+    {
+      "id": "tarih",
+      "name": "Таърих",
+      "folder_raw": "Таърих",
+      "emoji": "🏛",
+      "color1": "#dc2626",
+      "color2": "#f87171",
+      "sort_order": 113,
+      "subs": [
+        {
+          "id": "tarih",
+          "name": "Таърих",
+          "folder_raw": "Таърих",
+          "folder": "books/Таърих",
+          "emoji": "🏛"
+        },
+        {
+          "id": "tarih_tarihi_jahon",
+          "name": "Таърихи Ҷаҳон",
+          "folder_raw": "Таърихи Ҷаҳон",
+          "folder": "books/Таърих/Таърихи Ҷаҳон",
+          "emoji": "🏛"
+        }
+      ]
+    },
+    {
+      "id": "digar",
+      "name": "Дигар",
+      "folder_raw": "Дигар",
+      "emoji": "📂",
+      "color1": "#64748b",
+      "color2": "#94a3b8",
+      "sort_order": 999,
+      "subs": [
+        {
+          "id": "digar",
+          "name": "Дигар",
+          "folder_raw": "Дигар",
+          "folder": "books/Дигар",
+          "emoji": "📚"
+        }
+      ]
+    }
+  ]
+}

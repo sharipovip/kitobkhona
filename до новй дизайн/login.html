@@ -749,7 +749,6 @@
     btn.querySelector('svg').setAttribute('stroke', isPw ? '#E8C879' : '#6E7F97');
   }
 
-  // ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ВХОДА ====================
   async function doLogin() {
     const identifier = el('loginIdentifier').value.trim();
     const password = el('pwLogin').value;
@@ -760,23 +759,7 @@
       const user = await AutoLogin.loginWithCredentials(identifier, password);
       if (!user) throw new Error('Хатогӣи номаълум');
       showMsg('Ворид шудед!', 'success');
-
-      // ===== ПАРСИМ ТОКЕН ДЛЯ ПОЛУЧЕНИЯ РОЛИ =====
-      const token = localStorage.getItem('kk_token');
-      let role = 'user';
-      try {
-        const payload = JSON.parse(atob(token.split('.')[1]));
-        role = payload.role || 'user';
-      } catch (e) {}
-
-      // ===== РЕДИРЕКТ В ЗАВИСИМОСТИ ОТ РОЛИ =====
-      setTimeout(function() {
-        if (role === 'admin') {
-          window.location.href = 'admin.html';
-        } else {
-          window.location.href = 'index.html';
-        }
-      }, 600);
+      setTimeout(function(){ window.location.href = 'index.html'; }, 600);
     } catch (e) {
       if (e.message.includes('заблокирован')) {
         localStorage.setItem('kk_device_blocked', 'true');
@@ -788,7 +771,6 @@
     }
   }
 
-  // ==================== РЕГИСТРАЦИЯ ====================
   async function doRegister() {
     const name = el('regName').value.trim();
     const surname = el('regSurname').value.trim();
@@ -907,7 +889,7 @@
     } catch (e) { el('resetStatus').textContent = 'Хатогӣ: ' + e.message; el('resetStatus').className = 'reset-status bad'; }
   }
 
-  // ==================== АВТО-РЕДИРЕКТ (ОБНОВЛЁН) ====================
+  // ===== АВТО-РЕДИРЕКТ ЕСЛИ УЖЕ ВОШЁЛ =====
   (async function() {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
@@ -917,17 +899,7 @@
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (r.ok) {
-          // ===== ПАРСИМ РОЛЬ =====
-          let role = 'user';
-          try {
-            const payload = JSON.parse(atob(token.split('.')[1]));
-            role = payload.role || 'user';
-          } catch (e) {}
-          if (role === 'admin') {
-            window.location.href = 'admin.html';
-          } else {
-            window.location.href = 'index.html';
-          }
+          window.location.href = 'index.html';
           return;
         }
       } catch(e) {}

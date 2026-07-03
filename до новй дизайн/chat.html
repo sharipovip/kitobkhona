@@ -98,22 +98,7 @@
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
     .head-info { flex: 1; min-width: 0; }
-    .head-name {
-      font-size: 15.5px;
-      font-weight: 700;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      display: inline-flex;
-      align-items: center;
-      gap: 4px;
-    }
-    .verified-badge {
-      color: var(--gold, #C9A84C);
-      font-size: 16px;
-      margin-left: 2px;
-      display: none;
-    }
+    .head-name { font-size: 15.5px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
     .head-status {
       font-size: 11px;
       color: rgba(255,255,255,0.78);
@@ -135,17 +120,6 @@
       flex-shrink: 1;
     }
     .word-badge.alert { background: rgba(231,76,60,0.45); color: #ffc0c0; }
-    .chat-closed-badge {
-      background: rgba(231,76,60,0.45);
-      color: #ffc0c0;
-      border-radius: 20px;
-      padding: 1px 7px;
-      font-size: 10.5px;
-      font-weight: 600;
-      white-space: nowrap;
-      flex-shrink: 1;
-      display: none;
-    }
     .menu-btn {
       width: 36px; height: 36px;
       border-radius: 50%;
@@ -202,30 +176,36 @@
       position: relative;
       display: inline-block;
       border-radius: 9px 9px 9px 2px;
+      /* Ключевое: пузырь сжимается до содержимого */
       width: fit-content;
       min-width: 0;
     }
     .bubble.in { background: var(--wa-bubble-in); }
     .bubble.out { background: var(--wa-bubble-out); border-radius: 9px 9px 2px 9px; }
 
+    /* Текст + мета в одном потоке, как у WhatsApp */
     .bubble-body {
       display: block;
       white-space: pre-wrap;
     }
+
     .bubble-text {
       display: inline;
       white-space: pre-wrap;
     }
+
+    /* Невидимый спейсер — резервирует место под мету справа */
     .bubble-spacer {
       display: inline-block;
       width: 50px;
       height: 1px;
       vertical-align: bottom;
     }
+
     .bubble-meta {
       float: right;
       clear: right;
-      margin-top: -16px;
+      margin-top: -16px;      /* поднимаем к последней строке текста */
       margin-left: 4px;
       margin-bottom: 3px;
       display: flex;
@@ -237,6 +217,8 @@
       position: relative;
       z-index: 1;
     }
+
+    /* Сброс float после bubble */
     .bubble::after {
       content: '';
       display: table;
@@ -340,6 +322,7 @@
     }
     @keyframes spin { to { transform: rotate(360deg); } }
 
+    /* ===== МЕНЮ три точки (вертикальное, красивое) ===== */
     .popup-menu {
       display: none;
       position: absolute;
@@ -413,18 +396,15 @@
       <div class="chat-header">
         <div class="head-avatar" id="chatAvatar">👤</div>
         <div class="head-info">
-          <div class="head-name" id="headName">
-            Чат
-            <span class="verified-badge" id="verifiedBadge">✅</span>
-          </div>
+          <div class="head-name" id="headName">Чат</div>
           <div class="head-status" id="headStatus">
             <span class="online-dot"></span>
             <span>Дӯст</span>
             <span class="word-badge" id="wordCounter">Шумо метавонед 100 калимаи дигар фиристед</span>
-            <span class="chat-closed-badge" id="chatClosedBadge">🔒 Чат баста</span>
           </div>
         </div>
         <button class="menu-btn" id="menuBtn">⋮</button>
+        <!-- Попап вне кнопки, позиционируется относительно header -->
         <div class="popup-menu" id="popupMenu">
           <div class="item" onclick="deleteChat()">
             <span class="icon">🗑</span>
@@ -448,7 +428,7 @@
       </div>
 
       <!-- Композер -->
-      <div class="composer" id="composer">
+      <div class="composer">
         <div class="input-row">
           <div class="input-pill">
             <div class="emoji-btn">😊</div>
@@ -472,12 +452,12 @@
 
   let currentUserId = null;
   let pollInterval = null;
-  let chatIsOpen = true; // по умолчанию открыт
 
   // ===== МЕНЮ =====
   const menuBtn = document.getElementById('menuBtn');
   const popupMenu = document.getElementById('popupMenu');
 
+  // Позиционирование попапа относительно header
   function positionMenu() {
     const headerRect = document.querySelector('.chat-header').getBoundingClientRect();
     popupMenu.style.top = (headerRect.height) + 'px';
@@ -525,7 +505,7 @@
     setTimeout(() => { loadMessages(false); }, 500);
   }
 
-  // ===== ПОЖАЛОВАТЬСЯ =====
+  // ===== ПОЖАЛОВАТЬСЯ — только своё предупреждение =====
   async function reportUser() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
@@ -538,61 +518,19 @@
     }
   }
 
-  // ===== ПОЛУЧЕНИЕ СТАТУСА ЧАТА =====
-  async function fetchChatStatus() {
-    try {
-      const token = localStorage.getItem('kk_token');
-      if (!token) return;
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/admin/chat-status/' + currentUserId, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!resp.ok) return;
-      const data = await resp.json();
-      chatIsOpen = !!data.is_open;
-      const badge = document.getElementById('chatClosedBadge');
-      const input = document.getElementById('msgInput');
-      const sendBtn = document.getElementById('sendBtn');
-      if (chatIsOpen) {
-        badge.style.display = 'none';
-        input.disabled = false;
-        sendBtn.disabled = false;
-      } else {
-        badge.style.display = 'inline-block';
-        input.disabled = true;
-        sendBtn.disabled = true;
-        input.placeholder = 'Чат баста шудааст';
-      }
-    } catch (e) {
-      console.warn('Не удалось получить статус чата:', e);
-    }
-  }
-
-  // ===== ЗАГРУЗКА СООБЩЕНИЙ =====
+  // ===== ОСТАЛЬНЫЕ ФУНКЦИИ (без изменений) =====
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
     try {
       const { data } = await AUTH.getUser();
-      if (!data.user) {
+      if(!data.user) {
         msgContainer.innerHTML = '<div class="loading-msg">Логин шавед барои чат</div>';
         return;
       }
       currentUserId = data.user.id;
 
-      // Получаем профиль собеседника для галочки
-      try {
-        const peerProfile = await AUTH.getProfileFromRailway(peerId);
-        if (peerProfile && peerProfile.verified) {
-          document.getElementById('verifiedBadge').style.display = 'inline-block';
-        } else {
-          document.getElementById('verifiedBadge').style.display = 'none';
-        }
-      } catch (e) {}
-
-      // Получаем статус чата
-      await fetchChatStatus();
-
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
-      if (!msgs || msgs.length === 0) {
+      if(!msgs || msgs.length === 0) {
         msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
         return;
       }
@@ -609,7 +547,7 @@
                </svg>
              </span>`;
         const dateLabel = formatDate(m.created_at);
-        if (dateLabel !== lastDate) {
+        if(dateLabel !== lastDate){
           html += `<div class="date-sep">${dateLabel}</div>`;
           lastDate = dateLabel;
         }
@@ -626,13 +564,13 @@
         `;
       });
       msgContainer.innerHTML = html;
-      if (!keepScroll) scrollToBottom();
+      if(!keepScroll) scrollToBottom();
       else {
         const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
-        if (isAtBottom) scrollToBottom();
+        if(isAtBottom) scrollToBottom();
       }
       updateWordCounter();
-    } catch (e) {
+    } catch(e) {
       console.error(e);
       msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
     }
@@ -640,15 +578,15 @@
 
   function timeLabel(v) {
     try { return new Date(v).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); }
-    catch (_) { return ''; }
+    catch(_){ return ''; }
   }
 
   function formatDate(d) {
     const today = new Date(), yesterday = new Date(today);
     yesterday.setDate(yesterday.getDate() - 1);
     const dd = new Date(d);
-    if (dd.toDateString() === today.toDateString()) return 'Имрӯз';
-    if (dd.toDateString() === yesterday.toDateString()) return 'Дирӯз';
+    if(dd.toDateString() === today.toDateString()) return 'Имрӯз';
+    if(dd.toDateString() === yesterday.toDateString()) return 'Дирӯз';
     return dd.toLocaleDateString('ru-RU', {day:'numeric', month:'long'});
   }
 
@@ -673,22 +611,17 @@
         el.textContent = 'Шумо метавонед ' + remaining + ' калимаи дигар фиристед';
         if (remaining < 10) el.classList.add('alert');
         else el.classList.remove('alert');
-        if (chatIsOpen) {
-          document.getElementById('sendBtn').disabled = (remaining <= 0);
-        }
+        document.getElementById('sendBtn').disabled = (remaining <= 0);
       }
-    } catch (e) {}
+    } catch(e) {}
   }
 
   async function sendMessage() {
-    if (!chatIsOpen) {
-      alert('Чат баста шудааст. Шумо наметавонед паём фиристед.');
-      return;
-    }
     const input = document.getElementById('msgInput');
     const text = input.value.trim();
-    if (!text || !currentUserId || !peerId) return;
+    if(!text || !currentUserId || !peerId) return;
     input.value = '';
+    // Сбрасываем высоту textarea до одной строки
     input.style.height = '0';
     input.style.height = input.scrollHeight + 'px';
 
@@ -696,7 +629,7 @@
     const msgContainer = document.getElementById('messages');
     const dateLabel = formatDate(new Date().toISOString());
     const lastDateEl = msgContainer.querySelector('.date-sep:last-child');
-    if (!lastDateEl || lastDateEl.textContent !== dateLabel) {
+    if(!lastDateEl || lastDateEl.textContent !== dateLabel) {
       const sep = document.createElement('div');
       sep.className = 'date-sep';
       sep.textContent = dateLabel;
@@ -726,7 +659,7 @@
       checkSpan.className = 'check read';
       checkSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
       loadMessages(true);
-    } catch (e) {
+    } catch(e) {
       const checkSpan = meta.querySelector('.check');
       checkSpan.textContent = '⚠';
       console.error(e);
@@ -736,7 +669,7 @@
 
   document.getElementById('sendBtn').addEventListener('click', sendMessage);
   document.getElementById('msgInput').addEventListener('keydown', (e) => {
-    if (e.key === 'Enter' && !e.shiftKey) {
+    if(e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
       sendMessage();
     }
@@ -747,21 +680,21 @@
   });
 
   function goBack() {
-    if (history.length > 1) history.back();
+    if(history.length > 1) history.back();
     else location.href = 'chats.html';
   }
 
   function startPolling() {
-    if (pollInterval) clearInterval(pollInterval);
+    if(pollInterval) clearInterval(pollInterval);
     pollInterval = setInterval(() => {
-      if (document.hidden) return;
+      if(document.hidden) return;
       loadMessages(true);
     }, 5000);
   }
 
   async function init() {
     const { data } = await AUTH.getUser();
-    if (!data.user) {
+    if(!data.user) {
       document.getElementById('messages').innerHTML = '<div class="loading-msg">Логин шавед</div>';
       return;
     }
@@ -773,7 +706,7 @@
   init();
 
   window.addEventListener('beforeunload', () => {
-    if (pollInterval) clearInterval(pollInterval);
+    if(pollInterval) clearInterval(pollInterval);
   });
 
   function esc(str) {
@@ -781,9 +714,11 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
+  // Делаем функции глобальными для onclick в меню
   window.deleteChat = deleteChat;
   window.clearChatLocal = clearChatLocal;
   window.reportUser = reportUser;
 </script>
+
 </body>
 </html>

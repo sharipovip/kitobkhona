@@ -1,0 +1,833 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<title>Озмуни ҷумҳуриявии «Илм-фурӯғи маърифат» · Низомнома</title>
+<style>
+  :root{
+    --bg:#0a0e1a;
+    --bg2:#11172a;
+    --panel:#151b30;
+    --panel2:#1a2240;
+    --line:#243154;
+    --text:#e7ecf7;
+    --muted:#8a94b8;
+    --gold:#f0c674;
+    --gold2:#ffd989;
+    --gold-soft:rgba(240,198,116,.15);
+    --accent:#7dd3fc;
+    --accent2:#38bdf8;
+    --accent-soft:rgba(125,211,252,.12);
+    --shadow:0 8px 32px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:"Vazirmatn","Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.7;font-size:16px;
+    -webkit-font-smoothing:antialiased;
+    overflow-x:hidden;
+  }
+  #stars{position:fixed;inset:0;z-index:0;pointer-events:none}
+
+  .wrap{position:relative;z-index:1;max-width:820px;margin:0 auto;
+    padding:calc(env(safe-area-inset-top,0) + 12px) 16px calc(env(safe-area-inset-bottom,0) + 80px);}
+
+  /* topbar */
+  .topbar{position:sticky;top:0;z-index:20;
+    display:flex;align-items:center;gap:10px;
+    padding:10px 14px;margin:-12px -16px 16px;
+    background:rgba(10,14,26,.85);
+    backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
+    border-bottom:1px solid var(--line);}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;
+    background:var(--panel);color:var(--accent);
+    border:1px solid var(--line);
+    padding:8px 14px;border-radius:12px;
+    font-size:15px;font-weight:600;cursor:pointer;transition:.2s;}
+  .back-btn:hover,.back-btn:active{background:var(--panel2);transform:translateX(-2px)}
+  .topbar-title{flex:1;text-align:center;font-size:14px;font-weight:600;
+    color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+
+  /* HERO */
+  .hero{text-align:center;padding:8px 0 16px;animation:fadeUp .7s ease both;}
+  .hero img{max-width:min(100%,360px);height:auto;
+    filter:drop-shadow(0 12px 28px rgba(56,189,248,.35));
+    border-radius:50%;background:radial-gradient(ellipse at center,#fff 0%,#e6f3ff 60%,transparent 100%);
+    padding:8px;}
+  .hero h1{margin:18px 0 4px;font-size:22px;line-height:1.3;
+    background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 50%,#fff4d4 100%);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+    font-weight:800;letter-spacing:.3px;}
+  .hero h2{margin:6px 0;font-size:17px;color:var(--text);font-weight:600;}
+  .hero .meta{margin-top:10px;color:var(--muted);font-size:13px;}
+  .hero .meta b{color:var(--accent)}
+
+  /* Card */
+  .card{background:linear-gradient(180deg,var(--panel) 0%,var(--bg2) 100%);
+    border:1px solid var(--line);border-radius:18px;
+    padding:18px 18px;margin:16px 0;
+    box-shadow:var(--shadow);
+    animation:fadeUp .6s ease both;}
+
+  /* Указ — отдельный стиль */
+  .ukaz-card{
+    border:1px solid rgba(125,211,252,.35);
+    background:linear-gradient(180deg,#142036 0%,#101728 100%);
+  }
+  .ukaz-card .stamp{
+    display:inline-block;padding:6px 14px;border-radius:99px;
+    background:var(--accent);color:#0a1f33;
+    font-size:12px;font-weight:800;letter-spacing:1px;
+    margin-bottom:10px;
+  }
+  .ukaz-title{
+    text-align:center;font-size:20px;font-weight:800;
+    color:var(--accent);letter-spacing:1px;margin:6px 0 16px;
+  }
+  .ukaz-foot{
+    margin-top:18px;padding-top:14px;border-top:1px dashed var(--line);
+    text-align:right;color:var(--muted);font-size:14px;line-height:1.6;
+  }
+  .ukaz-foot .president{color:var(--gold);font-weight:700;font-size:15px}
+  .ukaz-foot .docnum{
+    display:inline-block;margin-top:8px;padding:4px 10px;border-radius:8px;
+    background:var(--accent-soft);color:var(--accent);font-weight:700;
+  }
+
+  /* TOC */
+  .toc-title{text-align:center;font-size:18px;color:var(--gold);font-weight:700;
+    margin:6px 0 16px;letter-spacing:.4px;}
+  .toc{display:grid;gap:8px}
+  .toc a{display:flex;align-items:center;gap:12px;padding:12px 14px;border-radius:12px;
+    background:var(--bg2);border:1px solid var(--line);
+    color:var(--text);text-decoration:none;font-size:15px;transition:.2s;}
+  .toc a:hover,.toc a:active{background:var(--gold-soft);border-color:var(--gold);
+    color:var(--gold2);transform:translateX(3px);}
+  .toc-num{flex-shrink:0;width:30px;height:30px;border-radius:9px;
+    background:var(--gold);color:#1a1303;
+    display:flex;align-items:center;justify-content:center;font-weight:800;font-size:14px;}
+  .toc-zam .toc-num{background:var(--accent);color:#0a1f33}
+  .toc-ukaz .toc-num{background:#e879f9;color:#3b0764}
+
+  /* Section */
+  section{scroll-margin-top:80px;margin:24px 0;}
+  h2.section-title{display:flex;align-items:center;gap:12px;
+    font-size:18px;color:var(--gold);font-weight:700;
+    margin:0 0 14px;padding-bottom:10px;border-bottom:2px solid var(--gold);
+    letter-spacing:.3px;}
+  h2.section-title .num{flex-shrink:0;width:34px;height:34px;border-radius:10px;
+    background:linear-gradient(135deg,var(--gold) 0%,var(--gold2) 100%);
+    color:#1a1303;display:flex;align-items:center;justify-content:center;
+    font-size:16px;font-weight:800;
+    box-shadow:0 4px 12px rgba(240,198,116,.25);}
+  .section-title.zam{color:var(--accent);border-bottom-color:var(--accent)}
+  .section-title.zam .num{background:linear-gradient(135deg,var(--accent),#bae6fd);color:#0a1f33;
+    box-shadow:0 4px 12px rgba(125,211,252,.25);}
+
+  p{margin:10px 0;color:var(--text);text-align:justify}
+  .num-p{display:flex;gap:12px;margin:14px 0;
+    padding:12px 14px;border-radius:12px;
+    background:rgba(255,255,255,.02);
+    border-left:3px solid var(--gold);}
+  .num-p .n{flex-shrink:0;color:var(--gold);font-weight:700;font-size:15px;min-width:28px;}
+  .num-p .t{flex:1;text-align:justify}
+  .num-p.accent{border-left-color:var(--accent)}
+  .num-p.accent .n{color:var(--accent)}
+
+  ul.dash{list-style:none;padding:0;margin:10px 0}
+  ul.dash li{position:relative;padding:6px 0 6px 22px;color:var(--text);}
+  ul.dash li::before{content:"";position:absolute;left:0;top:14px;
+    width:10px;height:2px;background:var(--gold);border-radius:2px;}
+  ol.cyr{padding-left:22px;margin:10px 0}
+  ol.cyr li{margin:6px 0}
+
+  .note{margin:14px 0;padding:12px 14px;border-radius:12px;
+    background:rgba(125,211,252,.08);border-left:3px solid var(--accent);
+    color:var(--text);font-size:14.5px;}
+  .note b{color:var(--accent)}
+
+  /* Tables */
+  .tbl-title{margin:18px 0 8px;font-weight:700;color:var(--gold2);
+    font-size:15px;padding-left:8px;border-left:3px solid var(--gold);}
+  .nom-title{margin:14px 0 6px;font-weight:700;color:var(--accent);
+    font-size:14px;padding-left:8px;border-left:3px solid var(--accent);}
+  .tbl-wrap{overflow-x:auto;margin:8px 0 14px;border-radius:12px;
+    border:1px solid var(--line);background:var(--bg2)}
+  table{width:100%;border-collapse:collapse;font-size:13.5px;min-width:480px;}
+  thead th{background:linear-gradient(180deg,var(--panel2) 0%,var(--panel) 100%);
+    color:var(--gold);text-align:left;padding:9px 10px;font-weight:700;
+    border-bottom:2px solid var(--gold);white-space:nowrap;}
+  tbody td{padding:8px 10px;border-bottom:1px solid var(--line);vertical-align:top;}
+  tbody tr:last-child td{border-bottom:none}
+  tbody tr:hover{background:rgba(255,255,255,.03)}
+  tfoot td{padding:9px 10px;background:var(--gold-soft);
+    font-weight:700;color:var(--gold2);border-top:2px solid var(--gold);}
+  .num-cell{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+  /* Группа таблиц */
+  .grp{margin:18px 0;padding:14px;border:1px dashed var(--line);border-radius:14px;
+    background:rgba(255,255,255,.015);}
+  .grp-head{font-weight:800;color:var(--gold);font-size:15.5px;
+    margin-bottom:10px;display:flex;align-items:center;gap:10px;}
+  .grp-head .badge{
+    display:inline-block;padding:3px 10px;border-radius:99px;
+    background:var(--gold);color:#1a1303;font-size:12px;font-weight:800;
+  }
+
+  /* to-top */
+  .to-top{display:inline-flex;align-items:center;gap:6px;
+    margin-top:14px;padding:8px 14px;border-radius:10px;
+    background:transparent;border:1px solid var(--line);
+    color:var(--muted);font-size:13px;text-decoration:none;transition:.2s;}
+  .to-top:hover{color:var(--gold);border-color:var(--gold)}
+  #scrollTop{position:fixed;right:18px;bottom:calc(env(safe-area-inset-bottom,0) + 18px);z-index:30;
+    width:48px;height:48px;border-radius:50%;border:none;
+    background:linear-gradient(135deg,var(--accent) 0%,#bae6fd 100%);
+    color:#0a1f33;font-size:22px;font-weight:800;cursor:pointer;
+    box-shadow:0 6px 20px rgba(125,211,252,.45);
+    opacity:0;pointer-events:none;transition:.3s;}
+  #scrollTop.show{opacity:1;pointer-events:auto}
+  #scrollTop:hover{transform:translateY(-3px)}
+
+  footer{margin:30px 0 0;padding:18px 0;text-align:center;
+    color:var(--muted);font-size:13px;border-top:1px solid var(--line);}
+  footer .gold{color:var(--gold)}
+  footer .accent{color:var(--accent)}
+
+  /* Бюджет — итоговый блок */
+  .budget-final{
+    text-align:center;margin:20px 0;padding:20px;
+    background:linear-gradient(135deg,var(--gold-soft),rgba(125,211,252,.1));
+    border:2px solid var(--gold);border-radius:18px;
+  }
+  .budget-final .label{color:var(--muted);font-size:13px;letter-spacing:1px;text-transform:uppercase}
+  .budget-final .sum{
+    margin-top:8px;font-size:28px;font-weight:800;
+    background:linear-gradient(135deg,var(--gold),var(--gold2),#fff4d4);
+    -webkit-background-clip:text;background-clip:text;color:transparent;
+  }
+  .budget-final .words{margin-top:6px;color:var(--gold);font-size:13.5px;font-style:italic}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+
+  @media (max-width:480px){
+    body{font-size:15px}
+    .hero h1{font-size:19px}
+    .hero h2{font-size:15px}
+    h2.section-title{font-size:16px}
+    .toc a{font-size:14px;padding:11px 12px}
+    .num-p{padding:10px 12px;font-size:14.5px}
+    .ukaz-title{font-size:17px}
+    .budget-final .sum{font-size:23px}
+  }
+</style>
+</head>
+<body>
+
+<canvas id="stars"></canvas>
+
+<div class="wrap">
+
+  <!-- Топ -->
+  <div class="topbar">
+    <button class="back-btn" onclick="goBack()">← Бозгашт</button>
+    <div class="topbar-title">«Илм-фурӯғи маърифат» · 2026</div>
+  </div>
+
+  <!-- HERO -->
+  <div class="hero">
+    <img src="ilm_banner.jpg" alt="Озмуни ҷумҳуриявии Илм-фурӯғи маърифат 2026">
+    <h1>ОЗМУНИ ҶУМҲУРИЯВИИ</h1>
+    <h2>«Илм-фурӯғи маърифат»</h2>
+    <div class="meta">
+      Соли <b>2026</b> · таҳти сарпарастии Президенти Ҷумҳурии Тоҷикистон<br>
+      Амри <b>№АП-950</b> аз «1» январи соли 2026
+    </div>
+  </div>
+
+  <!-- Оглавление -->
+  <div class="card" id="toc">
+    <div class="toc-title">📑 МУНДАРИҶА</div>
+    <nav class="toc">
+      <a href="#ukaz" class="toc-ukaz"><span class="toc-num">📜</span> Амри Президенти Ҷумҳурии Тоҷикистон</a>
+      <a href="#s1"><span class="toc-num">1</span> Муқаррароти умумӣ</a>
+      <a href="#s2"><span class="toc-num">2</span> Сарпараст ва масъулони Озмун</a>
+      <a href="#s3"><span class="toc-num">3</span> Комиссияи Озмун</a>
+      <a href="#s4"><span class="toc-num">4</span> Тартиби баргузории Озмун</a>
+      <a href="#s5"><span class="toc-num">5</span> Шартҳои иштирок дар Озмун</a>
+      <a href="#s6"><span class="toc-num">6</span> Талабот ба иштирокчиёни Озмун</a>
+      <a href="#s7"><span class="toc-num">7</span> Меъёрҳои арзёбии ғолибони Озмун</a>
+      <a href="#s8"><span class="toc-num">8</span> Ҳайати ҳакамон</a>
+      <a href="#s9"><span class="toc-num">9</span> Тартиби пешниҳод барои дарёфти Шоҳҷоиза</a>
+      <a href="#s10"><span class="toc-num">10</span> Таъминоти молиявии Озмун</a>
+      <a href="#s11"><span class="toc-num">11</span> Имтиёзҳо</a>
+      <a href="#zam2" class="toc-zam"><span class="toc-num">З2</span> Ҳайати комиссияи Озмун</a>
+      <a href="#zam3" class="toc-zam"><span class="toc-num">З3</span> Ҷоизаҳои Озмун</a>
+    </nav>
+  </div>
+
+  <!-- ============ УКАЗ ============ -->
+  <section id="ukaz" class="card ukaz-card">
+    <div style="text-align:center"><div class="stamp">📜 АМРИ ПРЕЗИДЕНТӢ</div></div>
+    <div class="ukaz-title">АМРИ<br>ПРЕЗИДЕНТИ ҶУМҲУРИИ ТОҶИКИСТОН</div>
+    <p style="text-align:center;color:var(--gold);font-weight:600;margin-top:0">
+      Дар бораи баргузории Озмуни ҷумҳуриявии «Илм-фурӯғи маърифат»
+    </p>
+
+    <div class="num-p accent"><span class="n">1.</span><span class="t">Дар соли 2026 Озмуни ҷумҳуриявии «Илм-фурӯғи маърифат» баргузор карда шавад.</span></div>
+
+    <div class="num-p accent"><span class="n">2.</span><span class="t">Низомнома, ҳайати комиссия ва ҷоизаи Озмуни ҷумҳуриявии «Илм-фурӯғи маърифат» тасдиқ карда шаванд (замимаҳои 1, 2 ва 3).</span></div>
+
+    <div class="num-p accent"><span class="n">3.</span><span class="t">Вазорати маориф ва илми Ҷумҳурии Тоҷикистон, Академияи миллии илмҳои Тоҷикистон, вазоратҳои фарҳанг, саноат ва технологияҳои нав, рушди иқтисод ва савдо, кишоварзӣ, кумитаҳои телевизион ва радио, кор бо ҷавонон ва варзиш, кор бо занон ва оила, оид ба таҳсилоти ибтидоӣ ва миёнаи касбӣ, Агентии инноватсия ва технологияҳои рақамӣ, Маркази миллии тестии назди Президенти Ҷумҳурии Тоҷикистон, Саридораи геологияи назди Ҳукумати Ҷумҳурии Тоҷикистон барои дар сатҳи баланд доир гардидани Озмуни мазкур чораҳои зарурӣ андешанд.</span></div>
+
+    <div class="num-p accent"><span class="n">4.</span><span class="t">Мақомоти иҷроияи ҳокимияти давлатии Вилояти Мухтори Кӯҳистони Бадахшон, вилоятҳои Хатлону Суғд, шаҳри Душанбе, шаҳру ноҳияҳо, роҳбарони муассисаҳои илмию таҳқиқотӣ ва муассисаҳои таҳсилоти миёна ва олии касбӣ иҷрои талаботи амри мазкурро таъмин намуда, барои ҷалби бештари хонандагону донишҷӯён, аспирантону докторантон ва қишрҳои дигари ҷомеа, ки ба омӯзиши фанҳои риёзӣ, дақиқ ва табиӣ, инчунин ихтироъкориву навоварӣ шавқу рағбат доранд, чораҷӯйӣ карда, ғолибонро бо ҷоиза ва омӯзгорони онҳоро аз ҷиҳати моддӣ ва маънавӣ ҳавасманд гардонанд.</span></div>
+
+    <div class="num-p accent"><span class="n">5.</span><span class="t">Вазорати молияи Ҷумҳурии Тоҷикистон аз ҳисоби маблағҳои фонди захиравии Президенти Ҷумҳурии Тоҷикистон, ки барои соли 2026 пешбинӣ гардидаанд, ба Дастгоҳи иҷроияи Президенти Ҷумҳурии Тоҷикистон ҷиҳати баргузории Озмуни мазкур <b style="color:var(--gold)">9 870 000 (нуҳ миллиону ҳаштсаду ҳафтод ҳазор) сомонӣ</b> ба таври нақд ҷудо намояд.</span></div>
+
+    <div class="num-p accent"><span class="n">6.</span><span class="t">Дастгоҳи иҷроияи Президенти Ҷумҳурии Тоҷикистон истифодаи мақсадноки маблағи ҷудошударо таъмин карда, оид ба хароҷоти анҷомдода ба Вазорати молияи Ҷумҳурии Тоҷикистон ҳисобот пешниҳод намояд.</span></div>
+
+    <div class="num-p accent"><span class="n">7.</span><span class="t">Назорати иҷрои амри мазкур ба зиммаи муовини Сарвазири Ҷумҳурии Тоҷикистон (сарпарасти соҳа) гузошта шавад.</span></div>
+
+    <div class="ukaz-foot">
+      <div>Президенти</div>
+      <div class="president">Ҷумҳурии Тоҷикистон — Эмомалӣ Раҳмон</div>
+      <div style="margin-top:10px">ш. Душанбе · 1 январи соли 2026</div>
+      <div><span class="docnum">№АП-950</span></div>
+    </div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 1. МУҚАРРАРОТИ УМУМӢ ============ -->
+  <section id="s1" class="card">
+    <h2 class="section-title"><span class="num">1</span> МУҚАРРАРОТИ УМУМӢ</h2>
+
+    <div class="num-p"><span class="n">1.</span><span class="t">Озмуни ҷумҳуриявии «Илм-фурӯғи маърифат» (минбаъд — Озмун) таҳти сарпарастии Президенти Ҷумҳурии Тоҷикистон бо мақсади амалисозии «Бистсолаи омӯзиш ва рушди фанҳои табиатшиносӣ, дақиқ ва риёзӣ дар соҳаи илму маориф» баргузор карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">2.</span><span class="t">Озмун бо мақсади рушди тафаккури техникӣ, тарғиби ҷаҳонбинии илмӣ, дастрасӣ пайдо кардан ба техникаву технология, тавсеаи ихтироъкорӣ ва навоварӣ, пайвасти илм бо истеҳсолот, ҷалби бештари хонандагону донишҷӯён ва дигар қишрҳои ҷомеа ба омӯзиши фанҳои риёзӣ, дақиқ ва табиӣ, ҳамчунин дарёфт ва муаррифии истеъдодҳои нав дар ин самтҳо байни хонандагони муассисаҳои таҳсилоти миёнаи умумӣ бо тақсимот ба ду гурӯҳ дар алоҳидагӣ — муассисаҳои таҳсилоти миёнаи умумӣ ва муассисаҳои таҳсилоти миёнаи умумии шакли нав (литсейҳо, гимназияҳо ва муассисаҳои таълимии президентӣ ва хусусӣ), хонандагону донишҷӯёни муассисаҳои таҳсилоти ибтидоӣ, миёна ва олии касбӣ (бакалаврон ва магистрон), ходимони илмӣ, аспирантон, докторантон, унвонҷӯён, докторантҳо аз рӯйи ихтисос ва докторантони ҳабилитат, омӯзгорони муассисаҳои таълимии ҳамаи зинаҳои таҳсилот, муҳандисон, конструкторон ва дигар намояндагони касбу кори гуногун баргузор мегардад.</span></div>
+
+    <div class="num-p"><span class="n">3.</span><span class="t">Озмун аз рӯйи <b>ҳашт номинатсия</b> гузаронида мешавад:
+      <ul class="dash">
+        <li>📐 математика (арифметика, алгебра, геометрия);</li>
+        <li>🔭 физика ва астрономия;</li>
+        <li>🧪 химия;</li>
+        <li>🌱 биология (ботаника, зоология, анатомия);</li>
+        <li>🌍 география;</li>
+        <li>💻 технологияи иттилоотӣ;</li>
+        <li>🤖 зеҳни сунъӣ ва барномасозӣ;</li>
+        <li>⚙️ ихтироъкорӣ ва навоварӣ.</li>
+      </ul>
+    </span></div>
+
+    <div class="num-p"><span class="n">4.</span><span class="t">Довталабони озмун ба гурӯҳҳои зерин ҷудо карда мешаванд:
+      <ol class="cyr">
+        <li><b>гурӯҳи якум</b> — хонандагони муассисаҳои таҳсилоти миёна умумӣ ва ибтидоии касбӣ;</li>
+        <li><b>гурӯҳи дуюм</b> — хонандагони муассисаҳои таҳсилоти миёна умумии типи нав (литсейҳо, гимназияҳо ва муассисаҳои таълимии президентӣ ва хусусӣ);</li>
+        <li><b>гурӯҳи сеюм</b> — донишҷӯёни муассисаҳои таҳсилоти миёна ва олии касбӣ (ба истиснои магистрантон, таҳсили ғоибона ва маълумоти дуюм);</li>
+        <li><b>гурӯҳи чорум</b> — магистрантон, ходимони илмӣ, аспирантон, докторантон, унвонҷӯён, докторантҳо аз рӯйи ихтисос ва докторантони ҳабилитат, омӯзгорони муассисаҳои таълимии ҳамаи зинаҳои таҳсилот, муҳандисон, конструкторон ва намояндагони дигари касбу кори гуногун — метавонанд танҳо дар <b>ду номинатсия</b> иштирок намоянд: <i>зеҳни сунъӣ ва барномасозӣ</i> ва <i>ихтироъкорӣ ва навоварӣ</i>.</li>
+      </ol>
+    </span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 2. САРПАРАСТ ============ -->
+  <section id="s2" class="card">
+    <h2 class="section-title"><span class="num">2</span> САРПАРАСТ ВА МАСЪУЛОНИ ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">5.</span><span class="t">Сарпарасти Озмун — <b>Президенти Ҷумҳурии Тоҷикистон</b>.</span></div>
+
+    <div class="num-p"><span class="n">6.</span><span class="t">Масъулони баргузории Озмун: Вазорати маориф ва илм, Академияи миллии илмҳо, вазоратҳои саноат ва технологияҳои нав, рушди иқтисод ва савдо, кишоварзӣ, Агентии инноватсия ва технологияҳои рақамӣ, Кумита оид ба таҳсилоти ибтидоӣ ва миёнаи касбӣ, Маркази миллии тестӣ ва Саридораи геология мебошанд.</span></div>
+
+    <div class="num-p"><span class="n">7.</span><span class="t">Кумитаҳои телевизион ва радио, кор бо ҷавонон ва варзиш, кор бо занон ва оила, Агентии миллии иттилоотии Тоҷикистон «Ховар» ва нашрияҳои давлатӣ дар тарғиб, ҷалб ва ҷараёни баргузории Озмун иштирок мекунанд.</span></div>
+
+    <div class="num-p"><span class="n">8.</span><span class="t">Мақомоти иҷроияи ҳокимияти давлатии ВМКБ, вилоятҳои Хатлону Суғд, шаҳри Душанбе, шаҳру ноҳияҳо, роҳбарони муассисаҳои илмию таҳқиқотӣ, таҳсилоти ибтидоӣ, миёна ва олии касбӣ ҷиҳати дар сатҳи баланд ташкил ва баргузор намудани даврҳои якум, дуюм ва сеюми Озмун масъул буда, ғолибон, омӯзгорон ва волидайни онҳоро аз ҷиҳати моддӣ ва маънавӣ ҳавасманд мегардонанд.</span></div>
+
+    <div class="num-p"><span class="n">9.</span><span class="t">Дар ВМКБ, вилоятҳои Хатлону Суғд, шаҳри Душанбе, шаҳру ноҳияҳо раёсат, шуъба ва бахшҳои рушди иҷтимоӣ ва робита бо ҷомеа, маориф, фарҳанг, кор бо ҷавонон ва варзиш, занон ва оила ва дар муассисаҳои илмию таҳқиқотӣ, муассисаҳои таҳсилоти миёнаи умумӣ, ибтидоӣ, миёна ва олии касбӣ роҳбарони онҳо масъули ташкил ва баргузории Озмун мебошанд.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 3. КОМИССИЯ ============ -->
+  <section id="s3" class="card">
+    <h2 class="section-title"><span class="num">3</span> КОМИССИЯИ ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">10.</span><span class="t">Барои гузаронидани Озмуни «Илм-фурӯғи маърифат» комиссияи ҷумҳуриявӣ (минбаъд — комиссияи Озмун) таъсис дода мешавад, ки ҳайати он бо амри Президенти Ҷумҳурии Тоҷикистон муқаррар мегардад.</span></div>
+
+    <div class="num-p"><span class="n">11.</span><span class="t">Ваколати комиссияи Озмун:
+      <ul class="dash">
+        <li>таҳияи ҷадвали баргузории Озмун ва назорати он;</li>
+        <li>тасдиқи тартиб, талабот ва тавзеҳот оид ба Озмун;</li>
+        <li>муайян намудани ҷойи баргузории даври сеюм ва чоруми Озмун;</li>
+        <li>тасдиқи ҳайати ҳакамон барои даврҳои сеюм ва чоруми Озмун;</li>
+        <li>гузаронидани семинарҳои машваратӣ барои ҳайати ҳакамон ва масъулони гузаронидани Озмун дар тамоми даврҳо;</li>
+        <li>назорати риояи талабот ва пешниҳоди тавсияҳо ба довталабони Озмун;</li>
+        <li>омӯзиш ва тавсияи ҳуҷҷатҳои пешниҳодшудаи иштирокдорони Озмун ба даври чорум;</li>
+        <li>таъсиси комиссияи апеллятсионӣ;</li>
+        <li>баррасии пешниҳодҳои ҳайати ҳакамон ва арзу шикояти довталабон ва иштирокдорон;</li>
+        <li>тасдиқ ва эълони натиҷаи хулосаи ҳайати ҳакамони Озмуни даври сеюм ва чорум;</li>
+        <li>ҷамъбасти натиҷаи ниҳоӣ ва пешниҳоди он ба Президенти Ҷумҳурии Тоҷикистон барои маълумот ва шиносоӣ.</li>
+      </ul>
+    </span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 4. ТАРТИБИ БАРГУЗОРӢ ============ -->
+  <section id="s4" class="card">
+    <h2 class="section-title"><span class="num">4</span> ТАРТИБИ БАРГУЗОРИИ ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">12.</span><span class="t">Озмун аз чор давр иборат буда, моҳҳои <b>апрел — ноябр</b> ба таври зайл ташкил ва гузаронида мешавад:
+      <ul class="dash">
+        <li><b>Даври якум</b> — моҳи апрел дар муассисаҳои таълимӣ, муассисаҳои илмӣ ва дигар ташкилотҳо;</li>
+        <li><b>Даври дуюм</b> — нимаи дуюми моҳи май дар маркази шаҳр ва ноҳияҳо;</li>
+        <li><b>Даври сеюм</b> — нимаи якуми моҳи сентябр дар ВМКБ, вилоятҳои Хатлону Суғд, шаҳри Душанбе ва шаҳру ноҳияҳои тобеи ҷумҳурӣ;</li>
+        <li><b>Даври чорум</b> — даври ҷумҳуриявӣ, нимаи дуюми моҳи октябр дар ҳамкорӣ бо Маркази миллии тестӣ. Даври мазкур аз <b>ду қисм</b> иборат: қисми аввал — тавассути Маркази миллии тестӣ, қисми дуюм — аз ҷониби аъзои ҳакамон. Довталабоне, ки аз рӯйи саволномаҳои Маркази тестӣ камтар аз <b>50%</b> хол гирифтаанд, дар қисми дуюм иштирок карда наметавонанд.</li>
+      </ul>
+    </span></div>
+
+    <div class="num-p"><span class="n">13.</span><span class="t">Протоколи ҳайати ҳакамони даври сеюм ба даври чорум бо имзои раиси ВМКБ, вилоятҳои Хатлону Суғд, шаҳри Душанбе ва шаҳру ноҳияҳои тобеи ҷумҳурӣ, роҳбарони муассисаҳои таълимӣ, илмӣ ва раиси ҳакамон ба комиссияи Озмун пешниҳод мешавад.</span></div>
+
+    <div class="num-p"><span class="n">14.</span><span class="t">Ҷойи баргузории даврҳои якуму дуюм ва сеюми Озмун аз ҷониби мақомоти иҷроияи маҳаллии ҳокимияти давлатӣ ва дар муассисаҳои илмию таҳқиқотӣ, таҳсилоти ибтидоӣ, миёна ва олии касбӣ аз тарафи роҳбарони онҳо муайян карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">15.</span><span class="t">Масъулияти баргузории даврҳои якум, дуюм ва сеюм ба зиммаи мақомоти иҷроияи ҳокимияти давлатии ВМКБ, вилоятҳои Хатлону Суғд, шаҳри Душанбе, шаҳру ноҳияҳо, роҳбарони муассисаҳои илмию таҳқиқотӣ, таҳсилоти ибтидоӣ, миёна ва олии касбӣ вогузор карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">16.</span><span class="t">Ҷараёни баргузории даврҳои якум, дуюм, сеюм ва чоруми Озмун тавассути воситаҳои ахбори омма васеъ инъикос ва пахш мегарданд. Ҷараёни баргузории даври чорум пурра тавассути телевизионҳои давлатӣ сабт ва намоиш дода мешавад.</span></div>
+
+    <div class="num-p"><span class="n">17.</span><span class="t">Ҷиҳати баргузории даврҳои сеюм ва чоруми Озмун Нақшаи чорабиниҳо бо фарогирии тамоми масъалаҳои Озмун таҳия гардида, аз ҷониби раиси Комиссияи ҷумҳуриявии Озмун тасдиқ карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">18.</span><span class="t">Муҳлати пешниҳоди ҳуҷҷатҳои ғолибони ҷойҳои якум, дуюм ва сеюми даври сеюм барои иштирок дар даври чорум ба комиссияи Озмун <b>то 1-уми октябр</b> муқаррар карда мешавад. Дар ҳар як даври Озмун <b>6 ғолиб</b>: ҷойҳои якум — 1 нафар, дуюм — 2 нафар ва сеюм — 3 нафар муайян карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">19.</span><span class="t">Миёни роҳбари муассисаи таълимӣ, омӯзгор ва довталаб (дар шахси падару модар ё сарпарасти ӯ) аз даври дуюми Озмун метавонад шартнома ҷиҳати омода намудани довталаб ба имзо расонида шавад.</span></div>
+
+    <div class="num-p"><span class="n">20.</span><span class="t">Вазорати маориф ва илм, Академияи миллии илмҳо, Вазорати фарҳанг, Кумитаи телевизион ва радио масъули раванди гузаронидани маросими тантанавии супоридани ҷоизаҳо ба ғолибони даври чоруми Озмун мебошанд.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 5. ШАРТҲОИ ИШТИРОК ============ -->
+  <section id="s5" class="card">
+    <h2 class="section-title"><span class="num">5</span> ШАРТҲОИ ИШТИРОК ДАР ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">21.</span><span class="t">Дар Озмун хонандагони муассисаҳои таҳсилоти миёнаи умумӣ бо ду гурӯҳ дар алоҳидагӣ — муассисаҳои таҳсилоти миёнаи умумӣ ва муассисаҳои таҳсилоти миёнаи умумии типи нав (литсейҳо, гимназияҳо ва муассисаҳои таълимии президентӣ ва хусусӣ), хонандагону донишҷӯёни муассисаҳои таҳсилоти ибтидоӣ, миёна ва олии касбӣ, магистрантон, ходимони илмӣ (ба истиснои докторони илм, профессорон, аъзои вобаста ва пайвастаи Академияи миллии илмҳо), аспирантон, докторантон, унвонҷӯён, омӯзгорони муассисаҳои таълимии ҳамаи зинаҳои таҳсилот, муҳандисон, конструкторон ва намояндагони дигари касбу кори гуногун иштирок карда метавонанд.</span></div>
+
+    <div class="num-p"><span class="n">22.</span><span class="t">Шартҳои ташкил ва баргузории Озмун аз ҷониби комиссияи Озмун назорат карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">23.</span><span class="t">Довталаб <b>10 рӯз пеш аз оғози Озмун</b> санадҳои зеринро бо ариза ба комиссияи Озмун пешниҳод менамояд:
+      <ul class="dash">
+        <li>маълумотномаи ягонаи довталаб (мувофиқи шакли аз ҷониби котиботи Озмун пешниҳодшуда);</li>
+        <li>тарҷумаи ҳол (шакли тасдиқшудаи намунаи он аз ҷониби масъулини Озмун пешниҳод мешавад);</li>
+        <li>4 дона сурати 3×4;</li>
+        <li>маълумотнома аз макони зист ё ҷойи таҳсил;</li>
+        <li>маълумотнома доир ба ихтисос, патент ё шаҳодатномаи муаллифӣ (барои номинатсияҳои зеҳни сунъӣ ва барномасозӣ, ихтироъкорӣ ва навоварӣ);</li>
+        <li>нусхаи шиноснома.</li>
+      </ul>
+    </span></div>
+
+    <div class="num-p"><span class="n">24.</span><span class="t">Бақайдгирии ғолибони даврҳои дуюм ва сеюми Озмунро сардорони раёсат ва мудирони шуъбаҳои маорифи вилоят ва шаҳру ноҳияҳо дар <b>Портали электронии</b> Вазорати маориф ва илм таъмин менамоянд. Котиби масъули комиссия суроға, рӯз ва ҷойи баргузории Озмунро ба довталабон тавассути воситаҳои ахбори омма эълон менамояд.</span></div>
+
+    <div class="num-p"><span class="n">25.</span><span class="t">Ғолиби даври чоруми Озмун, ки сазовори ҷойҳои якум, дуюм, сеюм ва барандаи Шоҳҷоиза гардидааст, <b>то се сол</b> дар Озмун ва минбаъд дар номинатсияи ғолибомадааш ҳуқуқи иштирок карданро надорад.</span></div>
+
+    <div class="num-p"><span class="n">26.</span><span class="t">Барои иштирок дар даври чоруми Озмун ба комиссияи Озмун иловатан ҳуҷҷатҳои зерин дар шакли хаттӣ ва электронӣ пешниҳод карда мешаванд:
+      <ul class="dash">
+        <li>маълумоти мухтасар дар бораи довталаб;</li>
+        <li>нусхаи патент ва ё шаҳодатномаи муаллифӣ;</li>
+        <li>нусхаи шаҳодатномаи бақайдгирии давлатии захираи иттилоотӣ ва маълумотномаи Вазорати фарҳанг;</li>
+        <li>номгӯйи дастгоҳ ва таҷҳизоти ихтироъшуда;</li>
+        <li>барномаи таҳияшудаи компютерӣ;</li>
+        <li>пешниҳодҳои хусусияти навоваридошта.</li>
+      </ul>
+    </span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 6. ТАЛАБОТ ============ -->
+  <section id="s6" class="card">
+    <h2 class="section-title"><span class="num">6</span> ТАЛАБОТ БА ИШТИРОКЧИЁНИ ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">27.</span><span class="t">Донишу истеъдоди иштирокчиёни Озмун аз рӯйи донишҳои назариявии донистани қонуну қоидаҳо, теоремаву аксиомаҳо, назарияҳо, дуруст фаҳмонида додани моҳияти ҳодисаҳо ва равандҳои табиат, ҳалли масъалаҳои амалӣ ва корҳои озмоишӣ, инчунин намоиши дастоварди илмӣ ва навовариҳо муайян карда мешавад.</span></div>
+
+    <div class="note">Агар иштирокчӣ ҳамчун хонандаи муассисаи таҳсилоти миёнаи умумӣ дар даврҳои якуму дуюм ва сеюм ба қайд гирифта шуда бошад ва дар даври чорум донишҷӯйи муассисаҳои таҳсилоти олии касбӣ шуда бошад, ҳамчун <b>хонанда</b> дар даври чорум иштирок мекунад.</div>
+
+    <div class="num-p"><span class="n">28.</span><span class="t">Як шахс танҳо <b>дар як номинатсия</b> аз номи як муассиса ё маҳалли зист дар Озмун иштирок карда метавонад.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 7. МЕЪЁРҲО ============ -->
+  <section id="s7" class="card">
+    <h2 class="section-title"><span class="num">7</span> МЕЪЁРҲОИ АРЗЁБИИ ҒОЛИБОНИ ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">29.</span><span class="t">Вобаста ба номинатсия пешниҳоди супоришҳои Озмун (<b>10 супориш ё саволу масъала</b>) дар шакли зерин сурат мегирад:
+      <ul class="dash">
+        <li><b>Математика</b> — 40% назариявӣ ва 60% амалӣ;</li>
+        <li><b>Физика ва астрономия</b> — 40% назариявӣ ва 60% амалӣ-озмоишӣ (80% физика, 20% астрономия);</li>
+        <li><b>Химия</b> — 30% назариявӣ, 50% хаттӣ-амалӣ ва 20% озмоишӣ;</li>
+        <li><b>Биология</b> — 40% назариявӣ, 40% амалӣ ва 20% озмоишӣ;</li>
+        <li><b>География</b> — 50% назариявӣ ва 50% амалӣ;</li>
+        <li><b>Технологияи иттилоотӣ</b> — 30% назариявӣ ва 70% амалӣ;</li>
+        <li><b>Зеҳни сунъӣ ва барномасозӣ</b> — аз рӯйи пешниҳоди барномаҳои нави компютерӣ ва мобилии таҳияшуда ва барномаҳои идоракунандаи зеҳни сунъӣ;</li>
+        <li><b>Ихтироъкорӣ ва навоварӣ</b> — аз рӯйи пешниҳоди ихтироот ва навоварӣ, аз ҷумла дастгоҳу таҷҳизот, техникаву технология, навъу намунаҳои нави зироат, дарахту буттаҳо ва маводди доруворӣ.</li>
+      </ul>
+    </span></div>
+
+    <div class="num-p"><span class="n">30.</span><span class="t">Ҷадвали <b>100-холӣ</b> муқаррар карда шуда, ҳайати ҳакамон аз рӯйи меъёрҳои зерин баҳо медиҳанд:
+      <ul class="dash">
+        <li>барои ҷавоби пурра ба саволҳои назариявӣ, дуруст пешниҳод намудани қонуну қоидаҳо, теорема ва аксиомаҳо, моҳияти ҳодисаҳои табиат, дуруст ҳал кардани мисолу масъалаҳо — <b>то 10 хол</b>; ҷавоби аз хуб болотар — то 8; ҷавоби хуб — то 6; аз миёна беҳтар — то 4; миёна — то 3; заиф — то 2; ғайриқаноатбахш — хол дода намешавад;</li>
+        <li>барои номинатсияи <b>зеҳни сунъӣ ва барномасозӣ</b> — то 100 хол ба барномаҳои компютерӣ ва мобилӣ, барномаҳои идоракунии зеҳни сунъие дода мешавад, ки бо шаҳодатномаи бақайдгирии давлатӣ ҳифз шуда, дар истеҳсолот ҷорӣ шудаанд ё имкони ҷорӣ шуданро доранд; барои барнома бе шаҳодатнома — то 80; барои алгоритми кор ва сохтани барнома — то 6; барои саволи назариявӣ — то 4-2;</li>
+        <li>барои <b>ихтироъкорон</b> — то 100 хол ба ихтирооте, ки бо патент байналмилалӣ ё ҷумҳуриявӣ ҳифз шудааст, дар истеҳсолот ҷорӣ шудааст ё имкони ҷорӣ шуданро дорад. То 80 — ихтирое бо хусусиятҳои навоварӣ бе патент; то 60 — ихтирое бо унсурҳои навоварӣ; то 50 — конструксияҳои муайян; то 30 — намунаҳои аллакай мавҷуда;</li>
+        <li>саволҳои назариявӣ дар шакли <b>хаттӣ</b> пешниҳод мешаванд;</li>
+        <li>холи натиҷавӣ дар асоси <b>қимати миёна</b>-и холҳои ҳар як узви ҳайати ҳакамон ҳисоб мешавад.</li>
+      </ul>
+    </span></div>
+
+    <div class="num-p"><span class="n">31.</span><span class="t">Дар тамоми номинатсияҳо ҷойҳои якум, дуюм ва сеюм тибқи ҷадвали зерин дода мешаванд:
+      <ul class="dash">
+        <li><b>аз 75 то 100 хол</b> — ҷойи якум;</li>
+        <li><b>аз 60 то 75 хол</b> — ҷойи дуюм;</li>
+        <li><b>аз 50 то 60 хол</b> — ҷойи сеюм.</li>
+      </ul>
+      Дар сурати камтар аз 75% хол гирифтан, ҷойи якум дода намешавад.
+    </span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 8. ҲАКАМОН ============ -->
+  <section id="s8" class="card">
+    <h2 class="section-title"><span class="num">8</span> ҲАЙАТИ ҲАКАМОН</h2>
+
+    <div class="num-p"><span class="n">31.</span><span class="t">Шумора ва ҳайати ҳакамонро <b>комиссияи Озмун</b> муайян мекунад.</span></div>
+
+    <div class="num-p"><span class="n">32.</span><span class="t">Ҳайати ҳакамони Озмун дар ВМКБ, вилоятҳои Хатлону Суғд, шаҳри Душанбе ва шаҳру ноҳияҳо корҳои зеринро иҷро мекунанд:
+      <ul class="dash">
+        <li>тибқи пешниҳоди комиссияи Озмун донишу истеъдоди иштирокдоронро натиҷагирӣ мекунанд;</li>
+        <li>холҳоро муқаррар карда, бо овоздиҳии кушода ғолибро муайян менамоянд;</li>
+        <li>натиҷаи Озмунро дар протокол дарҷ намуда, бо имзои аъзои ҳакамон тасдиқ менамоянд.</li>
+      </ul>
+    </span></div>
+
+    <div class="num-p"><span class="n">33.</span><span class="t">Ба ҳайати ҳакамон намояндагони раёсат, шуъба ва бахшҳои мақомоти иҷроияи маҳаллӣ, омӯзгорон, олимону муҳаққиқон ворид мешаванд.</span></div>
+
+    <div class="num-p"><span class="n">34.</span><span class="t">Шахсе, ки шогирд ё узви оилаи ӯ дар Озмун иштирок мекунад, <b>ҳуқуқи ба ҳайати ҳакамон шомил гардиданро надорад</b>.</span></div>
+
+    <div class="num-p"><span class="n">35.</span><span class="t">Хулосаи ҳайати ҳакамони даврҳои сеюм ва чорум дар комиссияи Озмун баррасӣ ва тасдиқ карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">36.</span><span class="t">Комиссияи Озмун дар ҳолати ҷавобгӯй набудани хулосаи ҳайати ҳакамон ба талаботи Низомнома (дар ҳолатҳои истисноӣ ва ё муайян гардидани иштибоҳоти техникӣ) ҳуқуқи <b>бекор кардани онро</b> дорад.</span></div>
+
+    <div class="num-p"><span class="n">37.</span><span class="t">Ҳайати ҳакамони даври ниҳоии Озмун бо инобати мутахассисон аз ҳамаи муассисаҳои илмӣ ва таҳсилоти олии касбии соҳавии кишвар таъин карда мешаванд.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 9. ШОҲҶОИЗА ============ -->
+  <section id="s9" class="card">
+    <h2 class="section-title"><span class="num">9</span> ТАРТИБИ ПЕШНИҲОД БАРОИ ДАРЁФТИ ШОҲҶОИЗА</h2>
+
+    <div class="num-p"><span class="n">38.</span><span class="t">Барои дарёфти Шоҳҷоиза довталабе роҳ дода мешавад, ки дар даври ҷумҳуриявӣ аз рӯйи номинатсияи <b>ихтироъкорӣ ва навоварӣ</b>, <b>зеҳни сунъӣ ва барномасозӣ</b> ҷойи <b>якум</b>-ро сазовор гардидааст.</span></div>
+
+    <div class="num-p"><span class="n">39.</span><span class="t">Агар барандаи Шоҳҷоиза намоянда аз табақаҳои касбу кори гуногун бошад, бо пешниҳоди комиссияи Озмун бо тартиби муқарраргардида бо <b>мукофоти соҳавӣ</b> сарфароз гардонида мешавад.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 10. МОЛИЯ ============ -->
+  <section id="s10" class="card">
+    <h2 class="section-title"><span class="num">10</span> ТАЪМИНОТИ МОЛИЯВИИ ОЗМУН</h2>
+
+    <div class="num-p"><span class="n">40.</span><span class="t">Хароҷоти даврҳои якум, дуюм, сеюм, таъмини сафархарҷӣ ва будубоши ҳайати ҳакамон, инчунин хароҷоти сафарбаркунӣ ва будубоши ғолибон ва омӯзгорони онҳо ба даври чоруми Озмун аз ҳисоби буҷети мақомоти иҷроияи ҳокимияти давлатии ВМКБ, вилоятҳои Хатлон ва Суғд, шаҳри Душанбе ва шаҳру ноҳияҳо ва сарчашмаҳои дигари маблағгузории бо қонунгузорӣ манънагардида пардохт карда мешавад.</span></div>
+
+    <div class="num-p"><span class="n">41.</span><span class="t">Ғолибони даврҳои якум, дуюм, сеюми Озмун ва омӯзгорону волидони онҳо аз ҷониби мақомоти иҷроияи маҳаллӣ ва ташкилоту муассисаҳо ба таври моддию маънавӣ ҳавасманд гардонида мешаванд.</span></div>
+
+    <div class="num-p"><span class="n">42.</span><span class="t">Раисони ВМКБ, вилоятҳои Хатлон ва Суғд, шаҳри Душанбе, шаҳру ноҳияҳо, роҳбарони муассисаҳои илмию таҳқиқотӣ ғолибони даврҳои якум, дуюм ва сеюми Озмунро бо мукофотҳо сарфароз мегардонанд.</span></div>
+
+    <div class="num-p"><span class="n">43.</span><span class="t">Ба ғолибони даври чоруми Озмун ва барандаи Шоҳҷоиза, инчунин ҳайати ҳакамон ва мутахассисон аз ҳисоби маблағҳои <b>фонди захиравии Президенти Ҷумҳурии Тоҷикистон</b> ҷоиза ва мукофоти пулӣ дода мешавад.</span></div>
+
+    <div class="num-p"><span class="n">44.</span><span class="t">Ҷоиза ва мукофоти пулии ғолибони Озмун ва омӯзгорони онҳо дар маросими тантанавӣ аз ҷониби аъзои комиссияи Озмун ва дигар шахсони расмӣ супорида мешавад.</span></div>
+
+    <div class="num-p"><span class="n">45.</span><span class="t">Барои ҳавасмандгардонии ғолибон ва омӯзгорон ҷалби <b>сарпарастон</b> тибқи қонунгузорӣ иҷозат дода мешавад.</span></div>
+
+    <div class="num-p"><span class="n">46.</span><span class="t">Иштирокчиёни ҷойҳои <b>4, 5, 6</b> даври чоруми Озмун бо нишони <b>«Илм ва инноватсия»</b> ва «Ифтихорнома»-и Вазорати маориф ва илм сарфароз гардонида мешаванд.</span></div>
+
+    <div class="num-p"><span class="n">47.</span><span class="t">Падару модароне, ки фарзандони онҳо дар даври чорум ҷойҳои якум, дуюм ва сеюмро ба даст меоранд, соҳиби нишони <b>«Маърифатпарвар»</b> ва «Ифтихорнома»-и Вазорати маориф ва илм мегарданд.</span></div>
+
+    <div class="num-p"><span class="n">48.</span><span class="t">Омӯзгороне, ки шогирдони онҳо дар даври чорум барандаи Шоҳҷоиза ва сазовори ҷойҳои якум, дуюм ва сеюм мегарданд, <b>бо мукофоти пулӣ</b> сарфароз гардонида мешаванд.</span></div>
+
+    <div class="num-p"><span class="n">49.</span><span class="t">Хароҷоти баргузории чорабинии даври чоруми Озмун аз суратҳисоби махсуси Вазорати маориф ва илм пардохт карда мешавад.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ 11. ИМТИЁЗҲО ============ -->
+  <section id="s11" class="card">
+    <h2 class="section-title"><span class="num">11</span> ИМТИЁЗҲО</h2>
+
+    <div class="num-p"><span class="n">50.</span><span class="t">Ғолибони даври чорум (ҷойҳои <b>1, 2, 3</b>) ва барандаи Шоҳҷоиза баъди хатми муассисаи таҳсилоти миёнаи умумӣ, ибтидоӣ, миёна ва олии касбӣ ба ихтисоси интихобкардаи худ <b>ба муҳлати се сол бе супоридани имтиҳон</b> ба муассисаҳои таҳсилоти миёна ва олии касбии кишвар ба гурӯҳҳои <b>ройгон</b> қабул карда мешаванд.</span></div>
+
+    <div class="num-p"><span class="n">51.</span><span class="t">Иштирокдорони даври чоруми Озмун <b>дар давоми се сол</b> ба ихтисосҳои фанҳои риёзӣ, дақиқу табиатшиносӣ ва техникӣ ба муассисаҳои таҳсилоти миёна ва олии касбии кишвар бе супоридани имтиҳон ба гурӯҳҳои ройгон қабул карда мешаванд.</span></div>
+
+    <div class="num-p"><span class="n">52.</span><span class="t">Омӯзгороне, ки шогирдонашон дар байни хонандагон сазовори ҷойҳои <b>1, 2, 3</b> мегарданд, соҳиби унвони <b>«Аълочии маориф ва илми Тоҷикистон»</b> мегарданд.</span></div>
+
+    <div class="num-p"><span class="n">53.</span><span class="t">Вазорати маориф ва илм протокол ва санадҳои ғолибони Озмунро дар асоси таҳияи тартиби махсус барои <b>10 сол</b> нигоҳдорӣ намуда, баъдан ба бойгонӣ месупорад.</span></div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ ЗАМИМАИ 2 ============ -->
+  <section id="zam2" class="card">
+    <h2 class="section-title zam"><span class="num">З2</span> ҲАЙАТИ КОМИССИЯИ ОЗМУН</h2>
+
+    <p style="text-align:center;color:var(--muted);font-size:13.5px">
+      Замимаи 2 ба амри Президенти Ҷумҳурии Тоҷикистон<br>
+      аз «1» январи соли 2026, №АП-950
+    </p>
+
+    <p style="margin-top:14px"><b style="color:var(--accent)">Раёсати комиссия:</b></p>
+    <ul class="dash">
+      <li>Муовини Сарвазири Ҷумҳурии Тоҷикистон (сарпарасти соҳа) — <b>раиси комиссияи Озмун</b>;</li>
+      <li>Вазири маориф ва илми Ҷумҳурии Тоҷикистон — <b>муовини раиси комиссия</b>;</li>
+      <li>Президенти Академияи миллии илмҳои Тоҷикистон — <b>муовини раиси комиссия</b>;</li>
+      <li>Муовини вазири маориф ва илми Ҷумҳурии Тоҷикистон — <b>котиби комиссия</b>.</li>
+    </ul>
+
+    <p style="margin-top:14px"><b style="color:var(--accent)">Аъзои комиссия:</b></p>
+    <ul class="dash">
+      <li>Сардори раёсати маориф, фарҳанг ва иттилооти Дастгоҳи иҷроияи Президенти Ҷумҳурии Тоҷикистон;</li>
+      <li>Мушовири бахши ёрдамчии Президенти Ҷумҳурии Тоҷикистон оид ба масъалаҳои рушди иҷтимоӣ ва робита бо ҷомеа;</li>
+      <li>Вазири рушди иқтисод ва савдои Ҷумҳурии Тоҷикистон;</li>
+      <li>Раиси Кумитаи телевизион ва радиои назди Ҳукумати Ҷумҳурии Тоҷикистон;</li>
+      <li>Раиси Кумитаи кор бо ҷавонон ва варзиши назди Ҳукумати Ҷумҳурии Тоҷикистон;</li>
+      <li>Раиси Кумита оид ба таҳсилоти ибтидоӣ ва миёнаи касбии назди Ҳукумати Ҷумҳурии Тоҷикистон;</li>
+      <li>Муовини якуми вазири саноат ва технологияҳои нави Ҷумҳурии Тоҷикистон;</li>
+      <li>Муовини соҳавии раиси шаҳри Душанбе;</li>
+      <li>Директори Агентии инноватсия ва технологияҳои рақамии назди Президенти Ҷумҳурии Тоҷикистон;</li>
+      <li>Сардори Саридораи геологияи назди Ҳукумати Ҷумҳурии Тоҷикистон;</li>
+      <li>Директори Маркази миллии тестии назди Президенти Ҷумҳурии Тоҷикистон;</li>
+      <li>Президенти Академияи илмҳои кишоварзии Тоҷикистон;</li>
+      <li>Ректори Донишгоҳи миллии Тоҷикистон;</li>
+      <li>Ректори Донишгоҳи техникии Тоҷикистон ба номи академик М. Осимӣ.</li>
+    </ul>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <!-- ============ ЗАМИМАИ 3 ============ -->
+  <section id="zam3" class="card">
+    <h2 class="section-title zam"><span class="num">З3</span> ҶОИЗАҲОИ ОЗМУН</h2>
+
+    <p style="text-align:center;color:var(--muted);font-size:13.5px">
+      Замимаи 3 ба амри Президенти Ҷумҳурии Тоҷикистон<br>
+      аз «1» январи соли 2026, №АП-950
+    </p>
+
+    <p style="margin-top:14px">Мукофотҳои пулӣ барои ғолибони Озмун аз рӯйи <b>чор гурӯҳ</b>, <b>ҳашт номинатсия</b> ва <b>як Шоҳҷоиза</b> муқаррар карда мешаванд:</p>
+
+    <!-- Контейнер для таблиц генерируется JS -->
+    <div id="prizes"></div>
+
+    <!-- Хароҷоти иловагӣ -->
+    <div class="grp" id="grp-extra">
+      <div class="grp-head"><span class="badge">+</span> ХАРОҶОТИ ИЛОВАГӢ</div>
+      <div class="tbl-wrap"><table>
+        <thead><tr><th>№</th><th>Ҷоиза ва хароҷот</th><th class="num-cell">Шумора</th><th class="num-cell">Маблағ (сомонӣ)</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Мукофотпулӣ барои ҷоизаҳо ва Шоҳҷоиза</td><td class="num-cell">156 + 1</td><td class="num-cell">6 900 000</td></tr>
+          <tr><td>2</td><td>Мукофотпулӣ барои омӯзгорон</td><td class="num-cell">96</td><td class="num-cell">1 920 000</td></tr>
+          <tr><td>3</td><td>Омода кардани ҷомҳои Шоҳҷоиза, ҷойҳои якум, дуюм, сеюм ва «Диплом»-и ғолибони Озмун, ҳавасмандгардонии ҳайати ҳакамон ва хароҷоти дигар</td><td class="num-cell">—</td><td class="num-cell">1 050 000</td></tr>
+        </tbody>
+        <tfoot><tr><td colspan="3">ҲАМАГӢ</td><td class="num-cell">9 870 000</td></tr></tfoot>
+      </table></div>
+    </div>
+
+    <!-- Финал -->
+    <div class="budget-final">
+      <div class="label">💰 БУҶЕТИ УМУМИИ ОЗМУН</div>
+      <div class="sum">9 870 000 сомонӣ</div>
+      <div class="words">(нуҳ миллиону ҳаштсаду ҳафтод ҳазор)</div>
+    </div>
+
+    <a class="to-top" href="#toc">↑ Ба мундариҷа</a>
+  </section>
+
+  <footer>
+    <div>🔬 <span class="accent">Низомномаи Озмуни ҷумҳуриявии «Илм-фурӯғи маърифат»</span></div>
+    <div style="margin-top:6px">Соли <span class="gold">2026</span> · Ҷумҳурии Тоҷикистон</div>
+    <div style="margin-top:8px;font-size:12px">© Китобхона · Манбаи дониш</div>
+  </footer>
+
+</div>
+
+<button id="scrollTop" onclick="window.scrollTo({top:0,behavior:'smooth'})" aria-label="Ба боло">↑</button>
+
+<script>
+  function goBack(){
+    if (history.length > 1) history.back();
+    else location.href = 'index.html';
+  }
+
+  // ====== Генерация таблиц призов ======
+  const NOMS = [
+    {emoji:'📐', name:'Математика (арифметика, алгебра, геометрия)'},
+    {emoji:'🔭', name:'Физика ва астрономия'},
+    {emoji:'🧪', name:'Химия'},
+    {emoji:'🌱', name:'Биология (ботаника, зоология, анатомия)'},
+    {emoji:'🌍', name:'География'},
+    {emoji:'💻', name:'Технологияҳои иттилоотӣ'},
+    {emoji:'🤖', name:'Зеҳни сунъӣ ва барномасозӣ'},
+    {emoji:'⚙️', name:'Ихтироъкорӣ ва навоварӣ'},
+  ];
+
+  // Стандартная таблица для одной номинации (хонандагон, донишҷӯён)
+  function prizeStudentRows(){
+    return `
+      <thead><tr><th>№</th><th>Ҷой</th><th class="num-cell">Маблағ</th><th class="num-cell">Шумора</th><th class="num-cell">Ҳамагӣ (сомонӣ)</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Якум</td><td class="num-cell">70 000</td><td class="num-cell">1</td><td class="num-cell">70 000</td></tr>
+        <tr><td>2</td><td>Дуюм</td><td class="num-cell">50 000</td><td class="num-cell">2</td><td class="num-cell">100 000</td></tr>
+        <tr><td>3</td><td>Сеюм</td><td class="num-cell">30 000</td><td class="num-cell">3</td><td class="num-cell">90 000</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">Ҳамагӣ</td><td class="num-cell">6</td><td class="num-cell">260 000</td></tr></tfoot>
+    `;
+  }
+
+  // Таблица для омӯзгорон (мукофот 20000 за каждое место)
+  function prizeTeacherRows(){
+    return `
+      <thead><tr><th>№</th><th>Ҷой</th><th class="num-cell">Маблағ</th><th class="num-cell">Шумора</th><th class="num-cell">Ҳамагӣ (сомонӣ)</th></tr></thead>
+      <tbody>
+        <tr><td>1</td><td>Якум</td><td class="num-cell">20 000</td><td class="num-cell">1</td><td class="num-cell">20 000</td></tr>
+        <tr><td>2</td><td>Дуюм</td><td class="num-cell">20 000</td><td class="num-cell">2</td><td class="num-cell">40 000</td></tr>
+        <tr><td>3</td><td>Сеюм</td><td class="num-cell">20 000</td><td class="num-cell">3</td><td class="num-cell">60 000</td></tr>
+      </tbody>
+      <tfoot><tr><td colspan="3">Ҳамагӣ</td><td class="num-cell">6</td><td class="num-cell">120 000</td></tr></tfoot>
+    `;
+  }
+
+  function buildGroup(title, badge, noms, makeRows, totalParticipants, totalSum){
+    let html = `<div class="grp"><div class="grp-head"><span class="badge">${badge}</span> ${title}</div>`;
+    for (const n of noms){
+      html += `<div class="nom-title">${n.emoji} ${n.name}</div>`;
+      html += `<div class="tbl-wrap"><table>${makeRows()}</table></div>`;
+    }
+    html += `<div class="tbl-wrap"><table>
+      <thead><tr><th colspan="3">📊 Дар маҷмуъ</th><th class="num-cell">Иштирокчиён</th><th class="num-cell">Маблағ (сомонӣ)</th></tr></thead>
+      <tbody><tr><td colspan="3"><b>${title}</b></td><td class="num-cell"><b>${totalParticipants}</b></td><td class="num-cell"><b>${totalSum}</b></td></tr></tbody>
+    </table></div>`;
+    html += `</div>`;
+    return html;
+  }
+
+  const html = [
+    // Шоҳҷоиза (отдельно вверху)
+    `<div class="grp" style="border-color:var(--gold);background:linear-gradient(135deg,var(--gold-soft),rgba(125,211,252,.1))">
+       <div class="grp-head"><span class="badge">🏆</span> ШОҲҶОИЗА (барои номинатсияҳои зеҳни сунъӣ ва ихтироъкорӣ)</div>
+       <div class="tbl-wrap"><table>
+         <thead><tr><th>№</th><th class="num-cell">Маблағ</th><th class="num-cell">Шумора</th><th class="num-cell">Ҳамагӣ (сомонӣ)</th></tr></thead>
+         <tbody><tr><td>1</td><td class="num-cell">140 000</td><td class="num-cell">1</td><td class="num-cell">140 000</td></tr></tbody>
+       </table></div>
+     </div>`,
+
+    // Гурӯҳи 1
+    buildGroup('1. Хонандагони муассисаҳои таҳсилоти миёнаи умумӣ ва ибтидоии касбӣ', '1', NOMS, prizeStudentRows, '48 нафар', '2 080 000'),
+    // Гурӯҳи 2
+    buildGroup('2. Хонандагони муассисаҳои таҳсилоти миёнаи умумии типи нав (литсейҳо, гимназияҳо, президентӣ, хусусӣ)', '2', NOMS, prizeStudentRows, '48 нафар', '2 080 000'),
+    // Гурӯҳи 3
+    buildGroup('3. Донишҷӯёни муассисаҳои таҳсилоти миёна ва олии касбӣ', '3', NOMS, prizeStudentRows, '48 нафар', '2 080 000'),
+    // Гурӯҳи 4 (только 2 номинации)
+    buildGroup('4. Магистрантон, ходимони илмӣ, аспирантон, омӯзгорон, муҳандисон ва дигар касбу кор', '4',
+      [NOMS[6], NOMS[7]], prizeStudentRows, '156 нафар (умумӣ)', '520 000'),
+    // Омӯзгорон 1
+    buildGroup('5. Омӯзгорони хонандагони муассисаҳои таҳсилоти миёнаи умумӣ ва ибтидоии касбӣ', '👨‍🏫',
+      NOMS, prizeTeacherRows, '48 нафар', '960 000'),
+    // Омӯзгорон 2
+    buildGroup('6. Омӯзгорони хонандагони муассисаҳои типи нав (литсейҳо, гимназияҳо)', '👩‍🏫',
+      NOMS, prizeTeacherRows, '48 нафар', '960 000'),
+  ].join('');
+
+  document.getElementById('prizes').innerHTML = html;
+
+  // ====== UI ======
+  const stBtn = document.getElementById('scrollTop');
+  window.addEventListener('scroll', () => {
+    if (window.scrollY > 600) stBtn.classList.add('show');
+    else stBtn.classList.remove('show');
+  }, {passive:true});
+
+  document.querySelectorAll('a[href^="#"]').forEach(a => {
+    a.addEventListener('click', e => {
+      const id = a.getAttribute('href').slice(1);
+      const el = document.getElementById(id);
+      if (el){ e.preventDefault(); el.scrollIntoView({behavior:'smooth', block:'start'}); history.replaceState(null,'','#'+id); }
+    });
+  });
+
+  // ====== Звёзды ======
+  const cv = document.getElementById('stars');
+  const ctx = cv.getContext('2d');
+  let W, H, stars=[], shooters=[], raf, paused=false;
+  const COLORS = ['#ffffff','#bfe3ff','#fff4d4','#a5d8ff'];
+
+  function resize(){
+    W = cv.width = innerWidth * devicePixelRatio;
+    H = cv.height = innerHeight * devicePixelRatio;
+    cv.style.width = innerWidth+'px';
+    cv.style.height = innerHeight+'px';
+    const n = Math.min(120, Math.floor(innerWidth*innerHeight/12000));
+    stars = Array.from({length:n}, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r: (Math.random()*1.4 + 0.3) * devicePixelRatio,
+      a: Math.random()*Math.PI*2,
+      sp: 0.008 + Math.random()*0.02,
+      c: COLORS[Math.floor(Math.random()*COLORS.length)],
+      big: Math.random() < 0.06
+    }));
+  }
+  resize();
+  addEventListener('resize', resize);
+
+  function draw(){
+    if (paused){ raf = requestAnimationFrame(draw); return; }
+    ctx.clearRect(0,0,W,H);
+    for (const s of stars){
+      s.a += s.sp;
+      const tw = 0.5 + 0.5*Math.sin(s.a);
+      ctx.globalAlpha = 0.35 + tw*0.55;
+      ctx.fillStyle = s.c;
+      ctx.beginPath();
+      ctx.arc(s.x, s.y, s.r * (s.big? 1.8 : 1), 0, Math.PI*2);
+      ctx.fill();
+      if (s.big && tw > 0.85){
+        ctx.globalAlpha = (tw-0.85)*2;
+        ctx.fillRect(s.x - s.r*4, s.y - s.r*0.3, s.r*8, s.r*0.6);
+        ctx.fillRect(s.x - s.r*0.3, s.y - s.r*4, s.r*0.6, s.r*8);
+      }
+    }
+    if (Math.random() < 0.002) shooters.push({
+      x: Math.random()*W*0.7, y: Math.random()*H*0.4,
+      vx: (4+Math.random()*4)*devicePixelRatio, vy: (1.5+Math.random()*2)*devicePixelRatio,
+      life: 1
+    });
+    for (let i=shooters.length-1;i>=0;i--){
+      const sh = shooters[i];
+      sh.x += sh.vx; sh.y += sh.vy; sh.life -= 0.015;
+      if (sh.life<=0){ shooters.splice(i,1); continue; }
+      ctx.globalAlpha = sh.life;
+      const g = ctx.createLinearGradient(sh.x, sh.y, sh.x-sh.vx*8, sh.y-sh.vy*8);
+      g.addColorStop(0,'rgba(255,255,255,1)');
+      g.addColorStop(1,'rgba(255,255,255,0)');
+      ctx.strokeStyle = g; ctx.lineWidth = 2*devicePixelRatio;
+      ctx.beginPath(); ctx.moveTo(sh.x, sh.y);
+      ctx.lineTo(sh.x-sh.vx*8, sh.y-sh.vy*8); ctx.stroke();
+    }
+    ctx.globalAlpha = 1;
+    raf = requestAnimationFrame(draw);
+  }
+  draw();
+  document.addEventListener('visibilitychange', () => { paused = document.hidden; });
+</script>
+
+</body>
+</html>
