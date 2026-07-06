@@ -591,22 +591,38 @@ async function loadHome() {
   // Книги Пешвои Миллат – загружаем отдельно
   try {
     const d = await loadBooksJson();
-    const priority = d.categories.find(c => c.priority || /пешвои|пешвои миллат|асосгузор|peshvoi|president|эмомали/i.test([c.name, c.id, c.folder_raw].filter(Boolean).join(' ')));
-    if (priority) {
-      const folders = (priority.subs && priority.subs.length) ? priority.subs : [{ folder: priority.folder || ('books/' + (priority.folder_raw || priority.name || '')), name: priority.name }];
-      folders.filter(x => x.folder);
-      let all = [];
-      for (const ps of folders) {
-        try {
-          const arr = await loadManifest(ps);
-          all.push(...arr.map(b => ({ ...b, _folder: ps.folder })));
-        } catch(e) {}
-      }
-      if (all.length) {
-        $('pesvoSection').style.display = 'block';
-        $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
-        hydrateBookCardCovers($('pesvoBooks'));
-      }
+    // Поиск категории президента должен быть максимально точным, иначе на части устройств/сетей может не найтись.
+    // В books.json категория имеет id: "peshvoi_millat".
+    const priority =
+      d.categories.find(c => c.id === 'peshvoi_millat') ||
+      d.categories.find(c => c.priority || /пешвои|пешвои миллат|асосгузор|peshvoi|president|эмомали|эмомалӣ/i.test([c.name, c.id, c.folder_raw].filter(Boolean).join(' ')));
+
+    if (!priority) {
+      // чтобы понять на мобилках, что именно не найдено
+      try {
+        console.warn('[Home] President category not found. Categories ids:', (d.categories||[]).slice(0,15).map(x=>x.id));
+      } catch(e) {}
+      return;
+    }
+
+    const folders = (priority.subs && priority.subs.length)
+      ? priority.subs
+      : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
+
+    let all = [];
+    for (const ps of folders) {
+      try {
+        // В loadManifest ожидается ps.folder
+        const folder = ps.folder || ps.folder_raw || ('books/' + (ps.name || ''));
+        const arr = await loadManifest({ ...ps, folder });
+        all.push(...arr.map(b => ({ ...b, _folder: folder })));
+      } catch(e) {}
+    }
+
+    if (all.length) {
+      $('pesvoSection').style.display = 'block';
+      $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
+      hydrateBookCardCovers($('pesvoBooks'));
     }
   } catch(e) { console.warn('President books load error', e); }
 
