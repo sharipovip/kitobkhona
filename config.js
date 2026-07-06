@@ -903,7 +903,7 @@ const KKH_FCM = {
     appId: "1:507779702083:web:3dbd554961b290e854e3f6",
     measurementId: "G-2G9G2SXCTQ"
   },
-  vapidKey: ''
+  vapidKey: 'BNhCnltOkKCNypeBGqYGRHiKpQxKpkpt3Fj5G7X2XDM8EV7qj3xLtDQa8PYh_Sp3g21CLCdz7GoBILxMjnBFUJM'
 };
 
 function loadFirebaseMessagingSdk() {
