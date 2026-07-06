@@ -1348,9 +1348,23 @@
       </button>`;
     }).join('');
 
+    const params = new URLSearchParams(window.location.search);
+    const urlCat = params.get('cat');
     const savedCatId = localStorage.getItem('kk_selected_category');
     let targetCat = null;
-    if (savedCatId) targetCat = cats.find(c => c.id === savedCatId);
+    if (urlCat) {
+      targetCat = cats.find(c =>
+        c.id === urlCat ||
+        c.folder === urlCat ||
+        c.folder_raw === urlCat ||
+        c.name === urlCat ||
+        c.slug === urlCat
+      );
+      if (targetCat) {
+        localStorage.setItem('kk_selected_category', targetCat.id);
+      }
+    }
+    if (!targetCat && savedCatId) targetCat = cats.find(c => c.id === savedCatId);
     if (!targetCat && cats.length) targetCat = cats[0];
 
     row.querySelectorAll('.spine').forEach(btn => {
@@ -1459,11 +1473,18 @@
 
   // ===== ПОИСК =====
   const searchInput = document.getElementById('searchInput');
+  let searchDebounceTimer = null;
   searchInput.addEventListener('input', function() {
-    const q = this.value.trim().toLowerCase();
-    if (!q) { renderBooks(books); return; }
-    const filtered = books.filter(b => (b.name || b.file || '').toLowerCase().includes(q));
-    renderBooks(filtered);
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      const q = this.value.trim().toLowerCase();
+      if (!q) {
+        renderBooks(books);
+        return;
+      }
+      const filtered = books.filter(b => (b.name || b.file || '').toLowerCase().includes(q));
+      renderBooks(filtered);
+    }, 180);
   });
 
   // ===== ЗАПУСК =====

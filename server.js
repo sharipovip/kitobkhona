@@ -528,12 +528,22 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     const shortText = String(text).replace(/\s+/g, ' ').trim().slice(0, 60);
 
     if (receiver_id && String(receiver_id) !== String(userId)) {
-      await sendPushToUsers([receiver_id], {
+      await createUserNotification(receiver_id, {
+        type: 'chat_message',
         title: 'Новое сообщение',
         body: `${senderName}: ${shortText || 'Новое сообщение'}`,
-        link: '/chats.html',
-        data: { type: 'chat_message', sender_id: String(userId), receiver_id: String(receiver_id) }
+        link: '/chats.html'
       });
+      try {
+        await sendPushToUsers([receiver_id], {
+          title: 'Новое сообщение',
+          body: `${senderName}: ${shortText || 'Новое сообщение'}`,
+          link: '/chats.html',
+          data: { type: 'chat_message', sender_id: String(userId), receiver_id: String(receiver_id) }
+        });
+      } catch (pushError) {
+        console.warn('[PUSH] Chat notification failed:', pushError.message);
+      }
     }
 
     if (!isAdmin && wordCount > 0) {
@@ -602,12 +612,22 @@ app.post('/api/friends/request', authenticateToken, async (req, res) => {
       [req.user.id, to_user]
     );
 
-    await sendPushToUsers([to_user], {
+    await createUserNotification(to_user, {
+      type: 'friend_request',
       title: 'Новая заявка в друзья',
       body: 'Кто-то отправил вам заявку в друзья',
-      link: '/profile.html',
-      data: { type: 'friend_request', from_user: String(req.user.id) }
+      link: '/profile.html'
     });
+    try {
+      await sendPushToUsers([to_user], {
+        title: 'Новая заявка в друзья',
+        body: 'Кто-то отправил вам заявку в друзья',
+        link: '/profile.html',
+        data: { type: 'friend_request', from_user: String(req.user.id) }
+      });
+    } catch (pushError) {
+      console.warn('[PUSH] Friend request notification failed:', pushError.message);
+    }
 
     res.json({ success: true });
   } catch (e) {
@@ -2111,6 +2131,21 @@ async function cleanupStaleTokens(results, tokens) {
   }
 }
 
+async function createUserNotification(userId, { type, title, body, link } = {}) {
+  if (!userId) return null;
+  try {
+    await pool.query(
+      `INSERT INTO notifications (user_id, type, title, body, link)
+       VALUES ($1, $2, $3, $4, $5)`,
+      [userId, type || 'general', title || '', body || '', link || '/']
+    );
+    return true;
+  } catch (e) {
+    console.warn('[NOTIF] Failed to store notification:', e.message);
+    return false;
+  }
+}
+
 async function sendPushMessagesToTokens(tokens, { title, body, link, data } = {}) {
   if (!firebaseMessaging) {
     return { success: false, error: 'FCM not initialized' };
@@ -2132,19 +2167,29 @@ async function sendPushMessagesToTokens(tokens, { title, body, link, data } = {}
     },
     data: data ? Object.fromEntries(Object.entries(data).map(([k, v]) => [String(k), String(v)])) : {}
   };
-  const response = await firebaseMessaging.sendMulticast(message);
-  await cleanupStaleTokens(response, tokens);
-  return { success: true, sent: response.successCount, failed: response.failureCount };
+  try {
+    const response = await firebaseMessaging.sendMulticast(message);
+    await cleanupStaleTokens(response, tokens);
+    return { success: true, sent: response.successCount, failed: response.failureCount };
+  } catch (e) {
+    console.warn('[FCM] Send failed:', e.message);
+    return { success: false, sent: 0, failed: tokens.length };
+  }
 }
 
 async function sendPushToUsers(userIds, payload) {
   if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, sent: 0 };
-  const result = await pool.query(
-    `SELECT token FROM device_tokens WHERE user_id = ANY($1)`,
-    [userIds]
-  );
-  const tokens = result.rows.map(row => row.token).filter(Boolean);
-  return sendPushMessagesToTokens(tokens, payload);
+  try {
+    const result = await pool.query(
+      `SELECT token FROM device_tokens WHERE user_id = ANY($1)`,
+      [userIds]
+    );
+    const tokens = result.rows.map(row => row.token).filter(Boolean);
+    return sendPushMessagesToTokens(tokens, payload);
+  } catch (e) {
+    console.warn('[PUSH] Failed to resolve push tokens:', e.message);
+    return { success: false, sent: 0, failed: userIds.length };
+  }
 }
 
 app.post('/api/push/register', authenticateToken, async (req, res) => {

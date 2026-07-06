@@ -574,14 +574,12 @@ async function loadHome() {
     }
   }
   
-  // ===== ИСКЛЮЧАЕМ КАТЕГОРИЮ "Пешвои Миллат" =====
-  const filteredCats = categories.filter(c => c.id !== 'peshvoi_millat');
-  renderCategories(filteredCats);
+  const homeCategories = categories.filter(c => c.id !== 'peshvoi_millat');
+  renderCategories(homeCategories);
   
   CacheManager.subscribe(CacheManager.KEYS.CATEGORIES, (newData) => {
     if (newData) {
-      const filtered = newData.filter(c => c.id !== 'peshvoi_millat');
-      renderCategories(filtered);
+      renderCategories(newData.filter(c => c.id !== 'peshvoi_millat'));
     } else {
       loadBooksJson().then(d => {
         const cats = d.categories || [];
