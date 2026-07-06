@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Китобхона — Чатҳо</title>
 <script src="config.js"></script>
+<script src="cache.js"></script>
 <style>
   /* ================================================================
      ЕДИНЫЙ СТИЛЬ (все стили внутри)
@@ -881,7 +882,17 @@
 
 <script>
   // ================================================================
-  // ============ ТЕМА (светлая/тёмная) ============
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+    loadData();
+  });
+
+  // ================================================================
+  // ============ ТЕМА ============
   // ================================================================
   (function initTheme() {
     const saved = localStorage.getItem('kk_theme') || 'dark';
@@ -889,7 +900,7 @@
   })();
 
   // ================================================================
-  // ============ ОСНОВНАЯ ЛОГИКА (оригинальная, без изменений) ============
+  // ============ ОСНОВНАЯ ЛОГИКА С КЭШИРОВАНИЕМ ============
   // ================================================================
   const $ = id => document.getElementById(id);
 
@@ -898,6 +909,8 @@
 
   let currentUser = null;
   let friendsCache = [];
+  let unsubscribeFriends = null;
+  let unsubscribeRequests = null;
 
   function getInitials(name) {
     if(!name) return 'К';
@@ -917,12 +930,42 @@
     return d.getDate() + ' ' + ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];
   }
 
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // Получить профиль пользователя с кэшированием
+  async function getProfileCached(userId) {
+    const key = 'kk_profile_' + userId;
+    let profile = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
+    if (!profile) {
+      try {
+        profile = await AUTH.getProfileFromRailway(userId);
+        if (profile && typeof CacheManager !== 'undefined') {
+          CacheManager.set(key, profile);
+        }
+      } catch(e) {
+        profile = {};
+      }
+    }
+    return profile;
+  }
+
   async function loadData() {
     const scroll = document.getElementById('chatsScroll');
 
     try {
-      const { data } = await AUTH.getUser();
-      currentUser = data.user;
+      // Получаем текущего пользователя (из кэша или из AUTH)
+      let user = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.PROFILE) : null;
+      if (!user) {
+        const { data } = await AUTH.getUser();
+        user = data.user;
+        if (user && typeof CacheManager !== 'undefined') {
+          CacheManager.set(CacheManager.KEYS.PROFILE, user);
+        }
+      }
+      currentUser = user;
       if(!currentUser) {
         scroll.innerHTML = `
           <div class="empty-hint" style="text-align:center;margin-top:30px;">
@@ -933,119 +976,141 @@
         return;
       }
 
-      // Загрузка друзей
-      let friends = [];
-      try {
+      // ---- ДРУЗЬЯ (из кэша или с сервера) ----
+      let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
+      if (!friends) {
         friends = await ChatAPI.getFriends(currentUser.id);
-      } catch(e) { console.warn('Friends load error', e); }
+        if (typeof CacheManager !== 'undefined') {
+          CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+        }
+      }
 
-      // Загрузка заявок
-      let requests = [];
-      try {
+      // ---- ЗАЯВКИ (из кэша или с сервера) ----
+      let requests = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.REQUESTS) : null;
+      if (!requests) {
         requests = await ChatAPI.getFriendRequests(currentUser.id);
-      } catch(e) { console.warn('Requests load error', e); }
-
-      // Получение профилей отправителей заявок
-      const requestProfiles = {};
-      for (const req of requests) {
-        try {
-          const p = await AUTH.getProfileFromRailway(req.from_user);
-          if(p) requestProfiles[req.from_user] = p;
-        } catch(e) {}
-      }
-
-      // Получение профилей друзей (только для отображения, без последнего сообщения для простоты)
-      const friendProfiles = {};
-      for (const id of friends) {
-        try {
-          const p = await AUTH.getProfileFromRailway(id);
-          if(p) friendProfiles[id] = p;
-        } catch(e) {}
-      }
-
-      // Формируем HTML
-      let html = '';
-
-      // Заявки
-      if(requests.length) {
-        html += `
-          <div class="section-label">
-            <div class="t">Дархостҳо</div>
-            <div class="count">${requests.length} нав</div>
-          </div>
-          <div class="requests-row">
-        `;
-        for(const req of requests) {
-          const fromId = req.from_user;
-          const profile = requestProfiles[fromId] || {};
-          const name = profile.display_name || profile.username || 'Китобхон';
-          const initials = getInitials(name);
-          const cls = getCls(fromId.charCodeAt(0) || 0);
-          html += `
-            <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
-              <div class="req-avatar ${cls}">${esc(initials)}</div>
-              <div class="req-name">${esc(name)}</div>
-              <div class="req-actions">
-                <button class="btn-mini accept" onclick="acceptRequest('${fromId}')">Қабул</button>
-                <button class="btn-mini decline" onclick="declineRequest('${req.id}')">Рад</button>
-              </div>
-            </div>
-          `;
-        }
-        html += `</div><div class="divider-soft"></div>`;
-      }
-
-      // Друзья
-      html += `
-        <div class="section-label">
-          <div class="t">Дӯстон</div>
-          <div class="count" id="friendCount">${friends.length} дӯст</div>
-        </div>
-        <div class="chat-list" id="chatList">
-      `;
-
-      if(friends.length === 0) {
-        html += `<div class="empty-hint">Барои оғози чат аввал дӯст ҷӯед</div>`;
-      } else {
-        for(const id of friends) {
-          const profile = friendProfiles[id] || {};
-          const name = profile.display_name || profile.username || 'Китобхон';
-          const initials = getInitials(name);
-          const cls = getCls(id.charCodeAt(0) || 0);
-          // Для демонстрации показываем статический статус онлайн (можно убрать)
-          const online = Math.random() > 0.6;
-          html += `
-            <div class="chat-item" onclick="openChat('${id}','${esc(name)}')">
-              <div class="avatar-wrap">
-                <div class="avatar ${cls} ${online ? 'ring' : ''}">${esc(initials)}</div>
-                ${online ? '<div class="online-dot"></div>' : ''}
-              </div>
-              <div class="chat-mid">
-                <div class="chat-top">
-                  <div class="chat-name">${esc(name)}</div>
-                  <div class="chat-time"></div>
-                </div>
-                <div class="chat-bottom">
-                  <div class="chat-msg">Паёмҳо баъди навиштан</div>
-                </div>
-              </div>
-            </div>
-          `;
+        if (typeof CacheManager !== 'undefined') {
+          CacheManager.set(CacheManager.KEYS.REQUESTS, requests);
         }
       }
-      html += `</div>`;
 
-      // Поиск
-      const searchInput = document.getElementById('searchInput');
-      searchInput.removeEventListener('input', handleSearch);
-      searchInput.addEventListener('input', handleSearch);
+      // ---- ПОДПИСКИ НА ОБНОВЛЕНИЯ ----
+      if (typeof CacheManager !== 'undefined') {
+        if (unsubscribeFriends) unsubscribeFriends();
+        unsubscribeFriends = CacheManager.subscribe(CacheManager.KEYS.FRIENDS, (newFriends) => {
+          if (newFriends) {
+            friends = newFriends;
+            renderChats(friends, requests, scroll);
+          } else {
+            ChatAPI.getFriends(currentUser.id).then(f => {
+              CacheManager.set(CacheManager.KEYS.FRIENDS, f);
+              friends = f;
+              renderChats(friends, requests, scroll);
+            }).catch(console.warn);
+          }
+        });
 
-      scroll.innerHTML = html;
+        if (unsubscribeRequests) unsubscribeRequests();
+        unsubscribeRequests = CacheManager.subscribe(CacheManager.KEYS.REQUESTS, (newRequests) => {
+          if (newRequests) {
+            requests = newRequests;
+            renderChats(friends, requests, scroll);
+          } else {
+            ChatAPI.getFriendRequests(currentUser.id).then(r => {
+              CacheManager.set(CacheManager.KEYS.REQUESTS, r);
+              requests = r;
+              renderChats(friends, requests, scroll);
+            }).catch(console.warn);
+          }
+        });
+      }
+
+      renderChats(friends, requests, scroll);
 
     } catch(e) {
       console.error(e);
       scroll.innerHTML = `<div class="empty-hint" style="color:var(--red);">Хатогӣ: ${esc(e.message)}</div>`;
     }
+  }
+
+  async function renderChats(friends, requests, scroll) {
+    // Получение профилей отправителей заявок и друзей (с кэшированием)
+    let html = '';
+
+    // ---- ЗАЯВКИ ----
+    if(requests.length) {
+      html += `
+        <div class="section-label">
+          <div class="t">Дархостҳо</div>
+          <div class="count">${requests.length} нав</div>
+        </div>
+        <div class="requests-row">
+      `;
+      for(const req of requests) {
+        const fromId = req.from_user;
+        const profile = await getProfileCached(fromId);
+        const name = profile?.display_name || profile?.username || 'Китобхон';
+        const initials = getInitials(name);
+        const cls = getCls(fromId.charCodeAt(0) || 0);
+        html += `
+          <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
+            <div class="req-avatar ${cls}">${esc(initials)}</div>
+            <div class="req-name">${esc(name)}</div>
+            <div class="req-actions">
+              <button class="btn-mini accept" onclick="acceptRequest('${fromId}')">Қабул</button>
+              <button class="btn-mini decline" onclick="declineRequest('${req.id}')">Рад</button>
+            </div>
+          </div>
+        `;
+      }
+      html += `</div><div class="divider-soft"></div>`;
+    }
+
+    // ---- ДРУЗЬЯ ----
+    html += `
+      <div class="section-label">
+        <div class="t">Дӯстон</div>
+        <div class="count" id="friendCount">${friends.length} дӯст</div>
+      </div>
+      <div class="chat-list" id="chatList">
+    `;
+
+    if(friends.length === 0) {
+      html += `<div class="empty-hint">Барои оғози чат аввал дӯст ҷӯед</div>`;
+    } else {
+      for(const id of friends) {
+        const profile = await getProfileCached(id);
+        const name = profile?.display_name || profile?.username || 'Китобхон';
+        const initials = getInitials(name);
+        const cls = getCls(id.charCodeAt(0) || 0);
+        const online = Math.random() > 0.6;
+        html += `
+          <div class="chat-item" onclick="openChat('${id}','${esc(name)}')">
+            <div class="avatar-wrap">
+              <div class="avatar ${cls} ${online ? 'ring' : ''}">${esc(initials)}</div>
+              ${online ? '<div class="online-dot"></div>' : ''}
+            </div>
+            <div class="chat-mid">
+              <div class="chat-top">
+                <div class="chat-name">${esc(name)}</div>
+                <div class="chat-time"></div>
+              </div>
+              <div class="chat-bottom">
+                <div class="chat-msg">Паёмҳо баъди навиштан</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+    html += `</div>`;
+
+    scroll.innerHTML = html;
+
+    // Поиск
+    const searchInput = document.getElementById('searchInput');
+    searchInput.removeEventListener('input', handleSearch);
+    searchInput.addEventListener('input', handleSearch);
   }
 
   function handleSearch() {
@@ -1057,10 +1122,14 @@
     });
   }
 
-  // Принять заявку
+  // Принять заявку (с инвалидацией кэша)
   async function acceptRequest(fromUserId) {
     try {
       await ChatAPI.acceptFriendRequestByUser(fromUserId);
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+      }
       loadData();
     } catch(e) {
       alert('Хатогӣ: ' + e.message);
@@ -1068,10 +1137,13 @@
   }
   window.acceptRequest = acceptRequest;
 
-  // Отклонить заявку
+  // Отклонить заявку (с инвалидацией кэша)
   async function declineRequest(requestId) {
     try {
       await ChatAPI.declineFriendRequest(requestId);
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+      }
       loadData();
     } catch(e) {
       alert('Хатогӣ: ' + e.message);
@@ -1084,9 +1156,6 @@
     location.href = `chat.html?to=${encodeURIComponent(userId)}&name=${encodeURIComponent(name)}`;
   }
   window.openChat = openChat;
-
-  // Инициализация
-  loadData();
 </script>
 </body>
 </html>

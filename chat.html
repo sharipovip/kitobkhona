@@ -7,6 +7,7 @@
   <title>Чат — Китобхона</title>
   <link rel="manifest" href="manifest.json">
   <script src="config.js"></script>
+  <script src="cache.js"></script>
   <link rel="stylesheet" href="assets/css/index.css">
   <style>
     /* ===== СТИЛИ ЧАТА ===== */
@@ -463,7 +464,19 @@
 </div>
 
 <script>
-  // ===== КОД ЧАТА =====
+  // ================================================================
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+    init();
+  });
+
+  // ================================================================
+  // ============ ОСНОВНОЙ КОД ЧАТА С КЭШИРОВАНИЕМ ============
+  // ================================================================
   const qs = new URL(location.href).searchParams;
   const peerId = qs.get('to') || '';
   const peerName = decodeURIComponent(qs.get('name') || 'Чат');
@@ -473,6 +486,11 @@
   let currentUserId = null;
   let pollInterval = null;
   let chatIsOpen = true; // по умолчанию открыт
+
+  // Ключ кэша для сообщений
+  function getCacheKey() {
+    return 'kk_chat_messages_' + peerId;
+  }
 
   // ===== МЕНЮ =====
   const menuBtn = document.getElementById('menuBtn');
@@ -500,7 +518,7 @@
   async function deleteChat() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
-    if (!confirm('Удалить всю историю чата?')) return;
+    if (!confirm('Оё мехоҳед тамоми таърихи чатро нест кунед?')) return;
     try {
       const token = localStorage.getItem('kk_token');
       const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
@@ -509,6 +527,10 @@
         body: JSON.stringify({ user1: currentUserId, user2: peerId })
       });
       if (!resp.ok) throw new Error('Ошибка удаления');
+      // Инвалидируем кэш
+      if (CacheManager) {
+        CacheManager.invalidateKey(getCacheKey());
+      }
       alert('Чат удалён.');
       location.href = 'chats.html';
     } catch (e) {
@@ -517,11 +539,15 @@
   }
 
   // ===== ОЧИСТИТЬ ЧАТ =====
-  function clearChatLocal() {
+  async function clearChatLocal() {
     popupMenu.classList.remove('open');
-    if (!confirm('Очистить сообщения из интерфейса?')) return;
+    if (!confirm('Оё мехоҳед паёмҳоро аз интерфейс тоза кунед?')) return;
     const container = document.getElementById('messages');
     container.innerHTML = '<div class="loading-msg">Чат очищен</div>';
+    // Инвалидируем кэш
+    if (CacheManager) {
+      CacheManager.invalidateKey(getCacheKey());
+    }
     setTimeout(() => { loadMessages(false); }, 500);
   }
 
@@ -567,7 +593,41 @@
     }
   }
 
-  // ===== ЗАГРУЗКА СООБЩЕНИЙ =====
+  // ===== ЗАГРУЗКА СООБЩЕНИЙ (С КЭШИРОВАНИЕМ) =====
+  async function refreshMessagesFromServer(keepScroll = true, cachedMsgs = null) {
+    const msgContainer = document.getElementById('messages');
+    try {
+      const msgs = await ChatAPI.getMessages(currentUserId, peerId);
+      if (!msgs || msgs.length === 0) {
+        if (!cachedMsgs || cachedMsgs.length === 0) {
+          msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+        }
+        if (CacheManager) {
+          CacheManager.set(getCacheKey(), []);
+        }
+        return;
+      }
+
+      if (CacheManager) {
+        CacheManager.set(getCacheKey(), msgs);
+      }
+
+      renderMessages(msgs, msgContainer);
+      if (!keepScroll) scrollToBottom();
+      else {
+        const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
+        if (isAtBottom) scrollToBottom();
+      }
+      updateWordCounter();
+    } catch (e) {
+      console.error(e);
+      const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
+      if (!cached || cached.length === 0) {
+        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+      }
+    }
+  }
+
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
     try {
@@ -578,64 +638,84 @@
       }
       currentUserId = data.user.id;
 
-      // Получаем профиль собеседника для галочки
-      try {
-        const peerProfile = await AUTH.getProfileFromRailway(peerId);
-        if (peerProfile && peerProfile.verified) {
-          document.getElementById('verifiedBadge').style.display = 'inline-block';
-        } else {
-          document.getElementById('verifiedBadge').style.display = 'none';
+      // Параллельно поднимаем дополнительную информацию, но не блокируем рендер.
+      void (async () => {
+        try {
+          const peerProfile = await AUTH.getProfileFromRailway(peerId);
+          if (peerProfile && peerProfile.verified) {
+            document.getElementById('verifiedBadge').style.display = 'inline-block';
+          } else {
+            document.getElementById('verifiedBadge').style.display = 'none';
+          }
+        } catch (e) {}
+      })();
+
+      void fetchChatStatus();
+
+      // Пытаемся сразу показать сообщения из кэша.
+      let cachedMsgs = null;
+      if (CacheManager) {
+        cachedMsgs = CacheManager.get(getCacheKey());
+      }
+      if (cachedMsgs && cachedMsgs.length > 0) {
+        renderMessages(cachedMsgs, msgContainer);
+        if (!keepScroll) scrollToBottom();
+        else {
+          const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
+          if (isAtBottom) scrollToBottom();
         }
-      } catch (e) {}
-
-      // Получаем статус чата
-      await fetchChatStatus();
-
-      const msgs = await ChatAPI.getMessages(currentUserId, peerId);
-      if (!msgs || msgs.length === 0) {
-        msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
-        return;
+        void updateWordCounter();
+      } else {
+        msgContainer.innerHTML = '<div class="loading-msg">Открываем чат…</div>';
       }
 
-      let html = '';
-      let lastDate = '';
-      msgs.forEach(m => {
-        const isMine = m.sender_id === currentUserId;
-        const time = timeLabel(m.created_at);
-        const checkHtml = `<span class="check read" title="Прочитано">
-               <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-                 <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/>
-                 <path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-               </svg>
-             </span>`;
-        const dateLabel = formatDate(m.created_at);
-        if (dateLabel !== lastDate) {
-          html += `<div class="date-sep">${dateLabel}</div>`;
-          lastDate = dateLabel;
-        }
-        html += `
-          <div class="msg-row ${isMine ? 'out' : 'in'}">
-            <div class="bubble ${isMine ? 'out' : 'in'}">
-              <div class="bubble-body"><span class="bubble-text">${esc(m.text)}</span><span class="bubble-spacer"></span></div>
-              <div class="bubble-meta">
-                ${time}
-                ${isMine ? checkHtml : ''}
-              </div>
-            </div>
-          </div>
-        `;
-      });
-      msgContainer.innerHTML = html;
-      if (!keepScroll) scrollToBottom();
-      else {
-        const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
-        if (isAtBottom) scrollToBottom();
-      }
-      updateWordCounter();
+      // Обновляем в фоне, не блокируя интерфейс.
+      void refreshMessagesFromServer(keepScroll, cachedMsgs);
+
     } catch (e) {
       console.error(e);
-      msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+      const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
+      if (!cached || cached.length === 0) {
+        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+      }
     }
+  }
+
+  // ===== РЕНДЕРИНГ СООБЩЕНИЙ =====
+  function renderMessages(msgs, container) {
+    if (!msgs || msgs.length === 0) {
+      container.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+      return;
+    }
+    let html = '';
+    let lastDate = '';
+    msgs.forEach(m => {
+      const isMine = m.sender_id === currentUserId;
+      const time = timeLabel(m.created_at);
+      const checkHtml = `<span class="check read" title="Прочитано">
+             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+               <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+               <path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+             </svg>
+           </span>`;
+      const dateLabel = formatDate(m.created_at);
+      if (dateLabel !== lastDate) {
+        html += `<div class="date-sep">${dateLabel}</div>`;
+        lastDate = dateLabel;
+      }
+      html += `
+        <div class="msg-row ${isMine ? 'out' : 'in'}">
+          <div class="bubble ${isMine ? 'out' : 'in'}">
+            <div class="bubble-body"><span class="bubble-text">${esc(m.text)}</span><span class="bubble-spacer"></span></div>
+            <div class="bubble-meta">
+              ${time}
+              ${isMine ? checkHtml : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
   }
 
   function timeLabel(v) {
@@ -680,6 +760,7 @@
     } catch (e) {}
   }
 
+  // ===== ОТПРАВКА СООБЩЕНИЯ (с обновлением кэша) =====
   async function sendMessage() {
     if (!chatIsOpen) {
       alert('Чат баста шудааст. Шумо наметавонед паём фиристед.');
@@ -725,6 +806,11 @@
       const checkSpan = meta.querySelector('.check');
       checkSpan.className = 'check read';
       checkSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      // Инвалидируем кэш, чтобы при следующем обновлении загрузились свежие сообщения
+      if (CacheManager) {
+        CacheManager.invalidateKey(getCacheKey());
+      }
+      // Обновляем сообщения (загружаем с сервера)
       loadMessages(true);
     } catch (e) {
       const checkSpan = meta.querySelector('.check');
@@ -766,11 +852,9 @@
       return;
     }
     currentUserId = data.user.id;
-    await loadMessages(false);
+    void loadMessages(false);
     startPolling();
   }
-
-  init();
 
   window.addEventListener('beforeunload', () => {
     if (pollInterval) clearInterval(pollInterval);

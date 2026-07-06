@@ -7,6 +7,7 @@
 <title>Китобхона — Китобҳо</title>
 <link rel="manifest" href="manifest.json">
 <script src="config.js"></script>
+<script src="cache.js"></script>
 <style>
   /* ================================================================
      ЕДИНЫЙ СТИЛЬ (все стили внутри)
@@ -916,12 +917,20 @@
 
 <script>
   // ================================================================
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+  });
+
+  // ================================================================
   // ============ ТЕМА (скрытое переключение, без иконки) ============
   // ================================================================
   (function initTheme() {
     const saved = localStorage.getItem('kk_theme') || 'dark';
     if (saved === 'light') document.body.classList.add('light-theme');
-    // тема больше не переключается через интерфейс, но стили остаются
   })();
 
   // ================================================================
@@ -936,6 +945,86 @@
   let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
   let activeBookElement = null;
 
+  function getCoverCacheMap() {
+    try { return JSON.parse(localStorage.getItem('kk_cover_cache') || '{}'); } catch(e) { return {}; }
+  }
+  function setCoverCacheMap(map) {
+    try { localStorage.setItem('kk_cover_cache', JSON.stringify(map)); } catch(e) {}
+  }
+  function getCachedCoverDataUrl(url) {
+    if (!url) return '';
+    const map = getCoverCacheMap();
+    const item = map[url];
+    if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) return item.dataUrl;
+    return '';
+  }
+  function setCachedCoverDataUrl(url, dataUrl) {
+    if (!url || !dataUrl) return;
+    const map = getCoverCacheMap();
+    map[url] = { dataUrl, ts: Date.now() };
+    setCoverCacheMap(map);
+  }
+  function blobToDataUrl(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result || '');
+      reader.readAsDataURL(blob);
+    });
+  }
+  async function ensureCoverDataUrl(url, imgEl) {
+    if (!url) return '';
+    const cached = getCachedCoverDataUrl(url);
+    if (cached) {
+      if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached);
+      return cached;
+    }
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) return '';
+      const blob = await r.blob();
+      const dataUrl = await blobToDataUrl(blob);
+      setCachedCoverDataUrl(url, dataUrl);
+      if (imgEl) imgEl.setAttribute('src', dataUrl);
+      return dataUrl;
+    } catch(e) {
+      return '';
+    }
+  }
+  function getBookAccessState(url) {
+    const cached = !!cachedMap()[url];
+    const online = navigator.onLine;
+    if (!online) {
+      return cached
+        ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+        : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
+    }
+    return { show: false, icon: '', bg: '', dim: false };
+  }
+  function hydrateBookCardCovers(root = document) {
+    const nodes = root.querySelectorAll('img[data-cover-url]');
+    nodes.forEach(img => {
+      const cover = img.getAttribute('data-cover-url') || '';
+      const bookUrl = img.getAttribute('data-book-url') || '';
+      const state = getBookAccessState(bookUrl);
+      const coverSrc = getCachedCoverDataUrl(cover) || cover;
+      if (coverSrc && img.getAttribute('src') !== coverSrc) img.setAttribute('src', coverSrc);
+      if (state.show) {
+        const badge = img.parentElement?.querySelector('[data-book-badge]');
+        if (badge) {
+          badge.style.display = 'flex';
+          badge.textContent = state.icon;
+          badge.style.background = state.bg;
+        }
+        if (state.dim && img.style.filter !== 'brightness(0.72)') img.style.filter = 'brightness(0.72)';
+      } else {
+        const badge = img.parentElement?.querySelector('[data-book-badge]');
+        if (badge) badge.style.display = 'none';
+        img.style.filter = '';
+      }
+      if (cover) ensureCoverDataUrl(cover, img);
+    });
+  }
+
   // ===== ЗАГРУЗКА BOOKS.JSON (оригинальная) =====
   async function fetchJsonFast(u, ms = 4500) {
     const ctrl = new AbortController();
@@ -947,6 +1036,16 @@
     } finally { clearTimeout(t); }
   }
   async function loadBooksJson() {
+    try {
+      const cached = localStorage.getItem('kk_booksjson_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed) {
+          DATA = parsed;
+          return DATA;
+        }
+      }
+    } catch(e) {}
     for (const u of BOOKS_JSON_URLS) {
       try {
         DATA = await fetchJsonFast(u);
@@ -979,6 +1078,17 @@
   async function fetchManifest(su) {
     const key = su.folder;
     if (manifestCache.has(key)) return manifestCache.get(key);
+    try {
+      const raw = localStorage.getItem('kk_manifest_cache');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const cached = parsed[key];
+        if (Array.isArray(cached)) {
+          manifestCache.set(key, cached);
+          return cached;
+        }
+      }
+    } catch(e) {}
     let list = [];
     try {
       const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -996,6 +1106,12 @@
       } catch(e) {}
     }
     manifestCache.set(key, list);
+    try {
+      const raw = localStorage.getItem('kk_manifest_cache');
+      const parsed = raw ? JSON.parse(raw) : {};
+      parsed[key] = list;
+      localStorage.setItem('kk_manifest_cache', JSON.stringify(parsed));
+    } catch(e) {}
     return list;
   }
 
@@ -1047,13 +1163,16 @@
       const url = rawUrl(sub?.folder || b.folder || '', file);
       const coverList = coverCandidates(sub?.folder || b.folder || '', file);
       const cover = coverList[0] || '';
+      const coverSrc = getCachedCoverDataUrl(cover) || cover;
+      const state = getBookAccessState(url);
       const bookId = b.file || file;
       const bgColor = randomColor();
       const sizeMB = b.size ? (b.size / (1024*1024)).toFixed(1) : null;
 
       return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(sub?.folder || b.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
-        <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};">
-          <img src="${cover}" alt="${esc(name)}" loading="lazy" onerror="this.style.display='none'">
+        <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
+          <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="this.style.display='none'">
+          <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:6px;right:6px;z-index:2;padding:4px 6px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
           <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
           <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>
           <div class="rating-badge">⭐ ...</div>
@@ -1070,6 +1189,8 @@
         </div>
       </div>`;
     }).join('');
+
+    hydrateBookCardCovers(grid);
 
     // Рейтинги
     document.querySelectorAll('.bk').forEach(async (el) => {
@@ -1312,14 +1433,25 @@
     }
   }
 
-  // ===== ЗАГРУЗКА КНИГ =====
+  // ===== ЗАГРУЗКА КНИГ (с кэшированием) =====
   async function loadBooksForSubcategory(sub) {
     const grid = document.getElementById('booksGrid');
-    grid.innerHTML = '<div class="loader" style="grid-column:1/-1;"></div>';
-    try {
-      const list = await fetchManifest(sub);
+    const cacheKey = 'kk_books_' + sub.folder;
+    // Пытаемся взять из кэша
+    let list = CacheManager ? CacheManager.get(cacheKey) : null;
+    if (list) {
       books = list;
       renderBooks(list);
+      return;
+    }
+    // Если нет в кэше – загружаем
+    grid.innerHTML = '<div class="loader" style="grid-column:1/-1;"></div>';
+    try {
+      list = await fetchManifest(sub);
+      books = list;
+      renderBooks(list);
+      // Сохраняем в кэш
+      if (CacheManager) CacheManager.set(cacheKey, list);
     } catch(e) {
       grid.innerHTML = '<div class="empty">Хатогӣ: ' + esc(e.message) + '</div>';
     }

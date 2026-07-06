@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>Китобхона — Профил</title>
   <script src="config.js"></script>
+  <script src="cache.js"></script>
   <style>
     /* ===== ОБНОВЛЁННЫЙ СТИЛЬ (единый для всех страниц) ===== */
     :root {
@@ -1155,7 +1156,6 @@
     <div class="top-actions">
       <div class="icon-btn" id="chatTopBtn" title="Чатҳо" onclick="goToChats()">💬</div>
       <div class="icon-btn" id="feedTopBtn" title="Лента" onclick="location.href='Lenta.html'">📰</div>
-      <!-- Новая кнопка "Связь с нами" -->
       <div class="icon-btn" id="feedbackBtn" title="Связь с нами" onclick="openFeedbackModal()">📧</div>
       <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none;" onclick="logoutUser()">🚪</div>
       <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none;" onclick="deleteAccount()">🗑</div>
@@ -1296,7 +1296,7 @@
     <div class="item" onclick="menuToggleHide()" id="menuHideToggle">👁 Пинҳон кардан</div>
   </div>
 
-  <!-- ===== МОДАЛКА "Связь с нами" (ОБНОВЛЕНА) ===== -->
+  <!-- ===== МОДАЛКА "Связь с нами" ===== -->
   <div class="sheet-overlay" id="feedbackOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -1332,6 +1332,17 @@
 
 <script>
   // ================================================================
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+    loadProfile();
+    initSettings();
+  });
+
+  // ================================================================
   // ============ ТЕМА ============
   // ================================================================
   function el(id) { return document.getElementById(id); }
@@ -1361,33 +1372,45 @@
   // ================================================================
   // ============ ВЫХОД И УДАЛЕНИЕ АККАУНТА ============
   // ================================================================
-  function logoutUser() {
-    if (confirm('Шумо воқеан мехоҳед бароед?')) {
+  async function logoutUser() {
+    if (await showConfirmDialog('Шумо воқеан мехоҳед бароед?', 'Баромадан')) {
+      // Очищаем весь кэш при выходе
+      if (typeof CacheManager !== 'undefined') {
+        const keys = Object.keys(localStorage);
+        keys.forEach(k => {
+          if (k.startsWith('kk_')) localStorage.removeItem(k);
+        });
+        if (CacheManager._ws) {
+          CacheManager._ws.close();
+          CacheManager._ws = null;
+        }
+        CacheManager._wsConnected = false;
+      }
       AutoLogin.logout();
       location.href = 'login.html';
     }
   }
   async function deleteAccount() {
-    if (!confirm('Огоҳӣ! Ҳама маълумоти шумо нест карда мешавад. Давом диҳед?')) return;
-    if (!confirm('Бори дигар: шумо воқеан мехоҳед профили худро нест кунед?')) return;
+    if (!await showConfirmDialog('Ҳама маълумоти шумо нест карда мешавад. Давом диҳед?', 'Огоҳӣ')) return;
+    if (!await showConfirmDialog('Шумо воқеан мехоҳед профили худро нест кунед?', 'Тасдиқ')) return;
     try {
       const token = localStorage.getItem('kk_token');
       const userId = localStorage.getItem('kk_user_id');
-      if (!token || !userId) { alert('Шумо ворид нестед'); return; }
+      if (!token || !userId) { await showAlertDialog('Шумо ворид нестед', 'Хатогӣ'); return; }
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/admin/users/' + userId, {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (r.ok) {
-        alert('Профили шумо нест карда шуд.');
+        await showAlertDialog('Профили шумо нест карда шуд.', 'Муваффақият');
         AutoLogin.logout();
         location.href = 'login.html';
       } else {
         const err = await r.json().catch(() => ({}));
-        alert('Хатогӣ: ' + (err.error || 'Номаълум'));
+        await showAlertDialog('Хатогӣ: ' + (err.error || 'Номаълум'), 'Хатогӣ');
       }
     } catch (e) {
-      alert('Хатогӣ: ' + e.message);
+      await showAlertDialog('Хатогӣ: ' + e.message, 'Хатогӣ');
     }
   }
   window.logoutUser = logoutUser;
@@ -1411,20 +1434,87 @@
   window.goToChats = goToChats;
 
   // ================================================================
-  // ============ ОСНОВНАЯ ЗАГРУЗКА ПРОФИЛЯ ============
+  // ============ ОСНОВНАЯ ЗАГРУЗКА ПРОФИЛЯ (С КЭШЕМ ПО ID) ============
   // ================================================================
+  let unsubscribeSessions = null;
+  let unsubscribeFavorites = null;
+  let unsubscribePosts = null;
+
+  function updateFriendButtonUI() {
+    if (isOwnProfile) {
+      document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'flex');
+      document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'flex');
+      el('editBtn').style.display = 'flex';
+      el('chatBtn').textContent = 'Чатҳо';
+      el('chatBtn').onclick = () => location.href = 'chats.html';
+    } else {
+      document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'none');
+      document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'none');
+      el('editBtn').style.display = 'none';
+      el('chatBtn').textContent = 'Чат';
+      el('chatBtn').onclick = goToChats;
+    }
+
+    if (isOwnProfile) {
+      el('friendBtn').style.display = 'none';
+      return;
+    }
+
+    el('friendBtn').style.display = 'flex';
+    if (friendStatus === 'friends') {
+      el('friendBtn').textContent = '✅ Дӯст';
+      el('friendBtn').className = 'btn btn-ghost';
+      el('friendBtn').onclick = () => removeFriend(currentProfileUserId);
+      el('friendBtn').style.opacity = '1';
+    } else if (friendStatus === 'pending') {
+      el('friendBtn').textContent = '⏳ Дархост фиристода шуд';
+      el('friendBtn').className = 'btn btn-outline';
+      el('friendBtn').onclick = null;
+      el('friendBtn').style.opacity = '0.7';
+    } else if (friendStatus === 'requested') {
+      el('friendBtn').textContent = '✅ Қабул кардан';
+      el('friendBtn').className = 'btn btn-primary';
+      el('friendBtn').onclick = () => acceptFriendRequest(currentProfileUserId);
+      el('friendBtn').style.opacity = '1';
+    } else {
+      el('friendBtn').textContent = '➕ Дӯст кардан';
+      el('friendBtn').className = 'btn btn-outline';
+      el('friendBtn').onclick = () => sendFriendRequest(currentProfileUserId);
+      el('friendBtn').style.opacity = '1';
+    }
+  }
+
   async function loadProfile() {
     try {
+      const savedToken = localStorage.getItem('kk_token');
+      const savedUserId = localStorage.getItem('kk_user_id');
       const result = await AutoLogin.autoLogin(false);
-      if (!result) { showScreen('screen-guest'); return; }
-      currentUserId = result.userId;
+      if (!result && !savedToken && !savedUserId) { showScreen('screen-guest'); return; }
+      currentUserId = (result && result.userId) ? result.userId : savedUserId;
+      if (!currentUserId) { showScreen('screen-guest'); return; }
 
       let profileId = targetUserId || currentUserId;
       if (!profileId) { showScreen('screen-guest'); return; }
       currentProfileUserId = profileId;
       isOwnProfile = (profileId === currentUserId);
 
-      const profile = await NEON_API.getProfile(profileId);
+      // Отписываемся от старых подписок
+      if (unsubscribeSessions) { unsubscribeSessions(); unsubscribeSessions = null; }
+      if (unsubscribeFavorites) { unsubscribeFavorites(); unsubscribeFavorites = null; }
+      if (unsubscribePosts) { unsubscribePosts(); unsubscribePosts = null; }
+
+      // Ключи кэша с привязкой к пользователю
+      const sessionKey = 'kk_sessions_' + profileId;
+      const favoritesKey = 'kk_favorites_' + profileId;
+      const postsKey = 'kk_posts_' + profileId;
+      const profileKey = 'kk_profile_' + profileId;
+
+      // Пытаемся взять профиль из кэша
+      let profile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
+      if (!profile || profile.id !== profileId) {
+        profile = await NEON_API.getProfile(profileId);
+        if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, profile);
+      }
       console.log('[Profile] Данные профиля:', profile);
       loadedProfile = profile;
       if (profile.blocked === true) {
@@ -1451,65 +1541,72 @@
       }
       el('ownAge').textContent = ageText;
 
-      if (isOwnProfile) {
-        document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'flex');
-        document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'flex');
-        el('editBtn').style.display = 'flex';
-        el('chatBtn').textContent = 'Чатҳо';
-        el('chatBtn').onclick = () => location.href = 'chats.html';
-      } else {
-        document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'none');
-        document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'none');
-        el('editBtn').style.display = 'none';
-        el('chatBtn').textContent = 'Чат';
-        el('chatBtn').onclick = goToChats;
-      }
+      updateFriendButtonUI();
 
-      await checkFriendStatus(currentUserId, profileId);
-
-      if (isOwnProfile) {
-        el('friendBtn').style.display = 'none';
-      } else {
-        el('friendBtn').style.display = 'flex';
-        if (friendStatus === 'friends') {
-          el('friendBtn').textContent = '✅ Дӯст';
-          el('friendBtn').className = 'btn btn-ghost';
-          el('friendBtn').onclick = () => removeFriend(profileId);
-          el('friendBtn').style.opacity = '1';
-        } else if (friendStatus === 'pending') {
-          el('friendBtn').textContent = '⏳ Дархост фиристода шуд';
-          el('friendBtn').className = 'btn btn-outline';
-          el('friendBtn').onclick = null;
-          el('friendBtn').style.opacity = '0.7';
-        } else if (friendStatus === 'requested') {
-          el('friendBtn').textContent = '✅ Қабул кардан';
-          el('friendBtn').className = 'btn btn-primary';
-          el('friendBtn').onclick = () => acceptFriendRequest(profileId);
-          el('friendBtn').style.opacity = '1';
-        } else {
-          el('friendBtn').textContent = '➕ Дӯст кардан';
-          el('friendBtn').className = 'btn btn-outline';
-          el('friendBtn').onclick = () => sendFriendRequest(profileId);
-          el('friendBtn').style.opacity = '1';
-        }
-      }
-
-      // ===== НОВОЕ: загрузка друзей для счётчика (исправлено) =====
+      // Загрузка друзей для счётчика (из кэша или с сервера)
       try {
-        const friends = await ChatAPI.getFriends(currentUserId);
+        let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
+        if (!friends) {
+          friends = await ChatAPI.getFriends(currentUserId);
+          if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+        }
         el('ownFriends').textContent = friends.length;
       } catch(e) {
         console.warn('Не удалось загрузить друзей', e);
       }
 
       showScreen('screen-own');
-
-      await loadBooks(profileId);
-      await loadFavorites(profileId);
-      await loadPosts(profileId);
       renderBooks();
       renderFavorites();
       renderPosts();
+
+      // Загрузка данных в фоне, чтобы страница не висела 3–4 секунды на "Боргирӣ..."
+      checkFriendStatus(currentUserId, profileId)
+        .then(() => updateFriendButtonUI())
+        .catch(e => console.warn('Не удалось проверить статус дружбы', e));
+
+      loadBooksCached(profileId)
+        .then(() => renderBooks())
+        .catch(e => console.warn('Не удалось обновить книги', e));
+      loadFavoritesCached(profileId)
+        .then(() => renderFavorites())
+        .catch(e => console.warn('Не удалось обновить закладки', e));
+      loadPostsCached(profileId)
+        .then(() => renderPosts())
+        .catch(e => console.warn('Не удалось обновить посты', e));
+      loadHiddenBooksCached()
+        .catch(e => console.warn('Не удалось обновить скрытые книги', e));
+
+      // Подписываемся на обновления кэша для книг, закладок и постов (с привязкой к пользователю)
+      if (typeof CacheManager !== 'undefined') {
+        // Сессии
+        unsubscribeSessions = CacheManager.subscribe(sessionKey, (newData) => {
+          if (newData) {
+            booksData = newData;
+            renderBooks();
+          } else {
+            loadBooksCached(profileId);
+          }
+        });
+        // Закладки
+        unsubscribeFavorites = CacheManager.subscribe(favoritesKey, (newData) => {
+          if (newData) {
+            favoritesData = newData;
+            renderFavorites();
+          } else {
+            loadFavoritesCached(profileId);
+          }
+        });
+        // Посты
+        unsubscribePosts = CacheManager.subscribe(postsKey, (newData) => {
+          if (newData) {
+            postsData = newData;
+            renderPosts();
+          } else {
+            loadPostsCached(profileId);
+          }
+        });
+      }
 
       initTabs();
 
@@ -1517,6 +1614,134 @@
       console.error('[Profile] Load error:', e);
       showError('Хатогӣ: ' + e.message);
     }
+  }
+
+  // ===== КЭШИРОВАННЫЕ ФУНКЦИИ ЗАГРУЗКИ (с привязкой к пользователю) =====
+  async function loadBooksCached(userId) {
+    const key = 'kk_sessions_' + userId;
+    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
+    if (!data) {
+      const token = localStorage.getItem('kk_token');
+      if (!token) { booksData = []; return; }
+      try {
+        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions?user_id=' + userId, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!r.ok) { booksData = []; return; }
+        const sessions = await r.json();
+        const map = {};
+        sessions.forEach(s => {
+          if (!s.book_id) return;
+          const titleKey = normalizeTitle(s.book_title || 'Китоб');
+          if (!titleKey) return;
+          let folder = 'books';
+          let file = s.book_id;
+          if (s.book_id && s.book_id.includes('/')) {
+            const parts = s.book_id.split('/');
+            file = parts.pop();
+            folder = parts.join('/');
+            if (!folder.startsWith('books/')) folder = 'books/' + folder;
+          }
+          if (map[titleKey]) {
+            const entry = map[titleKey];
+            entry.total_duration += s.duration || 0;
+            entry.sessions_count += 1;
+            if (s.rating) entry.rating = s.rating;
+            if (s.status === 'completed') entry.status = 'completed';
+            if (s.created_at && (!entry.last_created || new Date(s.created_at) > new Date(entry.last_created))) {
+              entry.last_created = s.created_at;
+            }
+            return;
+          }
+          map[titleKey] = {
+            book_id: s.book_id,
+            file: file,
+            folder: folder,
+            book_title: s.book_title || 'Китоб',
+            book_author: s.book_author || '',
+            total_duration: s.duration || 0,
+            status: s.status || 'viewed',
+            rating: s.rating || null,
+            sessions_count: 1,
+            last_created: s.created_at
+          };
+        });
+        data = Object.values(map).sort((a, b) => new Date(b.last_created) - new Date(a.last_created));
+        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
+      } catch (e) {
+        console.warn('[Profile] Load books error:', e);
+        booksData = [];
+        return;
+      }
+    }
+    booksData = data;
+  }
+
+  async function loadFavoritesCached(userId) {
+    const key = 'kk_favorites_' + userId;
+    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
+    if (!data) {
+      const token = localStorage.getItem('kk_token');
+      if (!token) { favoritesData = []; return; }
+      try {
+        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!r.ok) { favoritesData = []; return; }
+        data = await r.json();
+        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
+      } catch (e) {
+        console.warn('[Profile] Load favorites error:', e);
+        favoritesData = [];
+        return;
+      }
+    }
+    favoritesData = data;
+    el('ownMarks').textContent = favoritesData.length;
+  }
+
+  async function loadPostsCached(userId) {
+    const key = 'kk_posts_' + userId;
+    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
+    if (!data) {
+      const token = localStorage.getItem('kk_token');
+      if (!token) { postsData = []; return; }
+      try {
+        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/posts?user_id=' + userId, {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!r.ok) { postsData = []; return; }
+        data = await r.json();
+        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
+      } catch (e) {
+        console.warn('[Profile] Load posts error:', e);
+        postsData = [];
+        return;
+      }
+    }
+    postsData = data;
+  }
+
+  async function loadHiddenBooksCached() {
+    const key = 'kk_hidden_books_' + currentUserId;
+    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
+    if (!data) {
+      const token = localStorage.getItem('kk_token');
+      if (!token) { hiddenBooks = []; return; }
+      try {
+        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!r.ok) { hiddenBooks = []; return; }
+        data = await r.json();
+        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
+      } catch (e) {
+        console.warn('[Profile] Load hidden error:', e);
+        hiddenBooks = [];
+        return;
+      }
+    }
+    hiddenBooks = data;
   }
 
   // ================================================================
@@ -1589,6 +1814,10 @@
         return;
       }
       alert('Дархост фиристода шуд!');
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+      }
       await loadProfile();
     } catch (e) {
       alert('Хатогӣ: ' + e.message);
@@ -1610,6 +1839,10 @@
         return;
       }
       alert('Шумо дӯст шудед!');
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+      }
       await loadProfile();
     } catch (e) {
       alert('Хатогӣ: ' + e.message);
@@ -1638,7 +1871,7 @@
   }
 
   // ================================================================
-  // ============ ЗАГРУЗКА ДАННЫХ ============
+  // ============ ДАННЫЕ И РЕНДЕРИНГ ============
   // ================================================================
   let booksData = [];
   let favoritesData = [];
@@ -1647,108 +1880,7 @@
   let publishedBookIds = new Set();
   let menuTarget = null;
 
-  async function loadBooks(userId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) { booksData = []; return; }
-    try {
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions?user_id=' + userId, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!r.ok) { booksData = []; return; }
-      const sessions = await r.json();
-      const map = {};
-      sessions.forEach(s => {
-        if (!s.book_id) return;
-        const titleKey = normalizeTitle(s.book_title || 'Китоб');
-        if (!titleKey) return;
-        let folder = 'books';
-        let file = s.book_id;
-        if (s.book_id && s.book_id.includes('/')) {
-          const parts = s.book_id.split('/');
-          file = parts.pop();
-          folder = parts.join('/');
-          if (!folder.startsWith('books/')) folder = 'books/' + folder;
-        }
-        if (map[titleKey]) {
-          const entry = map[titleKey];
-          entry.total_duration += s.duration || 0;
-          entry.sessions_count += 1;
-          if (s.rating) entry.rating = s.rating;
-          if (s.status === 'completed') entry.status = 'completed';
-          if (s.created_at && (!entry.last_created || new Date(s.created_at) > new Date(entry.last_created))) {
-            entry.last_created = s.created_at;
-          }
-          return;
-        }
-        map[titleKey] = {
-          book_id: s.book_id,
-          file: file,
-          folder: folder,
-          book_title: s.book_title || 'Китоб',
-          book_author: s.book_author || '',
-          total_duration: s.duration || 0,
-          status: s.status || 'viewed',
-          rating: s.rating || null,
-          sessions_count: 1,
-          last_created: s.created_at
-        };
-      });
-      booksData = Object.values(map).sort((a, b) => new Date(b.last_created) - new Date(a.last_created));
-    } catch (e) {
-      console.warn('[Profile] Load books error:', e);
-      booksData = [];
-    }
-  }
-
-  async function loadFavorites(userId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) { favoritesData = []; return; }
-    try {
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!r.ok) { favoritesData = []; return; }
-      favoritesData = await r.json();
-      el('ownMarks').textContent = favoritesData.length;
-    } catch (e) {
-      console.warn('[Profile] Load favorites error:', e);
-      favoritesData = [];
-    }
-  }
-
-  async function loadPosts(userId) {
-    const token = localStorage.getItem('kk_token');
-    if (!token) { postsData = []; return; }
-    try {
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/posts?user_id=' + userId, {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!r.ok) { postsData = []; return; }
-      postsData = await r.json();
-    } catch (e) {
-      console.warn('[Profile] Load posts error:', e);
-      postsData = [];
-    }
-  }
-
-  async function loadHiddenBooks() {
-    const token = localStorage.getItem('kk_token');
-    if (!token) { hiddenBooks = []; return; }
-    try {
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!r.ok) { hiddenBooks = []; return; }
-      hiddenBooks = await r.json();
-    } catch (e) {
-      console.warn('[Profile] Load hidden error:', e);
-      hiddenBooks = [];
-    }
-  }
-
-  // ================================================================
-  // ============ RENDER ============
-  // ================================================================
+  // ===== RENDER =====
   function renderBooks() {
     const container = el('panelBooks');
     if (!booksData.length) {
@@ -1919,9 +2051,7 @@
   }
 
   function esc(str) { if (str == null) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
-
   function escHtml(str) { return esc(str); }
-
   function timeSince(dateStr) {
     const now = Date.now();
     const then = new Date(dateStr).getTime();
@@ -1984,6 +2114,11 @@
       favoritesData = favoritesData.filter(f => f.book_id !== bookId);
       el('ownMarks').textContent = favoritesData.length;
       renderFavorites();
+      // Инвалидируем кэш закладок для текущего пользователя
+      if (typeof CacheManager !== 'undefined') {
+        const key = 'kk_favorites_' + currentProfileUserId;
+        CacheManager.invalidateKey(key);
+      }
       alert('Аз закладка хориҷ шуд!');
     } catch (e) { alert('Хатогӣ: ' + e.message); }
   }
@@ -2043,7 +2178,7 @@
       body: JSON.stringify(payload)
     }).then(r => r.json()).then(() => {
       alert('Илова ба закладка!');
-      loadFavorites(currentProfileUserId).then(() => renderFavorites());
+      loadFavoritesCached(currentProfileUserId).then(() => renderFavorites());
       el('bookMenu').style.display = 'none';
     }).catch(() => alert('Хатогӣ'));
   }
@@ -2059,12 +2194,14 @@
     const isHidden = hiddenBooks.includes(menuTarget);
     const token = localStorage.getItem('kk_token');
     if (!token) { alert('Ворид шавед'); return; }
+    const key = 'kk_hidden_books_' + currentUserId;
     if (isHidden) {
       fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books/' + encodeURIComponent(menuTarget), {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       }).then(() => {
         hiddenBooks = hiddenBooks.filter(id => id !== menuTarget);
+        if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(key);
         renderBooks();
         el('bookMenu').style.display = 'none';
       }).catch(() => alert('Хатогӣ'));
@@ -2075,6 +2212,7 @@
         body: JSON.stringify({ book_id: menuTarget })
       }).then(() => {
         hiddenBooks.push(menuTarget);
+        if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(key);
         renderBooks();
         el('bookMenu').style.display = 'none';
       }).catch(() => alert('Хатогӣ'));
@@ -2085,9 +2223,7 @@
   // ============ РЕДАКТИРОВАНИЕ ============
   // ================================================================
   const overlay = el('editOverlay');
-
   function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); }
-
   function closeEdit() { overlay.classList.remove('open'); }
   el('closeEdit')?.addEventListener('click', closeEdit);
   el('cancelEdit')?.addEventListener('click', closeEdit);
@@ -2188,6 +2324,11 @@
       }
       alert('Профиль навсозӣ шуд!');
       closeEdit();
+      // Инвалидируем кэш профиля
+      if (typeof CacheManager !== 'undefined') {
+        const key = 'kk_profile_' + currentProfileUserId;
+        CacheManager.invalidateKey(key);
+      }
       await loadProfile();
     } catch (e) {
       console.error('[Profile] Save error:', e);
@@ -2196,7 +2337,7 @@
   });
 
   // ================================================================
-  // ============ ФУНКЦИЯ "СВЯЗЬ С НАМИ" (ОБНОВЛЕНА) ============
+  // ============ ФУНКЦИЯ "СВЯЗЬ С НАМИ" ============
   // ================================================================
   const feedbackOverlay = el('feedbackOverlay');
   const feedbackText = el('feedbackText');
@@ -2209,11 +2350,9 @@
     feedbackCategory.value = 'Китоб кушода намешавад';
     feedbackEmail.value = '';
   }
-
   function closeFeedbackModal() {
     feedbackOverlay.classList.remove('open');
   }
-
   el('closeFeedback').addEventListener('click', closeFeedbackModal);
   el('cancelFeedback').addEventListener('click', closeFeedbackModal);
   feedbackOverlay.addEventListener('click', function(e) { if (e.target === feedbackOverlay) closeFeedbackModal(); });
@@ -2231,20 +2370,14 @@
       alert('Лутфан почтаи электронии дуруст ворид кунед.');
       return;
     }
-
     const token = localStorage.getItem('kk_token');
     if (!token) {
       alert('Шумо ворид нестед. Лутфан аввал ворид шавед.');
       return;
     }
-
-    // Сохраняем email в профиль, если его нет
     try {
       await NEON_API.updateProfile({ email });
-    } catch (e) {
-      console.warn('Не удалось сохранить email в профиль:', e);
-    }
-
+    } catch (e) { console.warn('Не удалось сохранить email в профиль:', e); }
     this.disabled = true;
     this.textContent = '...';
     try {
@@ -2275,8 +2408,7 @@
   // ================================================================
   // ============ ЗАПУСК ============
   // ================================================================
-  loadProfile();
-  initSettings();
+  // loadProfile() вызывается в DOMContentLoaded
 </script>
 </body>
 </html>

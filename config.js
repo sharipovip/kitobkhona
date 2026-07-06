@@ -97,10 +97,28 @@ function createSettingsModal() {
       font-family: inherit;
     ">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-        <h2 style="margin: 0; font-size: 20px; color: var(--gold, #C9A84C);">⚙️ Танзимот</h2>
+        <h2 style="margin: 0; font-size: 20px; color: var(--gold, #C9A84C);">⚙️ Настройка</h2>
         <button id="closeSettingsBtn" style="background: none; border: none; color: var(--muted, #A8B8CC); font-size: 24px; cursor: pointer;">✕</button>
       </div>
       <div style="display: flex; flex-direction: column; gap: 12px;">
+        <button class="settings-item" data-action="notifications" style="
+          background: var(--card, #1A2D44);
+          border: 1px solid var(--border, rgba(201,168,76,0.18));
+          border-radius: 12px;
+          padding: 12px 16px;
+          color: var(--text, #F0EAD6);
+          font-size: 15px;
+          display: flex;
+          align-items: center;
+          gap: 12px;
+          cursor: pointer;
+          transition: background 0.15s;
+          width: 100%;
+          text-align: left;
+        ">
+          <span style="font-size: 20px;">🔔</span>
+          <span class="settings-item-label">Включить уведомления</span>
+        </button>
         <button class="settings-item" data-action="theme" style="
           background: var(--card, #1A2D44);
           border: 1px solid var(--border, rgba(201,168,76,0.18));
@@ -117,7 +135,7 @@ function createSettingsModal() {
           text-align: left;
         ">
           <span style="font-size: 20px;">🌓</span>
-          <span>Тема: <span id="themeStatus">Ночь</span></span>
+          <span>День / Ночь</span>
         </button>
         <button class="settings-item" data-action="clearcache" style="
           background: var(--card, #1A2D44);
@@ -153,7 +171,7 @@ function createSettingsModal() {
           text-align: left;
         ">
           <span style="font-size: 20px;">📧</span>
-          <span>Связь с нами</span>
+          <span>Тамос бо мо</span>
         </button>
         <button class="settings-item" data-action="about" style="
           background: var(--card, #1A2D44);
@@ -191,6 +209,9 @@ function createSettingsModal() {
     item.addEventListener('click', function() {
       const action = this.dataset.action;
       switch(action) {
+        case 'notifications':
+          requestPushPermission().then(() => updateNotificationButtonState());
+          break;
         case 'theme':
           toggleTheme();
           break;
@@ -210,14 +231,30 @@ function createSettingsModal() {
   return modal;
 }
 
+function updateNotificationButtonState() {
+  if (!settingsModalInstance) return;
+  const button = settingsModalInstance.querySelector('[data-action="notifications"]');
+  if (!button) return;
+  const label = button.querySelector('.settings-item-label');
+  if (!label) return;
+  if (!('Notification' in window)) {
+    label.textContent = '🔕 Уведомления не поддерживаются';
+    return;
+  }
+  if (Notification.permission === 'granted') {
+    label.textContent = '✅ Уведомления включены';
+  } else if (Notification.permission === 'denied') {
+    label.textContent = '🚫 Уведомления отключены';
+  } else {
+    label.textContent = '🔔 Включить уведомления';
+  }
+}
+
 function openSettingsModal() {
   if (!settingsModalInstance) {
     settingsModalInstance = createSettingsModal();
   }
-  // Обновляем статус темы
-  const isLight = document.body.classList.contains('light-theme');
-  const themeStatus = settingsModalInstance.querySelector('#themeStatus');
-  if (themeStatus) themeStatus.textContent = isLight ? 'День' : 'Ночь';
+  updateNotificationButtonState();
   settingsModalInstance.style.display = 'flex';
 }
 
@@ -258,9 +295,12 @@ function initTheme() {
 // ======================== ИНИЦИАЛИЗАЦИЯ НАСТРОЕК =========================
 
 function initSettings() {
-  // Навешиваем клик на бренд "Китобхона" в верхнем левом углу
   document.querySelectorAll('.brand-mini').forEach(el => {
     el.style.cursor = 'pointer';
+    const label = el.querySelector('span, .brand-name');
+    if (label) {
+      label.textContent = 'Настройка';
+    }
     el.addEventListener('click', function(e) {
       e.preventDefault();
       openSettingsModal();
@@ -268,10 +308,87 @@ function initSettings() {
   });
 }
 
+function ensureDialogContainer() {
+  if (window.kitobkhonaDialogContainer) return window.kitobkhonaDialogContainer;
+  const overlay = document.createElement('div');
+  overlay.id = 'kitobkhona-dialog-overlay';
+  overlay.style.cssText = 'position:fixed;inset:0;display:none;align-items:center;justify-content:center;z-index:10000;background:rgba(0,0,0,0.65);backdrop-filter:blur(3px);padding:16px;';
+  overlay.innerHTML = `
+    <div role="dialog" aria-modal="true" style="width:100%;max-width:420px;background:#0D1B2A;border:1px solid rgba(201,168,76,0.2);border-radius:22px;box-shadow:0 20px 60px rgba(0,0,0,0.35);overflow:hidden;color:#F0EAD6;font-family:inherit;">
+      <div id="kitobkhona-dialog-title" style="padding:18px 22px 12px;font-size:18px;font-weight:700;color:#E8C879;border-bottom:1px solid rgba(255,255,255,0.06);">Хабар</div>
+      <div id="kitobkhona-dialog-message" style="padding:18px 22px 8px;font-size:15px;line-height:1.6;color:#E8E7DC;min-height:60px;"></div>
+      <div style="display:flex;justify-content:flex-end;gap:12px;padding:16px 20px 20px;background:rgba(255,255,255,0.02);">
+        <button id="kitobkhona-dialog-cancel" style="border:none;border-radius:999px;padding:10px 16px;background:rgba(255,255,255,0.08);color:#F0EAD6;cursor:pointer;font-size:14px;">Не</button>
+        <button id="kitobkhona-dialog-ok" style="border:none;border-radius:999px;padding:10px 16px;background:#C9A84C;color:#0D1B2A;cursor:pointer;font-size:14px;font-weight:700;">Ҳа</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  window.kitobkhonaDialogContainer = overlay;
+  return overlay;
+}
+
+function showAlertDialog(message, title = 'Хабар') {
+  return new Promise(resolve => {
+    const overlay = ensureDialogContainer();
+    overlay.querySelector('#kitobkhona-dialog-title').textContent = title;
+    overlay.querySelector('#kitobkhona-dialog-message').textContent = message;
+    const cancelBtn = overlay.querySelector('#kitobkhona-dialog-cancel');
+    const okBtn = overlay.querySelector('#kitobkhona-dialog-ok');
+    cancelBtn.style.display = 'none';
+    okBtn.textContent = 'ОК';
+    const close = () => {
+      overlay.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      document.removeEventListener('keydown', onKey);
+      resolve();
+    };
+    const onOk = () => close();
+    const onKey = (e) => { if (e.key === 'Escape') close(); };
+    okBtn.addEventListener('click', onOk);
+    document.addEventListener('keydown', onKey);
+    overlay.style.display = 'flex';
+    okBtn.focus();
+  });
+}
+
+function showConfirmDialog(message, title = 'Тасдиқ', confirmText = 'Ҳа', cancelText = 'Не') {
+  return new Promise(resolve => {
+    const overlay = ensureDialogContainer();
+    overlay.querySelector('#kitobkhona-dialog-title').textContent = title;
+    overlay.querySelector('#kitobkhona-dialog-message').textContent = message;
+    const cancelBtn = overlay.querySelector('#kitobkhona-dialog-cancel');
+    const okBtn = overlay.querySelector('#kitobkhona-dialog-ok');
+    cancelBtn.style.display = 'inline-flex';
+    cancelBtn.textContent = cancelText;
+    okBtn.textContent = confirmText;
+    const cleanup = () => {
+      overlay.style.display = 'none';
+      okBtn.removeEventListener('click', onOk);
+      cancelBtn.removeEventListener('click', onCancel);
+      document.removeEventListener('keydown', onKey);
+    };
+    const onOk = () => { cleanup(); resolve(true); };
+    const onCancel = () => { cleanup(); resolve(false); };
+    const onKey = (e) => {
+      if (e.key === 'Escape') { cleanup(); resolve(false); }
+      if (e.key === 'Enter') { cleanup(); resolve(true); }
+    };
+    okBtn.addEventListener('click', onOk);
+    cancelBtn.addEventListener('click', onCancel);
+    document.addEventListener('keydown', onKey);
+    overlay.style.display = 'flex';
+    okBtn.focus();
+  });
+}
+
 // Инициализация при загрузке DOM
 document.addEventListener('DOMContentLoaded', function() {
   initTheme();
   initSettings();
+  if (typeof requestPushPermission === 'function') {
+    requestPushPermission().catch(() => {});
+  }
 });
 
 // ================================================================
@@ -450,20 +567,28 @@ const AutoLogin = {
     const savedUserId = localStorage.getItem('kk_user_id');
     const savedUsername = localStorage.getItem('kk_username');
     if (savedToken && savedUserId) {
-      try {
-        const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
-        if (r.ok) {
+      this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
+      // Не блокируем страницу ожиданием сети: сначала используем данные из localStorage,
+      // а проверку токена делаем в фоне.
+      (async () => {
+        try {
+          const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
+          if (!r.ok) {
+            localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
+            localStorage.removeItem('kk_guest_password');
+            this.currentUser = null;
+            return;
+          }
           const profile = await r.json();
-          if (profile.blocked === true) { localStorage.setItem('kk_device_blocked', 'true'); throw new Error('Ваш аккаунт заблокирован'); }
-          this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
-          return this.currentUser;
+          if (profile.blocked === true) {
+            localStorage.setItem('kk_device_blocked', 'true');
+            this.currentUser = null;
+          }
+        } catch (e) {
+          console.warn('[AutoLogin] Background validation failed:', e);
         }
-        localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
-        localStorage.removeItem('kk_guest_password');
-      } catch (e) {
-        this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
-        return this.currentUser;
-      }
+      })();
+      return this.currentUser;
     }
     if (showChoice === true) return null;
     try {
@@ -552,12 +677,31 @@ const AUTH = {
   getUser: async function() {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
+    const username = localStorage.getItem('kk_username');
     if (!token || !userId) return { data: { user: null } };
+    // Сначала возвращаем из localStorage — без ожидания сети
+    const cached = localStorage.getItem('kk_profile_cache');
+    let profile = null;
+    if (cached) {
+      try {
+        const p = JSON.parse(cached);
+        if (p && p.id && (Date.now() - p._ts < 15 * 60 * 1000)) profile = p;
+      } catch(e) {}
+    }
+    if (profile) {
+      // Обновляем в фоне
+      NEON_API.getProfile(userId).then(p => {
+        localStorage.setItem('kk_profile_cache', JSON.stringify({ ...p, _ts: Date.now() }));
+      }).catch(() => {});
+      return { data: { user: { id: userId, username: username || profile.username || 'user', display_name: profile.display_name || username || 'Китобхон', ...profile } } };
+    }
+    // Нет кэша — грузим с сервера
     try {
-      const profile = await NEON_API.getProfile(userId);
-      return { data: { user: { id: userId, username: localStorage.getItem('kk_username') || profile.username || 'user', display_name: profile.display_name || profile.username || 'Китобхон', ...profile } } };
+      profile = await NEON_API.getProfile(userId);
+      localStorage.setItem('kk_profile_cache', JSON.stringify({ ...profile, _ts: Date.now() }));
+      return { data: { user: { id: userId, username: username || profile.username || 'user', display_name: profile.display_name || username || 'Китобхон', ...profile } } };
     } catch (e) {
-      return { data: { user: { id: userId, username: localStorage.getItem('kk_username') || 'user', display_name: localStorage.getItem('kk_username') || 'Китобхон' } } };
+      return { data: { user: { id: userId, username: username || 'user', display_name: username || 'Китобхон' } } };
     }
   },
   getProfileFromRailway: async function(userId) {
@@ -746,6 +890,113 @@ async function markNotificationRead(notificationId) {
     }, 5000);
   } catch (e) {
     console.warn('markNotificationRead error:', e);
+  }
+}
+
+const KKH_FCM = {
+  firebaseConfig: {
+    apiKey: "AIzaSyDWmg_6KS_v82IK7P-QrLj8GP2dh5tk29Y",
+    authDomain: "kitobkhona-push.firebaseapp.com",
+    projectId: "kitobkhona-push",
+    storageBucket: "kitobkhona-push.firebasestorage.app",
+    messagingSenderId: "507779702083",
+    appId: "1:507779702083:web:3dbd554961b290e854e3f6",
+    measurementId: "G-2G9G2SXCTQ"
+  },
+  vapidKey: ''
+};
+
+function loadFirebaseMessagingSdk() {
+  if (window.firebase && window.firebase.messaging) {
+    return Promise.resolve();
+  }
+  const urls = [
+    'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
+    'https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js'
+  ];
+  return Promise.all(urls.map(url => new Promise((resolve, reject) => {
+    if (document.querySelector(`script[src="${url}"]`)) {
+      resolve();
+      return;
+    }
+    const script = document.createElement('script');
+    script.src = url;
+    script.async = true;
+    script.onload = resolve;
+    script.onerror = () => reject(new Error('Failed to load Firebase script: ' + url));
+    document.head.appendChild(script);
+  }))).then(() => {
+    if (window.firebase && !firebase.apps.length) {
+      firebase.initializeApp(KKH_FCM.firebaseConfig);
+    }
+  });
+}
+
+async function registerFcmToken() {
+  if (!('serviceWorker' in navigator) || !('Notification' in window)) return null;
+  const token = localStorage.getItem('kk_token');
+  if (!token) return null;
+  if (Notification.permission === 'denied') {
+    return null;
+  }
+
+  try {
+    await loadFirebaseMessagingSdk();
+    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const messaging = firebase.messaging();
+    const currentToken = await messaging.getToken({
+      serviceWorkerRegistration: registration,
+      vapidKey: KKH_FCM.vapidKey || undefined
+    });
+    if (!currentToken) return null;
+
+    const storedToken = localStorage.getItem('kk_fcm_token');
+    if (storedToken === currentToken) {
+      return currentToken;
+    }
+
+    const resp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/push/register', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + token
+      },
+      body: JSON.stringify({ token: currentToken, platform: 'web' })
+    }, 7000);
+    if (!resp.ok) {
+      const data = await resp.json().catch(() => ({}));
+      throw new Error(data.error || 'Push token registration failed');
+    }
+
+    localStorage.setItem('kk_fcm_token', currentToken);
+    if (typeof toast === 'function') {
+      toast('Уведомления активированы');
+    }
+    return currentToken;
+  } catch (e) {
+    console.warn('registerFcmToken error:', e);
+    return null;
+  }
+}
+
+async function requestPushPermission() {
+  if (!('Notification' in window)) return null;
+  if (Notification.permission === 'granted') {
+    return registerFcmToken();
+  }
+  if (Notification.permission === 'default') {
+    const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      return registerFcmToken();
+    }
+  }
+  return null;
+}
+
+async function initFirebaseMessaging() {
+  if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  if (Notification.permission === 'granted') {
+    await registerFcmToken();
   }
 }
 

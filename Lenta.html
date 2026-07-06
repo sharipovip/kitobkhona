@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Китобхона — Лента</title>
 <script src="config.js"></script>
+<script src="cache.js"></script>
 <style>
   /* ================================================================
      ЕДИНЫЙ СТИЛЬ (все стили внутри)
@@ -1127,6 +1128,22 @@
 
 <script>
 // ================================================================
+// ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+// ================================================================
+document.addEventListener('DOMContentLoaded', function() {
+  if (typeof CacheManager !== 'undefined') {
+    CacheManager.init();
+  }
+  const params = new URLSearchParams(window.location.search);
+  if(params.get('action') === 'post'){
+    const bookId = localStorage.getItem('kk_publish_book');
+    if(bookId){ localStorage.removeItem('kk_publish_book'); setTimeout(() => openPostModal(bookId), 300); }
+    else { setTimeout(openPostModal, 300); }
+  }
+  loadPosts();
+});
+
+// ================================================================
 // ============ ОСНОВНАЯ ЛОГИКА ЛЕНТЫ ============
 // ================================================================
 const API_BASE = KITOB_CONFIG.NEON_API_BASE;
@@ -1223,20 +1240,27 @@ let postsData = [];
 let currentUserId = null;
 let bookProgressMap = {};
 let bookReactions = {};
+let unsubscribePosts = null;
 
 // ================================================================
-// ============ ЗАГРУЗКА ПРОГРЕССА ЧТЕНИЯ ============
+// ============ ЗАГРУЗКА ПРОГРЕССА ЧТЕНИЯ (кэшируем) ============
 // ================================================================
 async function loadReadingSessions(){
   const token = getToken();
   if (!token) return;
+  const cacheKey = 'kk_reading_progress';
+  let map = CacheManager ? CacheManager.get(cacheKey) : null;
+  if (map) {
+    bookProgressMap = map;
+    return;
+  }
   try {
     const resp = await fetch(API_BASE + '/api/reading-sessions', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const sessions = await resp.json();
-    const map = {};
+    map = {};
     sessions.forEach(s => {
       if (!s.book_id) return;
       const key = s.book_id;
@@ -1257,15 +1281,22 @@ async function loadReadingSessions(){
       }
     });
     bookProgressMap = map;
+    if (CacheManager) CacheManager.set(cacheKey, map);
   } catch(e) { console.warn('Failed to load reading sessions', e); }
 }
 
 // ================================================================
-// ============ ЗАГРУЗКА РЕАКЦИЙ И ОЦЕНОК КНИГ ============
+// ============ ЗАГРУЗКА РЕАКЦИЙ И ОЦЕНОК КНИГ (кэшируем) ============
 // ================================================================
 async function loadBookReactions(bookIds){
   if (!bookIds || bookIds.length === 0) return;
   const token = getToken();
+  const cacheKey = 'kk_book_reactions';
+  let cached = CacheManager ? CacheManager.get(cacheKey) : null;
+  if (cached) {
+    bookReactions = cached;
+    return;
+  }
   if (!token) {
     try {
       const resp = await fetch(API_BASE + '/api/book-stats-batch', {
@@ -1280,6 +1311,7 @@ async function loadBookReactions(bookIds){
         bookReactions[id].stats = data[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
         bookReactions[id].user = { reaction: null, rating: null };
       });
+      if (CacheManager) CacheManager.set(cacheKey, bookReactions);
     } catch(e) { console.warn('Failed to load stats (no token)', e); }
     return;
   }
@@ -1296,18 +1328,56 @@ async function loadBookReactions(bookIds){
       bookReactions[id].stats = data.stats[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
       bookReactions[id].user = data.user_reactions[id] || { reaction: null, rating: null };
     });
+    if (CacheManager) CacheManager.set(cacheKey, bookReactions);
   } catch(e) {
     console.warn('Failed to load reactions batch', e);
   }
 }
 
 // ================================================================
-// ============ ЗАГРУЗКА ПОСТОВ ============
+// ============ ЗАГРУЗКА ПОСТОВ (с кэшированием) ============
 // ================================================================
 async function loadPosts(){
   const feed = $('feedContainer');
   const loader = $('feedLoader');
   loader.style.display = 'flex';
+
+  // Пытаемся взять посты из кэша
+  const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
+  if (cachedPosts) {
+    postsData = cachedPosts;
+    currentUserId = localStorage.getItem('kk_user_id');
+    await loadReadingSessions();
+    const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
+    if (bookIds.length > 0) await loadBookReactions(bookIds);
+    renderPosts(postsData);
+    loader.style.display = 'none';
+    // Подписываемся на обновления кэша
+    if (unsubscribePosts) unsubscribePosts();
+    unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
+      if (newPosts) {
+        postsData = newPosts;
+        // Перезагружаем прогресс и реакции (можно не перезагружать, но для свежести сделаем)
+        loadReadingSessions().then(() => {
+          const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
+          if (bookIds2.length > 0) loadBookReactions(bookIds2);
+        });
+        renderPosts(postsData);
+      } else {
+        // Инвалидировано – перезагружаем с сервера
+        loadPostsFromServer();
+      }
+    });
+    return;
+  }
+
+  // Если нет в кэше – загружаем с сервера
+  await loadPostsFromServer();
+}
+
+async function loadPostsFromServer(){
+  const feed = $('feedContainer');
+  const loader = $('feedLoader');
   try {
     const token = getToken();
     if(!token){
@@ -1329,6 +1399,9 @@ async function loadPosts(){
       await loadBookReactions(bookIds);
     }
 
+    // Сохраняем в кэш
+    if (CacheManager) CacheManager.set(CacheManager.KEYS.POSTS, posts);
+
     renderPosts(posts);
   } catch(e){
     console.error('loadPosts error:', e);
@@ -1337,7 +1410,7 @@ async function loadPosts(){
 }
 
 // ================================================================
-// ============ РЕНДЕРИНГ ПОСТОВ ============
+// ============ РЕНДЕРИНГ ПОСТОВ (без изменений) ============
 // ================================================================
 function renderPosts(posts){
   const feed = $('feedContainer');
@@ -1479,8 +1552,7 @@ function renderPosts(posts){
   });
   feed.innerHTML = html;
 
-  // ==== НАВЕШИВАЕМ СОБЫТИЯ ====
-  // Лайки постов
+  // ==== НАВЕШИВАЕМ СОБЫТИЯ (без изменений) ====
   document.querySelectorAll('.like-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1489,7 +1561,6 @@ function renderPosts(posts){
     });
   });
 
-  // Реакции книг
   document.querySelectorAll('.reaction-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1499,7 +1570,6 @@ function renderPosts(posts){
     });
   });
 
-  // Звёзды (оценки)
   document.querySelectorAll('.rating-stars .star').forEach(el => {
     el.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1509,7 +1579,6 @@ function renderPosts(posts){
     });
   });
 
-  // Показать комментарии
   document.querySelectorAll('.show-comments-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1518,7 +1587,6 @@ function renderPosts(posts){
     });
   });
 
-  // Отправка комментария
   document.querySelectorAll('.send-ic').forEach(el => {
     el.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1547,7 +1615,6 @@ async function togglePostLike(postId, btn) {
   const icon = btn.querySelector('span:first-child');
   const cnt = btn.querySelector('.cnt');
   const currentlyLiked = btn.classList.contains('liked');
-  // optimistic
   btn.classList.toggle('liked');
   icon.textContent = currentlyLiked ? '🤍' : '❤️';
   cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? -1 : 1);
@@ -1567,12 +1634,15 @@ async function togglePostLike(postId, btn) {
       btn.classList.remove('liked');
       icon.textContent = '🤍';
     }
-    // обновить в postsData
     const post = postsData.find(p => p.id == postId);
     if (post) post.likes_count = data.likes_count;
+    // После обновления лайка обновляем кэш постов (инвалидируем или обновляем)
+    if (CacheManager) {
+      // Обновляем конкретный пост в кэше (лучше инвалидировать весь кэш)
+      CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
+    }
   } catch(e) {
     console.error('Like error:', e);
-    // revert
     btn.classList.toggle('liked');
     icon.textContent = currentlyLiked ? '❤️' : '🤍';
     cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? 1 : -1);
@@ -1581,7 +1651,7 @@ async function togglePostLike(postId, btn) {
 }
 
 // ================================================================
-// ============ РЕАКЦИИ И ОЦЕНКИ КНИГ ============
+// ============ РЕАКЦИИ И ОЦЕНКИ КНИГ (с инвалидацией кэша реакций) ============
 // ================================================================
 async function handleBookReaction(bookId, reaction, btn) {
   const token = getToken();
@@ -1617,6 +1687,9 @@ async function handleBookReaction(bookId, reaction, btn) {
       const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
       const ratingLabel = container.querySelector('.rating-label');
       if (ratingLabel) ratingLabel.textContent = avgRating;
+    }
+    if (CacheManager) {
+      CacheManager.invalidateKey('kk_book_reactions');
     }
     showToast('Реакция сабт шуд');
   } catch(e) {
@@ -1656,6 +1729,9 @@ async function handleBookRating(bookId, rating, starEl) {
     const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
     const ratingLabel = container.querySelector('.rating-label');
     if (ratingLabel) ratingLabel.textContent = avgRating;
+    if (CacheManager) {
+      CacheManager.invalidateKey('kk_book_reactions');
+    }
     showToast('Баҳо сабт шуд (⭐ ' + newRating + '/10)');
   } catch(e) {
     console.error('Rating error:', e);
@@ -1664,7 +1740,7 @@ async function handleBookRating(bookId, rating, starEl) {
 }
 
 // ================================================================
-// ============ КОММЕНТАРИИ ============
+// ============ КОММЕНТАРИИ (без изменений) ============
 // ================================================================
 async function toggleComments(postId, btn) {
   const list = document.querySelector(`.comments-list[data-post="${postId}"]`);
@@ -1676,7 +1752,6 @@ async function toggleComments(postId, btn) {
     btn.textContent = btn.textContent.replace('Пинҳон кардан', '').trim() || 'Дидани шарҳҳо';
     return;
   }
-  // загружаем все комментарии
   if (list.children.length === 0) {
     await loadComments(postId, list);
   }
@@ -1743,6 +1818,8 @@ async function sendComment(postId, input) {
     if (post) post.comments_count = (post.comments_count || 0) + 1;
     input.value = '';
     showToast('Шарҳ илова шуд');
+    // Инвалидируем кэш постов, т.к. изменился комментарий
+    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
   } catch(e) {
     console.error('Send comment error:', e);
     showToast('Хатогӣ: ' + e.message);
@@ -1763,7 +1840,8 @@ async function deletePost(postId){
     });
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     showToast('Пост нест карда шуд');
-    loadPosts(); // обновление
+    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
+    loadPosts(); // перезагрузим
   } catch(e){ showToast('Хатогӣ: ' + e.message); }
 }
 
@@ -1853,24 +1931,16 @@ document.getElementById('submitPostBtn').addEventListener('click', async functio
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     showToast('Пост нашр шуд!');
     closePostModal();
-    loadPosts();
+    // Инвалидируем кэш постов
+    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
+    loadPosts(); // перезагружаем
   } catch(e){ showToast('Хатогӣ: ' + e.message); }
   finally { this.disabled = false; this.textContent = '📤 Интишор'; }
 });
 
 // ================================================================
-// ============ ЗАПУСК ============
+// ============ ЗАПУСК (уже есть) ============
 // ================================================================
-document.addEventListener('DOMContentLoaded', function(){
-  const params = new URLSearchParams(window.location.search);
-  if(params.get('action') === 'post'){
-    const bookId = localStorage.getItem('kk_publish_book');
-    if(bookId){ localStorage.removeItem('kk_publish_book'); setTimeout(() => openPostModal(bookId), 300); }
-    else { setTimeout(openPostModal, 300); }
-  }
-  loadPosts();
-});
-
 window.addEventListener('pageshow', function(e){ if(e.persisted) loadPosts(); });
 </script>
 </body>

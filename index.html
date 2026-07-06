@@ -13,6 +13,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="stylesheet" href="assets/css/index.css">
 <script src="config.js"></script>
+<script src="cache.js"></script>
 <script src="quotes-data.js"></script>
 </head>
 <body>
@@ -44,12 +45,10 @@
 <div class="categories-section"><div class="section-row"><div class="section-title">📂 Категорияҳо</div><button class="see-all-btn" onclick="location.href='kitobho.html'">Ҳама</button></div><div class="categories-grid" id="catGrid"><div class="loader"></div></div></div>
 </main>
 
-<!-- ===== ФИКСИРОВАННАЯ ОБЁРТКА ДЛЯ НАВИГАЦИИ (ширина 430px, прижата к низу) ===== -->
+<!-- ===== ФИКСИРОВАННАЯ ОБЁРТКА ДЛЯ НАВИГАЦИИ ===== -->
 <div class="nav-fixed-wrapper">
   <div class="nav-bottom" id="navBottom">
     <div class="kh-nav2">
-
-      <!-- Асосӣ -->
       <button class="nav-item active" onclick="setActiveNav(this); location.href='index.html'" aria-label="Асосӣ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 11l9-8 9 8"></path>
@@ -58,8 +57,6 @@
         </svg>
         <span>Асосӣ</span>
       </button>
-
-      <!-- Китобхо -->
       <button class="nav-item" onclick="setActiveNav(this); location.href='kitobho.html'" aria-label="Китобхо">
         <div class="person-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -70,8 +67,6 @@
         </div>
         <span>Китобхо</span>
       </button>
-
-      <!-- Ғолибон (ведёт на winners.html) -->
       <button class="nav-item" onclick="setActiveNav(this); location.href='winners.html'" aria-label="Ғолибон">
         <div class="crown-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -82,8 +77,6 @@
         </div>
         <span>Ғолибон</span>
       </button>
-
-      <!-- Лента -->
       <button class="nav-item" onclick="setActiveNav(this); location.href='Lenta.html'" aria-label="Лента">
         <div class="person-icon like-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -96,8 +89,6 @@
         </div>
         <span>Лента</span>
       </button>
-
-      <!-- Чат -->
       <button class="nav-item" onclick="setActiveNav(this); location.href='chats.html'" aria-label="Чат">
         <div class="users-wrap">
           <div class="person p1"></div>
@@ -106,8 +97,6 @@
         </div>
         <span>Чат</span>
       </button>
-
-      <!-- Профил -->
       <button class="nav-item" onclick="setActiveNav(this); location.href='profile.html'" aria-label="Профил">
         <div class="profile-wrap">
           <div class="person-group">
@@ -118,13 +107,19 @@
         </div>
         <span>Профил</span>
       </button>
-
     </div>
   </div>
 </div>
 
 </div>
 <script>
+// ================================================================
+// ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+// ================================================================
+document.addEventListener('DOMContentLoaded', () => {
+  CacheManager.init();
+});
+
 // ================================================================
 // ============ ОСНОВНЫЕ КОНСТАНТЫ И ПЕРЕМЕННЫЕ ============
 // ================================================================
@@ -135,6 +130,88 @@ const BOOKS_JSON_URLS = [
 const $ = id => document.getElementById(id);
 const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
 let DATA = null;
+
+function getCoverCacheMap() {
+  try { return JSON.parse(localStorage.getItem('kk_cover_cache') || '{}'); } catch(e) { return {}; }
+}
+function setCoverCacheMap(map) {
+  try { localStorage.setItem('kk_cover_cache', JSON.stringify(map)); } catch(e) {}
+}
+function getCachedCoverDataUrl(url) {
+  if (!url) return '';
+  const map = getCoverCacheMap();
+  const item = map[url];
+  if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) return item.dataUrl;
+  return '';
+}
+function setCachedCoverDataUrl(url, dataUrl) {
+  if (!url || !dataUrl) return;
+  const map = getCoverCacheMap();
+  map[url] = { dataUrl, ts: Date.now() };
+  setCoverCacheMap(map);
+}
+function blobToDataUrl(blob) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onloadend = () => resolve(reader.result || '');
+    reader.readAsDataURL(blob);
+  });
+}
+async function ensureCoverDataUrl(url, imgEl) {
+  if (!url) return '';
+  const cached = getCachedCoverDataUrl(url);
+  if (cached) {
+    if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached);
+    return cached;
+  }
+  try {
+    const r = await fetch(url, { cache: 'no-store' });
+    if (!r.ok) return '';
+    const blob = await r.blob();
+    const dataUrl = await blobToDataUrl(blob);
+    setCachedCoverDataUrl(url, dataUrl);
+    if (imgEl) imgEl.setAttribute('src', dataUrl);
+    return dataUrl;
+  } catch (e) {
+    return '';
+  }
+}
+function getBookAccessState(url) {
+  const cached = !!JSON.parse(localStorage.getItem('kk_cached_books') || '{}')[url];
+  const online = navigator.onLine;
+  if (!online) {
+    return cached
+      ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+      : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
+  }
+  return { show: false, icon: '', bg: '', dim: false };
+}
+function hydrateBookCardCovers(root = document) {
+  const nodes = root.querySelectorAll('img[data-cover-url]');
+  nodes.forEach(img => {
+    const cover = img.getAttribute('data-cover-url') || '';
+    const bookUrl = img.getAttribute('data-book-url') || '';
+    const state = getBookAccessState(bookUrl);
+    const coverSrc = getCachedCoverDataUrl(cover) || cover;
+    if (coverSrc && img.getAttribute('src') !== coverSrc) img.setAttribute('src', coverSrc);
+    if (state.show) {
+      const badge = img.parentElement?.querySelector('[data-book-badge]');
+      if (badge) {
+        badge.style.display = 'flex';
+        badge.textContent = state.icon;
+        badge.style.background = state.bg;
+      }
+      if (state.dim && img.style.filter !== 'brightness(0.72)') {
+        img.style.filter = 'brightness(0.72)';
+      }
+    } else {
+      const badge = img.parentElement?.querySelector('[data-book-badge]');
+      if (badge) badge.style.display = 'none';
+      img.style.filter = '';
+    }
+    if (cover) ensureCoverDataUrl(cover, img);
+  });
+}
 
 // ============ ТЕМА ============
 function theme(t) {
@@ -236,18 +313,26 @@ if (window.location.search.includes('quotes_updated')) {
 }
 
 // ================================================================
-// ============ ОСТАЛЬНЫЕ ФУНКЦИИ ============
+// ============ ОСТАЛЬНЫЕ ФУНКЦИИ (С КЭШЕМ) ============
 // ================================================================
-async function loadAnnouncement() {
-  try {
-    const data = await getActiveAnnouncement();
-    if (data && data.text) {
-      const banner = $('announcementBanner');
-      $('announcementText').textContent = data.text;
-      banner.style.display = 'block';
-    }
-  } catch (e) {}
+async function loadAnnouncementCached() {
+  let data = CacheManager.get(CacheManager.KEYS.ANNOUNCEMENT);
+  if (!data) {
+    try {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/announcements/active');
+      if (resp.ok) {
+        data = await resp.json();
+        CacheManager.set(CacheManager.KEYS.ANNOUNCEMENT, data);
+      }
+    } catch (e) {}
+  }
+  if (data && data.text) {
+    const banner = $('announcementBanner');
+    $('announcementText').textContent = data.text;
+    banner.style.display = 'block';
+  }
 }
+
 async function updateNotifBadge() {
   const token = localStorage.getItem('kk_token');
   const badge = $('notifBadge');
@@ -311,6 +396,16 @@ async function fetchJsonFast(u, ms = 4500) {
   } finally { clearTimeout(t); }
 }
 async function loadBooksJson() {
+  try {
+    const cached = localStorage.getItem('kk_booksjson_cache');
+    if (cached) {
+      const parsed = JSON.parse(cached);
+      if (parsed) {
+        DATA = parsed;
+        return DATA;
+      }
+    }
+  } catch(e) {}
   for (const u of BOOKS_JSON_URLS) {
     try {
       DATA = await fetchJsonFast(u);
@@ -346,16 +441,21 @@ function bookCard(b, folder, badge = '') {
   const url = rawUrl(folder, file);
   const covers = coverCandidates(folder, file);
   const coversJson = JSON.stringify(covers);
-  return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(covers[0])}')">
-    <div class="book-cover">
-      <img src="${covers[0]}" alt="Обложка: ${esc(name)}" loading="lazy"
-           data-i="0" data-covers='${esc(coversJson)}'
+  const cover = covers[0] || '';
+  const state = getBookAccessState(url);
+  const coverSrc = getCachedCoverDataUrl(cover) || cover;
+  const coverStyle = state.show && state.dim ? 'width:100%;height:100%;object-fit:cover;filter:brightness(0.72);' : 'width:100%;height:100%;object-fit:cover;';
+  return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
+    <div class="book-cover" style="position:relative">
+      <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy"
+           data-i="0" data-covers='${esc(coversJson)}' data-cover-url='${esc(cover)}' data-book-url='${esc(url)}'
            onerror="let a=JSON.parse(this.dataset.covers); let i=(+this.dataset.i)+1; this.dataset.i=i; if(a[i]) this.src=a[i]; else { this.style.display='none'; this.parentNode.querySelector('span').style.display='flex'; }"
-           style="width:100%;height:100%;object-fit:cover">
+           style="${coverStyle}">
       <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span>
+      <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:6px;right:6px;z-index:2;padding:4px 6px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
     </div>
     <div class="book-name">${esc(name)}</div>
-    ${badge ? `<div class="book-badge">${badge}</div>` : ''}
+    ${badge ? `<div style="position:absolute;top:4px;right:4px;font-size:16px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))">${badge}</div>` : ''}
   </div>`;
 }
 
@@ -370,6 +470,17 @@ async function loadManifest(sub) {
   const key = sub?.folder;
   if (!key) return [];
   if (manifestCache.has(key)) return manifestCache.get(key);
+  try {
+    const raw = localStorage.getItem('kk_manifest_cache');
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const cached = parsed[key];
+      if (Array.isArray(cached)) {
+        manifestCache.set(key, cached);
+        return cached;
+      }
+    }
+  } catch(e) {}
   let arr = [];
   try {
     const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(sub.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
@@ -379,6 +490,12 @@ async function loadManifest(sub) {
     }
   } catch(e) {}
   manifestCache.set(key, arr);
+  try {
+    const raw = localStorage.getItem('kk_manifest_cache');
+    const parsed = raw ? JSON.parse(raw) : {};
+    parsed[key] = arr;
+    localStorage.setItem('kk_manifest_cache', JSON.stringify(parsed));
+  } catch(e) {}
   return arr;
 }
 
@@ -428,19 +545,55 @@ $('homeSearch').addEventListener('input', () => {
   searchTimer = setTimeout(() => searchHome($('homeSearch').value), 350);
 });
 
+// ============ ЗАГРУЗКА КАТЕГОРИЙ С КЭШЕМ ============
+function renderCategories(cats) {
+  const grid = $('catGrid');
+  if (!cats || !cats.length) {
+    grid.innerHTML = '<div class="empty">Категория нест</div>';
+    return;
+  }
+  grid.innerHTML = cats.slice(0, 6).map(c =>
+    `<div class="category-card" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'" style="--c1:${c.color1||c.c1||'#1A2D44'};--c2:${c.color2||c.c2||'#2A5298'}">
+      <div class="category-icon">${esc(c.emoji||'📚')}</div>
+      <div class="category-name">${esc(c.name)}</div>
+      <div class="category-count">${(c.subs||[]).length} бахш</div>
+    </div>`
+  ).join('');
+}
+
 async function loadHome() {
+  let categories = CacheManager.get(CacheManager.KEYS.CATEGORIES);
+  if (!categories) {
+    try {
+      const d = await loadBooksJson();
+      categories = d.categories || [];
+      CacheManager.set(CacheManager.KEYS.CATEGORIES, categories);
+    } catch (e) {
+      console.error('Failed to load categories', e);
+      return;
+    }
+  }
+  
+  // ===== ИСКЛЮЧАЕМ КАТЕГОРИЮ "Пешвои Миллат" =====
+  const filteredCats = categories.filter(c => c.id !== 'peshvoi_millat');
+  renderCategories(filteredCats);
+  
+  CacheManager.subscribe(CacheManager.KEYS.CATEGORIES, (newData) => {
+    if (newData) {
+      const filtered = newData.filter(c => c.id !== 'peshvoi_millat');
+      renderCategories(filtered);
+    } else {
+      loadBooksJson().then(d => {
+        const cats = d.categories || [];
+        CacheManager.set(CacheManager.KEYS.CATEGORIES, cats);
+      });
+    }
+  });
+
+  // Книги Пешвои Миллат – загружаем отдельно
   try {
     const d = await loadBooksJson();
-    const cats = d.categories || [];
-    $('catGrid').innerHTML = cats.slice(0, 6).map(c =>
-      `<div class="category-card" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'" style="--c1:${c.color1||c.c1||'#1A2D44'};--c2:${c.color2||c.c2||'#2A5298'}">
-        <div class="category-icon">${esc(c.emoji||'📚')}</div>
-        <div class="category-name">${esc(c.name)}</div>
-        <div class="category-count">${(c.subs||[]).length} бахш</div>
-      </div>`
-    ).join('');
-
-    const priority = cats.find(c => c.priority || /пешвои|пешвои миллат|асосгузор|peshvoi|president|эмомали/i.test([c.name, c.id, c.folder_raw].filter(Boolean).join(' ')));
+    const priority = d.categories.find(c => c.priority || /пешвои|пешвои миллат|асосгузор|peshvoi|president|эмомали/i.test([c.name, c.id, c.folder_raw].filter(Boolean).join(' ')));
     if (priority) {
       const folders = (priority.subs && priority.subs.length) ? priority.subs : [{ folder: priority.folder || ('books/' + (priority.folder_raw || priority.name || '')), name: priority.name }];
       folders.filter(x => x.folder);
@@ -453,34 +606,75 @@ async function loadHome() {
       }
       if (all.length) {
         $('pesvoSection').style.display = 'block';
-        $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '👑')).join('');
+        $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
+        hydrateBookCardCovers($('pesvoBooks'));
       }
     }
-  } catch(e) {
-    $('catGrid').innerHTML = '<div class="empty">'+esc(e.message)+'</div>';
+  } catch(e) { console.warn('President books load error', e); }
+
+  // Популярные книги с кэшем
+  await loadPopularBooksCached();
+}
+
+async function loadPopularBooksCached() {
+  let books = CacheManager.get('kk_cache_popular_books');
+  if (!books) {
+    try {
+      const r = await fetch('https://kitobkhona-chat-production.up.railway.app/api/popular-books?period=all');
+      if (!r.ok) throw new Error('Failed to fetch popular');
+      books = await r.json();
+      CacheManager.set('kk_cache_popular_books', books);
+    } catch (e) {
+      console.warn('Popular books load error', e);
+      return;
+    }
   }
+  renderPopularBooks(books);
 }
 
-function coverListFromPdfUrl(u) {
-  try {
-    const x = new URL(u);
-    if (!x.hostname.includes('githubusercontent.com')) return [];
-    const parts = x.pathname.split('/').filter(Boolean);
-    if (parts.length < 5) return [];
-    const owner = parts[0], repo = parts[1], branch = parts[2], path = parts.slice(3);
-    const file = decodeURIComponent(path.pop() || '').replace(/\.pdf$/i, '.jpg');
-    let folder = path.join('/');
-    let clean = folder.replace(/^books\//, '');
-    const base = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}`;
-    return [
-      `${base}/covers/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,
-      `${base}/covers/books/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,
-      `${base}/covers/${folder.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`
-    ];
-  } catch(e) { return []; }
+function renderPopularBooks(books) {
+  if (!books || !books.length) {
+    $('popBooks').innerHTML = '<div class="empty">Ҳоло маълумот нест</div>';
+    return;
+  }
+  const colors = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
+  const html = books.slice(0, 12).map((b, i) => {
+    const c = colors[i % colors.length];
+    const totalHours = (b.total_minutes / 60).toFixed(1);
+    let folder = b.folder || 'books';
+    folder = folder.replace(/^main\//, '');
+    if (!folder.startsWith('books/') && folder !== 'books') {
+      if (b.book_id && b.book_id.includes('/')) {
+        const parts = b.book_id.split('/');
+        const file = parts.pop();
+        folder = parts.join('/').replace(/^main\//, '');
+        if (!folder.startsWith('books/')) folder = 'books/' + folder;
+      } else {
+        folder = 'books/' + folder;
+      }
+    }
+    let file = b.book_id ? b.book_id.split('/').pop() : 'Китоб.pdf';
+    const name = b.book_title || file.replace(/\.pdf$/i, '') || 'Китоб';
+    const url = `https://raw.githubusercontent.com/sharipovip/books/main/${enc(folder)}/${encodeURIComponent(file)}`;
+    const coverList = coverCandidates(folder, file);
+    const cover = coverList[0] || '';
+    const coversJson = JSON.stringify(coverList);
+    return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
+      <div class="book-cover ${c}">
+        <img src="${cover}" alt="" loading="lazy"
+             data-i="0" data-covers='${esc(coversJson)}'
+             onerror="let a=JSON.parse(this.dataset.covers);let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}"
+             style="width:100%;height:100%;object-fit:cover">
+        <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span>
+      </div>
+      <div class="book-name">${esc(name)}</div>
+      <div style="font-size:10px;color:var(--muted);padding:0 6px 4px;">⏱ ${totalHours} соат</div>
+    </div>`;
+  }).join('');
+  $('popBooks').innerHTML = html;
+  hydrateBookCardCovers($('popBooks'));
+  $('popSection').style.display = 'block';
 }
-
-function coverFromPdfUrl(u) { return coverListFromPdfUrl(u)[0] || ''; }
 
 function loadContinue() {
   try {
@@ -508,95 +702,51 @@ function loadContinue() {
   } catch(e) {}
 }
 
-async function loadPopularBooks() {
+function coverListFromPdfUrl(u) {
   try {
-    const r = await fetch('https://kitobkhona-chat-production.up.railway.app/api/popular-books?period=all');
-    if (!r.ok) return;
-    let books = await r.json();
-    if (!books.length) return;
+    const x = new URL(u);
+    if (!x.hostname.includes('githubusercontent.com')) return [];
+    const parts = x.pathname.split('/').filter(Boolean);
+    if (parts.length < 5) return [];
+    const owner = parts[0], repo = parts[1], branch = parts[2], path = parts.slice(3);
+    const file = decodeURIComponent(path.pop() || '').replace(/\.pdf$/i, '.jpg');
+    let folder = path.join('/');
+    let clean = folder.replace(/^books\//, '');
+    const base = `https://raw.githubusercontent.com/${owner}/${repo}/${branch}`;
+    return [
+      `${base}/covers/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,
+      `${base}/covers/books/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,
+      `${base}/covers/${folder.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`
+    ];
+  } catch(e) { return []; }
+}
 
-    const map = {};
-    books.forEach(b => {
-      const titleKey = (b.book_title || 'Китоб').trim().toLowerCase().replace(/\s+/g, ' ');
-      if (!map[titleKey]) {
-        map[titleKey] = { ...b };
-      } else {
-        map[titleKey].total_minutes += b.total_minutes || 0;
-        map[titleKey].sessions_count += b.sessions_count || 0;
-        const cleanFolder = (b.folder || '').replace(/^main\//, '');
-        if (cleanFolder && cleanFolder.startsWith('books/') &&
-            (!map[titleKey].folder || map[titleKey].folder.includes('main/'))) {
-          map[titleKey].folder = cleanFolder;
-          map[titleKey].book_id = b.book_id;
-        }
-      }
-    });
-    books = Object.values(map).sort((a, b) => (b.total_minutes || 0) - (a.total_minutes || 0));
-
-    const colors = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
-    const html = books.slice(0, 12).map((b, i) => {
-      const c = colors[i % colors.length];
-      const totalHours = (b.total_minutes / 60).toFixed(1);
-
-      let folder = b.folder || 'books';
-      folder = folder.replace(/^main\//, '');
-      if (!folder.startsWith('books/') && folder !== 'books') {
-        if (b.book_id && b.book_id.includes('/')) {
-          const parts = b.book_id.split('/');
-          const file = parts.pop();
-          folder = parts.join('/').replace(/^main\//, '');
-          if (!folder.startsWith('books/')) folder = 'books/' + folder;
-        } else {
-          folder = 'books/' + folder;
-        }
-      }
-
-      let file = b.book_id ? b.book_id.split('/').pop() : 'Китоб.pdf';
-      const name = b.book_title || file.replace(/\.pdf$/i, '') || 'Китоб';
-      const url = `https://raw.githubusercontent.com/sharipovip/books/main/${enc(folder)}/${encodeURIComponent(file)}`;
-      const coverList = coverListFromPdfUrl(url);
-      const cover = coverList[0] || '';
-      const coversJson = JSON.stringify(coverList);
-
-      return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
-        <div class="book-cover ${c}">
-          <img src="${cover}" alt="" loading="lazy"
-               data-i="0" data-covers='${esc(coversJson)}'
-               onerror="let a=JSON.parse(this.dataset.covers);let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}"
-               style="width:100%;height:100%;object-fit:cover">
-          <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span>
-        </div>
-        <div class="book-name">${esc(name)}</div>
-        <div style="font-size:10px;color:var(--muted);padding:0 6px 4px;">⏱ ${totalHours} соат</div>
-      </div>`;
-    }).join('');
-    $('popBooks').innerHTML = html;
-    $('popSection').style.display = 'block';
-  } catch(e) {
-    console.error('Popular error', e);
-    $('popBooks').innerHTML = '<div class="empty">Ҳоло маълумот нест</div>';
-  }
+function esc(str) {
+  if (!str) return '';
+  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
 // ================================================================
 // ============ ЗАПУСК ============
 // ================================================================
-loadAnnouncement();
+loadAnnouncementCached();
 updateNotifBadge();
 loadContinue();
 loadHome();
-loadPopularBooks();
+initFirebaseMessaging();
 
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').then(() => {}).catch(() => {});
+  navigator.serviceWorker.register('/sw.js').then(() => {}).catch(() => {});
+  // Register Firebase messaging SW at root for FCM
+  navigator.serviceWorker.register('/firebase-messaging-sw.js').then(() => {
+    console.log('Firebase messaging SW registered');
+  }).catch(() => { console.log('Firebase messaging SW registration failed'); });
 }
 
-// ===== НАВИГАЦИЯ: АКТИВНАЯ ВКЛАДКА =====
 function setActiveNav(el) {
   document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
   el.classList.add('active');
 }
-// По умолчанию активна "Асосӣ"
 document.addEventListener('DOMContentLoaded', function() {
   const firstItem = document.querySelector('.nav-item');
   if (firstItem) firstItem.classList.add('active');

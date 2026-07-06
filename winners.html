@@ -5,6 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
   <title>Китобхона — Ғолибон</title>
   <script src="config.js"></script>
+  <script src="cache.js"></script>
   <style>
     /* ================================================================
        ЕДИНЫЙ СТИЛЬ (все стили внутри)
@@ -842,7 +843,7 @@
           <span>Лента</span>
         </a>
 
-        <!-- Чат (исправлено: теперь chats.html) -->
+        <!-- Чат -->
         <a class="nav-item" href="chats.html" aria-label="Чат">
           <div class="users-wrap">
             <div class="person p1"></div>
@@ -870,6 +871,15 @@
   </div>
 
   <script>
+    // ================================================================
+    // ИНИЦИАЛИЗАЦИЯ КЭША
+    // ================================================================
+    document.addEventListener('DOMContentLoaded', function() {
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.init();
+      }
+    });
+
     // ================================================================
     // ПЕРЕКЛЮЧЕНИЕ ТЕМЫ
     // ================================================================
@@ -937,6 +947,19 @@
 
     async function loadWinners(period = 'all') {
       const container = document.getElementById('winnersContent');
+      const cacheKey = 'kk_winners_' + period;
+
+      // Пытаемся получить данные из кэша
+      let data = CacheManager ? CacheManager.get(cacheKey) : null;
+      if (data) {
+        allData = data;
+        allData.top3 = allData.top3.map(u => ({ ...u, age: getAge(u.birth_year) }));
+        allData.top100 = allData.top100.map(u => ({ ...u, age: getAge(u.birth_year) }));
+        applyFilters();
+        return;
+      }
+
+      // Нет в кэше – загружаем с сервера
       container.innerHTML = '<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
       try {
         const result = await AutoLogin.autoLogin(false);
@@ -957,10 +980,13 @@
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!resp.ok) throw new Error('Хатогӣ дар боргирӣ');
-        const data = await resp.json();
+        data = await resp.json();
         allData = data;
         allData.top3 = allData.top3.map(u => ({ ...u, age: getAge(u.birth_year) }));
         allData.top100 = allData.top100.map(u => ({ ...u, age: getAge(u.birth_year) }));
+
+        // Сохраняем в кэш
+        if (CacheManager) CacheManager.set(cacheKey, data);
 
         applyFilters();
       } catch (e) {
