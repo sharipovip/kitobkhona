@@ -5,7 +5,7 @@
 const KITOB_CONFIG = {
   NEON_API_BASE: 'https://kitobkhona-chat-production.up.railway.app',
   SUPABASE_REST: 'https://dwkdzfqooprxytlepaoo.supabase.co/rest/v1',
-  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3MDI2MjIwMDAsImV4cCI6MTk4NzAyMDAwMH0.4SGNBUBjpgD8xLDG6x0jrJNKV-0Z5QQQaZkQhF5qzDA'
+  SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI'
 };
 
 // ======================== НОВЫЕ ФУНКЦИИ ДЛЯ НАСТРОЕК =========================
@@ -940,7 +940,7 @@ async function registerFcmToken() {
 
   try {
     await loadFirebaseMessagingSdk();
-    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
+    const registration = await navigator.serviceWorker.register('./sw.js');
     const messaging = firebase.messaging();
     const currentToken = await messaging.getToken({
       serviceWorkerRegistration: registration,
@@ -993,10 +993,53 @@ async function requestPushPermission() {
 
 async function initFirebaseMessaging() {
   if (!('Notification' in window) || !('serviceWorker' in navigator)) return;
+  const token = localStorage.getItem('kk_token');
   if (Notification.permission === 'granted') {
     await registerFcmToken();
+    return;
+  }
+  // Автозапрос: если пользователь залогинен и разрешение ещё не спрашивали
+  if (token && Notification.permission === 'default') {
+    // небольшой delay, чтобы страница успела загрузиться
+    setTimeout(async () => {
+      try {
+        // Красивый pre-prompt
+        const ok = confirm('🔔 Огоҳиҳои китобҳои навро фаъол созем?
+
+Шумо аз китобҳои нав, паёмҳо ва ғолибон огоҳ мешавед.');
+        if (ok) {
+          await requestPushPermission();
+        }
+      } catch(e){}
+    }, 2500);
   }
 }
+
+// Foreground FCM messages – показываем тост, обновляем badge
+async function initFcmForeground() {
+  try {
+    await loadFirebaseMessagingSdk();
+    if (window.firebase && firebase.messaging) {
+      const messaging = firebase.messaging();
+      messaging.onMessage((payload) => {
+        const title = payload.notification?.title || 'Китобхона';
+        const body = payload.notification?.body || '';
+        if (typeof toast === 'function') toast('🔔 ' + title + (body ? ': ' + body : ''));
+        // обновляем badge если функция есть
+        if (typeof updateNotifBadge === 'function') updateNotifBadge();
+        // системное уведомление тоже покажем, если страница не в фокусе
+        if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+          new Notification(title, { body, icon: '/icon-192.png' });
+        }
+      });
+    }
+  } catch(e) { console.warn('FCM foreground init failed', e); }
+}
+
+// вызываем foreground listener после инициализации
+const _oldInitFM = initFirebaseMessaging;
+initFirebaseMessaging = async function() { await _oldInitFM(); initFcmForeground(); };
+
 
 async function getActiveAnnouncement() {
   try {

@@ -2166,7 +2166,7 @@ async function sendPushMessagesToTokens(tokens, { title, body, link, data } = {}
     webpush: {
       fcmOptions: { link: link || '/' },
       notification: {
-        icon: '/assets/icons/icon-192.png'
+        icon: '/icon-192.png'
       }
     },
     data: data ? Object.fromEntries(Object.entries(data).map(([k, v]) => [String(k), String(v)])) : {}

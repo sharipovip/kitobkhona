@@ -43,9 +43,13 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
+
+  // Пропускаем API-запросы (Railway / Supabase / GitHub) — кэшируются отдельно
   if (url.origin !== self.location.origin) {
     return;
   }
+
+  // JS и CSS — сначала сеть, потом кэш
   if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
     event.respondWith(
       fetch(event.request)
@@ -60,6 +64,8 @@ self.addEventListener('fetch', (event) => {
     );
     return;
   }
+
+  // HTML — сначала кэш, потом сеть
   event.respondWith(
     caches.match(event.request).then((cached) => {
       const networkFetch = fetch(event.request).then((response) => {
@@ -69,6 +75,7 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => cached);
+
       return cached || networkFetch;
     })
   );
@@ -78,6 +85,7 @@ self.addEventListener('fetch', (event) => {
 try {
   importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js');
   importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js');
+
   const firebaseConfig = {
     apiKey: "AIzaSyDWmg_6KS_v82IK7P-QrLj8GP2dh5tk29Y",
     authDomain: "kitobkhona-push.firebaseapp.com",
@@ -87,8 +95,11 @@ try {
     appId: "1:507779702083:web:3dbd554961b290e854e3f6",
     measurementId: "G-2G9G2SXCTQ"
   };
+
   firebase.initializeApp(firebaseConfig);
   const messaging = firebase.messaging();
+
+  // FCM background messages
   messaging.onBackgroundMessage(function(payload) {
     try {
       const notif = payload.notification || {};
@@ -109,6 +120,7 @@ try {
   console.warn('[SW] Firebase init skipped:', e.message);
 }
 
+// Generic push fallback (Web Push)
 self.addEventListener('push', function(event) {
   try {
     let data = {};
@@ -117,13 +129,17 @@ self.addEventListener('push', function(event) {
     }
     const title = (data.notification && data.notification.title) || data.title || 'Китобхона';
     const body = (data.notification && data.notification.body) || data.body || '';
+    // уже обработано FCM?
     event.waitUntil(
-      self.registration.showNotification(title, {
-        body,
-        icon: data.icon || '/icon-192.png',
-        badge: '/icon-192.png',
-        data: data.data || data,
-        vibrate: [200, 100, 200]
+      self.registration.getNotifications().then(existing => {
+        // просто показываем, дедупликацию делает браузер
+        return self.registration.showNotification(title, {
+          body,
+          icon: data.icon || '/icon-192.png',
+          badge: '/icon-192.png',
+          data: data.data || data,
+          vibrate: [200, 100, 200]
+        });
       })
     );
   } catch (e) {
@@ -131,11 +147,13 @@ self.addEventListener('push', function(event) {
   }
 });
 
+// Notification click
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   const data = event.notification.data || {};
   const url = data.url || data.link || data.click_action || '/kitobkhona/';
   const fullUrl = url.startsWith('/') ? self.location.origin + url : url;
+  
   event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
     for (let i = 0; i < windowClients.length; i++) {
       const client = windowClients[i];

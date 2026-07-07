@@ -348,28 +348,52 @@ async function updateNotifBadge() {
     }
   } catch (e) { badge.style.display = 'none'; }
 }
+// ===== Центр уведомлений =====
+function showNotificationsModal(items) {
+  let old = document.getElementById('notifModal');
+  if (old) old.remove();
+  const modal = document.createElement('div');
+  modal.id = 'notifModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
+  const box = document.createElement('div');
+  box.style.cssText = 'background:#0D1B2A;border:1px solid rgba(201,168,76,.25);border-radius:20px;max-width:420px;width:100%;max-height:80vh;overflow:auto;color:#F0EAD6;box-shadow:0 20px 60px rgba(0,0,0,.5);margin-top:40px';
+  const listHtml = items.length ? items.map(n => `
+    <div style="padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.07);cursor:pointer" onclick="if('${(n.link||'').replace(/'/g,'')}') location.href='${(n.link||'#').replace(/'/g,'')} '">
+      <div style="font-weight:700;color:${n.is_read?'#A8B8CC':'#E8C96D'}">${n.is_read?'':'🔔 '}${(n.title||'Китобхона').replace(/</g,'&lt;')}</div>
+      <div style="font-size:13px;color:#A8B8CC;margin-top:4px">${(n.body||'').replace(/</g,'&lt;')}</div>
+      <div style="font-size:11px;color:#6B7F96;margin-top:4px">${new Date(n.created_at||Date.now()).toLocaleString('tg-TJ')}</div>
+    </div>`).join('') : '<div style="padding:30px;text-align:center;color:#A8B8CC">📭 Огоҳиҳо нестанд</div>';
+  box.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:16px 18px;border-bottom:1px solid rgba(201,168,76,.2)">
+      <b style="color:#C9A84C;font-size:17px">🔔 Огоҳиҳо</b>
+      <button id="closeNotifModal" style="background:none;border:none;color:#A8B8CC;font-size:22px;cursor:pointer">✕</button>
+    </div>
+    <div>${listHtml}</div>`;
+  modal.appendChild(box);
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+  box.querySelector('#closeNotifModal').onclick = () => modal.remove();
+  document.body.appendChild(modal);
+}
+
 $('notifBtn')?.addEventListener('click', async function() {
   const token = localStorage.getItem('kk_token');
   if (!token) {
-    alert('Барои дидани огоҳиҳо ворид шавед.');
+    if (typeof toast === 'function') toast('Барои дидани огоҳиҳо ворид шавед');
+    else alert('Барои дидани огоҳиҳо ворид шавед.');
+    location.href = './login.html';
     return;
   }
   try {
     const notifications = await getNotifications();
-    if (!notifications.length) {
-      alert('Огоҳиҳо нестанд.');
-      return;
-    }
-    const list = notifications.map(n =>
-      (n.is_read ? '✅ ' : '🔔 ') + n.title + ': ' + n.body + (n.is_read ? '' : ' (нав)')
-    ).join('\n');
-    alert('Огоҳиҳои шумо:\n' + list);
+    showNotificationsModal(notifications);
+    // помечаем прочитанными
     for (const n of notifications) {
-      if (!n.is_read) await markNotificationRead(n.id);
+      if (!n.is_read) markNotificationRead(n.id);
     }
-    updateNotifBadge();
+    setTimeout(updateNotifBadge, 800);
   } catch (e) {
-    alert('Хатогӣ: ' + e.message);
+    if (typeof toast === 'function') toast('Хатогӣ: ' + e.message, true);
+    else alert('Хатогӣ: ' + e.message);
   }
 });
 
@@ -749,25 +773,23 @@ updateNotifBadge();
 loadContinue();
 loadHome();
 
-// --- ОПРЕДЕЛЯЕМ, ЗАПУЩЕНО ЛИ В ANDROID WEBVIEW ---
+// --- Service Worker + FCM ---
 const isAndroidApp = (typeof AndroidBridge !== 'undefined' || navigator.userAgent.includes('KitobkhonaApp'));
 
-if (!isAndroidApp) {
-  // Обычный браузер (ПК или мобильный): запускаем веб-пуши Firebase
-  initFirebaseMessaging();
-  if ('serviceWorker' in navigator) {
-    navigator.serviceWorker.register('./firebase-messaging-sw.js')
-      .then(() => console.log('Firebase messaging SW registered'))
-      .catch(() => console.log('Firebase messaging SW registration failed'));
-  }
-} else {
-  // Android-приложение: веб-пуши не используем, их обрабатывает нативный код
-  console.log('KitobkhonaApp: web push disabled, using native FCM');
-}
-
-// Основной Service Worker (кэширование) регистрируем в любом случае
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').then(() => {}).catch(() => {});
+  navigator.serviceWorker.register('./sw.js', { scope: './' })
+    .then(reg => {
+      console.log('SW registered:', reg.scope);
+      if (!isAndroidApp) {
+        // Инициализируем FCM после успешной регистрации SW
+        setTimeout(() => initFirebaseMessaging(), 800);
+      } else {
+        console.log('KitobkhonaApp: web push disabled, using native FCM');
+      }
+    })
+    .catch(err => console.log('SW registration failed:', err));
+} else if (!isAndroidApp) {
+  initFirebaseMessaging();
 }
 
 // ============ ПЕРЕДАЁМ USER_ID И AUTH_TOKEN В ANDROID ============

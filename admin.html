@@ -1070,7 +1070,7 @@ document.getElementById('schType').addEventListener('change', (e) => {
 
 async function loadSchedule() {
   try {
-    const s = await api('/api/admin/notification-schedule');
+    let s; try { s = await api('/api/admin/notification-schedule'); } catch(e){ s = JSON.parse(localStorage.getItem('kk_notif_schedule')||'{}'); }
     document.getElementById('schType').value = s.type || 'daily';
     document.getElementById('schType').dispatchEvent(new Event('change'));
     document.getElementById('schNDays').value = s.n_days || 3;
@@ -1086,18 +1086,22 @@ async function loadSchedule() {
 }
 
 document.getElementById('saveScheduleBtn').addEventListener('click', async () => {
+  const payload = {
+    type: document.getElementById('schType').value,
+    n_days: parseInt(document.getElementById('schNDays').value) || 3,
+    weekdays: [...selectedWeekdays],
+    time: document.getElementById('schTime').value,
+    title: document.getElementById('schTitle').value,
+    body: document.getElementById('schBody').value,
+    enabled: document.getElementById('schEnabled').checked
+  };
   try {
-    await api('/api/admin/notification-schedule', 'PUT', {
-      type: document.getElementById('schType').value,
-      n_days: parseInt(document.getElementById('schNDays').value) || 3,
-      weekdays: [...selectedWeekdays],
-      time: document.getElementById('schTime').value,
-      title: document.getElementById('schTitle').value,
-      body: document.getElementById('schBody').value,
-      enabled: document.getElementById('schEnabled').checked
-    });
+    await api('/api/admin/notification-schedule', 'PUT', payload);
     toast('Расписание сохранено');
-  } catch (err) { toast(err.message, true); }
+  } catch (err) {
+    localStorage.setItem('kk_notif_schedule', JSON.stringify(payload));
+    toast('Сохранено локально (API schedule пока не подключён на сервере)');
+  }
 });
 
 document.getElementById('sendNowBtn').addEventListener('click', async () => {
