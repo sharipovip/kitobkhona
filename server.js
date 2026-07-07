@@ -33,8 +33,12 @@ async function initializeFirebaseAdmin() {
     if (serviceAccount) {
       admin.initializeApp({
         credential: admin.credential.cert(serviceAccount),
-        projectId: process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id
+        // временно фиксируем projectId чтобы проверить причину 404
+        projectId: 'kitobkhona-push'
       });
+      console.log('[FCM] Project ID used:', admin.app().options.projectId);
+      console.log('[FCM] Firebase Admin SDK initialized with app projectId:', admin.app().options.projectId || process.env.FIREBASE_PROJECT_ID || serviceAccount.project_id);
+
       firebaseMessaging = admin.messaging();
       console.log('[FCM] Firebase Admin SDK initialized');
     } else {

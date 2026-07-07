@@ -382,13 +382,11 @@ function showConfirmDialog(message, title = 'Тасдиқ', confirmText = 'Ҳа'
   });
 }
 
-// Инициализация при загрузке DOM
+// Инициализация при загрузке DOM (БЕЗ АВТО-ЗАПРОСА УВЕДОМЛЕНИЙ!)
 document.addEventListener('DOMContentLoaded', function() {
   initTheme();
   initSettings();
-  if (typeof requestPushPermission === 'function') {
-    requestPushPermission().catch(() => {});
-  }
+  // Автоматический запрос уведомлений УБРАН – теперь только по клику на кнопку в модалке
 });
 
 // ================================================================
@@ -903,7 +901,7 @@ const KKH_FCM = {
     appId: "1:507779702083:web:3dbd554961b290e854e3f6",
     measurementId: "G-2G9G2SXCTQ"
   },
-  vapidKey: 'BNhCnltOkKCNypeBGqYGRHiKpQxKpkpt3Fj5G7X2XDM8EV7qj3xLtDQa8PYh_Sp3g21CLCdz7GoBILxMjnBFUJM'
+vapidKey: 'BNhCnlt0kKCnYpeBGqYGRHikPqXCkpkt3Fj5G7X2XDM8EV7qj3xLtDQa8PYh_Sp3g21CLCdz7GoBILxMjnBFUJM'
 };
 
 function loadFirebaseMessagingSdk() {
@@ -942,7 +940,7 @@ async function registerFcmToken() {
 
   try {
     await loadFirebaseMessagingSdk();
-    const registration = await navigator.serviceWorker.register('/firebase-messaging-sw.js');
+    const registration = await navigator.serviceWorker.register('./firebase-messaging-sw.js');
     const messaging = firebase.messaging();
     const currentToken = await messaging.getToken({
       serviceWorkerRegistration: registration,
