@@ -1,0 +1,876 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="theme-color" content="#0D1B2A">
+  <title>Чат — Китобхона</title>
+  <link rel="manifest" href="manifest.json">
+  <script src="config.js"></script>
+  <script src="cache.js"></script>
+  <link rel="stylesheet" href="assets/css/index.css">
+  <style>
+    /* ===== СТИЛИ ЧАТА ===== */
+    @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
+
+    :root {
+      --wa-header: #075E54;
+      --wa-chat-bg: #ECE5DD;
+      --wa-bubble-in: #FFFFFF;
+      --wa-bubble-out: #DCF8C6;
+      --wa-text: #111B21;
+      --wa-muted: #667781;
+      --wa-check-grey: #8696A0;
+      --wa-check-blue: #34B7F1;
+      --wa-compose-bg: #F0F0F0;
+      --wa-pill-bg: #FFFFFF;
+      --shadow: 0 18px 40px -12px rgba(0,0,0,0.55);
+    }
+    [data-theme="dark"] {
+      --wa-header: #1F2C34;
+      --wa-chat-bg: #0B141A;
+      --wa-bubble-in: #1F2C34;
+      --wa-bubble-out: #005C4B;
+      --wa-text: #E9EDEF;
+      --wa-muted: #8696A0;
+      --wa-compose-bg: #1F2C34;
+      --wa-pill-bg: #2A3942;
+    }
+
+    .phone-wrapper {
+      padding-bottom: 0 !important;
+      height: 100vh;
+      background: var(--wa-chat-bg);
+    }
+
+    .main-content {
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .chat-container {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      background: var(--wa-chat-bg);
+      height: 100%;
+      overflow: hidden;
+    }
+
+    .chat-header {
+      flex: 0 0 auto;
+      background: var(--wa-header);
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 12px;
+      position: relative;
+    }
+    .back-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+      flex-shrink: 0;
+      transition: background .2s;
+    }
+    .back-btn:active { background: rgba(255,255,255,0.22); }
+    .head-avatar {
+      width: 38px; height: 38px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, #0a5a50, #0e7a6e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      overflow: hidden;
+      font-size: 16px;
+      color: #fff;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    }
+    .head-info { flex: 1; min-width: 0; }
+    .head-name {
+      font-size: 15.5px;
+      font-weight: 700;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+    .verified-badge {
+      color: var(--gold, #C9A84C);
+      font-size: 16px;
+      margin-left: 2px;
+      display: none;
+    }
+    .head-status {
+      font-size: 11px;
+      color: rgba(255,255,255,0.78);
+      display: flex;
+      align-items: center;
+      gap: 5px;
+      margin-top: 2px;
+      flex-wrap: nowrap;
+    }
+    .online-dot { width: 7px; height: 7px; border-radius: 50%; background: #4ADE80; flex: 0 0 auto; }
+    .word-badge {
+      background: rgba(255,255,255,0.15);
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 10.5px;
+      font-weight: 600;
+      color: rgba(255,255,255,0.9);
+      white-space: nowrap;
+      flex-shrink: 1;
+    }
+    .word-badge.alert { background: rgba(231,76,60,0.45); color: #ffc0c0; }
+    .chat-closed-badge {
+      background: rgba(231,76,60,0.45);
+      color: #ffc0c0;
+      border-radius: 20px;
+      padding: 1px 7px;
+      font-size: 10.5px;
+      font-weight: 600;
+      white-space: nowrap;
+      flex-shrink: 1;
+      display: none;
+    }
+    .menu-btn {
+      width: 36px; height: 36px;
+      border-radius: 50%;
+      cursor: pointer;
+      background: rgba(255,255,255,0.12);
+      border: none;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 19px;
+      font-weight: 700;
+      flex-shrink: 0;
+      transition: background .2s;
+      position: relative;
+    }
+    .menu-btn:active { background: rgba(255,255,255,0.22); }
+
+    .messages {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 14px 12px 10px;
+      display: flex;
+      flex-direction: column;
+      gap: 3px;
+      scrollbar-width: none;
+    }
+    .messages::-webkit-scrollbar { display: none; }
+
+    .date-sep {
+      align-self: center;
+      background: rgba(0,0,0,0.08);
+      color: var(--wa-muted);
+      font-size: 11.5px;
+      font-weight: 600;
+      padding: 4px 12px;
+      border-radius: 8px;
+      margin: 6px 0 12px;
+    }
+    [data-theme="dark"] .date-sep { background: rgba(255,255,255,0.07); }
+
+    .msg-row { display: flex; margin: 3px 0; }
+    .msg-row.in { justify-content: flex-start; }
+    .msg-row.out { justify-content: flex-end; }
+
+    .bubble {
+      max-width: 78%;
+      padding: 6px 9px 4px 9px;
+      font-size: 14.5px;
+      line-height: 1.4;
+      color: var(--wa-text);
+      box-shadow: 0 1px 1px rgba(0,0,0,0.12);
+      word-break: break-word;
+      position: relative;
+      display: inline-block;
+      border-radius: 9px 9px 9px 2px;
+      width: fit-content;
+      min-width: 0;
+    }
+    .bubble.in { background: var(--wa-bubble-in); }
+    .bubble.out { background: var(--wa-bubble-out); border-radius: 9px 9px 2px 9px; }
+
+    .bubble-body {
+      display: block;
+      white-space: pre-wrap;
+    }
+    .bubble-text {
+      display: inline;
+      white-space: pre-wrap;
+    }
+    .bubble-spacer {
+      display: inline-block;
+      width: 50px;
+      height: 1px;
+      vertical-align: bottom;
+    }
+    .bubble-meta {
+      float: right;
+      clear: right;
+      margin-top: -16px;
+      margin-left: 4px;
+      margin-bottom: 3px;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+      font-size: 10.5px;
+      color: var(--wa-muted);
+      white-space: nowrap;
+      position: relative;
+      z-index: 1;
+    }
+    .bubble::after {
+      content: '';
+      display: table;
+      clear: both;
+    }
+    .check {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--wa-check-grey);
+      line-height: 1;
+    }
+    .check.read { color: var(--wa-check-blue); }
+
+    .composer {
+      flex: 0 0 auto;
+      background: var(--wa-compose-bg);
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      padding: 8px 10px 12px;
+      border-top: 1px solid rgba(0,0,0,0.08);
+    }
+    .input-row {
+      display: flex;
+      align-items: flex-end;
+      gap: 8px;
+    }
+    .input-pill {
+      flex: 1;
+      display: flex;
+      align-items: flex-end;
+      gap: 6px;
+      background: var(--wa-pill-bg);
+      border-radius: 22px;
+      padding: 6px 10px 6px 14px;
+      min-height: 44px;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+    }
+    .emoji-btn {
+      font-size: 22px;
+      cursor: pointer;
+      flex: 0 0 auto;
+      padding-bottom: 2px;
+      line-height: 1;
+      opacity: 0.75;
+      transition: opacity .2s;
+    }
+    .emoji-btn:active { opacity: 1; }
+    .msg-input {
+      flex: 1;
+      border: none;
+      outline: none;
+      background: transparent;
+      resize: none;
+      font-family: 'Noto Sans', sans-serif;
+      font-size: 14.5px;
+      color: var(--wa-text);
+      line-height: 1.45;
+      max-height: 110px;
+      overflow-y: auto;
+      padding: 4px 0;
+      scrollbar-width: none;
+      height: auto;
+    }
+    .msg-input::-webkit-scrollbar { display: none; }
+    .msg-input::placeholder { color: var(--wa-muted); }
+    .send-btn {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--wa-header), #0a7a6e);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex: 0 0 auto;
+      cursor: pointer;
+      color: #fff;
+      font-size: 17px;
+      border: none;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.3);
+      transition: transform .12s, box-shadow .12s;
+    }
+    .send-btn:active { transform: scale(0.9); box-shadow: 0 1px 4px rgba(0,0,0,0.2); }
+    .send-btn:disabled { opacity: 0.35; pointer-events: none; }
+
+    .loading-msg {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      color: var(--wa-muted);
+      font-size: 14px;
+    }
+    .spinner {
+      width: 20px; height: 20px;
+      border: 2px solid var(--line);
+      border-top-color: var(--gold);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin-right: 10px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    .popup-menu {
+      display: none;
+      position: absolute;
+      top: calc(100% + 8px);
+      right: 0;
+      background: #1a2830;
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: 16px;
+      padding: 6px;
+      box-shadow: 0 16px 40px rgba(0,0,0,0.7);
+      z-index: 200;
+      min-width: 175px;
+      flex-direction: column;
+      gap: 2px;
+      animation: menuPop .18s ease;
+    }
+    @keyframes menuPop {
+      from { opacity: 0; transform: scale(0.9) translateY(-6px); }
+      to   { opacity: 1; transform: scale(1) translateY(0); }
+    }
+    .popup-menu.open { display: flex; }
+    .popup-menu .item {
+      padding: 11px 13px;
+      font-size: 13.5px;
+      cursor: pointer;
+      color: #E9EDEF;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border-radius: 11px;
+      transition: background 0.15s;
+      font-weight: 500;
+    }
+    .popup-menu .item:hover { background: rgba(255,255,255,0.08); }
+    .popup-menu .item.danger { color: #ff6b6b; }
+    .popup-menu .item .icon { font-size: 17px; width: 22px; text-align: center; }
+    .popup-menu .divider {
+      height: 1px;
+      background: rgba(255,255,255,0.07);
+      margin: 3px 6px;
+    }
+
+    .light-theme .chat-container {
+      background: #ECE5DD;
+    }
+    .light-theme .composer {
+      background: #F0F0F0;
+    }
+    .light-theme .input-pill {
+      background: #FFFFFF;
+    }
+    .light-theme .popup-menu {
+      background: #fff;
+      border-color: rgba(0,0,0,0.1);
+    }
+    .light-theme .popup-menu .item {
+      color: #1A2D44;
+    }
+    .light-theme .popup-menu .item:hover {
+      background: #f0f0f0;
+    }
+  </style>
+</head>
+<body data-theme="dark">
+
+<div class="phone-wrapper">
+
+  <main class="main-content">
+    <div class="chat-container">
+      <!-- Шапка чата -->
+      <div class="chat-header">
+        <div class="head-avatar" id="chatAvatar">👤</div>
+        <div class="head-info">
+          <div class="head-name" id="headName">
+            Чат
+            <span class="verified-badge" id="verifiedBadge">✅</span>
+          </div>
+          <div class="head-status" id="headStatus">
+            <span class="online-dot"></span>
+            <span>Дӯст</span>
+            <span class="word-badge" id="wordCounter">Шумо метавонед 100 калимаи дигар фиристед</span>
+            <span class="chat-closed-badge" id="chatClosedBadge">🔒 Чат баста</span>
+          </div>
+        </div>
+        <button class="menu-btn" id="menuBtn">⋮</button>
+        <div class="popup-menu" id="popupMenu">
+          <div class="item" onclick="deleteChat()">
+            <span class="icon">🗑</span>
+            <span>Удалить чат</span>
+          </div>
+          <div class="item" onclick="clearChatLocal()">
+            <span class="icon">🧹</span>
+            <span>Очистить чат</span>
+          </div>
+          <div class="divider"></div>
+          <div class="item danger" onclick="reportUser()">
+            <span class="icon">⚠️</span>
+            <span>Пожаловаться</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Область сообщений -->
+      <div class="messages" id="messages">
+        <div class="loading-msg"><div class="spinner"></div> Боргирӣ...</div>
+      </div>
+
+      <!-- Композер -->
+      <div class="composer" id="composer">
+        <div class="input-row">
+          <div class="input-pill">
+            <div class="emoji-btn">😊</div>
+            <textarea class="msg-input" id="msgInput" placeholder="Паём нависед..." rows="1"></textarea>
+          </div>
+          <button class="send-btn" id="sendBtn">➤</button>
+        </div>
+      </div>
+    </div>
+  </main>
+
+</div>
+
+<script>
+  // ================================================================
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+    init();
+  });
+
+  // ================================================================
+  // ============ ОСНОВНОЙ КОД ЧАТА С КЭШИРОВАНИЕМ ============
+  // ================================================================
+  const qs = new URL(location.href).searchParams;
+  const peerId = qs.get('to') || '';
+  const peerName = decodeURIComponent(qs.get('name') || 'Чат');
+
+  document.getElementById('headName').textContent = peerName;
+
+  let currentUserId = null;
+  let pollInterval = null;
+  let chatIsOpen = true; // по умолчанию открыт
+
+  // Ключ кэша для сообщений
+  function getCacheKey() {
+    return 'kk_chat_messages_' + peerId;
+  }
+
+  // ===== МЕНЮ =====
+  const menuBtn = document.getElementById('menuBtn');
+  const popupMenu = document.getElementById('popupMenu');
+
+  function positionMenu() {
+    const headerRect = document.querySelector('.chat-header').getBoundingClientRect();
+    popupMenu.style.top = (headerRect.height) + 'px';
+    popupMenu.style.right = '10px';
+  }
+
+  menuBtn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    positionMenu();
+    popupMenu.classList.toggle('open');
+  });
+
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.menu-btn') && !e.target.closest('.popup-menu')) {
+      popupMenu.classList.remove('open');
+    }
+  });
+
+  // ===== УДАЛИТЬ ЧАТ =====
+  async function deleteChat() {
+    popupMenu.classList.remove('open');
+    if (!currentUserId || !peerId) return;
+    if (!confirm('Оё мехоҳед тамоми таърихи чатро нест кунед?')) return;
+    try {
+      const token = localStorage.getItem('kk_token');
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1: currentUserId, user2: peerId })
+      });
+      if (!resp.ok) throw new Error('Ошибка удаления');
+      // Инвалидируем кэш
+      if (CacheManager) {
+        CacheManager.invalidateKey(getCacheKey());
+      }
+      alert('Чат удалён.');
+      location.href = 'chats.html';
+    } catch (e) {
+      alert('Ошибка: ' + e.message);
+    }
+  }
+
+  // ===== ОЧИСТИТЬ ЧАТ =====
+  async function clearChatLocal() {
+    popupMenu.classList.remove('open');
+    if (!confirm('Оё мехоҳед паёмҳоро аз интерфейс тоза кунед?')) return;
+    const container = document.getElementById('messages');
+    container.innerHTML = '<div class="loading-msg">Чат очищен</div>';
+    // Инвалидируем кэш
+    if (CacheManager) {
+      CacheManager.invalidateKey(getCacheKey());
+    }
+    setTimeout(() => { loadMessages(false); }, 500);
+  }
+
+  // ===== ПОЖАЛОВАТЬСЯ =====
+  async function reportUser() {
+    popupMenu.classList.remove('open');
+    if (!currentUserId || !peerId) return;
+    if (!confirm('Шумо мехоҳед шикоят фиристед?')) return;
+    try {
+      await ChatAPI.sendReport(currentUserId, peerId, 'Жалоба от пользователя');
+      alert('Шикоят фиристода шуд!');
+    } catch (e) {
+      alert('Хатогӣ: ' + e.message);
+    }
+  }
+
+  // ===== ПОЛУЧЕНИЕ СТАТУСА ЧАТА =====
+  async function fetchChatStatus() {
+    try {
+      const token = localStorage.getItem('kk_token');
+      if (!token) return;
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/admin/chat-status/' + currentUserId, {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!resp.ok) return;
+      const data = await resp.json();
+      chatIsOpen = !!data.is_open;
+      const badge = document.getElementById('chatClosedBadge');
+      const input = document.getElementById('msgInput');
+      const sendBtn = document.getElementById('sendBtn');
+      if (chatIsOpen) {
+        badge.style.display = 'none';
+        input.disabled = false;
+        sendBtn.disabled = false;
+      } else {
+        badge.style.display = 'inline-block';
+        input.disabled = true;
+        sendBtn.disabled = true;
+        input.placeholder = 'Чат баста шудааст';
+      }
+    } catch (e) {
+      console.warn('Не удалось получить статус чата:', e);
+    }
+  }
+
+  // ===== ЗАГРУЗКА СООБЩЕНИЙ (С КЭШИРОВАНИЕМ) =====
+  async function refreshMessagesFromServer(keepScroll = true, cachedMsgs = null) {
+    const msgContainer = document.getElementById('messages');
+    try {
+      const msgs = await ChatAPI.getMessages(currentUserId, peerId);
+      if (!msgs || msgs.length === 0) {
+        if (!cachedMsgs || cachedMsgs.length === 0) {
+          msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+        }
+        if (CacheManager) {
+          CacheManager.set(getCacheKey(), []);
+        }
+        return;
+      }
+
+      if (CacheManager) {
+        CacheManager.set(getCacheKey(), msgs);
+      }
+
+      renderMessages(msgs, msgContainer);
+      if (!keepScroll) scrollToBottom();
+      else {
+        const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
+        if (isAtBottom) scrollToBottom();
+      }
+      updateWordCounter();
+    } catch (e) {
+      console.error(e);
+      const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
+      if (!cached || cached.length === 0) {
+        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+      }
+    }
+  }
+
+  async function loadMessages(keepScroll = true) {
+    const msgContainer = document.getElementById('messages');
+    try {
+      const { data } = await AUTH.getUser();
+      if (!data.user) {
+        msgContainer.innerHTML = '<div class="loading-msg">Логин шавед барои чат</div>';
+        return;
+      }
+      currentUserId = data.user.id;
+
+      // Параллельно поднимаем дополнительную информацию, но не блокируем рендер.
+      void (async () => {
+        try {
+          const peerProfile = await AUTH.getProfileFromRailway(peerId);
+          if (peerProfile && peerProfile.verified) {
+            document.getElementById('verifiedBadge').style.display = 'inline-block';
+          } else {
+            document.getElementById('verifiedBadge').style.display = 'none';
+          }
+        } catch (e) {}
+      })();
+
+      void fetchChatStatus();
+
+      // Пытаемся сразу показать сообщения из кэша.
+      let cachedMsgs = null;
+      if (CacheManager) {
+        cachedMsgs = CacheManager.get(getCacheKey());
+      }
+      if (cachedMsgs && cachedMsgs.length > 0) {
+        renderMessages(cachedMsgs, msgContainer);
+        if (!keepScroll) scrollToBottom();
+        else {
+          const isAtBottom = msgContainer.scrollHeight - msgContainer.scrollTop - msgContainer.clientHeight < 50;
+          if (isAtBottom) scrollToBottom();
+        }
+        void updateWordCounter();
+      } else {
+        msgContainer.innerHTML = '<div class="loading-msg">Открываем чат…</div>';
+      }
+
+      // Обновляем в фоне, не блокируя интерфейс.
+      void refreshMessagesFromServer(keepScroll, cachedMsgs);
+
+    } catch (e) {
+      console.error(e);
+      const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
+      if (!cached || cached.length === 0) {
+        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+      }
+    }
+  }
+
+  // ===== РЕНДЕРИНГ СООБЩЕНИЙ =====
+  function renderMessages(msgs, container) {
+    if (!msgs || msgs.length === 0) {
+      container.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+      return;
+    }
+    let html = '';
+    let lastDate = '';
+    msgs.forEach(m => {
+      const isMine = m.sender_id === currentUserId;
+      const time = timeLabel(m.created_at);
+      const checkHtml = `<span class="check read" title="Прочитано">
+             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
+               <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/>
+               <path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
+             </svg>
+           </span>`;
+      const dateLabel = formatDate(m.created_at);
+      if (dateLabel !== lastDate) {
+        html += `<div class="date-sep">${dateLabel}</div>`;
+        lastDate = dateLabel;
+      }
+      html += `
+        <div class="msg-row ${isMine ? 'out' : 'in'}">
+          <div class="bubble ${isMine ? 'out' : 'in'}">
+            <div class="bubble-body"><span class="bubble-text">${esc(m.text)}</span><span class="bubble-spacer"></span></div>
+            <div class="bubble-meta">
+              ${time}
+              ${isMine ? checkHtml : ''}
+            </div>
+          </div>
+        </div>
+      `;
+    });
+    container.innerHTML = html;
+  }
+
+  function timeLabel(v) {
+    try { return new Date(v).toLocaleTimeString('ru-RU', {hour:'2-digit', minute:'2-digit'}); }
+    catch (_) { return ''; }
+  }
+
+  function formatDate(d) {
+    const today = new Date(), yesterday = new Date(today);
+    yesterday.setDate(yesterday.getDate() - 1);
+    const dd = new Date(d);
+    if (dd.toDateString() === today.toDateString()) return 'Имрӯз';
+    if (dd.toDateString() === yesterday.toDateString()) return 'Дирӯз';
+    return dd.toLocaleDateString('ru-RU', {day:'numeric', month:'long'});
+  }
+
+  function scrollToBottom() {
+    setTimeout(() => {
+      const msgs = document.getElementById('messages');
+      msgs.scrollTop = msgs.scrollHeight;
+    }, 50);
+  }
+
+  async function updateWordCounter() {
+    try {
+      const token = localStorage.getItem('kk_token');
+      if (!token) return;
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/daily-words', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const remaining = data.remaining;
+        const el = document.getElementById('wordCounter');
+        el.textContent = 'Шумо метавонед ' + remaining + ' калимаи дигар фиристед';
+        if (remaining < 10) el.classList.add('alert');
+        else el.classList.remove('alert');
+        if (chatIsOpen) {
+          document.getElementById('sendBtn').disabled = (remaining <= 0);
+        }
+      }
+    } catch (e) {}
+  }
+
+  // ===== ОТПРАВКА СООБЩЕНИЯ (с обновлением кэша) =====
+  async function sendMessage() {
+    if (!chatIsOpen) {
+      alert('Чат баста шудааст. Шумо наметавонед паём фиристед.');
+      return;
+    }
+    const input = document.getElementById('msgInput');
+    const text = input.value.trim();
+    if (!text || !currentUserId || !peerId) return;
+    input.value = '';
+    input.style.height = '0';
+    input.style.height = input.scrollHeight + 'px';
+
+    const time = timeLabel(new Date().toISOString());
+    const msgContainer = document.getElementById('messages');
+    const dateLabel = formatDate(new Date().toISOString());
+    const lastDateEl = msgContainer.querySelector('.date-sep:last-child');
+    if (!lastDateEl || lastDateEl.textContent !== dateLabel) {
+      const sep = document.createElement('div');
+      sep.className = 'date-sep';
+      sep.textContent = dateLabel;
+      msgContainer.appendChild(sep);
+    }
+    const row = document.createElement('div');
+    row.className = 'msg-row out';
+    const bubble = document.createElement('div');
+    bubble.className = 'bubble out';
+    const textEl = document.createElement('div');
+    textEl.className = 'bubble-body';
+    textEl.innerHTML = '<span class="bubble-text"></span><span class="bubble-spacer"></span>';
+    textEl.querySelector('.bubble-text').textContent = text;
+    const meta = document.createElement('div');
+    meta.className = 'bubble-meta';
+    const singleCheck = `<span class="check"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+    meta.innerHTML = time + ' ' + singleCheck;
+    bubble.appendChild(textEl);
+    bubble.appendChild(meta);
+    row.appendChild(bubble);
+    msgContainer.appendChild(row);
+    scrollToBottom();
+
+    try {
+      const sentMsg = await ChatAPI.sendMessage(currentUserId, peerId, text);
+      const checkSpan = meta.querySelector('.check');
+      checkSpan.className = 'check read';
+      checkSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      if (CacheManager) {
+        const cacheKey = getCacheKey();
+        const cached = CacheManager.get(cacheKey) || [];
+        if (Array.isArray(cached)) {
+          cached.push(sentMsg);
+          CacheManager.set(cacheKey, cached);
+        }
+      }
+      void refreshMessagesFromServer(true);
+    } catch (e) {
+      const checkSpan = meta.querySelector('.check');
+      checkSpan.textContent = '⚠';
+      console.error(e);
+      alert('Хатогӣ дар фиристодан: ' + e.message);
+    }
+  }
+
+  document.getElementById('sendBtn').addEventListener('click', sendMessage);
+  document.getElementById('msgInput').addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
+  });
+  document.getElementById('msgInput').addEventListener('input', function() {
+    this.style.height = '0';
+    this.style.height = Math.min(this.scrollHeight, 110) + 'px';
+  });
+
+  function goBack() {
+    if (history.length > 1) history.back();
+    else location.href = 'chats.html';
+  }
+
+  function startPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    pollInterval = setInterval(() => {
+      if (document.hidden) return;
+      loadMessages(true);
+    }, 5000);
+  }
+
+  async function init() {
+    const { data } = await AUTH.getUser();
+    if (!data.user) {
+      document.getElementById('messages').innerHTML = '<div class="loading-msg">Логин шавед</div>';
+      return;
+    }
+    currentUserId = data.user.id;
+    void loadMessages(false);
+    startPolling();
+  }
+
+  window.addEventListener('beforeunload', () => {
+    if (pollInterval) clearInterval(pollInterval);
+  });
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+
+  window.deleteChat = deleteChat;
+  window.clearChatLocal = clearChatLocal;
+  window.reportUser = reportUser;
+</script>
+</body>
+</html>

@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0D1B2A">
+<title>Китобхона — Китобҳо</title>
+<link rel="manifest" href="manifest.json">
+<script src="config.js"></script>
+<script src="cache.js"></script>
+<style>
+  /* ================================================================
+     ЕДИНЫЙ СТИЛЬ (все стили внутри)
+     ================================================================ */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  :root {
+    --bg: #0D1B2A;
+    --bg2: #142236;
+    --card: #1A2D44;
+    --card2: #1E3350;
+    --gold: #C9A84C;
+    --gold2: #E8C96D;
+    --text: #F0EAD6;
+    --muted: #A8B8CC;
+    --dim: #6B7F96;
+    --border: rgba(201,168,76,0.18);
+    --shadow: rgba(0,0,0,0.4);
+    --glass: rgba(13,27,42,0.92);
+  }
+
+  .light-theme {
+    --bg: #F5F0E8;
+    --bg2: #EDE6D6;
+    --card: #fff;
+    --card2: #FAF7F0;
+    --text: #1A2D44;
+    --muted: #4A5D73;
+    --dim: #8A9AAD;
+    --shadow: rgba(0,0,0,0.12);
+    --glass: rgba(245,240,232,0.92);
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+  }
+
+  body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+  }
+
+  .app-container {
+    width: 430px;
+    height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    border-radius: 0 !important; /* прямые углы */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+  .content-wrapper {
+    flex: 1;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 10px 10px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201,168,76,0.2) transparent;
+    -webkit-overflow-scrolling: touch;
+  }
+  .content-wrapper::-webkit-scrollbar { width: 4px; }
+  .content-wrapper::-webkit-scrollbar-track { background: transparent; }
+  .content-wrapper::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
+
+  /* ===== STICKY HEADER (категории + подкатегории) ===== */
+  .sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 20;
+    background: var(--bg);
+    padding-top: 2px;
+  }
+
+  /* ===== SHELF (КАТЕГОРИИ) ===== */
+  .shelf-section { padding: 10px 0 6px; }
+  .shelf-wrap { position: relative; overflow: hidden; }
+  .shelf-row {
+    display: flex;
+    gap: 6px;
+    align-items: flex-end;
+    overflow-x: auto;
+    padding: 4px 4px 0;
+    scrollbar-width: none;
+    scroll-behavior: smooth;
+  }
+  .shelf-row::-webkit-scrollbar { display: none; }
+
+  .spine {
+    flex: 0 0 auto;
+    width: 56px;
+    height: 72px;
+    border: none;
+    cursor: pointer;
+    border-radius: 4px 4px 2px 2px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    padding: 4px 2px;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.35), inset -2px 0 0 rgba(255,255,255,0.06), inset 2px 0 0 rgba(0,0,0,0.18);
+    transition: all 0.3s cubic-bezier(0.22, 0.61, 0.36, 1);
+    font-size: 0;
+    gap: 2px;
+    overflow: hidden;
+  }
+  .spine:hover { box-shadow: 0 6px 14px rgba(201,168,76,0.25), inset -2px 0 0 rgba(255,255,255,0.1); }
+  .spine.active { transform: scale(1.08) translateY(4px); box-shadow: 0 10px 20px rgba(201,168,76,0.35), inset -2px 0 0 rgba(255,255,255,0.2); }
+  .spine .icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+  .spine .label-wrap {
+    width: 100%;
+    overflow: hidden;
+    position: relative;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .spine .label {
+    display: block;
+    font-size: 8px;
+    font-weight: 700;
+    letter-spacing: 0.2px;
+    line-height: 1.1;
+    color: #fff;
+    white-space: nowrap;
+    animation: spineMarquee 12s linear infinite;
+  }
+  @keyframes spineMarquee {
+    0% { transform: translateX(100%); }
+    100% { transform: translateX(-100%); }
+  }
+  .spine .count { font-size: 7px; opacity: 0.7; font-weight: 600; flex-shrink: 0; color: rgba(255,255,255,0.6); }
+
+  .shelf-fade {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    width: 24px;
+    background: linear-gradient(90deg, transparent, var(--bg));
+    pointer-events: none;
+    z-index: 10;
+  }
+  .shelf-board {
+    height: 5px;
+    margin: 0 4px;
+    border-radius: 0 0 4px 4px;
+    background: linear-gradient(180deg, #8a6a2e, #5c4720);
+    box-shadow: 0 4px 8px rgba(0,0,0,0.45);
+  }
+
+  /* ===== ПОДКАТЕГОРИИ + ПОИСК ===== */
+  .subcategories-section {
+    padding: 6px 0 6px;
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: 6px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 0;
+    overflow-x: auto;
+    scrollbar-width: none;
+    background: var(--bg);
+  }
+  .subcategories-section::-webkit-scrollbar { display: none; }
+  .subcategory-chip {
+    padding: 4px 10px;
+    border-radius: 20px;
+    background: var(--card2);
+    border: 1px solid var(--border);
+    color: var(--muted);
+    font-size: 10px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+  .subcategory-chip:hover {
+    background: var(--gold);
+    color: #1b1202;
+    border-color: var(--gold);
+    transform: scale(1.02);
+  }
+  .subcategory-chip.active {
+    background: var(--gold);
+    color: #1b1202;
+    border-color: var(--gold);
+  }
+
+  .kh-search {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: radial-gradient(ellipse at 30% 30%, #F8EFD9, #E9D8AE 80%);
+    border: 1px solid rgba(201,168,76,0.25);
+    border-radius: 8px;
+    padding: 4px 8px;
+    flex-shrink: 0;
+    margin-left: auto;
+    box-shadow: inset 0 0 10px rgba(120,90,40,0.15);
+    transition: all 0.3s ease;
+  }
+  .kh-search:focus-within {
+    box-shadow: inset 0 0 12px rgba(120,90,40,0.25), 0 0 8px rgba(201,168,76,0.2);
+    border-color: rgba(201,168,76,0.4);
+  }
+  .kh-search svg { flex-shrink: 0; opacity: 0.7; width: 12px; height: 12px; }
+  .kh-search input {
+    flex: 1;
+    background: transparent;
+    border: none;
+    outline: 0;
+    color: #3d2a15;
+    font-size: 10px;
+    font-weight: 500;
+    font-family: inherit;
+    min-width: 50px;
+    width: 80px;
+  }
+  .kh-search input::placeholder { color: #8b7355; opacity: 0.6; }
+
+  /* ===== СЕТКА КНИГ ===== */
+  .books-section {
+    padding: 8px 0 0;
+  }
+  .books-grid12 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    padding-bottom: 10px;
+  }
+
+  .bk {
+    position: relative;
+    aspect-ratio: 0.72;
+    width: 100%;
+    max-width: 122px;
+    justify-self: center;
+  }
+
+  .bk-cover {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    border-radius: 4px 8px 8px 4px;
+    box-shadow: 0 5px 12px rgba(0,0,0,0.4), 0 1px 3px rgba(0,0,0,0.3);
+    transform: rotateY(-3deg);
+    transform-origin: left center;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    cursor: pointer;
+    background: var(--card2);
+  }
+  .bk:hover .bk-cover {
+    transform: rotateY(-2deg) scale(1.03);
+    box-shadow: 0 7px 16px rgba(0,0,0,0.45), 0 2px 4px rgba(0,0,0,0.3);
+  }
+  .bk-cover img {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    z-index: 1;
+  }
+  .bk-cover::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    border-radius: 4px 0 0 4px;
+    background: linear-gradient(90deg, rgba(0,0,0,0.4), rgba(255,255,255,0.06));
+    z-index: 3;
+    pointer-events: none;
+  }
+  .bk-cover::after {
+    content: '';
+    position: absolute;
+    right: -2px;
+    top: 5%;
+    bottom: 5%;
+    width: 2px;
+    border-radius: 0 5px 5px 0;
+    background: linear-gradient(90deg, #fff8e6, #d8ccb0);
+    z-index: 0;
+    opacity: 0.7;
+    pointer-events: none;
+  }
+
+  .bk-foil {
+    position: relative;
+    z-index: 2;
+    margin: 0 4px 6px;
+    background: rgba(0,0,0,0.7);
+    border-top: 1px solid rgba(255,215,120,0.45);
+    border-bottom: 1px solid rgba(255,215,120,0.35);
+    padding: 4px 2px;
+    text-align: center;
+    font-size: 9px;
+    font-weight: 700;
+    color: var(--gold2);
+    letter-spacing: 0.3px;
+    line-height: 1.2;
+    overflow: hidden;
+    white-space: nowrap;
+  }
+  .bk-foil .marquee-text {
+    display: inline-block;
+    animation: bookMarquee 10s linear infinite;
+    padding-left: 100%;
+  }
+  @keyframes bookMarquee {
+    0% { transform: translateX(0%); }
+    100% { transform: translateX(-100%); }
+  }
+
+  .rating-badge {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+    z-index: 4;
+    background: rgba(0,0,0,0.65);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 8px;
+    color: var(--gold);
+    font-weight: 700;
+    pointer-events: none;
+    backdrop-filter: blur(2px);
+    line-height: 1;
+  }
+  .size-badge {
+    position: absolute;
+    top: 4px;
+    left: 4px;
+    z-index: 4;
+    background: rgba(0,0,0,0.65);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 8px;
+    color: #aac;
+    font-weight: 600;
+    pointer-events: none;
+    backdrop-filter: blur(2px);
+    line-height: 1;
+  }
+  .bk-ribbon {
+    position: absolute;
+    top: -3px;
+    right: 10px;
+    width: 6px;
+    height: 10px;
+    z-index: 4;
+    clip-path: polygon(0 0, 100% 0, 100% 80%, 50% 100%, 0 80%);
+    opacity: 0.85;
+    background: var(--gold);
+  }
+
+  /* ===== БЛОК ДЕЙСТВИЙ ПОВЕРХ ОБЛОЖКИ ===== */
+  .bk-actions {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 10;
+    background: rgba(0,0,0,0.75);
+    backdrop-filter: blur(4px);
+    border-radius: 4px 8px 8px 4px;
+    flex-wrap: wrap;
+    align-content: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 8px;
+    transition: opacity 0.25s ease;
+  }
+  .bk-actions.open { display: flex; }
+  .bk-actions .btn {
+    padding: 5px 8px;
+    border-radius: 6px;
+    font-size: 9px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    transition: transform 0.12s ease, opacity 0.2s ease;
+    white-space: nowrap;
+    background: rgba(20,34,51,0.9);
+    color: #fff;
+    border: 1px solid rgba(255,255,255,0.15);
+  }
+  .bk-actions .btn:active { transform: scale(0.92); }
+  .bk-actions .btn-primary { background: linear-gradient(135deg,var(--gold),var(--gold2)); color:#1b1202; border-color:transparent; }
+  .bk-actions .btn-success { background:#2D7D4A; color:#fff; border-color:transparent; }
+  .bk-actions .btn-ghost { background:rgba(20,34,51,0.8); color:var(--text); }
+  .bk-actions .btn-close-actions {
+    position: absolute;
+    top: 4px;
+    right: 8px;
+    background: none;
+    border: none;
+    color: #fff;
+    font-size: 14px;
+    cursor: pointer;
+    opacity: 0.7;
+    padding: 0 4px;
+  }
+  .bk-actions .btn-close-actions:hover { opacity: 1; }
+
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 92px;
+    transform: translateX(-50%) translateY(20px);
+    opacity: 0;
+    transition: .25s;
+    z-index: 200;
+    background: var(--glass);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 10px 14px;
+    max-width: 88%;
+    text-align: center;
+    font-size: 12px;
+    box-shadow: 0 12px 30px var(--shadow);
+  }
+  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+  .loader {
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    border: 3px solid rgba(201,168,76,0.18);
+    border-top-color: var(--gold);
+    animation: spin 1s linear infinite;
+    margin: 18px auto;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .empty {
+    color: var(--muted);
+    text-align: center;
+    padding: 28px 12px;
+    border: 1px dashed var(--border);
+    border-radius: 18px;
+    background: rgba(255,255,255,0.03);
+    grid-column: 1 / -1;
+  }
+
+  /* ================================================================
+     НАВИГАЦИЯ 430×52 (прямые углы) – единая для всех страниц
+     ================================================================ */
+  .nav-bottom {
+    position: relative;
+    width: 100%;
+    height: 52px;
+    flex: 0 0 52px;
+    background: linear-gradient(180deg,
+        rgba(20, 34, 51, 0.40) 0%,
+        rgba(20, 34, 51, 0.35) 20%,
+        rgba(20, 34, 51, 0.30) 40%,
+        rgba(20, 34, 51, 0.25) 60%,
+        rgba(20, 34, 51, 0.20) 75%,
+        rgba(20, 34, 51, 0.10) 90%,
+        rgba(20, 34, 51, 0.05) 100%
+      );
+    backdrop-filter: blur(6px);
+    border-top: 1px solid rgba(201, 168, 76, 0.06);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 4px;
+    overflow: visible;
+    z-index: 2;
+  }
+
+  .nav-bottom::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent,
+        #D01F2F,
+        #FFFFFF,
+        #1FA463,
+        #D01F2F,
+        #FFFFFF,
+        #1FA463,
+        transparent
+      );
+    background-size: 300% 100%;
+    animation: flagFlow 6s ease-in-out infinite alternate;
+    border-radius: 0 0 2px 2px;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.9;
+  }
+
+  @keyframes flagFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .kh-nav2 {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    gap: 2px;
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: #7FA9A8;
+    padding: 0 2px;
+    transition: color 0.3s;
+    font-size: 0;
+    flex: 1;
+    text-decoration: none;
+  }
+
+  .nav-item span {
+    font-size: 9px;
+    color: inherit;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+
+  .nav-item svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    color: inherit;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.35s ease;
+  }
+
+  .nav-item.active {
+    color: #D9B23C;
+  }
+
+  .nav-item.active svg {
+    transform: scale(1.2);
+    color: #D9B23C;
+  }
+
+  .person-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+  .person-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .book-in-hand {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    width: 10px;
+    height: 12px;
+    background: #D9B23C;
+    border-radius: 2px 3px 3px 2px;
+    opacity: 0;
+    transform: translateX(8px) scale(0.5) rotate(-10deg);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .book-in-hand::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 3px;
+    height: 6px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 1px;
+    box-shadow: 4px 0 0 rgba(255,255,255,0.15);
+  }
+  .nav-item.active .book-in-hand {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+  }
+
+  .crown-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+  .crown-wrap svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .crown-icon {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    font-size: 10px;
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 0 4px rgba(217, 178, 60, 0.6));
+  }
+  .nav-item.active .crown-icon {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  .like-wrap {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto;
+  }
+  .like-icon {
+    position: absolute;
+    font-size: 10px;
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .like-icon.heart1 { top: -8px; left: -4px; transform: scale(0) rotate(-20deg); }
+  .like-icon.heart2 { top: -11px; left: 6px; transform: scale(0) rotate(20deg); }
+  .like-icon.heart3 { top: -2px; left: 2px; transform: scale(0) rotate(0deg); }
+  .nav-item.active .like-icon { opacity: 1; transform: scale(1) rotate(0deg); }
+  .nav-item.active .like-icon.heart1 { transition-delay: 0.05s; }
+  .nav-item.active .like-icon.heart2 { transition-delay: 0.15s; }
+  .nav-item.active .like-icon.heart3 { transition-delay: 0.25s; }
+
+  .users-wrap {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    margin: 0 auto;
+  }
+  .person {
+    position: absolute;
+    top: 0;
+    width: 14px;
+    height: 18px;
+    transition: transform 0.4s ease;
+  }
+  .person::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 12px;
+    height: 10px;
+    border-radius: 5px 5px 0 0;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person.p1 { left: 0; }
+  .person.p2 { right: 0; }
+  .nav-item.active .person.p1 { transform: translateX(8px); }
+  .nav-item.active .person.p2 { transform: translateX(-8px); }
+  .nav-item.active .person::before,
+  .nav-item.active .person::after { background: #D9B23C; }
+  .heart-pop {
+    position: absolute;
+    top: -11px;
+    left: 15px;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: scale(0.5);
+  }
+  .nav-item.active .heart-pop { opacity: 1; transform: scale(1); }
+
+  .profile-wrap {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    margin: 0 auto;
+  }
+  .person-group {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .person-small {
+    position: absolute;
+    top: 0;
+    width: 12px;
+    height: 17px;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .person-small::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person-small::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 10px;
+    height: 8px;
+    border-radius: 4px 4px 0 0;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person-small.ps1 { left: 0; }
+  .person-small.ps2 { left: 50%; transform: translateX(-50%); }
+  .person-small.ps3 { right: 0; }
+  .nav-item.active .person-small.ps1 { transform: translateX(10px) scale(0.8); }
+  .nav-item.active .person-small.ps2 { transform: translateX(0) scale(1.1); }
+  .nav-item.active .person-small.ps3 { transform: translateX(-10px) scale(0.8); }
+  .nav-item.active .person-small::before,
+  .nav-item.active .person-small::after { background: #D9B23C; }
+
+  /* ===== СВЕТЛАЯ ТЕМА ===== */
+  .light-theme .shelf-fade { background: linear-gradient(90deg, transparent, var(--bg)); }
+  .light-theme .shelf-board { background: linear-gradient(180deg, #b8953a, #8a6a2e); }
+  .light-theme .kh-search { background: radial-gradient(ellipse at 30% 30%, #ffffff, #f0e6d0 80%); }
+  .light-theme .subcategory-chip { background: var(--card); color: var(--text); }
+  .light-theme .subcategory-chip.active { background: var(--gold); color: #1b1202; }
+</style>
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ (без верхней панели) ===== -->
+  <div class="content-wrapper" id="contentWrapper">
+
+    <!-- STICKY HEADER (категории + подкатегории) -->
+    <div class="sticky-header">
+      <!-- SHELF (категории) -->
+      <div class="shelf-section">
+        <div class="shelf-wrap">
+          <div class="shelf-row" id="shelfRow"><div class="loader" style="margin:10px auto;"></div></div>
+          <div class="shelf-fade"></div>
+        </div>
+        <div class="shelf-board"></div>
+      </div>
+
+      <!-- ПОДКАТЕГОРИИ + ПОИСК -->
+      <div class="subcategories-section" id="subcatContainer">
+        <div class="kh-search">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2.5">
+            <circle cx="11" cy="11" r="6"></circle>
+            <line x1="20" y1="20" x2="14.5" y2="14.5"></line>
+          </svg>
+          <input type="text" id="searchInput" placeholder="Ҷустуҷӯ...">
+        </div>
+      </div>
+    </div>
+
+    <!-- BOOKS GRID -->
+    <div class="books-section">
+      <div class="books-grid12" id="booksGrid">
+        <div class="loader" style="grid-column:1/-1;"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== НАВИГАЦИЯ (единая, 6 пунктов) ===== -->
+  <div class="nav-bottom">
+    <div class="kh-nav2">
+
+      <!-- Асосӣ -->
+      <a class="nav-item" href="index.html" aria-label="Асосӣ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 11l9-8 9 8"></path>
+          <path d="M5 10v10h14V10"></path>
+          <path d="M9 20v-6h6v6"></path>
+        </svg>
+        <span>Асосӣ</span>
+      </a>
+
+      <!-- Китобхо (активный) -->
+      <a class="nav-item active" href="kitobho.html" aria-label="Китобхо">
+        <div class="person-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
+          </svg>
+          <div class="book-in-hand"></div>
+        </div>
+        <span>Китобхо</span>
+      </a>
+
+      <!-- Ғолибон -->
+      <a class="nav-item" href="winners.html" aria-label="Ғолибон">
+        <div class="crown-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
+          </svg>
+          <span class="crown-icon">👑</span>
+        </div>
+        <span>Ғолибон</span>
+      </a>
+
+      <!-- Лента -->
+      <a class="nav-item" href="Lenta.html" aria-label="Лента">
+        <div class="person-icon like-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
+          </svg>
+          <span class="like-icon heart1">❤️</span>
+          <span class="like-icon heart2">❤️</span>
+          <span class="like-icon heart3">❤️</span>
+        </div>
+        <span>Лента</span>
+      </a>
+
+      <!-- Чат -->
+      <a class="nav-item" href="chats.html" aria-label="Чат">
+        <div class="users-wrap">
+          <div class="person p1"></div>
+          <div class="person p2"></div>
+          <span class="heart-pop">❤️</span>
+        </div>
+        <span>Чат</span>
+      </a>
+
+      <!-- Профил -->
+      <a class="nav-item" href="profile.html" aria-label="Профил">
+        <div class="profile-wrap">
+          <div class="person-group">
+            <div class="person-small ps1"></div>
+            <div class="person-small ps2"></div>
+            <div class="person-small ps3"></div>
+          </div>
+        </div>
+        <span>Профил</span>
+      </a>
+
+    </div>
+  </div>
+
+</div>
+
+<script>
+  // ================================================================
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+  });
+
+  // ================================================================
+  // ============ ТЕМА (скрытое переключение, без иконки) ============
+  // ================================================================
+  (function initTheme() {
+    const saved = localStorage.getItem('kk_theme') || 'dark';
+    if (saved === 'light') document.body.classList.add('light-theme');
+  })();
+
+  // ================================================================
+  // ============ ОСНОВНЫЕ ПЕРЕМЕННЫЕ (оригинальные) ============
+  // ================================================================
+  const BOOKS_JSON_URLS = [
+    'books.json?t=' + Date.now(),
+    'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t=' + Date.now()
+  ];
+  const $ = id => document.getElementById(id);
+  const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
+  let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
+  let activeBookElement = null;
+
+  function getCoverCacheMap() {
+    try { return JSON.parse(localStorage.getItem('kk_cover_cache') || '{}'); } catch(e) { return {}; }
+  }
+  function setCoverCacheMap(map) {
+    try { localStorage.setItem('kk_cover_cache', JSON.stringify(map)); } catch(e) {}
+  }
+  function getCachedCoverDataUrl(url) {
+    if (!url) return '';
+    const map = getCoverCacheMap();
+    const item = map[url];
+    if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) return item.dataUrl;
+    return '';
+  }
+  function setCachedCoverDataUrl(url, dataUrl) {
+    if (!url || !dataUrl) return;
+    const map = getCoverCacheMap();
+    map[url] = { dataUrl, ts: Date.now() };
+    setCoverCacheMap(map);
+  }
+  function blobToDataUrl(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result || '');
+      reader.readAsDataURL(blob);
+    });
+  }
+  async function ensureCoverDataUrl(url, imgEl) {
+    if (!url) return '';
+    const cached = getCachedCoverDataUrl(url);
+    if (cached) {
+      if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached);
+      return cached;
+    }
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) return '';
+      const blob = await r.blob();
+      const dataUrl = await blobToDataUrl(blob);
+      setCachedCoverDataUrl(url, dataUrl);
+      if (imgEl) imgEl.setAttribute('src', dataUrl);
+      return dataUrl;
+    } catch(e) {
+      return '';
+    }
+  }
+  function getBookAccessState(url) {
+    const cached = !!cachedMap()[url];
+    const online = navigator.onLine;
+    if (!online) {
+      return cached
+        ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+        : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
+    }
+    return { show: false, icon: '', bg: '', dim: false };
+  }
+  function hydrateBookCardCovers(root = document) {
+    const nodes = root.querySelectorAll('img[data-cover-url]');
+    nodes.forEach(img => {
+      const cover = img.getAttribute('data-cover-url') || '';
+      const bookUrl = img.getAttribute('data-book-url') || '';
+      const state = getBookAccessState(bookUrl);
+      const coverSrc = getCachedCoverDataUrl(cover) || cover;
+      if (coverSrc && img.getAttribute('src') !== coverSrc) img.setAttribute('src', coverSrc);
+      if (state.show) {
+        const badge = img.parentElement?.querySelector('[data-book-badge]');
+        if (badge) {
+          badge.style.display = 'flex';
+          badge.textContent = state.icon;
+          badge.style.background = state.bg;
+        }
+        if (state.dim && img.style.filter !== 'brightness(0.72)') img.style.filter = 'brightness(0.72)';
+      } else {
+        const badge = img.parentElement?.querySelector('[data-book-badge]');
+        if (badge) badge.style.display = 'none';
+        img.style.filter = '';
+      }
+      if (cover) ensureCoverDataUrl(cover, img);
+    });
+  }
+
+  // ===== ЗАГРУЗКА BOOKS.JSON (оригинальная) =====
+  async function fetchJsonFast(u, ms = 4500) {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), ms);
+    try {
+      const r = await fetch(u, { cache: 'no-store', signal: ctrl.signal });
+      if (!r.ok) throw new Error('HTTP ' + r.status);
+      return await r.json();
+    } finally { clearTimeout(t); }
+  }
+  async function loadBooksJson() {
+    try {
+      const cached = localStorage.getItem('kk_booksjson_cache');
+      if (cached) {
+        const parsed = JSON.parse(cached);
+        if (parsed) {
+          DATA = parsed;
+          return DATA;
+        }
+      }
+    } catch(e) {}
+    for (const u of BOOKS_JSON_URLS) {
+      try {
+        DATA = await fetchJsonFast(u);
+        try { localStorage.setItem('kk_booksjson_cache', JSON.stringify(DATA)); } catch(_) {}
+        return DATA;
+      } catch(e) {}
+    }
+    try {
+      DATA = JSON.parse(localStorage.getItem('kk_booksjson_cache') || 'null');
+      if (DATA) return DATA;
+    } catch(e) {}
+    throw new Error('Пайвастшавӣ дастрас нест. Интернетро санҷед.');
+  }
+
+  function rawUrl(folder, file) {
+    return `https://raw.githubusercontent.com/${DATA.repo || 'sharipovip/books'}/${DATA.branch || 'main'}/${enc(folder)}/${encodeURIComponent(file)}`;
+  }
+
+  function coverCandidates(folder, file) {
+    const jpg = encodeURIComponent(file.replace(/\.pdf$/i, '.jpg'));
+    const clean = String(folder).replace(/^books\//, '');
+    const base = `https://raw.githubusercontent.com/${DATA.repo || 'sharipovip/books'}/${DATA.branch || 'main'}`;
+    return [
+      `${base}/covers/${enc(clean)}/${jpg}`,
+      `${base}/covers/books/${enc(clean)}/${jpg}`,
+      `${base}/covers/${enc(folder)}/${jpg}`
+    ];
+  }
+
+  async function fetchManifest(su) {
+    const key = su.folder;
+    if (manifestCache.has(key)) return manifestCache.get(key);
+    try {
+      const raw = localStorage.getItem('kk_manifest_cache');
+      if (raw) {
+        const parsed = JSON.parse(raw);
+        const cached = parsed[key];
+        if (Array.isArray(cached)) {
+          manifestCache.set(key, cached);
+          return cached;
+        }
+      }
+    } catch(e) {}
+    let list = [];
+    try {
+      const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+      if (r.ok) {
+        const j = await r.json();
+        list = Array.isArray(j.books) ? j.books : [];
+      }
+    } catch(e) {}
+    if (!list.length) {
+      try {
+        const api = `https://api.github.com/repos/${DATA.repo}/contents/${enc(su.folder)}?ref=${encodeURIComponent(DATA.branch)}`;
+        const arr = await fetch(api).then(r => r.ok ? r.json() : []);
+        list = (Array.isArray(arr) ? arr : []).filter(x => x.type === 'file' && /\.pdf$/i.test(x.name))
+          .map(x => ({ name: x.name.replace(/\.pdf$/i, ''), file: x.name, size: x.size || 0 }));
+      } catch(e) {}
+    }
+    manifestCache.set(key, list);
+    try {
+      const raw = localStorage.getItem('kk_manifest_cache');
+      const parsed = raw ? JSON.parse(raw) : {};
+      parsed[key] = list;
+      localStorage.setItem('kk_manifest_cache', JSON.stringify(parsed));
+    } catch(e) {}
+    return list;
+  }
+
+  // ===== РЕЙТИНГ =====
+  async function getBookStats(bookId) {
+    if (!bookId) return null;
+    try {
+      const token = localStorage.getItem('kk_token');
+      const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId), { headers });
+      if (!resp.ok) return null;
+      return await resp.json();
+    } catch(e) { return null; }
+  }
+
+  // ===== TOAST =====
+  function toast(msg, d = 2400) {
+    let t = document.querySelector('.toast');
+    if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), d);
+  }
+
+  // ===== КЭШ =====
+  function cachedMap() {
+    try { return JSON.parse(localStorage.getItem('kk_cached_books') || '{}'); } catch(e) { return {}; }
+  }
+  function isCached(url) { return !!cachedMap()[url]; }
+  function setCachedMap(o) { try { localStorage.setItem('kk_cached_books', JSON.stringify(o)); } catch(e) {} }
+  async function deleteCached(url) {
+    try { if ('caches' in window) { const c = await caches.open('kitobkhona-pdf-cache-v1'); await c.delete(url); } } catch(e) {}
+    const m = cachedMap(); delete m[url]; setCachedMap(m);
+  }
+
+  // ===== RENDER BOOKS (оригинальная) =====
+  function renderBooks(list) {
+    const grid = document.getElementById('booksGrid');
+    if (!list || !list.length) {
+      grid.innerHTML = '<div class="empty">Дар ин бахш ҳоло китоб дастрас нест</div>';
+      return;
+    }
+    closeActiveActions();
+
+    grid.innerHTML = list.map((b) => {
+      const file = b.file || ((b.name || 'book') + '.pdf');
+      const name = b.name || file.replace(/\.pdf$/i, '');
+      const url = rawUrl(sub?.folder || b.folder || '', file);
+      const coverList = coverCandidates(sub?.folder || b.folder || '', file);
+      const cover = coverList[0] || '';
+      const coverSrc = getCachedCoverDataUrl(cover) || cover;
+      const state = getBookAccessState(url);
+      const bookId = b.file || file;
+      const bgColor = randomColor();
+      const sizeMB = b.size ? (b.size / (1024*1024)).toFixed(1) : null;
+
+      return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(sub?.folder || b.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
+        <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
+          <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="this.style.display='none'">
+          <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:6px;right:6px;z-index:2;padding:4px 6px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
+          <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
+          <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>
+          <div class="rating-badge">⭐ ...</div>
+          ${sizeMB ? `<div class="size-badge">${sizeMB} МБ</div>` : ''}
+          <!-- Блок действий поверх обложки -->
+          <div class="bk-actions" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-bookid="${encodeURIComponent(bookId)}">
+            <button class="btn btn-close-actions" onclick="event.stopPropagation(); closeActiveActions();">✕</button>
+            <button class="btn btn-primary btn-read">📖 Хондан</button>
+            <button class="btn btn-ghost btn-favorite">⭐ Закладка</button>
+            <button class="btn btn-success btn-complete">✅ Хатм</button>
+            <button class="btn btn-ghost btn-download">⬇ Скачать</button>
+            <button class="btn btn-ghost btn-share">↗ Мубодила</button>
+          </div>
+        </div>
+      </div>`;
+    }).join('');
+
+    hydrateBookCardCovers(grid);
+
+    // Рейтинги
+    document.querySelectorAll('.bk').forEach(async (el) => {
+      const bookId = decodeURIComponent(el.dataset.bookid);
+      if (!bookId) return;
+      const stats = await getBookStats(bookId);
+      const badge = el.querySelector('.rating-badge');
+      if (stats && stats.avg_rating) {
+        const avg = parseFloat(stats.avg_rating);
+        badge.textContent = `⭐ ${avg.toFixed(1)} (${stats.ratings_count || 0})`;
+      } else {
+        badge.textContent = '⭐ —';
+      }
+    });
+
+    // Обработчики кнопок
+    document.querySelectorAll('.bk-actions').forEach(actions => {
+      const url = decodeURIComponent(actions.dataset.url);
+      const name = decodeURIComponent(actions.dataset.name);
+      const cover = decodeURIComponent(actions.dataset.cover);
+      const bookId = decodeURIComponent(actions.dataset.bookid);
+      const bk = actions.closest('.bk');
+      let book = {};
+      try { book = JSON.parse(decodeURIComponent(bk.dataset.bookjson)); } catch(e) {}
+
+      actions.querySelector('.btn-read').addEventListener('click', function(e) {
+        e.stopPropagation();
+        openReader(url, name, cover);
+      });
+      actions.querySelector('.btn-favorite').addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleFavorite(bookId, book, name, this);
+      });
+      actions.querySelector('.btn-complete').addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleComplete(bookId, book, name);
+      });
+      actions.querySelector('.btn-download').addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleDownload(url, name);
+      });
+      actions.querySelector('.btn-share').addEventListener('click', function(e) {
+        e.stopPropagation();
+        handleShare(url, name);
+      });
+    });
+  }
+
+  // ===== ОБРАБОТЧИКИ ДЕЙСТВИЙ (оригинальные) =====
+  function handleFavorite(bookId, book, name, btn) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) { alert('Лутфан ворид шавед'); return; }
+    const isFaved = btn.textContent.includes('✔');
+    (async () => {
+      try {
+        if (isFaved) {
+          const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites/' + encodeURIComponent(bookId || book.file), {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          if (resp.ok) { btn.textContent = '⭐ Закладка'; toast('Аз закладка хориҷ шуд'); }
+          else toast('Хатогӣ');
+        } else {
+          const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites', {
+            method: 'POST',
+            headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+            body: JSON.stringify({ book_id: bookId || book.file, book_title: name, book_author: book.author || '' })
+          });
+          if (resp.ok) { btn.textContent = '⭐ Закладка (✔)'; toast('Ба закладка илова шуд'); }
+          else toast('Хатогӣ');
+        }
+      } catch(e) { toast('Хатогӣ'); }
+    })();
+  }
+  function handleComplete(bookId, book, name) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) { alert('Лутфан ворид шавед'); return; }
+    (async () => {
+      try {
+        const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
+          method: 'POST',
+          headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+          body: JSON.stringify({ book_id: bookId || book.file, book_title: name, book_author: book.author || '', duration: 0, status: 'completed', pages_read: 0 })
+        });
+        if (resp.ok) toast('✅ Китоб ҳамчун хатмшуда сабт шуд');
+        else { const err = await resp.json(); toast('Хатогӣ: ' + (err.error || '')); }
+      } catch(e) { toast('Хатогӣ'); }
+    })();
+  }
+  function handleDownload(url, name) {
+    (async () => {
+      const cached = isCached(url);
+      if (cached) {
+        if (confirm('Ин китоб аллакай ҳифз шудааст. Нест карда шавад?')) {
+          await deleteCached(url);
+          toast('Аз ҳифзшудаҳо нест шуд');
+          renderBooks(books);
+        }
+        return;
+      }
+      await downloadFile(url, name, true);
+    })();
+  }
+  function handleShare(url, name) {
+    toast('Омодасозии китоб...');
+    shareFile(url, name);
+  }
+  function openReader(url, name, cover = '') {
+    url = decodeURIComponent(url); name = decodeURIComponent(name); cover = decodeURIComponent(cover || '');
+    if (!navigator.onLine && !isCached(url)) { toast('Ин китоб ҳоло дастрас нест, зеро интернет нест ва китоб ҳифз нашудааст.'); return; }
+    location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
+  }
+
+  function randomColor() {
+    const colors = ['#4A3A5C','#1E5C58','#5C2A2A','#2E3A5C','#6B4A2A','#2A4D2E','#4D2A4D','#1E3350','#5C4720','#3A2E4A','#1E4D4A','#4A2A2A'];
+    return colors[Math.floor(Math.random() * colors.length)];
+  }
+
+  // ===== УПРАВЛЕНИЕ АКТИВНЫМИ КНОПКАМИ =====
+  function closeActiveActions() {
+    if (activeBookElement) {
+      const actions = activeBookElement.querySelector('.bk-actions');
+      if (actions) actions.classList.remove('open');
+      activeBookElement = null;
+    }
+  }
+  function toggleBookActions(bk) {
+    if (!bk) return;
+    const actions = bk.querySelector('.bk-actions');
+    if (!actions) return;
+    if (activeBookElement === bk) {
+      closeActiveActions();
+      return;
+    }
+    closeActiveActions();
+    actions.classList.add('open');
+    activeBookElement = bk;
+  }
+  document.getElementById('contentWrapper').addEventListener('scroll', closeActiveActions);
+  document.addEventListener('click', function(e) {
+    if (!e.target.closest('.bk')) closeActiveActions();
+  });
+
+  // ===== КАТЕГОРИИ =====
+  function renderCategories(cats) {
+    const row = document.getElementById('shelfRow');
+    row.innerHTML = cats.map((c, i) => {
+      const active = i === 0 ? 'active' : '';
+      const subsCount = (c.subs || []).length;
+      const label = esc(c.name);
+      return `<button class="spine ${active}" data-cat-id="${c.id}" style="background:linear-gradient(180deg, ${c.color1 || '#1E3350'}, ${c.color2 || '#142236'});">
+        <div class="icon">${c.emoji || '📚'}</div>
+        <div class="label-wrap"><span class="label">${label}</span></div>
+        <div class="count">${subsCount}</div>
+      </button>`;
+    }).join('');
+
+    const params = new URLSearchParams(window.location.search);
+    const urlCat = params.get('cat');
+    const savedCatId = localStorage.getItem('kk_selected_category');
+    let targetCat = null;
+    if (urlCat) {
+      targetCat = cats.find(c =>
+        c.id === urlCat ||
+        c.folder === urlCat ||
+        c.folder_raw === urlCat ||
+        c.name === urlCat ||
+        c.slug === urlCat
+      );
+      if (targetCat) {
+        localStorage.setItem('kk_selected_category', targetCat.id);
+      }
+    }
+    if (!targetCat && savedCatId) targetCat = cats.find(c => c.id === savedCatId);
+    if (!targetCat && cats.length) targetCat = cats[0];
+
+    row.querySelectorAll('.spine').forEach(btn => {
+      btn.addEventListener('click', function() {
+        row.querySelectorAll('.spine').forEach(b => b.classList.remove('active'));
+        this.classList.add('active');
+        const catId = this.dataset.catId;
+        localStorage.setItem('kk_selected_category', catId);
+        const selected = CATS.find(c => c.id === catId);
+        if (selected) {
+          cat = selected;
+          sub = selected.subs?.[0] || null;
+          renderSubcategories(selected);
+          if (sub) loadBooksForSubcategory(sub);
+          else document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
+        }
+      });
+    });
+
+    if (targetCat) {
+      const btn = row.querySelector(`[data-cat-id="${targetCat.id}"]`);
+      if (btn) {
+        row.querySelectorAll('.spine').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        cat = targetCat;
+        sub = targetCat.subs?.[0] || null;
+        renderSubcategories(targetCat);
+        if (sub) loadBooksForSubcategory(sub);
+        else document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
+      }
+    } else if (cats.length) {
+      const first = cats[0];
+      const firstBtn = row.querySelector(`[data-cat-id="${first.id}"]`);
+      if (firstBtn) {
+        firstBtn.classList.add('active');
+        cat = first;
+        sub = first.subs?.[0] || null;
+        renderSubcategories(first);
+        if (sub) loadBooksForSubcategory(sub);
+        else document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
+      }
+    }
+  }
+
+  // ===== ПОДКАТЕГОРИИ =====
+  function renderSubcategories(cat) {
+    const container = document.getElementById('subcatContainer');
+    const search = container.querySelector('.kh-search');
+    container.innerHTML = '';
+    if (!cat.subs || !cat.subs.length) {
+      container.innerHTML = '<span style="color:var(--muted);font-size:10px;padding:4px 0;">—</span>';
+      container.appendChild(search);
+      return;
+    }
+
+    const savedSubIdx = parseInt(localStorage.getItem('kk_selected_sub_index')) || 0;
+    let activeIdx = 0;
+    if (!isNaN(savedSubIdx) && savedSubIdx < cat.subs.length) activeIdx = savedSubIdx;
+
+    cat.subs.forEach((s, idx) => {
+      const chip = document.createElement('span');
+      chip.className = 'subcategory-chip' + (idx === activeIdx ? ' active' : '');
+      chip.textContent = s.name || s.folder;
+      chip.dataset.subIndex = idx;
+      chip.addEventListener('click', function() {
+        container.querySelectorAll('.subcategory-chip').forEach(ch => ch.classList.remove('active'));
+        this.classList.add('active');
+        const idx = parseInt(this.dataset.subIndex);
+        localStorage.setItem('kk_selected_sub_index', idx);
+        sub = cat.subs[idx];
+        loadBooksForSubcategory(sub);
+      });
+      container.appendChild(chip);
+    });
+    container.appendChild(search);
+
+    if (cat.subs[activeIdx]) {
+      sub = cat.subs[activeIdx];
+      loadBooksForSubcategory(sub);
+    }
+  }
+
+  // ===== ЗАГРУЗКА КНИГ (с кэшированием) =====
+  async function loadBooksForSubcategory(sub) {
+    const grid = document.getElementById('booksGrid');
+    const cacheKey = 'kk_books_' + sub.folder;
+    // Пытаемся взять из кэша
+    let list = CacheManager ? CacheManager.get(cacheKey) : null;
+    if (list) {
+      books = list;
+      renderBooks(list);
+      return;
+    }
+    // Если нет в кэше – загружаем
+    grid.innerHTML = '<div class="loader" style="grid-column:1/-1;"></div>';
+    try {
+      list = await fetchManifest(sub);
+      books = list;
+      renderBooks(list);
+      // Сохраняем в кэш
+      if (CacheManager) CacheManager.set(cacheKey, list);
+    } catch(e) {
+      grid.innerHTML = '<div class="empty">Хатогӣ: ' + esc(e.message) + '</div>';
+    }
+  }
+
+  // ===== ПОИСК =====
+  const searchInput = document.getElementById('searchInput');
+  let searchDebounceTimer = null;
+  searchInput.addEventListener('input', function() {
+    clearTimeout(searchDebounceTimer);
+    searchDebounceTimer = setTimeout(() => {
+      const q = this.value.trim().toLowerCase();
+      if (!q) {
+        renderBooks(books);
+        return;
+      }
+      const filtered = books.filter(b => (b.name || b.file || '').toLowerCase().includes(q));
+      renderBooks(filtered);
+    }, 180);
+  });
+
+  // ===== ЗАПУСК =====
+  (async function init() {
+    try {
+      await loadBooksJson();
+      CATS = DATA.categories || [];
+      if (!CATS.length) throw new Error('Категория нест');
+      renderCategories(CATS);
+    } catch(e) {
+      document.getElementById('booksGrid').innerHTML = '<div class="empty">'+esc(e.message)+'</div>';
+    }
+  })();
+
+  // ===== ВСПОМОГАТЕЛЬНАЯ esc =====
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+  }
+</script>
+</body>
+</html>

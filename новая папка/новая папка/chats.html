@@ -1,0 +1,1161 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Китобхона — Чатҳо</title>
+<script src="config.js"></script>
+<script src="cache.js"></script>
+<style>
+  /* ================================================================
+     ЕДИНЫЙ СТИЛЬ (все стили внутри)
+     ================================================================ */
+  * {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+  }
+
+  :root {
+    --bg: #0D1B2A;
+    --bg2: #142236;
+    --card: #1A2D44;
+    --card2: #1E3350;
+    --gold: #C9A84C;
+    --gold2: #E8C96D;
+    --text: #F0EAD6;
+    --muted: #A8B8CC;
+    --dim: #6B7F96;
+    --border: rgba(201,168,76,0.18);
+    --shadow: rgba(0,0,0,0.4);
+    --gold-soft: rgba(201,168,76,0.14);
+    --green-soft: rgba(79,157,112,0.16);
+    --red-soft: rgba(189,86,80,0.16);
+    --teal-soft: rgba(76,146,174,0.16);
+    --green: #4F9D70;
+    --red: #BD5650;
+  }
+
+  .light-theme {
+    --bg: #F5F0E8;
+    --bg2: #EDE6D6;
+    --card: #fff;
+    --card2: #FAF7F0;
+    --text: #1A2D44;
+    --muted: #4A5D73;
+    --dim: #8A9AAD;
+    --shadow: rgba(0,0,0,0.12);
+    --gold-soft: rgba(182,134,58,0.12);
+    --green-soft: rgba(63,126,88,0.12);
+    --red-soft: rgba(168,70,63,0.12);
+    --teal-soft: rgba(56,110,131,0.12);
+  }
+
+  html, body {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    color: var(--text);
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+  }
+
+  .app {
+    width: 430px;
+    height: 100vh;
+    max-height: 100vh;
+    background: var(--bg);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    position: relative;
+    border-radius: 0 !important; /* прямые углы */
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+  }
+
+  /* ===== ВЕРХНЯЯ ПАНЕЛЬ (как в Lenta) ===== */
+  .top-app-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 16px 8px;
+    flex: 0 0 auto;
+    border-bottom: 1px solid var(--border);
+  }
+  .brand-mini {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .brand-mini svg {
+    width: 28px;
+    height: 28px;
+  }
+  .brand-mini span {
+    font-family: 'Noto Serif', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--gold);
+  }
+  .top-actions {
+    display: flex;
+    gap: 6px;
+  }
+  .icon-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    color: var(--gold);
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .icon-btn:hover {
+    background: var(--card2);
+  }
+
+  /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+  .screen-area {
+    flex: 1 1 auto;
+    overflow: hidden;
+    position: relative;
+  }
+  .screen {
+    position: absolute;
+    inset: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    padding: 0 16px 12px;
+    scrollbar-width: thin;
+    scrollbar-color: rgba(201,168,76,0.2) transparent;
+  }
+  .screen::-webkit-scrollbar {
+    width: 4px;
+  }
+  .screen::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  .screen::-webkit-scrollbar-thumb {
+    background: rgba(201,168,76,0.2);
+    border-radius: 2px;
+  }
+
+  /* ===== ОРИГИНАЛЬНЫЕ СТИЛИ (адаптированы) ===== */
+  .ornament {
+    height: 10px;
+    margin: 12px 0 4px;
+    background-image: radial-gradient(circle, var(--gold) 1.4px, transparent 1.6px);
+    background-size: 14px 10px;
+    background-position: center;
+    opacity: 0.55;
+    -webkit-mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+    mask-image: linear-gradient(90deg, transparent, #000 12%, #000 88%, transparent);
+  }
+
+  .search {
+    margin: 8px 0 4px 0;
+    height: 46px;
+    border-radius: 16px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 0 16px;
+    flex: none;
+  }
+  .search input {
+    background: none;
+    border: none;
+    outline: none;
+    color: var(--text);
+    font-family: inherit;
+    font-size: 14.5px;
+    width: 100%;
+  }
+  .search input::placeholder {
+    color: var(--dim);
+  }
+
+  .section-label {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 20px 0 10px 0;
+  }
+  .section-label .t {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 1.1px;
+    text-transform: uppercase;
+    color: var(--gold2);
+  }
+  .section-label .count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12px;
+    color: var(--dim);
+  }
+
+  .requests-row {
+    display: flex;
+    gap: 12px;
+    overflow-x: auto;
+    padding: 2px 0 6px 0;
+  }
+  .requests-row::-webkit-scrollbar {
+    display: none;
+  }
+
+  .req-card {
+    flex: none;
+    width: 128px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 18px;
+    padding: 14px 12px 12px 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+  }
+  .req-avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--bg2);
+  }
+  .req-name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+    text-align: center;
+  }
+  .req-actions {
+    display: flex;
+    gap: 6px;
+    width: 100%;
+  }
+  .btn-mini {
+    flex: 1;
+    height: 28px;
+    border-radius: 9px;
+    border: none;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+  }
+  .btn-mini.accept {
+    background: var(--gold);
+    color: #1c1404;
+  }
+  .btn-mini.decline {
+    background: rgba(232,222,199,0.07);
+    color: var(--dim);
+    border: 1px solid var(--border);
+  }
+
+  .divider-soft {
+    height: 1px;
+    background: var(--border);
+    margin: 18px 0 4px 0;
+  }
+
+  .chat-list {
+    padding: 6px 0 0 0;
+  }
+
+  .chat-item {
+    display: flex;
+    align-items: center;
+    gap: 13px;
+    padding: 12px 4px;
+    margin: 4px 0;
+    border-radius: 18px;
+    cursor: pointer;
+  }
+  .chat-item:active {
+    background: var(--card);
+  }
+
+  .avatar-wrap {
+    position: relative;
+    flex: none;
+  }
+  .avatar {
+    width: 54px;
+    height: 54px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 18px;
+    color: #1c1404;
+  }
+  .avatar.ring {
+    box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4px var(--gold);
+  }
+  .online-dot {
+    position: absolute;
+    right: 1px;
+    bottom: 1px;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background: var(--green);
+    border: 2.5px solid var(--bg);
+  }
+
+  .chat-mid {
+    flex: 1;
+    min-width: 0;
+  }
+  .chat-top {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px;
+  }
+  .chat-name {
+    font-size: 15.5px;
+    font-weight: 700;
+    color: var(--text);
+  }
+  .chat-time {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--dim);
+    flex: none;
+  }
+  .chat-time.unread {
+    color: var(--gold2);
+    font-weight: 600;
+  }
+
+  .chat-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-top: 3px;
+  }
+  .chat-msg {
+    font-size: 13.5px;
+    color: var(--dim);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .chat-msg.unread-text {
+    color: var(--text);
+    font-weight: 500;
+  }
+  .chat-msg .you {
+    color: var(--dim);
+  }
+
+  .badge {
+    flex: none;
+    min-width: 20px;
+    height: 20px;
+    border-radius: 10px;
+    background: var(--gold);
+    color: #1c1404;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0 6px;
+  }
+
+  .empty-hint {
+    margin: 8px 0 0 0;
+    padding: 14px 16px;
+    border-radius: 16px;
+    background: var(--gold-soft);
+    border: 1px solid rgba(212,169,74,0.28);
+    font-size: 12.5px;
+    color: var(--gold2);
+    line-height: 1.5;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    border-radius: 14px;
+    font-family: inherit;
+    font-size: 14px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    text-align: center;
+  }
+  .btn-primary {
+    background: linear-gradient(180deg, #E8C778, #B68B33);
+    color: #1A1206;
+    box-shadow: 0 10px 22px -8px rgba(220,181,94,0.55);
+  }
+  .btn-outline {
+    background: transparent;
+    color: var(--text);
+    border: 1.4px solid rgba(220,181,94,0.45);
+  }
+
+  .c1 {
+    background: linear-gradient(135deg, #E8C879, #C9933A);
+  }
+  .c2 {
+    background: linear-gradient(135deg, #7FB8A0, #3F9E63);
+  }
+  .c3 {
+    background: linear-gradient(135deg, #E0958C, #C85850);
+  }
+  .c4 {
+    background: linear-gradient(135deg, #9AB6D9, #4E7AA8);
+  }
+  .c5 {
+    background: linear-gradient(135deg, #D4A94A, #9C7327);
+  }
+  .c6 {
+    background: linear-gradient(135deg, #B79AD9, #7551A8);
+  }
+
+  .loading-spinner {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px 0;
+    color: var(--dim);
+    gap: 10px;
+  }
+  .spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid var(--border);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin {
+    to { transform: rotate(360deg); }
+  }
+
+  /* ================================================================
+     НАВИГАЦИЯ 430×52 (прямые углы) – единая для всех страниц
+     ================================================================ */
+  .nav-bottom {
+    position: relative;
+    width: 100%;
+    height: 52px;
+    flex: 0 0 52px;
+    background: linear-gradient(180deg,
+        rgba(20, 34, 51, 0.40) 0%,
+        rgba(20, 34, 51, 0.35) 20%,
+        rgba(20, 34, 51, 0.30) 40%,
+        rgba(20, 34, 51, 0.25) 60%,
+        rgba(20, 34, 51, 0.20) 75%,
+        rgba(20, 34, 51, 0.10) 90%,
+        rgba(20, 34, 51, 0.05) 100%
+      );
+    backdrop-filter: blur(6px);
+    border-top: 1px solid rgba(201, 168, 76, 0.06);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 0 4px;
+    overflow: visible;
+    z-index: 2;
+  }
+
+  .nav-bottom::after {
+    content: '';
+    position: absolute;
+    left: 10px;
+    right: 10px;
+    bottom: 0;
+    height: 2px;
+    background: linear-gradient(90deg,
+        transparent,
+        #D01F2F,
+        #FFFFFF,
+        #1FA463,
+        #D01F2F,
+        #FFFFFF,
+        #1FA463,
+        transparent
+      );
+    background-size: 300% 100%;
+    animation: flagFlow 6s ease-in-out infinite alternate;
+    border-radius: 0 0 2px 2px;
+    z-index: 3;
+    pointer-events: none;
+    opacity: 0.9;
+  }
+
+  @keyframes flagFlow {
+    0% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
+
+  .kh-nav2 {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: 100%;
+    height: 100%;
+    position: relative;
+    z-index: 2;
+    gap: 2px;
+  }
+
+  .nav-item {
+    background: none;
+    border: none;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    color: #7FA9A8;
+    padding: 0 2px;
+    transition: color 0.3s;
+    font-size: 0;
+    flex: 1;
+    text-decoration: none;
+  }
+
+  .nav-item span {
+    font-size: 9px;
+    color: inherit;
+    font-weight: 500;
+    line-height: 1;
+    letter-spacing: 0.1px;
+    white-space: nowrap;
+  }
+
+  .nav-item svg {
+    display: block;
+    width: 18px;
+    height: 18px;
+    color: inherit;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.35s ease;
+  }
+
+  .nav-item.active {
+    color: #D9B23C;
+  }
+
+  .nav-item.active svg {
+    transform: scale(1.2);
+    color: #D9B23C;
+  }
+
+  .person-icon {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+  .person-icon svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  .book-in-hand {
+    position: absolute;
+    bottom: -2px;
+    right: -4px;
+    width: 10px;
+    height: 12px;
+    background: #D9B23C;
+    border-radius: 2px 3px 3px 2px;
+    opacity: 0;
+    transform: translateX(8px) scale(0.5) rotate(-10deg);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+  }
+  .book-in-hand::before {
+    content: '';
+    position: absolute;
+    left: 2px;
+    top: 2px;
+    width: 3px;
+    height: 6px;
+    background: rgba(255,255,255,0.3);
+    border-radius: 1px;
+    box-shadow: 4px 0 0 rgba(255,255,255,0.15);
+  }
+  .nav-item.active .book-in-hand {
+    opacity: 1;
+    transform: translateX(0) scale(1) rotate(0deg);
+  }
+
+  .crown-wrap {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+  }
+  .crown-wrap svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .crown-icon {
+    position: absolute;
+    top: -6px;
+    right: -4px;
+    font-size: 10px;
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
+    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    filter: drop-shadow(0 0 4px rgba(217, 178, 60, 0.6));
+  }
+  .nav-item.active .crown-icon {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+
+  .like-wrap {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    margin: 0 auto;
+  }
+  .like-icon {
+    position: absolute;
+    font-size: 10px;
+    opacity: 0;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .like-icon.heart1 { top: -8px; left: -4px; transform: scale(0) rotate(-20deg); }
+  .like-icon.heart2 { top: -11px; left: 6px; transform: scale(0) rotate(20deg); }
+  .like-icon.heart3 { top: -2px; left: 2px; transform: scale(0) rotate(0deg); }
+  .nav-item.active .like-icon { opacity: 1; transform: scale(1) rotate(0deg); }
+  .nav-item.active .like-icon.heart1 { transition-delay: 0.05s; }
+  .nav-item.active .like-icon.heart2 { transition-delay: 0.15s; }
+  .nav-item.active .like-icon.heart3 { transition-delay: 0.25s; }
+
+  .users-wrap {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    margin: 0 auto;
+  }
+  .person {
+    position: absolute;
+    top: 0;
+    width: 14px;
+    height: 18px;
+    transition: transform 0.4s ease;
+  }
+  .person::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 3px;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 12px;
+    height: 10px;
+    border-radius: 5px 5px 0 0;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person.p1 { left: 0; }
+  .person.p2 { right: 0; }
+  .nav-item.active .person.p1 { transform: translateX(8px); }
+  .nav-item.active .person.p2 { transform: translateX(-8px); }
+  .nav-item.active .person::before,
+  .nav-item.active .person::after { background: #D9B23C; }
+  .heart-pop {
+    position: absolute;
+    top: -11px;
+    left: 15px;
+    font-size: 10px;
+    opacity: 0;
+    transition: opacity 0.3s ease, transform 0.3s ease;
+    transform: scale(0.5);
+  }
+  .nav-item.active .heart-pop { opacity: 1; transform: scale(1); }
+
+  .profile-wrap {
+    position: relative;
+    width: 40px;
+    height: 20px;
+    margin: 0 auto;
+  }
+  .person-group {
+    position: relative;
+    width: 100%;
+    height: 100%;
+  }
+  .person-small {
+    position: absolute;
+    top: 0;
+    width: 12px;
+    height: 17px;
+    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  .person-small::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 2px;
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person-small::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 10px;
+    height: 8px;
+    border-radius: 4px 4px 0 0;
+    background: #7FA9A8;
+    transition: background 0.4s ease;
+  }
+  .person-small.ps1 { left: 0; }
+  .person-small.ps2 { left: 50%; transform: translateX(-50%); }
+  .person-small.ps3 { right: 0; }
+  .nav-item.active .person-small.ps1 { transform: translateX(10px) scale(0.8); }
+  .nav-item.active .person-small.ps2 { transform: translateX(0) scale(1.1); }
+  .nav-item.active .person-small.ps3 { transform: translateX(-10px) scale(0.8); }
+  .nav-item.active .person-small::before,
+  .nav-item.active .person-small::after { background: #D9B23C; }
+</style>
+</head>
+<body data-theme="dark">
+
+<div class="app">
+  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+  <div class="top-app-bar">
+    <div class="brand-mini">
+      <svg viewBox="0 0 48 48" fill="none">
+        <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+        <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
+        <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
+      </svg>
+      <span>Китобхона</span>
+    </div>
+    <div class="top-actions">
+      <div class="icon-btn" onclick="location.href='profile.html'" title="Профил">👤</div>
+    </div>
+  </div>
+
+  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  <div class="screen-area">
+    <div class="screen" id="chatsScreen">
+      <div class="ornament"></div>
+      <div class="search">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
+        <input type="text" id="searchInput" placeholder="Ҷустуҷӯи дӯстон ё чатҳо">
+      </div>
+      <div id="chatsScroll">
+        <div class="loading-spinner"><div class="spinner"></div> Боргирӣ...</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== НАВИГАЦИЯ (единая, 6 пунктов) ===== -->
+  <div class="nav-bottom">
+    <div class="kh-nav2">
+
+      <!-- Асосӣ -->
+      <a class="nav-item" href="index.html" aria-label="Асосӣ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 11l9-8 9 8"></path>
+          <path d="M5 10v10h14V10"></path>
+          <path d="M9 20v-6h6v6"></path>
+        </svg>
+        <span>Асосӣ</span>
+      </a>
+
+      <!-- Китобхо -->
+      <a class="nav-item" href="kitobho.html" aria-label="Китобхо">
+        <div class="person-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
+          </svg>
+          <div class="book-in-hand"></div>
+        </div>
+        <span>Китобхо</span>
+      </a>
+
+      <!-- Ғолибон -->
+      <a class="nav-item" href="winners.html" aria-label="Ғолибон">
+        <div class="crown-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
+          </svg>
+          <span class="crown-icon">👑</span>
+        </div>
+        <span>Ғолибон</span>
+      </a>
+
+      <!-- Лента -->
+      <a class="nav-item" href="Lenta.html" aria-label="Лента">
+        <div class="person-icon like-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="8" r="4" />
+            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
+          </svg>
+          <span class="like-icon heart1">❤️</span>
+          <span class="like-icon heart2">❤️</span>
+          <span class="like-icon heart3">❤️</span>
+        </div>
+        <span>Лента</span>
+      </a>
+
+      <!-- Чат (активный) -->
+      <a class="nav-item active" href="chats.html" aria-label="Чат">
+        <div class="users-wrap">
+          <div class="person p1"></div>
+          <div class="person p2"></div>
+          <span class="heart-pop">❤️</span>
+        </div>
+        <span>Чат</span>
+      </a>
+
+      <!-- Профил -->
+      <a class="nav-item" href="profile.html" aria-label="Профил">
+        <div class="profile-wrap">
+          <div class="person-group">
+            <div class="person-small ps1"></div>
+            <div class="person-small ps2"></div>
+            <div class="person-small ps3"></div>
+          </div>
+        </div>
+        <span>Профил</span>
+      </a>
+
+    </div>
+  </div>
+</div>
+
+<script>
+  // ================================================================
+  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
+  // ================================================================
+  document.addEventListener('DOMContentLoaded', function() {
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.init();
+    }
+    loadData();
+  });
+
+  // ================================================================
+  // ============ ТЕМА ============
+  // ================================================================
+  (function initTheme() {
+    const saved = localStorage.getItem('kk_theme') || 'dark';
+    document.body.dataset.theme = saved;
+  })();
+
+  // ================================================================
+  // ============ ОСНОВНАЯ ЛОГИКА С КЭШИРОВАНИЕМ ============
+  // ================================================================
+  const $ = id => document.getElementById(id);
+
+  const clsList = ['c1','c2','c3','c4','c5','c6'];
+  const getCls = i => clsList[Math.abs(i) % clsList.length];
+
+  let currentUser = null;
+  let friendsCache = [];
+  let unsubscribeFriends = null;
+  let unsubscribeRequests = null;
+
+  function getInitials(name) {
+    if(!name) return 'К';
+    const parts = name.trim().split(/\s+/);
+    return parts.slice(0,2).map(p => p[0] || '').join('').toUpperCase() || 'К';
+  }
+
+  function formatTime(dateStr) {
+    if(!dateStr) return '';
+    const d = new Date(dateStr);
+    const now = new Date();
+    const diff = (now - d) / 1000;
+    if(diff < 60) return 'ҳозир';
+    if(diff < 3600) return Math.floor(diff/60) + ' дақ';
+    if(diff < 86400) return d.getHours().toString().padStart(2,'0') + ':' + d.getMinutes().toString().padStart(2,'0');
+    if(diff < 604800) return ['Якш','Душ','Сеш','Чор','Панҷ','Ҷум','Шанб'][d.getDay()] || '';
+    return d.getDate() + ' ' + ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];
+  }
+
+  function esc(str) {
+    if (!str) return '';
+    return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  }
+
+  // Получить профиль пользователя с кэшированием
+  async function getProfileCached(userId) {
+    const key = 'kk_profile_' + userId;
+    let profile = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
+    if (!profile) {
+      try {
+        profile = await AUTH.getProfileFromRailway(userId);
+        if (profile && typeof CacheManager !== 'undefined') {
+          CacheManager.set(key, profile);
+        }
+      } catch(e) {
+        profile = {};
+      }
+    }
+    return profile;
+  }
+
+  async function loadData() {
+    const scroll = document.getElementById('chatsScroll');
+
+    try {
+      // Получаем текущего пользователя (из кэша или из AUTH)
+      let user = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.PROFILE) : null;
+      if (!user) {
+        const { data } = await AUTH.getUser();
+        user = data.user;
+        if (user && typeof CacheManager !== 'undefined') {
+          CacheManager.set(CacheManager.KEYS.PROFILE, user);
+        }
+      }
+      currentUser = user;
+      if(!currentUser) {
+        scroll.innerHTML = `
+          <div class="empty-hint" style="text-align:center;margin-top:30px;">
+            <p>Барои дидани чатҳо ворид шавед</p>
+            <button class="btn btn-primary" style="margin-top:12px;" onclick="location.href='login.html'">Ворид шудан</button>
+          </div>
+        `;
+        return;
+      }
+
+      // ---- ДРУЗЬЯ (из кэша или с сервера) ----
+      let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
+      if (!friends) {
+        friends = await ChatAPI.getFriends(currentUser.id);
+        if (typeof CacheManager !== 'undefined') {
+          CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+        }
+      }
+
+      // ---- ЗАЯВКИ (из кэша или с сервера) ----
+      let requests = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.REQUESTS) : null;
+      if (!requests) {
+        requests = await ChatAPI.getFriendRequests(currentUser.id);
+        if (typeof CacheManager !== 'undefined') {
+          CacheManager.set(CacheManager.KEYS.REQUESTS, requests);
+        }
+      }
+
+      // ---- ПОДПИСКИ НА ОБНОВЛЕНИЯ ----
+      if (typeof CacheManager !== 'undefined') {
+        if (unsubscribeFriends) unsubscribeFriends();
+        unsubscribeFriends = CacheManager.subscribe(CacheManager.KEYS.FRIENDS, (newFriends) => {
+          if (newFriends) {
+            friends = newFriends;
+            renderChats(friends, requests, scroll);
+          } else {
+            ChatAPI.getFriends(currentUser.id).then(f => {
+              CacheManager.set(CacheManager.KEYS.FRIENDS, f);
+              friends = f;
+              renderChats(friends, requests, scroll);
+            }).catch(console.warn);
+          }
+        });
+
+        if (unsubscribeRequests) unsubscribeRequests();
+        unsubscribeRequests = CacheManager.subscribe(CacheManager.KEYS.REQUESTS, (newRequests) => {
+          if (newRequests) {
+            requests = newRequests;
+            renderChats(friends, requests, scroll);
+          } else {
+            ChatAPI.getFriendRequests(currentUser.id).then(r => {
+              CacheManager.set(CacheManager.KEYS.REQUESTS, r);
+              requests = r;
+              renderChats(friends, requests, scroll);
+            }).catch(console.warn);
+          }
+        });
+      }
+
+      renderChats(friends, requests, scroll);
+
+    } catch(e) {
+      console.error(e);
+      scroll.innerHTML = `<div class="empty-hint" style="color:var(--red);">Хатогӣ: ${esc(e.message)}</div>`;
+    }
+  }
+
+  async function renderChats(friends, requests, scroll) {
+    // Получение профилей отправителей заявок и друзей (с кэшированием)
+    let html = '';
+
+    // ---- ЗАЯВКИ ----
+    if(requests.length) {
+      html += `
+        <div class="section-label">
+          <div class="t">Дархостҳо</div>
+          <div class="count">${requests.length} нав</div>
+        </div>
+        <div class="requests-row">
+      `;
+      for(const req of requests) {
+        const fromId = req.from_user;
+        const profile = await getProfileCached(fromId);
+        const name = profile?.display_name || profile?.username || 'Китобхон';
+        const initials = getInitials(name);
+        const cls = getCls(fromId.charCodeAt(0) || 0);
+        html += `
+          <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
+            <div class="req-avatar ${cls}">${esc(initials)}</div>
+            <div class="req-name">${esc(name)}</div>
+            <div class="req-actions">
+              <button class="btn-mini accept" onclick="acceptRequest('${fromId}')">Қабул</button>
+              <button class="btn-mini decline" onclick="declineRequest('${req.id}')">Рад</button>
+            </div>
+          </div>
+        `;
+      }
+      html += `</div><div class="divider-soft"></div>`;
+    }
+
+    // ---- ДРУЗЬЯ ----
+    html += `
+      <div class="section-label">
+        <div class="t">Дӯстон</div>
+        <div class="count" id="friendCount">${friends.length} дӯст</div>
+      </div>
+      <div class="chat-list" id="chatList">
+    `;
+
+    if(friends.length === 0) {
+      html += `<div class="empty-hint">Барои оғози чат аввал дӯст ҷӯед</div>`;
+    } else {
+      for(const id of friends) {
+        const profile = await getProfileCached(id);
+        const name = profile?.display_name || profile?.username || 'Китобхон';
+        const initials = getInitials(name);
+        const cls = getCls(id.charCodeAt(0) || 0);
+        const online = Math.random() > 0.6;
+        html += `
+          <div class="chat-item" onclick="openChat('${id}','${esc(name)}')">
+            <div class="avatar-wrap">
+              <div class="avatar ${cls} ${online ? 'ring' : ''}">${esc(initials)}</div>
+              ${online ? '<div class="online-dot"></div>' : ''}
+            </div>
+            <div class="chat-mid">
+              <div class="chat-top">
+                <div class="chat-name">${esc(name)}</div>
+                <div class="chat-time"></div>
+              </div>
+              <div class="chat-bottom">
+                <div class="chat-msg">Паёмҳо баъди навиштан</div>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+    }
+    html += `</div>`;
+
+    scroll.innerHTML = html;
+
+    // Поиск
+    const searchInput = document.getElementById('searchInput');
+    searchInput.removeEventListener('input', handleSearch);
+    searchInput.addEventListener('input', handleSearch);
+  }
+
+  function handleSearch() {
+    const q = this.value.trim().toLowerCase();
+    const items = document.querySelectorAll('.chat-item');
+    items.forEach(item => {
+      const name = item.querySelector('.chat-name')?.textContent?.toLowerCase() || '';
+      item.style.display = name.includes(q) ? 'flex' : 'none';
+    });
+  }
+
+  // Принять заявку (с инвалидацией кэша)
+  async function acceptRequest(fromUserId) {
+    try {
+      await ChatAPI.acceptFriendRequestByUser(fromUserId);
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+      }
+      loadData();
+    } catch(e) {
+      alert('Хатогӣ: ' + e.message);
+    }
+  }
+  window.acceptRequest = acceptRequest;
+
+  // Отклонить заявку (с инвалидацией кэша)
+  async function declineRequest(requestId) {
+    try {
+      await ChatAPI.declineFriendRequest(requestId);
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+      }
+      loadData();
+    } catch(e) {
+      alert('Хатогӣ: ' + e.message);
+    }
+  }
+  window.declineRequest = declineRequest;
+
+  // Открыть чат
+  function openChat(userId, name) {
+    location.href = `chat.html?to=${encodeURIComponent(userId)}&name=${encodeURIComponent(name)}`;
+  }
+  window.openChat = openChat;
+</script>
+</body>
+</html>
