@@ -770,9 +770,12 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js').then(() => {}).catch(() => {});
 }
 
-// Если есть мост для Android, передаём userId, чтобы приложение знало, кому отправлять push-токен
-if (typeof AndroidBridge !== 'undefined' && localStorage.getItem('kk_user_id')) {
-  AndroidBridge.saveUserId(localStorage.getItem('kk_user_id'));
+// ============ ПЕРЕДАЁМ USER_ID И AUTH_TOKEN В ANDROID ============
+if (typeof AndroidBridge !== 'undefined') {
+    const userId = localStorage.getItem('kk_user_id');
+    const authToken = localStorage.getItem('kk_token');
+    if (userId) AndroidBridge.saveUserId(userId);
+    if (authToken) AndroidBridge.saveAuthToken(authToken);
 }
 
 function setActiveNav(el) {
