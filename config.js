@@ -1004,9 +1004,9 @@ async function initFirebaseMessaging() {
     setTimeout(async () => {
       try {
         // Красивый pre-prompt
-        const ok = confirm('🔔 Огоҳиҳои китобҳои навро фаъол созем?
+        const ok = confirm(`🔔 Огоҳиҳои китобҳои навро фаъол созем?
 
-Шумо аз китобҳои нав, паёмҳо ва ғолибон огоҳ мешавед.');
+Шумо аз китобҳои нав, паёмҳо ва ғолибон огоҳ мешавед.`);
         if (ok) {
           await requestPushPermission();
         }
