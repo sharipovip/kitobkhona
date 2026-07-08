@@ -658,7 +658,7 @@ async function loadPopularBooksCached() {
   let books = CacheManager.get('kk_cache_popular_books');
   if (!books) {
     try {
-      const r = await fetch('https://kitobkhona-chat-production.up.railway.app/api/popular-books?period=all');
+      const r = await fetch('https://kitobkhona-chat.onrender.com/api/popular-books?period=all');
       if (!r.ok) throw new Error('Failed to fetch popular');
       books = await r.json();
       CacheManager.set('kk_cache_popular_books', books);

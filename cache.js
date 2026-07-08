@@ -140,7 +140,7 @@ const CacheManager = {
       wsUrl = `${wsTarget}?token=${encodeURIComponent(token)}`;
     } catch (err) {
       console.error('[Cache] Error parsing KITOB_CONFIG.NEON_API_BASE, using fallback.');
-      wsUrl = `wss://kitobkhona-chat-production.up.railway.app?token=${encodeURIComponent(token)}`;
+      wsUrl = `wss://kitobkhona-chat.onrender.com?token=${encodeURIComponent(token)}`;
     }
 
     try {
