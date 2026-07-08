@@ -109,32 +109,20 @@ try {
   console.warn('[SW] Firebase init skipped:', e.message);
 }
 
-self.addEventListener('push', function(event) {
-  try {
-    let data = {};
-    if (event.data) {
-      try { data = event.data.json(); } catch (err) { data = { body: event.data.text() }; }
-    }
-    const title = (data.notification && data.notification.title) || data.title || 'Китобхона';
-    const body = (data.notification && data.notification.body) || data.body || '';
-    event.waitUntil(
-      self.registration.showNotification(title, {
-        body,
-        icon: data.icon || '/icon-192.png',
-        badge: '/icon-192.png',
-        data: data.data || data,
-        vibrate: [200, 100, 200]
-      })
-    );
-  } catch (e) {
-    console.error('Push event error', e);
-  }
-});
+// Убрал дублирующий обработчик push - теперь только FCM обрабатывает уведомления
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   const data = event.notification.data || {};
-  const url = data.url || data.link || data.click_action || '/kitobkhona/';
+  // Определяем URL на основе типа уведомления
+  let url = '/kitobkhona/';
+  if (data.type === 'chat' || data.chat_id) {
+    url = '/kitobkhona/chat.html?to=' + (data.chat_id || data.sender_id);
+  } else if (data.type === 'feed' || data.post_id) {
+    url = '/kitobkhona/Lenta.html';
+  } else if (data.url) {
+    url = data.url;
+  }
   const fullUrl = url.startsWith('/') ? self.location.origin + url : url;
   event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
     for (let i = 0; i < windowClients.length; i++) {

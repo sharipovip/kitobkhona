@@ -64,10 +64,16 @@ function showAbout() {
   alert(`Китобхона · Манбаи дониш\nВерсия ${APP_VERSION}\n\nЭлектронная библиотека таджикской литературы.\nРазработано с ❤️ для читателей.`);
 }
 
-/** Связь с нами */
+/** Связь с нами - открывает модалку если есть на странице */
 function contactUs() {
-  // Замените email на свой
-  window.location.href = 'mailto:info@kitobkhona.tj?subject=Связь с Китобхона';
+  // Проверяем, есть ли модалка обратной связи на странице (profile.html)
+  const feedbackOverlay = document.getElementById('feedbackOverlay');
+  if (feedbackOverlay) {
+    feedbackOverlay.classList.add('open');
+  } else {
+    // Fallback на email если модалки нет
+    window.location.href = 'mailto:info@kitobkhona.tj?subject=Связь с Китобхона';
+  }
 }
 
 // ======================== МОДАЛЬНОЕ ОКНО НАСТРОЕК =========================
@@ -101,24 +107,6 @@ function createSettingsModal() {
         <button id="closeSettingsBtn" style="background: none; border: none; color: var(--muted, #A8B8CC); font-size: 24px; cursor: pointer;">✕</button>
       </div>
       <div style="display: flex; flex-direction: column; gap: 12px;">
-        <button class="settings-item" data-action="notifications" style="
-          background: var(--card, #1A2D44);
-          border: 1px solid var(--border, rgba(201,168,76,0.18));
-          border-radius: 12px;
-          padding: 12px 16px;
-          color: var(--text, #F0EAD6);
-          font-size: 15px;
-          display: flex;
-          align-items: center;
-          gap: 12px;
-          cursor: pointer;
-          transition: background 0.15s;
-          width: 100%;
-          text-align: left;
-        ">
-          <span style="font-size: 20px;">🔔</span>
-          <span class="settings-item-label">Включить уведомления</span>
-        </button>
         <button class="settings-item" data-action="theme" style="
           background: var(--card, #1A2D44);
           border: 1px solid var(--border, rgba(201,168,76,0.18));
@@ -209,9 +197,6 @@ function createSettingsModal() {
     item.addEventListener('click', function() {
       const action = this.dataset.action;
       switch(action) {
-        case 'notifications':
-          requestPushPermission().then(() => updateNotificationButtonState());
-          break;
         case 'theme':
           toggleTheme();
           break;
@@ -231,30 +216,10 @@ function createSettingsModal() {
   return modal;
 }
 
-function updateNotificationButtonState() {
-  if (!settingsModalInstance) return;
-  const button = settingsModalInstance.querySelector('[data-action="notifications"]');
-  if (!button) return;
-  const label = button.querySelector('.settings-item-label');
-  if (!label) return;
-  if (!('Notification' in window)) {
-    label.textContent = '🔕 Уведомления не поддерживаются';
-    return;
-  }
-  if (Notification.permission === 'granted') {
-    label.textContent = '✅ Уведомления включены';
-  } else if (Notification.permission === 'denied') {
-    label.textContent = '🚫 Уведомления отключены';
-  } else {
-    label.textContent = '🔔 Включить уведомления';
-  }
-}
-
 function openSettingsModal() {
   if (!settingsModalInstance) {
     settingsModalInstance = createSettingsModal();
   }
-  updateNotificationButtonState();
   settingsModalInstance.style.display = 'flex';
 }
 
@@ -295,17 +260,20 @@ function initTheme() {
 // ======================== ИНИЦИАЛИЗАЦИЯ НАСТРОЕК =========================
 
 function initSettings() {
-  document.querySelectorAll('.brand-mini').forEach(el => {
-    el.style.cursor = 'pointer';
-    const label = el.querySelector('span, .brand-name');
-    if (label) {
-      label.textContent = 'Настройка';
-    }
-    el.addEventListener('click', function(e) {
-      e.preventDefault();
-      openSettingsModal();
+  // Только на странице профиля добавляем кнопку настроек
+  if (window.location.pathname.includes('profile.html')) {
+    document.querySelectorAll('.brand-mini').forEach(el => {
+      el.style.cursor = 'pointer';
+      const label = el.querySelector('span, .brand-name');
+      if (label) {
+        label.textContent = 'Настройка';
+      }
+      el.addEventListener('click', function(e) {
+        e.preventDefault();
+        openSettingsModal();
+      });
     });
-  });
+  }
 }
 
 function ensureDialogContainer() {
@@ -967,9 +935,6 @@ async function registerFcmToken() {
     }
 
     localStorage.setItem('kk_fcm_token', currentToken);
-    if (typeof toast === 'function') {
-      toast('Уведомления активированы');
-    }
     return currentToken;
   } catch (e) {
     console.warn('registerFcmToken error:', e);
