@@ -1448,24 +1448,10 @@ let html = '';
        progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
      }
 
-     // Кешируем обложку книги
-     const coverUrl = post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '';
-     const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
-     const finalCoverUrl = cachedCover || coverUrl;
-
-    let progressData = null;
-    if (post.book_id && bookProgressMap[post.book_id]) {
-      progressData = bookProgressMap[post.book_id];
-    }
-
-    let statusHtml = '', progressHtml = '';
-    if (progressData) {
-      const statusText = progressData.statusText === 'finished' ? '✅ Хатм кард' : '📖 Дар ҳоли хондан';
-      const chipClass = progressData.statusText === 'finished' ? 'chip-finished' : 'chip-reading';
-      statusHtml = `<div class="status-chip ${chipClass}">${statusText}</div>`;
-      const prog = progressData.progress || 0;
-      progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
-    }
+// Кешируем обложку книги
+      const coverUrl = post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '';
+      const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
+      const finalCoverUrl = cachedCover || coverUrl;
 
 let bookBlock = '';
      if (post.book_id) {
