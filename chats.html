@@ -882,6 +882,20 @@
 </div>
 
 <script>
+  function showToast(msg) {
+    let t = document.getElementById('chatsToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'chatsToast';
+      t.style.cssText = 'position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);background:rgba(0,0,0,0.85);color:#fff;border-radius:999px;padding:10px 20px;font-size:13px;z-index:99999;opacity:0;transition:.25s;pointer-events:none;white-space:nowrap;max-width:88%;text-align:center';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.style.opacity = '1';
+    t.style.transform = 'translateX(-50%) translateY(0)';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2500);
+  }
   // ================================================================
   // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
   // ================================================================

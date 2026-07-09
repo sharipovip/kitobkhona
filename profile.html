@@ -1407,6 +1407,40 @@
 
 <script>
   // ================================================================
+  // ============ TOAST УВЕДОМЛЕНИЯ ============
+  // ================================================================
+  (function() {
+    const style = document.createElement('style');
+    style.textContent = `
+      .profile-toast {
+        position: fixed; bottom: 80px; left: 50%; transform: translateX(-50%) translateY(20px);
+        background: rgba(13,27,42,0.95); border: 1px solid rgba(201,168,76,0.3);
+        color: #F0EAD6; border-radius: 999px; padding: 10px 20px;
+        font-size: 13px; z-index: 99999; opacity: 0; transition: .25s;
+        max-width: 88%; text-align: center; box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+        pointer-events: none; white-space: nowrap;
+      }
+      .profile-toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+    `;
+    document.head.appendChild(style);
+  })();
+
+  function showToast(msg, duration) {
+    let t = document.getElementById('profileToast');
+    if (!t) {
+      t = document.createElement('div');
+      t.id = 'profileToast';
+      t.className = 'profile-toast';
+      document.body.appendChild(t);
+    }
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), duration || 2500);
+  }
+  window.showToast = showToast;
+
+  // ================================================================
   // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
   // ================================================================
   document.addEventListener('DOMContentLoaded', function() {
@@ -1502,7 +1536,7 @@
         const name = el('ownName').textContent || 'Чат';
         location.href = `chat.html?to=${encodeURIComponent(currentProfileUserId)}&name=${encodeURIComponent(name)}`;
       } else {
-        alert('Барои чат бо ин корбар аввал дӯст шавед.');
+        showToast('Барои чат бо ин корбар аввал дӯст шавед.');
       }
     }
   }
@@ -1876,7 +1910,7 @@
   // ================================================================
   async function sendFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
-    if (!token) { alert('Лутфан ворид шавед'); return; }
+    if (!token) { showToast('Лутфан ворид шавед'); return; }
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/request', {
         method: 'POST',
@@ -1885,23 +1919,23 @@
       });
       const data = await r.json();
       if (!r.ok) {
-        alert('Хатогӣ: ' + (data.error || 'Номаълум'));
+        showToast('Хатогӣ: ' + (data.error || 'Номаълум'));
         return;
       }
-      alert('Дархост фиристода шуд!');
+      showToast('Дархост фиристода шуд!');
       if (typeof CacheManager !== 'undefined') {
         CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
         CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
       }
       await loadProfile();
     } catch (e) {
-      alert('Хатогӣ: ' + e.message);
+      showToast('Хатогӣ: ' + e.message);
     }
   }
 
   async function acceptFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
-    if (!token) { alert('Лутфан ворид шавед'); return; }
+    if (!token) { showToast('Лутфан ворид шавед'); return; }
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
         method: 'POST',
@@ -1910,17 +1944,17 @@
       });
       const data = await r.json();
       if (!r.ok) {
-        alert('Хатогӣ: ' + (data.error || 'Номаълум'));
+        showToast('Хатогӣ: ' + (data.error || 'Номаълум'));
         return;
       }
-      alert('Шумо дӯст шудед!');
+      showToast('Шумо дӯст шудед!');
       if (typeof CacheManager !== 'undefined') {
         CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
         CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
       }
       await loadProfile();
     } catch (e) {
-      alert('Хатогӣ: ' + e.message);
+      showToast('Хатогӣ: ' + e.message);
     }
   }
 
@@ -2299,10 +2333,10 @@
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kk_token'), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(r => r.json()).then(() => {
-      alert('Илова ба закладка!');
+      showToast('Илова ба закладка!');
       loadFavoritesCached(currentProfileUserId).then(() => renderFavorites());
       el('bookMenu').style.display = 'none';
-    }).catch(() => alert('Хатогӣ'));
+    }).catch(() => showToast('Хатогӣ'));
   }
 
   function menuRemoveFavorite() {
@@ -2315,7 +2349,7 @@
     if (!menuTarget) return;
     const isHidden = hiddenBooks.includes(menuTarget);
     const token = localStorage.getItem('kk_token');
-    if (!token) { alert('Ворид шавед'); return; }
+    if (!token) { showToast('Ворид шавед'); return; }
     const key = 'kk_hidden_books_' + currentUserId;
     if (isHidden) {
       fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books/' + encodeURIComponent(menuTarget), {
@@ -2326,7 +2360,7 @@
         if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(key);
         renderBooks();
         el('bookMenu').style.display = 'none';
-      }).catch(() => alert('Хатогӣ'));
+      }).catch(() => showToast('Хатогӣ'));
     } else {
       fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books', {
         method: 'POST',
@@ -2337,7 +2371,7 @@
         if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(key);
         renderBooks();
         el('bookMenu').style.display = 'none';
-      }).catch(() => alert('Хатогӣ'));
+      }).catch(() => showToast('Хатогӣ'));
     }
   }
 
@@ -2416,9 +2450,9 @@
     const newEmail = el('editEmail').value.trim();
     const newPassword = passwordInput.value;
 
-    if (!firstName || !lastName) { alert('Ном ва насаб ҳатмӣ аст'); return; }
-    if (isTemporary && !newPassword) { alert('Барои нигоҳ доштани профил, лутфан парол ворид кунед.'); return; }
-    if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { alert('Формати почта нодуруст аст'); return; }
+    if (!firstName || !lastName) { showToast('Ном ва насаб ҳатмӣ аст'); return; }
+    if (isTemporary && !newPassword) { showToast('Барои нигоҳ доштани профил, лутфан парол ворид кунед.'); return; }
+    if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { showToast('Формати почта нодуруст аст'); return; }
 
     const updates = {
       first_name: firstName,
@@ -2439,12 +2473,12 @@
       const result = await NEON_API.updateProfile(updates);
       if (!result.success) throw new Error(result.error || 'Сервер қабул накард');
       if (newUsername || newPassword) {
-        alert('Профиль навсозӣ шуд! Лутфан аз нав ворид шавед.');
+        showToast('Профиль навсозӣ шуд! Лутфан аз нав ворид шавед.');
         AutoLogin.logout();
         location.href = 'login.html';
         return;
       }
-      alert('Профиль навсозӣ шуд!');
+      showToast('Профиль навсозӣ шуд!');
       closeEdit();
       // Инвалидируем кэш профиля
       if (typeof CacheManager !== 'undefined') {
@@ -2454,7 +2488,7 @@
       await loadProfile();
     } catch (e) {
       console.error('[Profile] Save error:', e);
-      alert('Хатогӣ: ' + e.message);
+      showToast('Хатогӣ: ' + e.message);
     }
   });
 
@@ -2490,16 +2524,16 @@
     const email = feedbackEmail.value.trim();
 
     if (!text) {
-      alert('Лутфан матни паёмро нависед.');
+      showToast('Лутфан матни паёмро нависед.');
       return;
     }
     if (!email || !email.includes('@')) {
-      alert('Лутфан почтаи электронии дуруст ворид кунед.');
+      showToast('Лутфан почтаи электронии дуруст ворид кунед.');
       return;
     }
     const token = localStorage.getItem('kk_token');
     if (!token) {
-      alert('Шумо ворид нестед. Лутфан аввал ворид шавед.');
+      showToast('Шумо ворид нестед. Лутфан аввал ворид шавед.');
       return;
     }
     try {
@@ -2522,10 +2556,10 @@
         const err = await resp.json().catch(() => ({}));
         throw new Error(err.error || 'Хатогӣ дар фиристодан');
       }
-      alert('Паёми шумо фиристода шуд! Мо ба зудӣ бо шумо тамос хоҳем гирифт.');
+      showToast('Паёми шумо фиристода шуд!');
       closeFeedbackModal();
     } catch (e) {
-      alert('Хатогӣ: ' + e.message);
+      showToast('Хатогӣ: ' + e.message);
     } finally {
       this.disabled = false;
       this.textContent = '📤 Отправить';

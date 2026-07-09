@@ -1259,7 +1259,7 @@
   // ===== ОБРАБОТЧИКИ ДЕЙСТВИЙ (оригинальные) =====
   function handleFavorite(bookId, book, name, btn) {
     const token = localStorage.getItem('kk_token');
-    if (!token) { alert('Лутфан ворид шавед'); return; }
+    if (!token) { toast('Лутфан ворид шавед'); return; }
     const isFaved = btn.textContent.includes('✔');
     (async () => {
       try {
@@ -1284,7 +1284,7 @@
   }
   function handleComplete(bookId, book, name) {
     const token = localStorage.getItem('kk_token');
-    if (!token) { alert('Лутфан ворид шавед'); return; }
+    if (!token) { toast('Лутфан ворид шавед'); return; }
     (async () => {
       try {
         const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
@@ -1301,7 +1301,7 @@
     (async () => {
       const cached = isCached(url);
       if (cached) {
-        if (confirm('Ин китоб аллакай ҳифз шудааст. Нест карда шавад?')) {
+        if (await showConfirmDialog('Ин китоб аллакай ҳифз шудааст. Нест карда шавад?', 'Ҳифз', 'Нест кунед')) {
           await deleteCached(url);
           toast('Аз ҳифзшудаҳо нест шуд');
           renderBooks(books);
