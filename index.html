@@ -779,15 +779,14 @@ const isAndroidApp = (typeof AndroidBridge !== 'undefined' || navigator.userAgen
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js', { scope: './' })
     .then(reg => {
-      console.log('SW registered:', reg.scope);
       if (!isAndroidApp) {
         // Инициализируем FCM после успешной регистрации SW
         setTimeout(() => initFirebaseMessaging(), 800);
-      } else {
-        console.log('KitobkhonaApp: web push disabled, using native FCM');
       }
     })
-    .catch(err => console.log('SW registration failed:', err));
+    .catch(err => {
+      // SW registration failed
+    });
 } else if (!isAndroidApp) {
   initFirebaseMessaging();
 }

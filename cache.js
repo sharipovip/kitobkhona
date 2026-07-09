@@ -127,7 +127,6 @@ const CacheManager = {
 
     const token = localStorage.getItem('kk_token');
     if (!token) {
-      console.log('[Cache] No token, WebSocket not started');
       return;
     }
 
@@ -144,11 +143,9 @@ const CacheManager = {
     }
 
     try {
-      console.log('[Cache] Connecting to WebSocket via config:', wsUrl);
       this._ws = new WebSocket(wsUrl);
-      
+
       this._ws.onopen = () => {
-        console.log('[Cache] WebSocket connected');
         this._wsConnected = true;
         this._wsAttempts = 0;
         if (this._reconnectTimer) {
@@ -164,28 +161,24 @@ const CacheManager = {
             this._handleUpdate(msg.data);
           }
         } catch (e) {
-          console.warn('[Cache] Invalid WebSocket message', e);
+          // Invalid message, ignore
         }
       };
 
       this._ws.onclose = (event) => {
-        console.log('[Cache] WebSocket disconnected', event.code, event.reason);
         this._wsConnected = false;
         // Попытка переподключения через 5 секунд, но не более _maxReconnectAttempts раз
         if (this._wsAttempts < this._maxReconnectAttempts) {
           this._wsAttempts++;
           this._reconnectTimer = setTimeout(() => this._connectWebSocket(), 5000);
-        } else {
-          console.log('[Cache] WebSocket reconnect attempts exhausted');
         }
       };
 
       this._ws.onerror = (err) => {
-        console.warn('[Cache] WebSocket error', err);
         if (this._ws) this._ws.close();
       };
     } catch (e) {
-      console.warn('[Cache] Failed to create WebSocket', e);
+      // Failed to create WebSocket, will retry
       if (this._wsAttempts < this._maxReconnectAttempts) {
         this._wsAttempts++;
         this._reconnectTimer = setTimeout(() => this._connectWebSocket(), 5000);
@@ -196,7 +189,6 @@ const CacheManager = {
   // Обработка уведомления от сервера
   _handleUpdate(payload) {
     const { table, operation, data } = payload;
-    console.log('[Cache] Update:', table, operation, data);
 
     // В зависимости от таблицы обновляем соответствующий кэш
     switch (table) {
