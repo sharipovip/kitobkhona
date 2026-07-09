@@ -1193,6 +1193,14 @@
 
     hydrateBookCardCovers(grid);
 
+    // Предзагружаем обложки в кэш
+    grid.querySelectorAll('img[data-cover-url]').forEach(img => {
+      const cover = img.getAttribute('data-cover-url') || '';
+      if (cover && CacheManager && typeof CacheManager.preloadCover === 'function') {
+        CacheManager.preloadCover(cover);
+      }
+    });
+
     // Рейтинги
     document.querySelectorAll('.bk').forEach(async (el) => {
       const bookId = decodeURIComponent(el.dataset.bookid);
