@@ -1,5 +1,5 @@
-// Китобхона Service Worker – v4 unified (cache + FCM)
-const CACHE_NAME = 'kitobkhona-v4';
+// Китобхона Service Worker – v5 unified (cache + FCM + periodic sync)
+const CACHE_NAME = 'kitobkhona-v5';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -18,6 +18,10 @@ const LOCAL_FILES = [
   './icon-192.png',
   './icon-512.png'
 ];
+
+// Периодическое обновление books.json в фоне
+const BOOKS_JSON_URL = 'books.json';
+const SYNC_INTERVAL = 60 * 60 * 1000; // 1 час
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
@@ -39,7 +43,32 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
+  // Запускаем периодическое обновление
+  scheduleBooksJsonUpdate();
 });
+
+async function updateBooksJson() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const response = await fetch(BOOKS_JSON_URL, { cache: 'no-store' });
+    if (response.ok) {
+      await cache.put(BOOKS_JSON_URL, response.clone());
+      console.log('[SW] books.json updated in cache');
+      // Уведомляем клиентов об обновлении
+      const clients = await self.clients.matchAll();
+      clients.forEach(client => client.postMessage({ type: 'books_json_updated' }));
+    }
+  } catch (e) {
+    console.warn('[SW] Failed to update books.json:', e);
+  }
+}
+
+function scheduleBooksJsonUpdate() {
+  // Первое обновление через 5 минут после активации
+  setTimeout(updateBooksJson, 5 * 60 * 1000);
+  // Затем каждые SYNC_INTERVAL
+  setInterval(updateBooksJson, SYNC_INTERVAL);
+}
 
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);

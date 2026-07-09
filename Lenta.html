@@ -1569,17 +1569,20 @@ let bookBlock = '';
       </div>
     `;
 });
-   feed.innerHTML = html;
+feed.innerHTML = html;
 
-   // Предзагружаем обложки к кэшу
-   if (CacheManager && CacheManager.preloadCover) {
-     feed.querySelectorAll('img[src]').forEach(img => {
-       const src = img.getAttribute('src');
-       if (src && src.includes('githubusercontent.com')) {
-         CacheManager.preloadCover(src);
-       }
-     });
-   }
+    // Применяем кешированные обложки и предзагружаем отсутствующие
+    if (CacheManager) {
+      CacheManager.hydrateCovers(feed);
+      if (CacheManager.preloadCover) {
+        feed.querySelectorAll('img[src]').forEach(img => {
+          const src = img.getAttribute('src');
+          if (src && src.includes('githubusercontent.com')) {
+            CacheManager.preloadCover(src);
+          }
+        });
+      }
+    }
 
    // ==== НАВЕШИВАЕМ СОБЫТИЯ (без изменений) ====
   document.querySelectorAll('.like-btn').forEach(btn => {

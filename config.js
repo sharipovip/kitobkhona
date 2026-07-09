@@ -381,7 +381,7 @@ function getDeviceFingerprint() {
 }
 
 function isAndroid() {
-   try { return !!(window.KitobAndroid && (KitobAndroid.isAndroidApp === true || typeof KitobAndroid.saveFile === 'function')); }
+   try { return !!(window.AndroidBridge && typeof AndroidBridge.saveFile === 'function'); }
    catch(e) { return false; }
  }
 
@@ -414,9 +414,9 @@ async function shareFile(url, name) {
       } catch(e) {}
     }
     const fileName = (name || 'kitob') + '.pdf';
-    if (isAndroid() && typeof KitobAndroid.shareFile === 'function') {
+    if (isAndroid() && typeof AndroidBridge.shareFile === 'function') {
       const b64 = await blobToBase64(blob);
-      KitobAndroid.shareFile(b64, fileName, 'application/pdf');
+      AndroidBridge.shareFile(b64, fileName, 'application/pdf');
       return;
     }
     if (navigator.canShare && navigator.share) {
@@ -491,9 +491,9 @@ async function downloadFile(url, name, showProgress = true) {
       localStorage.setItem('kk_cached_books', JSON.stringify(m));
     }
     const fileName = (name || 'kitob') + '.pdf';
-    if (isAndroid() && typeof KitobAndroid.saveFile === 'function') {
+    if (isAndroid() && typeof AndroidBridge.saveFile === 'function') {
       const b64 = await blobToBase64(blob);
-      KitobAndroid.saveFile(b64, fileName, 'application/pdf');
+      AndroidBridge.saveFile(b64, fileName, 'application/pdf');
       if (toastEl) {
         toastEl.textContent = '✓ Файл барои захира кардан омода';
         setTimeout(() => toastEl.classList.remove('show'), 2000);
