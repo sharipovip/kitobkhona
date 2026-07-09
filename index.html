@@ -629,9 +629,11 @@ function renderPopularBooks(books) {
     const coverList = coverCandidates(folder, file);
     const cover = coverList[0] || '';
     const coversJson = JSON.stringify(coverList);
+    const coverSrc = getCachedCoverDataUrl(cover) || cover;
     return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
       <div class="book-cover ${c}">
-        <img src="${cover}" alt="" loading="lazy"
+        <img src="${coverSrc}" alt="" loading="lazy"
+             data-cover-url="${esc(cover)}" data-book-url="${esc(url)}"
              data-i="0" data-covers='${esc(coversJson)}'
              onerror="let a=JSON.parse(this.dataset.covers);let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}"
              style="width:100%;height:100%;object-fit:cover">
@@ -643,6 +645,11 @@ function renderPopularBooks(books) {
   }).join('');
   $('popBooks').innerHTML = html;
   hydrateBookCardCovers($('popBooks'));
+  // Предзагрузка обложек в кэш
+  $('popBooks').querySelectorAll('img[data-cover-url]').forEach(img => {
+    const c = img.getAttribute('data-cover-url');
+    if (c && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(c);
+  });
   $('popSection').style.display = 'block';
 }
 

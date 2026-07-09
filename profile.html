@@ -1157,8 +1157,9 @@
     <div class="top-actions">
       <div class="icon-btn" id="chatTopBtn" title="Чатҳо" onclick="goToChats()">💬</div>
       <div class="icon-btn" id="feedTopBtn" title="Лента" onclick="location.href='Lenta.html'">📰</div>
-      <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none;" onclick="logoutUser()">🚪</div>
-      <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none;" onclick="deleteAccount()">🗑</div>
+      <div class="icon-btn" id="settingsBtn" title="Настройка" onclick="openSettings()">⚙️</div>
+      <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none!important;" onclick="logoutUser()">🚪</div>
+      <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none!important;" onclick="deleteAccount()">🗑</div>
     </div>
   </div>
 
@@ -1273,7 +1274,81 @@
     </div>
   </div>
 
-  <!-- ===== ШТОРКА РЕДАКТИРОВАНИЯ ===== -->
+  <!-- ===== ШТОРКА НАСТРОЕК ===== -->
+  <div class="sheet-overlay" id="settingsOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head">
+        <h3>⚙️ Настройка</h3>
+        <div class="icon-btn" id="closeSettings">✕</div>
+      </div>
+      <div class="sheet-body" style="padding-bottom:24px">
+
+        <!-- Тема -->
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)">
+          <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cream)">
+            <span id="settingsThemeIcon" style="font-size:20px">🌙</span>
+            <span id="settingsThemeLabel">Тарзи шаб</span>
+          </div>
+          <div id="themeToggleSwitch" onclick="toggleThemeGlobal()" style="width:48px;height:26px;border-radius:13px;background:var(--card-2);border:1px solid var(--line);cursor:pointer;position:relative;transition:.3s">
+            <div id="themeToggleKnob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--gold);transition:.3s"></div>
+          </div>
+        </div>
+
+        <!-- Тамос бо мо -->
+        <div onclick="openFeedbackModal()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
+          <span style="font-size:20px">📧</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--cream)">Тамос бо мо</div>
+            <div style="font-size:12px;color:var(--muted)">Пешниҳод ва пешниҳодҳо</div>
+          </div>
+          <span style="margin-left:auto;color:var(--muted)">›</span>
+        </div>
+
+        <!-- Дар бораи барнома -->
+        <div id="aboutAppBtn" onclick="showAboutApp()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
+          <span style="font-size:20px">📚</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--cream)">Дар бораи барнома</div>
+            <div style="font-size:12px;color:var(--muted)">Китобхона v2.0</div>
+          </div>
+          <span style="margin-left:auto;color:var(--muted)">›</span>
+        </div>
+
+        <!-- Баромадан -->
+        <div id="settingsLogout" style="display:none;flex-direction:row;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="logoutUser()">
+          <span style="font-size:20px">🚪</span>
+          <div style="font-size:14px;font-weight:600;color:var(--cream)">Баромадан</div>
+        </div>
+
+        <!-- Нест кардани ҳисоб -->
+        <div id="settingsDelete" style="display:none;flex-direction:row;align-items:center;gap:12px;padding:16px 0;cursor:pointer" onclick="deleteAccount()">
+          <span style="font-size:20px">🗑</span>
+          <div style="font-size:14px;font-weight:600;color:var(--red)">Нест кардани ҳисоб</div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== МОДАЛКА "Дар бораи барнома" ===== -->
+  <div class="sheet-overlay" id="aboutOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><h3>📚 Дар бораи барнома</h3><div class="icon-btn" id="closeAbout">✕</div></div>
+      <div class="sheet-body" style="padding-bottom:24px;text-align:center">
+        <div style="font-size:56px;margin:10px 0">📚</div>
+        <div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:6px">Китобхона</div>
+        <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Китобхонаи рақамии тоҷикӣ</div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;font-size:13px;color:var(--cream-dim);line-height:1.7">
+          <div>📌 Насха: <b style="color:var(--cream)">2.0.0</b></div>
+          <div>📚 Китобҳо: <b style="color:var(--cream)">Биш аз 500+</b></div>
+          <div>🌍 Забон: <b style="color:var(--cream)">Тоҷикӣ</b></div>
+          <div style="margin-top:10px;font-size:12px;color:var(--muted)">Барнома барои хондани китобҳои тоҷикӣ сохта шудааст.</div>
+        </div>
+      </div>
+    </div>
+  </div>
   <div class="sheet-overlay" id="editOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>Таҳрири профил</h3><div class="icon-btn" id="closeEdit">✕</div></div><div class="sheet-body">
     <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12.5px;" disabled>Тағйири акс</button></div>
     <div class="field-row"><div class="field"><label>Ном</label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб</label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
@@ -1850,8 +1925,8 @@
   }
 
   async function removeFriend(otherId) {
-    if (!confirm('Шумо воқеан мехоҳед ин дӯстро нест кунед?')) return;
-    alert('Функсияи нест кардан ҳанӯз дастгирӣ намешавад.');
+    if (!await showConfirmDialog('Шумо воқеан мехоҳед ин дӯстро нест кунед?', 'Тасдиқ')) return;
+    await showAlertDialog('Функсияи нест кардан ҳанӯз дастгирӣ намешавад.', 'Маълумот');
   }
 
   // ================================================================
@@ -1881,6 +1956,18 @@
   let menuTarget = null;
 
   // ===== RENDER =====
+  function getCoverCached(url) {
+    if (!url) return '';
+    try {
+      // Читаем из обоих ключей
+      const map1 = JSON.parse(localStorage.getItem('kk_cover_cache') || '{}');
+      const map2 = JSON.parse(localStorage.getItem('kk_cache_covers') || '{}');
+      const item = map1[url] || map2[url];
+      if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) return item.dataUrl;
+    } catch(e) {}
+    return '';
+  }
+
   function renderBooks() {
     const container = el('panelBooks');
     if (!booksData.length) {
@@ -1890,56 +1977,49 @@
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
     let html = '<div class="book-grid">';
     booksData.forEach((book, idx) => {
-const c = colors[idx % colors.length];
-       const isHidden = hiddenBooks.includes(book.book_id);
-       const hiddenClass = isHidden ? 'hidden' : '';
-       const coverUrl = getCoverForBook(book);
-       const cachedCover = CacheManager?.getCachedCover(coverUrl) || '';
-       const finalCoverUrl = cachedCover || coverUrl;
-       const views = book.sessions_count || 0;
-       const rating = book.rating || 0;
-       const stars = '⭐'.repeat(Math.round(rating / 2)) || '☆☆☆☆☆';
-       const hours = Math.round(book.total_duration / 60);
-       const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '👁');
-       const bookData = JSON.stringify(book);
-       let overlayContent = '';
-       if (isHidden) {
-         overlayContent = `<div class="hidden-label">🔒 Пинҳон</div>`;
-       } else {
-         overlayContent = `
-           <div class="book-title">${esc(book.book_title)}</div>
-           <div class="book-meta">
-             <span>${statusLabel}</span>
-             <span>⏱ ${hours} мин</span>
-             <span>👁 ${views}</span>
-             <span>${stars}</span>
-           </div>
-         `;
-       }
-       html += `
-         <div class="book-card ${hiddenClass}" data-book='${bookData}' onclick="openBook(this)">
-           <div class="book-cover" style="background-image: url('${finalCoverUrl}');"></div>
-           <div class="book-overlay">
-             ${overlayContent}
-           </div>
-           <div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>
-         </div>
-       `;
-     });
-     html += '</div>';
-     container.innerHTML = html;
-
-     // Предзагружаем обложки в кэш
-     if (CacheManager && CacheManager.preloadCover) {
-       container.querySelectorAll('.book-cover').forEach(el => {
-         const style = el.getAttribute('style') || '';
-         const match = style.match(/url\(['"]?([^'"]+)['"]?\)/);
-         if (match && match[1]) {
-           CacheManager.preloadCover(match[1]);
-         }
-       });
-     }
-   }
+      const c = colors[idx % colors.length];
+      const isHidden = hiddenBooks.includes(book.book_id);
+      const hiddenClass = isHidden ? 'hidden' : '';
+      const coverUrl = getCoverForBook(book);
+      const cachedCover = getCoverCached(coverUrl);
+      const finalCoverUrl = cachedCover || coverUrl;
+      const views = book.sessions_count || 0;
+      const rating = book.rating || 0;
+      const stars = '⭐'.repeat(Math.round(rating / 2)) || '☆☆☆☆☆';
+      const hours = Math.round(book.total_duration / 60);
+      const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '👁');
+      const bookData = JSON.stringify(book);
+      let overlayContent = '';
+      if (isHidden) {
+        overlayContent = `<div class="hidden-label">🔒 Пинҳон</div>`;
+      } else {
+        overlayContent = `
+          <div class="book-title">${esc(book.book_title)}</div>
+          <div class="book-meta">
+            <span>${statusLabel}</span>
+            <span>⏱ ${hours} мин</span>
+            <span>👁 ${views}</span>
+          </div>
+        `;
+      }
+      html += `
+        <div class="book-card ${hiddenClass} ${c}" data-book='${bookData}' onclick="openBook(this)">
+          <img class="book-cover" src="${finalCoverUrl}" alt="${esc(book.book_title)}" loading="lazy"
+               data-cover-url="${esc(coverUrl)}"
+               onerror="this.style.display='none'"
+               style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
+          <div class="book-overlay">${overlayContent}</div>
+          <div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    container.querySelectorAll('img[data-cover-url]').forEach(img => {
+      const cv = img.getAttribute('data-cover-url');
+      if (cv && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(cv);
+    });
+  }
 
    function renderFavorites() {
     const container = el('panelMarks');
@@ -1951,47 +2031,42 @@ const c = colors[idx % colors.length];
     let html = '<div class="book-grid">';
     favoritesData.slice(0, 9).forEach((f, idx) => {
       const c = colors[idx % colors.length];
-      let folder = 'books',
-        file = f.book_id || '';
+      let folder = 'books', file = f.book_id || '';
       if (f.book_id && f.book_id.includes('/')) {
         const parts = f.book_id.split('/');
         file = parts.pop();
         folder = parts.join('/');
         if (!folder.startsWith('books/')) folder = 'books/' + folder;
       }
-const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'Китоб' };
-       const coverUrl = getCoverForBook(book);
-       const cachedCover = CacheManager?.getCachedCover(coverUrl) || '';
-       const finalCoverUrl = cachedCover || coverUrl;
-       const bookDataEnc = encodeURIComponent(JSON.stringify(book));
-       html += `
-         <div class="book-card ${c}" style="position:relative;">
-           <div data-book='${bookDataEnc}' onclick="openBook(this)">
-             <div class="book-cover" style="background-image: url('${finalCoverUrl}');"></div>
-             <div class="book-overlay">
-               <div class="book-title">${esc(f.book_title)}</div>
-               <div class="book-meta"><span>⭐ Закладка</span></div>
-             </div>
-           </div>
-           <div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>
-         </div>
-       `;
-     });
-     html += '</div>';
-     container.innerHTML = html;
-     // Предзагружаем обложки в кэш
-     if (CacheManager && CacheManager.preloadCover) {
-       container.querySelectorAll('.book-cover').forEach(el => {
-         const style = el.getAttribute('style') || '';
-         const match = style.match(/url\(['"]?([^'"]+)['"]?\)/);
-         if (match && match[1]) {
-           CacheManager.preloadCover(match[1]);
-         }
-       });
-     }
-   }
+      const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'Китоб' };
+      const coverUrl = getCoverForBook(book);
+      const finalCoverUrl = getCoverCached(coverUrl) || coverUrl;
+      const bookDataEnc = encodeURIComponent(JSON.stringify(book));
+      html += `
+        <div class="book-card ${c}" style="position:relative;">
+          <div data-book='${bookDataEnc}' onclick="openBook(this)" style="width:100%;height:100%;display:block">
+            <img class="book-cover" src="${finalCoverUrl}" alt="${esc(f.book_title)}" loading="lazy"
+                 data-cover-url="${esc(coverUrl)}"
+                 onerror="this.style.display='none'"
+                 style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
+            <div class="book-overlay">
+              <div class="book-title">${esc(f.book_title)}</div>
+              <div class="book-meta"><span>⭐ Закладка</span></div>
+            </div>
+          </div>
+          <div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>
+        </div>
+      `;
+    });
+    html += '</div>';
+    container.innerHTML = html;
+    container.querySelectorAll('img[data-cover-url]').forEach(img => {
+      const cv = img.getAttribute('data-cover-url');
+      if (cv && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(cv);
+    });
+  }
 
-   function renderPosts() {
+  function renderPosts() {
     const container = el('panelPosts');
     if (!postsData.length) {
       container.innerHTML = '<div class="empty-state">Постҳо нестанд</div>';
@@ -2000,22 +2075,43 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
     let html = '<div class="post-list">';
     postsData.forEach(post => {
       const timeAgo = timeSince(post.created_at);
+      // Обложка книги если есть book_id
+      let coverHtml = '';
+      if (post.book_id) {
+        const parts = post.book_id.includes('/') ? post.book_id.split('/') : [];
+        const file = parts.length ? parts[parts.length - 1] : post.book_id;
+        let folder = parts.length > 1 ? parts.slice(0, -1).join('/') : 'books';
+        if (!folder.startsWith('books/') && folder !== 'books') folder = 'books/' + folder;
+        const book = { folder, file, book_id: post.book_id, book_title: post.book_title || '' };
+        const coverUrl = getCoverForBook(book);
+        const finalCover = getCoverCached(coverUrl) || coverUrl;
+        coverHtml = `<img src="${finalCover}" data-cover-url="${esc(coverUrl)}" loading="lazy"
+          onerror="this.style.display='none'"
+          style="width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;margin-right:10px">`;
+      }
       html += `
-        <div class="post-item" onclick="location.href='Lenta.html?post=${post.id}'">
-          <div class="post-header">
-            <span class="post-title">${escHtml(post.book_title ? '📖 ' + post.book_title : '📝 Пост')}</span>
-            <span class="post-time">${timeAgo}</span>
-          </div>
-          ${post.content ? `<div class="post-content">${escHtml(post.content)}</div>` : ''}
-          <div class="post-stats">
-            <span>❤️ ${post.likes_count || 0}</span>
-            <span>💬 ${post.comments_count || 0}</span>
+        <div class="post-item" onclick="location.href='Lenta.html?post=${post.id}'" style="display:flex;align-items:flex-start">
+          ${coverHtml}
+          <div style="flex:1;min-width:0">
+            <div class="post-header">
+              <span class="post-title">${escHtml(post.book_title ? '📖 ' + post.book_title : '📝 Пост')}</span>
+              <span class="post-time">${timeAgo}</span>
+            </div>
+            ${post.content ? `<div class="post-content">${escHtml(post.content)}</div>` : ''}
+            <div class="post-stats">
+              <span>❤️ ${post.likes_count || 0}</span>
+              <span>💬 ${post.comments_count || 0}</span>
+            </div>
           </div>
         </div>
       `;
     });
     html += '</div>';
     container.innerHTML = html;
+    container.querySelectorAll('img[data-cover-url]').forEach(img => {
+      const cv = img.getAttribute('data-cover-url');
+      if (cv && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(cv);
+    });
   }
 
   // ================================================================
@@ -2132,7 +2228,7 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
   // ================================================================
   async function removeFavoriteDirect(bookId) {
     if (!bookId) return;
-    if (!confirm('Хориҷ кардани китоб аз закладка?')) return;
+    if (!await showConfirmDialog('Хориҷ кардани китоб аз закладка?', 'Тасдиқ', 'Хориҷ кунед')) return;
     try {
       const token = localStorage.getItem('kk_token');
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites/' + encodeURIComponent(bookId), {
@@ -2143,13 +2239,10 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
       favoritesData = favoritesData.filter(f => f.book_id !== bookId);
       el('ownMarks').textContent = favoritesData.length;
       renderFavorites();
-      // Инвалидируем кэш закладок для текущего пользователя
       if (typeof CacheManager !== 'undefined') {
-        const key = 'kk_favorites_' + currentProfileUserId;
-        CacheManager.invalidateKey(key);
+        CacheManager.invalidateKey('kk_favorites_' + currentProfileUserId);
       }
-      alert('Аз закладка хориҷ шуд!');
-    } catch (e) { alert('Хатогӣ: ' + e.message); }
+    } catch (e) { await showAlertDialog('Хатогӣ: ' + e.message, 'Хатогӣ'); }
   }
 
   // ================================================================
@@ -2442,12 +2535,77 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
   // ================================================================
   // ============ НАСТРОЙКИ (Тамос бо мо) ============
   // ================================================================
-  function initSettings() {
-    // Кнопка "Тамос бо мо" в настройках открывает модалку связи
-    const settingsContactBtn = document.getElementById('settingsContactBtn');
-    if (settingsContactBtn) {
-      settingsContactBtn.addEventListener('click', openFeedbackModal);
+  const settingsOverlay = el('settingsOverlay');
+  const aboutOverlay = el('aboutOverlay');
+
+  function openSettings() {
+    // Обновляем состояние темы
+    const isLight = document.body.getAttribute('data-theme') === 'light' ||
+                    document.documentElement.classList.contains('light-theme') ||
+                    document.body.classList.contains('light-theme');
+    updateThemeUI(isLight);
+    // Показываем кнопки выхода/удаления только для своего профиля
+    const logoutRow = el('settingsLogout');
+    const deleteRow = el('settingsDelete');
+    if (isOwnProfile) {
+      if (logoutRow) logoutRow.style.display = 'flex';
+      if (deleteRow) deleteRow.style.display = 'flex';
+    } else {
+      if (logoutRow) logoutRow.style.display = 'none';
+      if (deleteRow) deleteRow.style.display = 'none';
     }
+    settingsOverlay.classList.add('open');
+  }
+
+  function closeSettings() { settingsOverlay.classList.remove('open'); }
+  el('closeSettings').addEventListener('click', closeSettings);
+  settingsOverlay.addEventListener('click', function(e) { if (e.target === settingsOverlay) closeSettings(); });
+
+  function showAboutApp() {
+    closeSettings();
+    setTimeout(() => aboutOverlay.classList.add('open'), 200);
+  }
+  el('closeAbout').addEventListener('click', () => aboutOverlay.classList.remove('open'));
+  aboutOverlay.addEventListener('click', function(e) { if (e.target === aboutOverlay) aboutOverlay.classList.remove('open'); });
+
+  function updateThemeUI(isLight) {
+    const icon = el('settingsThemeIcon');
+    const label = el('settingsThemeLabel');
+    const knob = el('themeToggleKnob');
+    const sw = el('themeToggleSwitch');
+    if (isLight) {
+      if (icon) icon.textContent = '☀️';
+      if (label) label.textContent = 'Рӯзи рӯшноӣ';
+      if (knob) knob.style.left = '25px';
+      if (sw) sw.style.background = 'var(--gold)';
+    } else {
+      if (icon) icon.textContent = '🌙';
+      if (label) label.textContent = 'Тарзи шаб';
+      if (knob) knob.style.left = '3px';
+      if (sw) sw.style.background = 'var(--card-2)';
+    }
+  }
+
+  function toggleThemeGlobal() {
+    const isCurrentlyLight = localStorage.getItem('kk_theme') === 'light';
+    const newTheme = isCurrentlyLight ? 'dark' : 'light';
+    localStorage.setItem('kk_theme', newTheme);
+    // Применяем на текущей странице
+    document.body.setAttribute('data-theme', newTheme);
+    document.body.classList.toggle('light-theme', newTheme === 'light');
+    document.documentElement.classList.toggle('light-theme', newTheme === 'light');
+    updateThemeUI(newTheme === 'light');
+  }
+  window.toggleThemeGlobal = toggleThemeGlobal;
+  window.openSettings = openSettings;
+  window.showAboutApp = showAboutApp;
+
+  function initSettings() {
+    // Применяем сохранённую тему при загрузке
+    const saved = localStorage.getItem('kk_theme') || 'dark';
+    document.body.setAttribute('data-theme', saved);
+    document.body.classList.toggle('light-theme', saved === 'light');
+    document.documentElement.classList.toggle('light-theme', saved === 'light');
   }
 
   // ================================================================
