@@ -145,8 +145,9 @@ self.addEventListener('notificationclick', function(event) {
   const data = event.notification.data || {};
   // Определяем URL на основе типа уведомления
   let url = '/kitobkhona/';
-  if (data.type === 'chat' || data.chat_id) {
-    url = '/kitobkhona/chat.html?to=' + (data.chat_id || data.sender_id);
+  if (data.type === 'chat' || data.chat_id || data.sender_id) {
+    // Просто открываем список чатов — безопасно
+    url = '/kitobkhona/chats.html';
   } else if (data.type === 'feed' || data.post_id) {
     url = '/kitobkhona/Lenta.html';
   } else if (data.url) {

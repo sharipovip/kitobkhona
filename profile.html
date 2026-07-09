@@ -1157,7 +1157,6 @@
     <div class="top-actions">
       <div class="icon-btn" id="chatTopBtn" title="Чатҳо" onclick="goToChats()">💬</div>
       <div class="icon-btn" id="feedTopBtn" title="Лента" onclick="location.href='Lenta.html'">📰</div>
-      <div class="icon-btn" id="feedbackBtn" title="Связь с нами" onclick="openFeedbackModal()">📧</div>
       <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none;" onclick="logoutUser()">🚪</div>
       <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none;" onclick="deleteAccount()">🗑</div>
     </div>
@@ -2076,6 +2075,10 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
     return title.trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
+  function normalizeBookUrl(url) {
+    try { return decodeURIComponent(url); } catch(e) { return url; }
+  }
+
   function esc(str) { if (str == null) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function escHtml(str) { return esc(str); }
   function timeSince(dateStr) {
@@ -2374,7 +2377,12 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
     feedbackOverlay.classList.add('open');
     feedbackText.value = '';
     feedbackCategory.value = 'Китоб кушода намешавад';
-    feedbackEmail.value = '';
+    // Автоподстановка email пользователя
+    const userEmail = loadedProfile && loadedProfile.email &&
+      !loadedProfile.email.endsWith('@kitobkhona.tj') &&
+      !loadedProfile.email.endsWith('@guest.kitobkhona.tj')
+      ? loadedProfile.email : '';
+    feedbackEmail.value = userEmail;
   }
   function closeFeedbackModal() {
     feedbackOverlay.classList.remove('open');
@@ -2430,6 +2438,17 @@ const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'К
       this.textContent = '📤 Отправить';
     }
   });
+
+  // ================================================================
+  // ============ НАСТРОЙКИ (Тамос бо мо) ============
+  // ================================================================
+  function initSettings() {
+    // Кнопка "Тамос бо мо" в настройках открывает модалку связи
+    const settingsContactBtn = document.getElementById('settingsContactBtn');
+    if (settingsContactBtn) {
+      settingsContactBtn.addEventListener('click', openFeedbackModal);
+    }
+  }
 
   // ================================================================
   // ============ ЗАПУСК ============

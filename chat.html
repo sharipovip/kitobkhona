@@ -402,6 +402,77 @@
     .light-theme .popup-menu .item:hover {
       background: #f0f0f0;
     }
+
+    .sending-dots {
+      display: inline-block;
+      color: var(--wa-muted);
+      letter-spacing: 2px;
+      animation: sendingPulse 1.2s ease-in-out infinite;
+    }
+    @keyframes sendingPulse {
+      0%, 100% { opacity: 0.3; }
+      50% { opacity: 1; }
+    }
+
+    /* Кастомный диалог подтверждения */
+    .confirm-overlay {
+      position: fixed;
+      inset: 0;
+      z-index: 9999;
+      background: rgba(0,0,0,0.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+      backdrop-filter: blur(4px);
+    }
+    .confirm-box {
+      background: #1a2830;
+      border: 1px solid rgba(255,255,255,0.12);
+      border-radius: 18px;
+      padding: 22px 20px 16px;
+      max-width: 320px;
+      width: 100%;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.7);
+    }
+    .confirm-title {
+      font-size: 15px;
+      font-weight: 700;
+      color: #E9EDEF;
+      margin-bottom: 8px;
+    }
+    .confirm-msg {
+      font-size: 13.5px;
+      color: #8696A0;
+      line-height: 1.5;
+      margin-bottom: 18px;
+    }
+    .confirm-btns {
+      display: flex;
+      gap: 10px;
+    }
+    .confirm-btns button {
+      flex: 1;
+      padding: 11px;
+      border-radius: 12px;
+      font-size: 13.5px;
+      font-weight: 700;
+      border: none;
+      cursor: pointer;
+      transition: opacity .15s;
+    }
+    .confirm-btns button:active { opacity: 0.8; }
+    .confirm-cancel {
+      background: rgba(255,255,255,0.08);
+      color: #E9EDEF;
+    }
+    .confirm-ok {
+      background: #075E54;
+      color: #fff;
+    }
+    .confirm-ok.danger {
+      background: #c0392b;
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -515,10 +586,29 @@
   });
 
   // ===== УДАЛИТЬ ЧАТ =====
+  function showConfirm(message, okText, isDanger) {
+    return new Promise(resolve => {
+      const overlay = document.createElement('div');
+      overlay.className = 'confirm-overlay';
+      overlay.innerHTML = `
+        <div class="confirm-box">
+          <div class="confirm-title">Чат</div>
+          <div class="confirm-msg">${esc(message)}</div>
+          <div class="confirm-btns">
+            <button class="confirm-cancel" id="cCancel">Не</button>
+            <button class="confirm-ok${isDanger ? ' danger' : ''}" id="cOk">${esc(okText || 'Ха')}</button>
+          </div>
+        </div>`;
+      document.body.appendChild(overlay);
+      overlay.querySelector('#cOk').onclick = () => { overlay.remove(); resolve(true); };
+      overlay.querySelector('#cCancel').onclick = () => { overlay.remove(); resolve(false); };
+    });
+  }
+
   async function deleteChat() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
-    if (!confirm('Оё мехоҳед тамоми таърихи чатро нест кунед?')) return;
+    if (!await showConfirm('Оё мехоҳед тамоми таърихи чатро нест кунед?', 'Нест кунед', true)) return;
     try {
       const token = localStorage.getItem('kk_token');
       const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
@@ -527,27 +617,20 @@
         body: JSON.stringify({ user1: currentUserId, user2: peerId })
       });
       if (!resp.ok) throw new Error('Ошибка удаления');
-      // Инвалидируем кэш
-      if (CacheManager) {
-        CacheManager.invalidateKey(getCacheKey());
-      }
-      alert('Чат удалён.');
+      if (CacheManager) CacheManager.invalidateKey(getCacheKey());
       location.href = 'chats.html';
     } catch (e) {
-      alert('Ошибка: ' + e.message);
+      alert('Хатогӣ: ' + e.message);
     }
   }
 
   // ===== ОЧИСТИТЬ ЧАТ =====
   async function clearChatLocal() {
     popupMenu.classList.remove('open');
-    if (!confirm('Оё мехоҳед паёмҳоро аз интерфейс тоза кунед?')) return;
+    if (!await showConfirm('Оё мехоҳед паёмҳоро аз интерфейс тоза кунед?', 'Тоза кунед', false)) return;
     const container = document.getElementById('messages');
     container.innerHTML = '<div class="loading-msg">Чат очищен</div>';
-    // Инвалидируем кэш
-    if (CacheManager) {
-      CacheManager.invalidateKey(getCacheKey());
-    }
+    if (CacheManager) CacheManager.invalidateKey(getCacheKey());
     setTimeout(() => { loadMessages(false); }, 500);
   }
 
@@ -555,7 +638,7 @@
   async function reportUser() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
-    if (!confirm('Шумо мехоҳед шикоят фиристед?')) return;
+    if (!await showConfirm('Шумо мехоҳед шикоят фиристед?', 'Фиристед', false)) return;
     try {
       await ChatAPI.sendReport(currentUserId, peerId, 'Жалоба от пользователя');
       alert('Шикоят фиристода шуд!');
@@ -773,10 +856,11 @@
     input.style.height = '0';
     input.style.height = input.scrollHeight + 'px';
 
+    const tempId = 'temp_' + Date.now();
     const time = timeLabel(new Date().toISOString());
     const msgContainer = document.getElementById('messages');
     const dateLabel = formatDate(new Date().toISOString());
-    const lastDateEl = msgContainer.querySelector('.date-sep:last-child');
+    const lastDateEl = msgContainer.querySelector('.date-sep:last-of-type');
     if (!lastDateEl || lastDateEl.textContent !== dateLabel) {
       const sep = document.createElement('div');
       sep.className = 'date-sep';
@@ -785,6 +869,7 @@
     }
     const row = document.createElement('div');
     row.className = 'msg-row out';
+    row.dataset.tempId = tempId;
     const bubble = document.createElement('div');
     bubble.className = 'bubble out';
     const textEl = document.createElement('div');
@@ -793,8 +878,8 @@
     textEl.querySelector('.bubble-text').textContent = text;
     const meta = document.createElement('div');
     meta.className = 'bubble-meta';
-    const singleCheck = `<span class="check"><svg width="12" height="10" viewBox="0 0 12 10" fill="none"><path d="M1 5L4.5 8.5L11 1" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
-    meta.innerHTML = time + ' ' + singleCheck;
+    // Анимация отправки (три точки)
+    meta.innerHTML = time + ' <span class="sending-dots">...</span>';
     bubble.appendChild(textEl);
     bubble.appendChild(meta);
     row.appendChild(bubble);
@@ -803,9 +888,11 @@
 
     try {
       const sentMsg = await ChatAPI.sendMessage(currentUserId, peerId, text);
-      const checkSpan = meta.querySelector('.check');
-      checkSpan.className = 'check read';
-      checkSpan.innerHTML = `<svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+      // Заменяем анимацию на галочку
+      const dotsEl = meta.querySelector('.sending-dots');
+      if (dotsEl) {
+        dotsEl.outerHTML = `<span class="check read"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+      }
       if (CacheManager) {
         const cacheKey = getCacheKey();
         const cached = CacheManager.get(cacheKey) || [];
@@ -814,12 +901,12 @@
           CacheManager.set(cacheKey, cached);
         }
       }
+      // Обновляем в фоне без перерисовки всего чата
       void refreshMessagesFromServer(true);
     } catch (e) {
-      const checkSpan = meta.querySelector('.check');
-      checkSpan.textContent = '⚠';
+      const dotsEl = meta.querySelector('.sending-dots');
+      if (dotsEl) dotsEl.textContent = '⚠';
       console.error(e);
-      alert('Хатогӣ дар фиристодан: ' + e.message);
     }
   }
 

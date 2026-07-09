@@ -138,7 +138,7 @@ const ensureCoverDataUrl = async (url, imgEl) => {
   const cached = getCachedCoverDataUrl(url);
   if (cached) { if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached); return cached; }
   try {
-    const r = await fetch(url, { cache: 'no-store' });
+    const r = await fetch(url); // Используем стандартный кэш браузера
     if (!r.ok) return '';
     const blob = await r.blob();
     const dataUrl = await CacheManager?.blobToDataUrl(blob) || '';
@@ -545,69 +545,42 @@ function renderCategories(cats) {
 }
 
 async function loadHome() {
-  let categories = CacheManager.get(CacheManager.KEYS.CATEGORIES);
-  if (!categories) {
-    try {
-      const d = await loadBooksJson();
-      categories = d.categories || [];
-      CacheManager.set(CacheManager.KEYS.CATEGORIES, categories);
-    } catch (e) {
-      console.error('Failed to load categories', e);
-      return;
-    }
-  }
-  
-  const homeCategories = categories.filter(c => c.id !== 'peshvoi_millat');
-  renderCategories(homeCategories);
-  
-  CacheManager.subscribe(CacheManager.KEYS.CATEGORIES, (newData) => {
-    if (newData) {
-      renderCategories(newData.filter(c => c.id !== 'peshvoi_millat'));
-    } else {
-      loadBooksJson().then(d => {
-        const cats = d.categories || [];
-        CacheManager.set(CacheManager.KEYS.CATEGORIES, cats);
-      });
-    }
-  });
-
-  // Книги Пешвои Миллат – загружаем отдельно
   try {
     const d = await loadBooksJson();
-    // Поиск категории президента должен быть максимально точным, иначе на части устройств/сетей может не найтись.
-    // В books.json категория имеет id: "peshvoi_millat".
+    const categories = d.categories || [];
+    CacheManager.set(CacheManager.KEYS.CATEGORIES, categories);
+
+    const homeCategories = categories.filter(c => c.id !== 'peshvoi_millat');
+    renderCategories(homeCategories);
+
+    // Книги Пешвои Миллат
     const priority =
-      d.categories.find(c => c.id === 'peshvoi_millat') ||
-      d.categories.find(c => c.priority || /пешвои|пешвои миллат|асосгузор|peshvoi|president|эмомали|эмомалӣ/i.test([c.name, c.id, c.folder_raw].filter(Boolean).join(' ')));
+      categories.find(c => c.id === 'peshvoi_millat') ||
+      categories.find(c => /пешвои|peshvoi|president|эмомали/i.test([c.name, c.id].join(' ')));
 
-    if (!priority) {
-      // чтобы понять на мобилках, что именно не найдено
-      try {
-        console.warn('[Home] President category not found. Categories ids:', (d.categories||[]).slice(0,15).map(x=>x.id));
-      } catch(e) {}
-      return;
+    if (priority) {
+      const folders = (priority.subs && priority.subs.length)
+        ? priority.subs
+        : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
+
+      let all = [];
+      for (const ps of folders) {
+        try {
+          const folder = ps.folder || ps.folder_raw || ('books/' + (ps.name || ''));
+          const arr = await loadManifest({ ...ps, folder });
+          all.push(...arr.map(b => ({ ...b, _folder: folder })));
+        } catch(e) {}
+      }
+
+      if (all.length) {
+        $('pesvoSection').style.display = 'block';
+        $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
+        hydrateBookCardCovers($('pesvoBooks'));
+      }
     }
-
-    const folders = (priority.subs && priority.subs.length)
-      ? priority.subs
-      : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
-
-    let all = [];
-    for (const ps of folders) {
-      try {
-        // В loadManifest ожидается ps.folder
-        const folder = ps.folder || ps.folder_raw || ('books/' + (ps.name || ''));
-        const arr = await loadManifest({ ...ps, folder });
-        all.push(...arr.map(b => ({ ...b, _folder: folder })));
-      } catch(e) {}
-    }
-
-    if (all.length) {
-      $('pesvoSection').style.display = 'block';
-      $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
-      hydrateBookCardCovers($('pesvoBooks'));
-    }
-  } catch(e) { console.warn('President books load error', e); }
+  } catch (e) {
+    console.error('loadHome error', e);
+  }
 
   // Популярные книги с кэшем
   await loadPopularBooksCached();

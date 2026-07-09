@@ -947,7 +947,12 @@
   let activeBookElement = null;
 
   function getCoverCacheMap() {
-    try { return JSON.parse(localStorage.getItem('kk_cover_cache') || '{}'); } catch(e) { return {}; }
+    try {
+      // Читаем из обоих ключей (старый + новый CacheManager)
+      const map1 = JSON.parse(localStorage.getItem('kk_cover_cache') || '{}');
+      const map2 = JSON.parse(localStorage.getItem('kk_cache_covers') || '{}');
+      return Object.assign({}, map1, map2);
+    } catch(e) { return {}; }
   }
   function setCoverCacheMap(map) {
     try { localStorage.setItem('kk_cover_cache', JSON.stringify(map)); } catch(e) {}
@@ -980,7 +985,7 @@
       return cached;
     }
     try {
-      const r = await fetch(url, { cache: 'no-store' });
+      const r = await fetch(url); // Используем стандартный кэш браузера для обложек
       if (!r.ok) return '';
       const blob = await r.blob();
       const dataUrl = await blobToDataUrl(blob);
@@ -1201,18 +1206,21 @@
       }
     });
 
-    // Рейтинги
-    document.querySelectorAll('.bk').forEach(async (el) => {
+    // Рейтинги (загружаются асинхронно в фоне, не блокируя UI)
+    document.querySelectorAll('.bk').forEach((el) => {
       const bookId = decodeURIComponent(el.dataset.bookid);
       if (!bookId) return;
-      const stats = await getBookStats(bookId);
-      const badge = el.querySelector('.rating-badge');
-      if (stats && stats.avg_rating) {
-        const avg = parseFloat(stats.avg_rating);
-        badge.textContent = `⭐ ${avg.toFixed(1)} (${stats.ratings_count || 0})`;
-      } else {
-        badge.textContent = '⭐ —';
-      }
+      getBookStats(bookId).then(stats => {
+        const badge = el.querySelector('.rating-badge');
+        if (badge) {
+          if (stats && stats.avg_rating) {
+            const avg = parseFloat(stats.avg_rating);
+            badge.textContent = `⭐ ${avg.toFixed(1)} (${stats.ratings_count || 0})`;
+          } else {
+            badge.textContent = '⭐ —';
+          }
+        }
+      });
     });
 
     // Обработчики кнопок
@@ -1304,7 +1312,6 @@
     })();
   }
   function handleShare(url, name) {
-    toast('Омодасозии китоб...');
     shareFile(url, name);
   }
   function openReader(url, name, cover = '') {
@@ -1462,9 +1469,17 @@
     const cacheKey = 'kk_books_' + sub.folder;
     // Пытаемся взять из кэша
     let list = CacheManager ? CacheManager.get(cacheKey) : null;
-    if (list) {
+    if (list && list.length) {
       books = list;
       renderBooks(list);
+      // Обновляем в фоне
+      fetchManifest(sub).then(fresh => {
+        if (fresh && fresh.length) {
+          if (CacheManager) CacheManager.set(cacheKey, fresh);
+          books = fresh;
+          renderBooks(fresh);
+        }
+      }).catch(() => {});
       return;
     }
     // Если нет в кэше – загружаем
@@ -1473,7 +1488,6 @@
       list = await fetchManifest(sub);
       books = list;
       renderBooks(list);
-      // Сохраняем в кэш
       if (CacheManager) CacheManager.set(cacheKey, list);
     } catch(e) {
       grid.innerHTML = '<div class="empty">Хатогӣ: ' + esc(e.message) + '</div>';

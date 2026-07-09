@@ -394,6 +394,10 @@ function blobToBase64(blob) {
   });
 }
 
+function getToastEl() {
+  return document.getElementById('toast') || document.querySelector('.toast');
+}
+
 async function shareFile(url, name) {
   try {
     let blob = null;
@@ -403,8 +407,8 @@ async function shareFile(url, name) {
       if (hit) blob = await hit.blob();
     }
     if (!blob) {
-      const toastEl = document.getElementById('toast');
-      if (toastEl) { toastEl.textContent = 'Омодасозии китоб...'; toastEl.classList.add('show'); setTimeout(() => toastEl.classList.remove('show'), 3000); }
+      const toastEl = getToastEl();
+      if (toastEl) { toastEl.textContent = 'Омодасозии китоб...'; toastEl.classList.add('show'); }
       const r = await fetch(url, { cache: 'force-cache' });
       if (!r.ok) throw new Error('HTTP ' + r.status);
       blob = await r.blob();
@@ -417,12 +421,16 @@ async function shareFile(url, name) {
     if (isAndroid() && typeof AndroidBridge.shareFile === 'function') {
       const b64 = await blobToBase64(blob);
       AndroidBridge.shareFile(b64, fileName, 'application/pdf');
+      const toastEl = getToastEl();
+      if (toastEl) { toastEl.classList.remove('show'); }
       return;
     }
     if (navigator.canShare && navigator.share) {
       const file = new File([blob], fileName, { type: 'application/pdf' });
       if (navigator.canShare({ files: [file] })) {
         await navigator.share({ title: name, files: [file] });
+        const toastEl = getToastEl();
+        if (toastEl) { toastEl.classList.remove('show'); }
         return;
       }
     }
@@ -432,11 +440,11 @@ async function shareFile(url, name) {
     document.body.appendChild(a);
     a.click();
     setTimeout(() => document.body.removeChild(a), 5000);
-    const toastEl = document.getElementById('toast');
+    const toastEl = getToastEl();
     if (toastEl) { toastEl.textContent = 'Файл боргирӣ шуд'; toastEl.classList.add('show'); setTimeout(() => toastEl.classList.remove('show'), 3000); }
   } catch(e) {
     if (e.name !== 'AbortError') {
-      const toastEl = document.getElementById('toast');
+      const toastEl = getToastEl();
       if (toastEl) { toastEl.textContent = 'Мубодила нашуд: ' + e.message; toastEl.classList.add('show'); setTimeout(() => toastEl.classList.remove('show'), 3000); }
     }
   }
@@ -444,7 +452,7 @@ async function shareFile(url, name) {
 
 async function downloadFile(url, name, showProgress = true) {
   try {
-    const toastEl = document.getElementById('toast');
+    const toastEl = getToastEl();
     if (toastEl && showProgress) {
       toastEl.textContent = 'Ҳифз шуда истодааст... 0%';
       toastEl.classList.add('show');
@@ -511,7 +519,7 @@ async function downloadFile(url, name, showProgress = true) {
       setTimeout(() => toastEl.classList.remove('show'), 2000);
     }
   } catch(e) {
-    const toastEl = document.getElementById('toast');
+    const toastEl = getToastEl();
     if (toastEl) {
       toastEl.textContent = 'Хатогӣ: ' + e.message;
       toastEl.classList.add('show');
