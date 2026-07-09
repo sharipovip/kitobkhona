@@ -277,7 +277,9 @@ const CacheManager = {
     return localStorage.getItem('kk_user_id');
   },
 
-  _restoreAll() {},
+  _restoreAll() {
+    // Подписчики получат текущие значения при вызове subscribe()
+  },
 
   _refreshStale() {
     Object.keys(this._subscribers).forEach(key => {
@@ -293,31 +295,25 @@ const CacheManager = {
     });
   },
 
-  // Универсальная функция для обновления обложек и бейджей
-  hydrateBookCardCovers(root = document) {
-    const self = this;
-    root.querySelectorAll('img[data-cover-url]').forEach(function(img) {
-      const cover = img.getAttribute('data-cover-url') || '';
-      const bookUrl = img.getAttribute('data-book-url') || '';
-      const cached = self.getCachedCover(cover);
-      const src = cached || cover;
-      if (src && img.getAttribute('src') !== src) img.setAttribute('src', src);
-      const state = self.getBookAccessState(bookUrl);
-      if (state.show) {
-        const badge = img.parentElement ? img.parentElement.querySelector('[data-book-badge]') : null;
-        if (badge) {
-          badge.style.display = 'flex';
-          badge.textContent = state.icon;
-          badge.style.background = state.bg;
-        }
-        if (state.dim) img.style.filter = 'brightness(0.72)';
-      } else {
-        const badge = img.parentElement ? img.parentElement.querySelector('[data-book-badge]') : null;
-        if (badge) badge.style.display = 'none';
-        img.style.filter = '';
-      }
-      if (cover) self.preloadCover(cover, bookUrl);
-    });
+  preloadCover(src) {
+    if (!src) return;
+    fetch(src, { cache: 'no-store' })
+      .then(r => r.ok ? r.blob() : null)
+      .then(blob => {
+        if (!blob) return;
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const dataUrl = reader.result || '';
+          if (!dataUrl) return;
+          try {
+            const map = JSON.parse(localStorage.getItem('kk_cover_cache') || '{}');
+            map[src] = { dataUrl, ts: Date.now() };
+            localStorage.setItem('kk_cover_cache', JSON.stringify(map));
+          } catch (e) {}
+        };
+        reader.readAsDataURL(blob);
+      })
+      .catch(() => {});
   }
 };
 
