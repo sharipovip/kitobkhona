@@ -942,27 +942,91 @@
     'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t=' + Date.now()
   ];
   const $ = id => document.getElementById(id);
-const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
-   let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
-   let activeBookElement = null;
+  const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
+  let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
+  let activeBookElement = null;
 
-   // Функции кэширования обложек теперь в CacheManager - используем их
-   const getCachedCoverDataUrl = (url) => CacheManager?.getCachedCover(url) || '';
-   const setCachedCoverDataUrl = (url, dataUrl) => CacheManager?.setCachedCover(url, dataUrl);
-   const ensureCoverDataUrl = async (url, imgEl) => {
-     const cached = getCachedCoverDataUrl(url);
-     if (cached) { if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached); return cached; }
-     try {
-       const r = await fetch(url, { cache: 'no-store' });
-       if (!r.ok) return '';
-       const blob = await r.blob();
-       const dataUrl = await CacheManager?.blobToDataUrl(blob) || '';
-       if (dataUrl) { setCachedCoverDataUrl(url, dataUrl); if (imgEl) imgEl.setAttribute('src', dataUrl); }
-       return dataUrl;
-     } catch(e) { return ''; }
-   };
+  function getCoverCacheMap() {
+    try { return JSON.parse(localStorage.getItem('kk_cover_cache') || '{}'); } catch(e) { return {}; }
+  }
+  function setCoverCacheMap(map) {
+    try { localStorage.setItem('kk_cover_cache', JSON.stringify(map)); } catch(e) {}
+  }
+  function getCachedCoverDataUrl(url) {
+    if (!url) return '';
+    const map = getCoverCacheMap();
+    const item = map[url];
+    if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) return item.dataUrl;
+    return '';
+  }
+  function setCachedCoverDataUrl(url, dataUrl) {
+    if (!url || !dataUrl) return;
+    const map = getCoverCacheMap();
+    map[url] = { dataUrl, ts: Date.now() };
+    setCoverCacheMap(map);
+  }
+  function blobToDataUrl(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result || '');
+      reader.readAsDataURL(blob);
+    });
+  }
+  async function ensureCoverDataUrl(url, imgEl) {
+    if (!url) return '';
+    const cached = getCachedCoverDataUrl(url);
+    if (cached) {
+      if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached);
+      return cached;
+    }
+    try {
+      const r = await fetch(url, { cache: 'no-store' });
+      if (!r.ok) return '';
+      const blob = await r.blob();
+      const dataUrl = await blobToDataUrl(blob);
+      setCachedCoverDataUrl(url, dataUrl);
+      if (imgEl) imgEl.setAttribute('src', dataUrl);
+      return dataUrl;
+    } catch(e) {
+      return '';
+    }
+  }
+  function getBookAccessState(url) {
+    const cached = !!cachedMap()[url];
+    const online = navigator.onLine;
+    if (!online) {
+      return cached
+        ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+        : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
+    }
+    return { show: false, icon: '', bg: '', dim: false };
+  }
+  function hydrateBookCardCovers(root = document) {
+    const nodes = root.querySelectorAll('img[data-cover-url]');
+    nodes.forEach(img => {
+      const cover = img.getAttribute('data-cover-url') || '';
+      const bookUrl = img.getAttribute('data-book-url') || '';
+      const state = getBookAccessState(bookUrl);
+      const coverSrc = getCachedCoverDataUrl(cover) || cover;
+      if (coverSrc && img.getAttribute('src') !== coverSrc) img.setAttribute('src', coverSrc);
+      if (state.show) {
+        const badge = img.parentElement?.querySelector('[data-book-badge]');
+        if (badge) {
+          badge.style.display = 'flex';
+          badge.textContent = state.icon;
+          badge.style.background = state.bg;
+        }
+        if (state.dim && img.style.filter !== 'brightness(0.72)') img.style.filter = 'brightness(0.72)';
+      } else {
+        const badge = img.parentElement?.querySelector('[data-book-badge]');
+        if (badge) badge.style.display = 'none';
+        img.style.filter = '';
+      }
+      if (cover) ensureCoverDataUrl(cover, img);
+    });
+  }
 
-   // ===== ЗАГРУЗКА BOOKS.JSON (оригинальная) =====
+  // ===== ЗАГРУЗКА BOOKS.JSON (оригинальная) =====
   async function fetchJsonFast(u, ms = 4500) {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), ms);
