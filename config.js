@@ -381,10 +381,9 @@ function getDeviceFingerprint() {
 }
 
 function isAndroid() {
-  try {
-    return !!(window.KitobAndroid && (KitobAndroid.isAndroidApp === true || (typeof KitobAndroid.isAndroidApp === 'function' && KitobAndroid.isAndroidApp())));
-  } catch(e) { return false; }
-}
+   try { return !!(window.KitobAndroid && (KitobAndroid.isAndroidApp === true || typeof KitobAndroid.saveFile === 'function')); }
+   catch(e) { return false; }
+ }
 
 function blobToBase64(blob) {
   return new Promise((resolve, reject) => {

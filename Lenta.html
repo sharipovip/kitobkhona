@@ -1425,14 +1425,33 @@ function renderPosts(posts){
     return;
   }
 
-  let html = '';
-  const userId = currentUserId;
-  posts.forEach(post => {
-    const timeAgo = timeSince(post.created_at);
-    const displayName = post.display_name || post.username || 'Корбар';
-    const avatarHtml = post.avatar_url
-      ? `<img src="${post.avatar_url}" alt="">`
-      : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+let html = '';
+   const userId = currentUserId;
+   posts.forEach(post => {
+     const timeAgo = timeSince(post.created_at);
+     const displayName = post.display_name || post.username || 'Корбар';
+     const avatarHtml = post.avatar_url
+       ? `<img src="${post.avatar_url}" alt="">`
+       : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+
+     let progressData = null;
+     if (post.book_id && bookProgressMap[post.book_id]) {
+       progressData = bookProgressMap[post.book_id];
+     }
+
+     let statusHtml = '', progressHtml = '';
+     if (progressData) {
+       const statusText = progressData.statusText === 'finished' ? '✅ Хатм кард' : '📖 Дар ҳоли хондан';
+       const chipClass = progressData.statusText === 'finished' ? 'chip-finished' : 'chip-reading';
+       statusHtml = `<div class="status-chip ${chipClass}">${statusText}</div>`;
+       const prog = progressData.progress || 0;
+       progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
+     }
+
+     // Кешируем обложку книги
+     const coverUrl = post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '';
+     const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
+     const finalCoverUrl = cachedCover || coverUrl;
 
     let progressData = null;
     if (post.book_id && bookProgressMap[post.book_id]) {
@@ -1448,21 +1467,20 @@ function renderPosts(posts){
       progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
     }
 
-    let bookBlock = '';
-    if (post.book_id) {
-      const coverUrl = getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id });
-      const author = post.book_author || '';
-      bookBlock = `
-        <div class="book-block" onclick="openBookFromPost('${post.book_id}','${post.book_title||''}')">
-          <div class="thumb" style="background:var(--card2);"><img src="${coverUrl}" alt="" onerror="this.style.display='none'"></div>
-          <div class="book-info">
-            <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
-            <div class="book-author">${escHtml(author)}</div>
-            ${statusHtml}${progressHtml}
-          </div>
-        </div>
-      `;
-    }
+let bookBlock = '';
+     if (post.book_id) {
+       const author = post.book_author || '';
+       bookBlock = `
+         <div class="book-block" onclick="openBookFromPost('${post.book_id}','${post.book_title||''}')">
+           <div class="thumb" style="background:var(--card2);"><img src="${finalCoverUrl}" alt="" onerror="this.style.display='none'"></div>
+           <div class="book-info">
+             <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
+             <div class="book-author">${escHtml(author)}</div>
+             ${statusHtml}${progressHtml}
+           </div>
+         </div>
+       `;
+     }
 
     // Лайк поста
     const liked = post.liked ? 'liked' : '';
@@ -1550,10 +1568,20 @@ function renderPosts(posts){
         ${commentsBlock}
       </div>
     `;
-  });
-  feed.innerHTML = html;
+});
+   feed.innerHTML = html;
 
-  // ==== НАВЕШИВАЕМ СОБЫТИЯ (без изменений) ====
+   // Предзагружаем обложки к кэшу
+   if (CacheManager && CacheManager.preloadCover) {
+     feed.querySelectorAll('img[src]').forEach(img => {
+       const src = img.getAttribute('src');
+       if (src && src.includes('githubusercontent.com')) {
+         CacheManager.preloadCover(src);
+       }
+     });
+   }
+
+   // ==== НАВЕШИВАЕМ СОБЫТИЯ (без изменений) ====
   document.querySelectorAll('.like-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();

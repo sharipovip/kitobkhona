@@ -1,5 +1,5 @@
 // ====================================================================
-//  cache.js – Управление кэшем и WebSocket-уведомлениями (v3)
+//  cache.js – Управление кэшем, WebSocket и обложками (v4)
 // ====================================================================
 
 const CacheManager = {
@@ -16,13 +16,12 @@ const CacheManager = {
     WINNERS: 'kk_cache_winners',
     HIDDEN: 'kk_cache_hidden',
     ANNOUNCEMENT: 'kk_cache_announcement',
-    NOTIFICATIONS: 'kk_cache_notifications'
+    NOTIFICATIONS: 'kk_cache_notifications',
+    COVERS: 'kk_cache_covers'
   },
 
-  // Подписчики: { key: [callback, ...] }
+  // Подписчики и WebSocket-соединение
   _subscribers: {},
-
-  // WebSocket-соединение
   _ws: null,
   _wsConnected: false,
   _reconnectTimer: null,
@@ -30,19 +29,83 @@ const CacheManager = {
   _maxReconnectAttempts: 5,
   _initialized: false,
 
+  // ---------- КЕШИРОВАНИЕ ОБЛОЖЕК ----------
+  getCachedCover(src) {
+    if (!src) return '';
+    try {
+      const map = JSON.parse(localStorage.getItem(this.KEYS.COVERS) || '{}');
+      const item = map[src];
+      if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) {
+        return item.dataUrl;
+      }
+    } catch (e) {}
+    return '';
+  },
+
+  setCachedCover(src, dataUrl) {
+    if (!src || !dataUrl) return;
+    try {
+      const map = JSON.parse(localStorage.getItem(this.KEYS.COVERS) || '{}');
+      map[src] = { dataUrl, ts: Date.now() };
+      localStorage.setItem(this.KEYS.COVERS, JSON.stringify(map));
+    } catch (e) {}
+  },
+
+  // Предзагрузка обложки в фоне
+  preloadCover(src, bookUrl) {
+    if (!src || this.getCachedCover(src)) return;
+    fetch(src, { cache: 'no-store' })
+      .then(r => r.ok ? r.blob() : null)
+      .then(blob => {
+        if (!blob) return;
+        this.blobToDataUrl(blob).then(dataUrl => {
+          this.setCachedCover(src, dataUrl);
+        });
+      })
+      .catch(() => {})
+  },
+
+  blobToDataUrl(blob) {
+    return new Promise((resolve) => {
+      const reader = new FileReader();
+      reader.onloadend = () => resolve(reader.result || '');
+      reader.readAsDataURL(blob);
+    });
+  },
+
+  // Обновление всех обложек на странице
+  hydrateCovers(root = document) {
+    const nodes = root.querySelectorAll('img[data-cover-url]');
+    nodes.forEach(img => {
+      const cover = img.getAttribute('data-cover-url') || '';
+      const bookUrl = img.getAttribute('data-book-url') || '';
+      const cached = this.getCachedCover(cover);
+      const src = cached || cover;
+      if (src && img.getAttribute('src') !== src) img.setAttribute('src', src);
+      if (cover && !cached) this.preloadCover(cover, bookUrl);
+    });
+  },
+
+  // Глобальная функция для проверки доступа к книге
+  getBookAccessState(url) {
+    try {
+      const cached = !!(JSON.parse(localStorage.getItem('kk_cached_books') || '{}') || {})[url];
+      const online = navigator.onLine;
+      if (!online) {
+        return cached
+          ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+          : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
+      }
+    } catch (e) {}
+    return { show: false, icon: '', bg: '', dim: false };
+  },
+
   // Инициализация (вызывается при загрузке страницы)
   init() {
-    // Если уже инициализирован, не повторяем
     if (this._initialized) return;
     this._initialized = true;
-
-    // Восстанавливаем данные из localStorage при старте
     this._restoreAll();
-    // Подключаемся к WebSocket (неблокирующе)
     setTimeout(() => this._connectWebSocket(), 100);
-    // Каждые 15 минут проверяем устаревание кэша.
-    // На медленных смартфонах частые инвалидации могут мешать (особенно в паре с WebSocket).
-    // Поэтому делаем это реже: раз в 2 часа.
     setInterval(() => this._refreshStale(), 2 * 60 * 60 * 1000);
   },
 
@@ -52,7 +115,6 @@ const CacheManager = {
       const raw = localStorage.getItem(key);
       if (!raw) return fallback;
       const data = JSON.parse(raw);
-      // Если есть timestamp и данные старше 15 минут – считаем устаревшими
       if (data.timestamp && (Date.now() - data.timestamp > 15 * 60 * 1000)) {
         localStorage.removeItem(key);
         return fallback;
@@ -89,7 +151,7 @@ const CacheManager = {
     }
   },
 
-  // Инвалидировать ключ (удалить из localStorage и уведомить подписчиков)
+  // Инвалидировать ключ
   invalidateKey(key) {
     localStorage.removeItem(key);
     this._notify(key, null);
@@ -99,12 +161,10 @@ const CacheManager = {
   subscribe(key, callback) {
     if (!this._subscribers[key]) this._subscribers[key] = [];
     this._subscribers[key].push(callback);
-    // Сразу вызываем с текущим значением
     const current = this.get(key);
     if (current !== null && current !== undefined) {
       callback(current);
     }
-    // Возвращаем функцию отписки
     return () => {
       this._subscribers[key] = this._subscribers[key].filter(cb => cb !== callback);
     };
@@ -118,27 +178,21 @@ const CacheManager = {
     }
   },
 
-  // ---------- WebSocket (Синхронизирован с KITOB_CONFIG) ----------
+  // ---------- WebSocket ----------
   _connectWebSocket() {
-    // Если уже есть активное соединение, не создаём новое
     if (this._ws && (this._ws.readyState === WebSocket.OPEN || this._ws.readyState === WebSocket.CONNECTING)) {
       return;
     }
 
     const token = localStorage.getItem('kk_token');
-    if (!token) {
-      return;
-    }
+    if (!token) return;
 
-    // Автоматически строим WebSocket URL на основе KITOB_CONFIG.NEON_API_BASE
     let wsUrl;
     try {
       const baseApi = KITOB_CONFIG.NEON_API_BASE;
-      // Заменяем http/https протокол на ws/wss
       const wsTarget = baseApi.replace(/^http/, 'ws');
       wsUrl = `${wsTarget}?token=${encodeURIComponent(token)}`;
     } catch (err) {
-      console.error('[Cache] Error parsing KITOB_CONFIG.NEON_API_BASE, using fallback.');
       wsUrl = `wss://kitobkhona-chat.onrender.com?token=${encodeURIComponent(token)}`;
     }
 
@@ -160,25 +214,21 @@ const CacheManager = {
           if (msg.type === 'cache_update') {
             this._handleUpdate(msg.data);
           }
-        } catch (e) {
-          // Invalid message, ignore
-        }
+        } catch (e) {}
       };
 
-      this._ws.onclose = (event) => {
+      this._ws.onclose = () => {
         this._wsConnected = false;
-        // Попытка переподключения через 5 секунд, но не более _maxReconnectAttempts раз
         if (this._wsAttempts < this._maxReconnectAttempts) {
           this._wsAttempts++;
           this._reconnectTimer = setTimeout(() => this._connectWebSocket(), 5000);
         }
       };
 
-      this._ws.onerror = (err) => {
+      this._ws.onerror = () => {
         if (this._ws) this._ws.close();
       };
     } catch (e) {
-      // Failed to create WebSocket, will retry
       if (this._wsAttempts < this._maxReconnectAttempts) {
         this._wsAttempts++;
         this._reconnectTimer = setTimeout(() => this._connectWebSocket(), 5000);
@@ -188,9 +238,8 @@ const CacheManager = {
 
   // Обработка уведомления от сервера
   _handleUpdate(payload) {
-    const { table, operation, data } = payload;
+    const { table, data } = payload;
 
-    // В зависимости от таблицы обновляем соответствующий кэш
     switch (table) {
       case 'reading_sessions':
         this.invalidateKey(this.KEYS.SESSIONS);
@@ -205,7 +254,6 @@ const CacheManager = {
         this.invalidateKey(this.KEYS.POSTS);
         break;
       case 'profiles':
-        // Если обновился текущий пользователь – инвалидируем профиль
         if (data && data.user_id === this._getCurrentUserId()) {
           this.invalidateKey(this.KEYS.PROFILE);
         }
@@ -222,22 +270,15 @@ const CacheManager = {
       case 'notifications':
         this.invalidateKey(this.KEYS.NOTIFICATIONS);
         break;
-      default:
-        break;
     }
   },
 
-  // Получить ID текущего пользователя из localStorage
   _getCurrentUserId() {
     return localStorage.getItem('kk_user_id');
   },
 
-  // Восстановить все данные из localStorage (заглушка)
-  _restoreAll() {
-    // Подписчики получат текущие значения при вызове subscribe()
-  },
+  _restoreAll() {},
 
-  // Периодическая проверка устаревших данных
   _refreshStale() {
     Object.keys(this._subscribers).forEach(key => {
       const raw = localStorage.getItem(key);
@@ -250,10 +291,34 @@ const CacheManager = {
         }
       } catch (e) {}
     });
+  },
+
+  // Универсальная функция для обновления обложек и бейджей
+  hydrateBookCardCovers(root = document) {
+    const self = this;
+    root.querySelectorAll('img[data-cover-url]').forEach(function(img) {
+      const cover = img.getAttribute('data-cover-url') || '';
+      const bookUrl = img.getAttribute('data-book-url') || '';
+      const cached = self.getCachedCover(cover);
+      const src = cached || cover;
+      if (src && img.getAttribute('src') !== src) img.setAttribute('src', src);
+      const state = self.getBookAccessState(bookUrl);
+      if (state.show) {
+        const badge = img.parentElement ? img.parentElement.querySelector('[data-book-badge]') : null;
+        if (badge) {
+          badge.style.display = 'flex';
+          badge.textContent = state.icon;
+          badge.style.background = state.bg;
+        }
+        if (state.dim) img.style.filter = 'brightness(0.72)';
+      } else {
+        const badge = img.parentElement ? img.parentElement.querySelector('[data-book-badge]') : null;
+        if (badge) badge.style.display = 'none';
+        img.style.filter = '';
+      }
+      if (cover) self.preloadCover(cover, bookUrl);
+    });
   }
 };
 
-// ====================================================================
-//  Экспортируем для использования в других скриптах
-// ====================================================================
 window.CacheManager = CacheManager;

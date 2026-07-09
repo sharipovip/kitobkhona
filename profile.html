@@ -1891,45 +1891,58 @@
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
     let html = '<div class="book-grid">';
     booksData.forEach((book, idx) => {
-      const c = colors[idx % colors.length];
-      const isHidden = hiddenBooks.includes(book.book_id);
-      const hiddenClass = isHidden ? 'hidden' : '';
-      const coverUrl = getCoverForBook(book);
-      const views = book.sessions_count || 0;
-      const rating = book.rating || 0;
-      const stars = '⭐'.repeat(Math.round(rating / 2)) || '☆☆☆☆☆';
-      const hours = Math.round(book.total_duration / 60);
-      const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '👁');
-      const bookData = JSON.stringify(book);
-      let overlayContent = '';
-      if (isHidden) {
-        overlayContent = `<div class="hidden-label">🔒 Пинҳон</div>`;
-      } else {
-        overlayContent = `
-          <div class="book-title">${esc(book.book_title)}</div>
-          <div class="book-meta">
-            <span>${statusLabel}</span>
-            <span>⏱ ${hours} мин</span>
-            <span>👁 ${views}</span>
-            <span>${stars}</span>
-          </div>
-        `;
-      }
-      html += `
-        <div class="book-card ${hiddenClass}" data-book='${bookData}' onclick="openBook(this)">
-          <div class="book-cover" style="background-image: url('${coverUrl}');"></div>
-          <div class="book-overlay">
-            ${overlayContent}
-          </div>
-          <div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>
-        </div>
-      `;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-  }
+const c = colors[idx % colors.length];
+       const isHidden = hiddenBooks.includes(book.book_id);
+       const hiddenClass = isHidden ? 'hidden' : '';
+       const coverUrl = getCoverForBook(book);
+       const cachedCover = CacheManager?.getCachedCover(coverUrl) || '';
+       const finalCoverUrl = cachedCover || coverUrl;
+       const views = book.sessions_count || 0;
+       const rating = book.rating || 0;
+       const stars = '⭐'.repeat(Math.round(rating / 2)) || '☆☆☆☆☆';
+       const hours = Math.round(book.total_duration / 60);
+       const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '👁');
+       const bookData = JSON.stringify(book);
+       let overlayContent = '';
+       if (isHidden) {
+         overlayContent = `<div class="hidden-label">🔒 Пинҳон</div>`;
+       } else {
+         overlayContent = `
+           <div class="book-title">${esc(book.book_title)}</div>
+           <div class="book-meta">
+             <span>${statusLabel}</span>
+             <span>⏱ ${hours} мин</span>
+             <span>👁 ${views}</span>
+             <span>${stars}</span>
+           </div>
+         `;
+       }
+       html += `
+         <div class="book-card ${hiddenClass}" data-book='${bookData}' onclick="openBook(this)">
+           <div class="book-cover" style="background-image: url('${finalCoverUrl}');"></div>
+           <div class="book-overlay">
+             ${overlayContent}
+           </div>
+           <div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>
+         </div>
+       `;
+     });
+     html += '</div>';
+     container.innerHTML = html;
 
-  function renderFavorites() {
+     // Предзагружаем обложки в кэш
+     if (CacheManager && CacheManager.preloadCover) {
+       container.querySelectorAll('.book-cover').forEach(el => {
+         const style = el.getAttribute('style') || '';
+         const match = style.match(/url\(['"]?([^'"]+)['"]?\)/);
+         if (match && match[1]) {
+           CacheManager.preloadCover(match[1]);
+         }
+       });
+     }
+   }
+
+   function renderFavorites() {
     const container = el('panelMarks');
     if (!favoritesData.length) {
       container.innerHTML = '<div class="empty-state">Закладка нест</div>';
@@ -1947,27 +1960,39 @@
         folder = parts.join('/');
         if (!folder.startsWith('books/')) folder = 'books/' + folder;
       }
-      const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'Китоб' };
-      const coverUrl = getCoverForBook(book);
-      const bookDataEnc = encodeURIComponent(JSON.stringify(book));
-      html += `
-        <div class="book-card ${c}" style="position:relative;">
-          <div data-book='${bookDataEnc}' onclick="openBook(this)">
-            <div class="book-cover" style="background-image: url('${coverUrl}');"></div>
-            <div class="book-overlay">
-              <div class="book-title">${esc(f.book_title)}</div>
-              <div class="book-meta"><span>⭐ Закладка</span></div>
-            </div>
-          </div>
-          <div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>
-        </div>
-      `;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-  }
+const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'Китоб' };
+       const coverUrl = getCoverForBook(book);
+       const cachedCover = CacheManager?.getCachedCover(coverUrl) || '';
+       const finalCoverUrl = cachedCover || coverUrl;
+       const bookDataEnc = encodeURIComponent(JSON.stringify(book));
+       html += `
+         <div class="book-card ${c}" style="position:relative;">
+           <div data-book='${bookDataEnc}' onclick="openBook(this)">
+             <div class="book-cover" style="background-image: url('${finalCoverUrl}');"></div>
+             <div class="book-overlay">
+               <div class="book-title">${esc(f.book_title)}</div>
+               <div class="book-meta"><span>⭐ Закладка</span></div>
+             </div>
+           </div>
+           <div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>
+         </div>
+       `;
+     });
+     html += '</div>';
+     container.innerHTML = html;
+     // Предзагружаем обложки в кэш
+     if (CacheManager && CacheManager.preloadCover) {
+       container.querySelectorAll('.book-cover').forEach(el => {
+         const style = el.getAttribute('style') || '';
+         const match = style.match(/url\(['"]?([^'"]+)['"]?\)/);
+         if (match && match[1]) {
+           CacheManager.preloadCover(match[1]);
+         }
+       });
+     }
+   }
 
-  function renderPosts() {
+   function renderPosts() {
     const container = el('panelPosts');
     if (!postsData.length) {
       container.innerHTML = '<div class="empty-state">Постҳо нестанд</div>';
