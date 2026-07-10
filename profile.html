@@ -2149,12 +2149,31 @@
     const file = book.file || book.book_id;
     if (!file) return 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
     const manifest = await loadCoversManifest();
-    if (manifest) {
-      let cleanFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
-      let cleanFile = String(file).replace(/\.pdf$/i, '');
-      const key = cleanFolder ? `${cleanFolder}/${cleanFile}` : cleanFile;
+    if (!manifest) {
+      const url = rawUrl(folder, file);
+      const coverList = coverListFromPdfUrl(url);
+      return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+    }
+    let cleanFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
+    let cleanFile = String(file).replace(/\.pdf$/i, '');
+    // Строим все варианты ключа, которые есть в manifest
+    const candidates = [];
+    if (cleanFolder) {
+      candidates.push(`${cleanFolder}/${cleanFile}`);
+      candidates.push(`books/${cleanFolder}/${cleanFile}`);
+    }
+    candidates.push(cleanFile);
+    candidates.push(`books/${cleanFile}`);
+    // Если folder был полным путем (с подпапками), пробуем и его целиком
+    const fullFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
+    if (fullFolder && fullFolder !== cleanFolder) {
+      candidates.push(`${fullFolder}/${cleanFile}`);
+      candidates.push(`books/${fullFolder}/${cleanFile}`);
+    }
+    for (const key of candidates) {
       if (manifest[key]) return manifest[key];
     }
+    // Fallback — старая логика
     const url = rawUrl(folder, file);
     const coverList = coverListFromPdfUrl(url);
     return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
