@@ -2004,24 +2004,19 @@
     return '';
   }
 
-  function renderBooks() {
+  async function renderBooks() {
     const container = el('panelBooks');
     if (!booksData.length) {
       container.innerHTML = '<div class="empty-state">Ҳоло китобе хонда нашудааст</div>';
       return;
     }
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
-    let html = '<div class="book-grid">';
-    booksData.forEach((book, idx) => {
+    const cards = await Promise.all(booksData.map(async (book, idx) => {
       const c = colors[idx % colors.length];
       const isHidden = hiddenBooks.includes(book.book_id);
       const hiddenClass = isHidden ? 'hidden' : '';
-      const coverUrl = getCoverForBook(book);
-      const cachedCover = getCoverCached(coverUrl);
-      const finalCoverUrl = cachedCover || coverUrl;
+      const coverUrl = await getCoverForBook(book);
       const views = book.sessions_count || 0;
-      const rating = book.rating || 0;
-      const stars = '⭐'.repeat(Math.round(rating / 2)) || '☆☆☆☆☆';
       const hours = Math.round(book.total_duration / 60);
       const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '👁');
       const bookData = JSON.stringify(book);
@@ -2038,26 +2033,20 @@
           </div>
         `;
       }
-      html += `
+      return `
         <div class="book-card ${hiddenClass} ${c}" data-book='${bookData}' onclick="openBook(this)">
-          <img class="book-cover" src="${finalCoverUrl}" alt="${esc(book.book_title)}" loading="lazy"
-               data-cover-url="${esc(coverUrl)}"
+          <img class="book-cover" src="${coverUrl}" alt="${esc(book.book_title)}" loading="lazy"
                onerror="this.style.display='none'"
                style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
           <div class="book-overlay">${overlayContent}</div>
           <div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>
         </div>
       `;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-    container.querySelectorAll('img[data-cover-url]').forEach(img => {
-      const cv = img.getAttribute('data-cover-url');
-      if (cv && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(cv);
-    });
+    }));
+    container.innerHTML = '<div class="book-grid">' + cards.join('') + '</div>';
   }
 
-   function renderFavorites() {
+   async function renderFavorites() {
     const container = el('panelMarks');
     if (!favoritesData.length) {
       container.innerHTML = '<div class="empty-state">Закладка нест</div>';
@@ -2065,7 +2054,8 @@
     }
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
     let html = '<div class="book-grid">';
-    favoritesData.slice(0, 9).forEach((f, idx) => {
+    for (let idx = 0; idx < Math.min(favoritesData.length, 9); idx++) {
+      const f = favoritesData[idx];
       const c = colors[idx % colors.length];
       let folder = 'books', file = f.book_id || '';
       if (f.book_id && f.book_id.includes('/')) {
@@ -2075,14 +2065,12 @@
         if (!folder.startsWith('books/')) folder = 'books/' + folder;
       }
       const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'Китоб' };
-      const coverUrl = getCoverForBook(book);
-      const finalCoverUrl = getCoverCached(coverUrl) || coverUrl;
+      const coverUrl = await getCoverForBook(book);
       const bookDataEnc = encodeURIComponent(JSON.stringify(book));
       html += `
-        <div class="book-card ${c}" style="position:relative;">
+        <div class="book-card ${c}">
           <div data-book='${bookDataEnc}' onclick="openBook(this)" style="width:100%;height:100%;display:block">
-            <img class="book-cover" src="${finalCoverUrl}" alt="${esc(f.book_title)}" loading="lazy"
-                 data-cover-url="${esc(coverUrl)}"
+            <img class="book-cover" src="${coverUrl}" alt="${esc(f.book_title)}" loading="lazy"
                  onerror="this.style.display='none'"
                  style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
             <div class="book-overlay">
@@ -2093,25 +2081,19 @@
           <div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>
         </div>
       `;
-    });
+    }
     html += '</div>';
     container.innerHTML = html;
-    container.querySelectorAll('img[data-cover-url]').forEach(img => {
-      const cv = img.getAttribute('data-cover-url');
-      if (cv && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(cv);
-    });
   }
 
-  function renderPosts() {
+  async function renderPosts() {
     const container = el('panelPosts');
     if (!postsData.length) {
       container.innerHTML = '<div class="empty-state">Постҳо нестанд</div>';
       return;
     }
-    let html = '<div class="post-list">';
-    postsData.forEach(post => {
+    const items = await Promise.all(postsData.map(async (post) => {
       const timeAgo = timeSince(post.created_at);
-      // Обложка книги если есть book_id
       let coverHtml = '';
       if (post.book_id) {
         const parts = post.book_id.includes('/') ? post.book_id.split('/') : [];
@@ -2119,13 +2101,12 @@
         let folder = parts.length > 1 ? parts.slice(0, -1).join('/') : 'books';
         if (!folder.startsWith('books/') && folder !== 'books') folder = 'books/' + folder;
         const book = { folder, file, book_id: post.book_id, book_title: post.book_title || '' };
-        const coverUrl = getCoverForBook(book);
-        const finalCover = getCoverCached(coverUrl) || coverUrl;
-        coverHtml = `<img src="${finalCover}" data-cover-url="${esc(coverUrl)}" loading="lazy"
+        const coverUrl = await getCoverForBook(book);
+        coverHtml = `<img src="${coverUrl}" loading="lazy"
           onerror="this.style.display='none'"
           style="width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;margin-right:10px">`;
       }
-      html += `
+      return `
         <div class="post-item" onclick="location.href='Lenta.html?post=${post.id}'" style="display:flex;align-items:flex-start">
           ${coverHtml}
           <div style="flex:1;min-width:0">
@@ -2141,22 +2122,39 @@
           </div>
         </div>
       `;
-    });
-    html += '</div>';
-    container.innerHTML = html;
-    container.querySelectorAll('img[data-cover-url]').forEach(img => {
-      const cv = img.getAttribute('data-cover-url');
-      if (cv && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(cv);
-    });
+    }));
+    container.innerHTML = '<div class="post-list">' + items.join('') + '</div>';
   }
 
   // ================================================================
   // ============ ВСПОМОГАТЕЛЬНЫЕ ДЛЯ КНИГ ============
   // ================================================================
-  function getCoverForBook(book) {
+  let coversManifestCache = null;
+
+  async function loadCoversManifest() {
+    if (coversManifestCache) return coversManifestCache;
+    try {
+      const r = await fetch('https://raw.githubusercontent.com/sharipovip/books/main/covers_manifest.json');
+      if (!r.ok) return null;
+      coversManifestCache = await r.json();
+      return coversManifestCache;
+    } catch (e) {
+      console.warn('[Covers] manifest yuklab bo‘lmadi, eskasi ishlatilmoqda:', e);
+      return null;
+    }
+  }
+
+  async function getCoverForBook(book) {
     const folder = book.folder || 'books';
     const file = book.file || book.book_id;
     if (!file) return 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+    const manifest = await loadCoversManifest();
+    if (manifest) {
+      let cleanFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
+      let cleanFile = String(file).replace(/\.pdf$/i, '');
+      const key = cleanFolder ? `${cleanFolder}/${cleanFile}` : cleanFile;
+      if (manifest[key]) return manifest[key];
+    }
     const url = rawUrl(folder, file);
     const coverList = coverListFromPdfUrl(url);
     return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
@@ -2227,7 +2225,7 @@
   // ================================================================
   // ============ ОТКРЫТИЕ КНИГИ ============
   // ================================================================
-  function openBook(book) {
+  async function openBook(book) {
     if (!book) return;
     if (typeof book === 'object' && book.getAttribute) {
       const raw = book.getAttribute('data-book');
@@ -2254,7 +2252,7 @@
     if (file.includes('/')) file = file.split('/').pop();
     const url = rawUrl(folder, file);
     const name = book.book_title || file.replace(/\.pdf$/i, '') || 'Китоб';
-    const cover = getCoverForBook(book);
+    const cover = await getCoverForBook(book);
     const normUrl = normalizeBookUrl(url);
     location.href = `reader.html?url=${encodeURIComponent(normUrl)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
   }
