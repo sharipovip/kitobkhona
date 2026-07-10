@@ -2135,11 +2135,12 @@
     if (coversManifestCache) return coversManifestCache;
     try {
       const r = await fetch('https://raw.githubusercontent.com/sharipovip/books/main/covers_manifest.json');
-      if (!r.ok) return null;
+      if (!r.ok) { console.warn('[Covers] manifest HTTP', r.status); return null; }
       coversManifestCache = await r.json();
+      console.log('[Covers] manifest yuklandi,', Object.keys(coversManifestCache).length, 'ta kalit');
       return coversManifestCache;
     } catch (e) {
-      console.warn('[Covers] manifest yuklab bo‘lmadi, eskasi ishlatilmoqda:', e);
+      console.warn('[Covers] manifest yuklab bo‘lmadi:', e);
       return null;
     }
   }
@@ -2149,34 +2150,35 @@
     const file = book.file || book.book_id;
     if (!file) return 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
     const manifest = await loadCoversManifest();
-    if (!manifest) {
+    let source = 'manifest';
+    let coverUrl = null;
+    if (manifest) {
+      let cleanFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
+      let cleanFile = String(file).replace(/\.pdf$/i, '');
+      const candidates = [];
+      if (cleanFolder) {
+        candidates.push(`${cleanFolder}/${cleanFile}`);
+        candidates.push(`books/${cleanFolder}/${cleanFile}`);
+      }
+      candidates.push(cleanFile);
+      candidates.push(`books/${cleanFile}`);
+      const fullFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
+      if (fullFolder && fullFolder !== cleanFolder) {
+        candidates.push(`${fullFolder}/${cleanFile}`);
+        candidates.push(`books/${fullFolder}/${cleanFile}`);
+      }
+      for (const key of candidates) {
+        if (manifest[key]) { coverUrl = manifest[key]; break; }
+      }
+    }
+    if (!coverUrl) {
+      source = 'fallback';
       const url = rawUrl(folder, file);
       const coverList = coverListFromPdfUrl(url);
-      return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+      coverUrl = coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
     }
-    let cleanFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
-    let cleanFile = String(file).replace(/\.pdf$/i, '');
-    // Строим все варианты ключа, которые есть в manifest
-    const candidates = [];
-    if (cleanFolder) {
-      candidates.push(`${cleanFolder}/${cleanFile}`);
-      candidates.push(`books/${cleanFolder}/${cleanFile}`);
-    }
-    candidates.push(cleanFile);
-    candidates.push(`books/${cleanFile}`);
-    // Если folder был полным путем (с подпапками), пробуем и его целиком
-    const fullFolder = String(folder).replace(/^main\//, '').replace(/^books\//, '');
-    if (fullFolder && fullFolder !== cleanFolder) {
-      candidates.push(`${fullFolder}/${cleanFile}`);
-      candidates.push(`books/${fullFolder}/${cleanFile}`);
-    }
-    for (const key of candidates) {
-      if (manifest[key]) return manifest[key];
-    }
-    // Fallback — старая логика
-    const url = rawUrl(folder, file);
-    const coverList = coverListFromPdfUrl(url);
-    return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+    console.log('[Covers]', source, '|', 'file:', file, '| folder:', folder, '| url:', coverUrl);
+    return coverUrl;
   }
 
   function rawUrl(folder, file) {
