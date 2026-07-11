@@ -3,1168 +3,1241 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>Китобхона — Лента</title>
+<title>Китобхона — Шортс</title>
 <script src="config.js"></script>
 <script src="cache.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-  /* ================================================================
-     ЕДИНЫЙ СТИЛЬ (все стили внутри)
-     ================================================================ */
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+/* ============================================================
+   БАЗОВЫЕ СТИЛИ
+   ============================================================ */
+*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
-  :root {
-    --bg: #0D1B2A;
-    --bg2: #142236;
-    --card: #1A2D44;
-    --card2: #1E3350;
-    --gold: #C9A84C;
-    --gold2: #E8C96D;
-    --text: #F0EAD6;
-    --muted: #A8B8CC;
-    --dim: #6B7F96;
-    --border: rgba(201,168,76,0.18);
-    --shadow: rgba(0,0,0,0.4);
-    --gold-soft: rgba(201,168,76,0.14);
-    --green-soft: rgba(79,157,112,0.16);
-    --red-soft: rgba(189,86,80,0.16);
-    --teal-soft: rgba(76,146,174,0.16);
-  }
+:root {
+  --gold: #C9A84C;
+  --gold2: #E8C96D;
+  --bg: #0D1B2A;
+  --card: #1A2D44;
+  --border: rgba(201,168,76,0.18);
+  --text: #F0EAD6;
+  --muted: #A8B8CC;
+  --dim: #6B7F96;
+}
 
-  .light-theme {
-    --bg: #F5F0E8;
-    --bg2: #EDE6D6;
-    --card: #fff;
-    --card2: #FAF7F0;
-    --text: #1A2D44;
-    --muted: #4A5D73;
-    --dim: #8A9AAD;
-    --shadow: rgba(0,0,0,0.12);
-    --gold-soft: rgba(182,134,58,0.12);
-    --green-soft: rgba(63,126,88,0.12);
-    --red-soft: rgba(168,70,63,0.12);
-    --teal-soft: rgba(56,110,131,0.12);
-  }
+html, body {
+  width: 100%; height: 100%;
+  background: #000;
+  overflow: hidden;
+  font-family: 'Roboto', sans-serif;
+  display: flex; justify-content: center; align-items: center;
+}
 
-  html, body {
-    width: 100%;
-    height: 100%;
-    background: var(--bg);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--text);
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
+.app {
+  width: 430px; height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: #000;
+}
 
-  .app {
-    width: 430px;
-    height: 100vh;
-    max-height: 100vh;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    border-radius: 0 !important; /* прямые углы */
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
+/* ============================================================
+   TOAST
+   ============================================================ */
+.toast {
+  position: absolute; bottom: 90px; left: 50%;
+  transform: translateX(-50%) translateY(20px);
+  background: rgba(30,50,80,0.95);
+  color: var(--text);
+  padding: 10px 22px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  font-size: 13px; font-weight: 600;
+  z-index: 999; opacity: 0;
+  transition: 0.25s; pointer-events: none;
+  white-space: nowrap;
+}
+.toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
 
-  /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
-  .top-app-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px 8px;
-    flex: 0 0 auto;
-    border-bottom: 1px solid var(--border);
-  }
-  .brand-mini {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .brand-mini svg {
-    width: 28px;
-    height: 28px;
-  }
-  .brand-mini span {
-    font-family: 'Noto Serif', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--gold);
-  }
-  .top-actions {
-    display: flex;
-    gap: 6px;
-  }
-  .icon-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: var(--gold);
-    cursor: pointer;
-    transition: 0.15s;
-  }
-  .icon-btn:hover {
-    background: var(--card2);
-  }
+/* ============================================================
+   SHORTS VIEW
+   ============================================================ */
+#shortsView {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+}
+#shortsView.hidden { display: none; }
 
-  /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
-  .screen-area {
-    flex: 1 1 auto;
-    overflow: hidden;
-    position: relative;
-  }
-  .screen {
-    position: absolute;
-    inset: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 8px 0 12px 0;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(201,168,76,0.2) transparent;
-  }
-  .screen::-webkit-scrollbar {
-    width: 4px;
-  }
-  .screen::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  .screen::-webkit-scrollbar-thumb {
-    background: rgba(201,168,76,0.2);
-    border-radius: 2px;
-  }
+.shorts-topbar {
+  position: absolute; top: 0; left: 0; right: 0;
+  z-index: 50;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 10px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.65) 0%, transparent 100%);
+}
+.shorts-logo {
+  display: flex; align-items: center; gap: 8px;
+}
+.shorts-logo svg { width: 26px; height: 26px; }
+.shorts-logo span {
+  font-family: 'Noto Serif', serif;
+  font-size: 19px; font-weight: 700;
+  color: var(--gold);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.5);
+}
+.top-icon-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.18);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 17px; cursor: pointer;
+  backdrop-filter: blur(4px);
+  transition: 0.15s;
+  color: #fff;
+}
+.top-icon-btn:hover { background: rgba(255,255,255,0.22); }
+.top-right-btns { display: flex; gap: 8px; align-items: center; }
 
-  /* ===== ЛЕНТА (ПОСТЫ) ===== */
-  .feed {
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 6px 14px 10px;
-  }
-  .post-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 14px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-  .post-card:hover {
-    border-color: var(--gold);
-  }
+/* Carousel (CSS snap) */
+.shorts-container {
+  width: 100%; height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.shorts-container::-webkit-scrollbar { display: none; }
 
-  .post-head {
-    display: flex;
-    align-items: center;
-    gap: 10px;
-  }
-  .av {
-    width: 40px;
-    height: 40px;
-    border-radius: 50%;
-    padding: 2px;
-    background: conic-gradient(var(--gold), var(--dim), var(--gold));
-    flex: 0 0 auto;
-    cursor: pointer;
-  }
-  .av-inner {
-    width: 100%;
-    height: 100%;
-    border-radius: 50%;
-    background: var(--card2);
-    border: 2px solid var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    overflow: hidden;
-  }
-  .av-inner img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-    border-radius: 50%;
-  }
-  .av-inner svg {
-    width: 20px;
-    height: 20px;
-  }
-  .post-head-text {
-    flex: 1;
-    min-width: 0;
-    cursor: pointer;
-  }
-  .post-head-text:hover .post-name {
-    color: var(--gold);
-  }
-  .post-name {
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--text);
-    transition: 0.1s;
-  }
-  .post-time {
-    font-size: 11px;
-    color: var(--muted);
-  }
+/* Single short slide */
+.short-slide {
+  width: 100%; height: 100vh;
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  position: relative;
+  overflow: hidden;
+  display: flex; align-items: flex-end;
+}
 
-  .post-caption {
-    font-size: 13px;
-    color: var(--dim);
-    line-height: 1.45;
-    word-break: break-word;
-  }
+/* Book cover background */
+.slide-bg {
+  position: absolute; inset: 0;
+  background: #0d1b2a;
+}
+.slide-bg img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: blur(8px) brightness(0.35);
+  transform: scale(1.08);
+}
+.slide-cover-center {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 52%; max-width: 200px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
+  border-radius: 8px;
+  overflow: hidden;
+  z-index: 2;
+}
+.slide-cover-center img {
+  width: 100%; display: block;
+}
 
-  /* ===== БЛОК КНИГИ ===== */
-  .book-block {
-    display: flex;
-    gap: 11px;
-    align-items: center;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px;
-    cursor: pointer;
-    transition: 0.1s;
-  }
-  .book-block:hover {
-    background: var(--card2);
-  }
-  .thumb {
-    position: relative;
-    width: 54px;
-    height: 76px;
-    border-radius: 7px;
-    flex: 0 0 auto;
-    overflow: hidden;
-    box-shadow: 0 6px 14px -6px rgba(0,0,0,0.55);
-    background: var(--card2);
-  }
-  .thumb img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-  .thumb::before {
-    content: "";
-    position: absolute;
-    left: 0;
-    top: 0;
-    bottom: 0;
-    width: 16%;
-    background: rgba(0,0,0,0.3);
-  }
-  .book-info {
-    flex: 1;
-    min-width: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .book-title {
-    font-family: 'Noto Serif', serif;
-    font-size: 14px;
-    font-weight: 700;
-    color: var(--text);
-    line-height: 1.2;
-  }
-  .book-author {
-    font-size: 11.5px;
-    color: var(--muted);
-  }
-  .status-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 10.5px;
-    font-weight: 700;
-    padding: 3px 8px;
-    border-radius: 999px;
-    width: fit-content;
-    margin-top: 2px;
-  }
-  .chip-reading {
-    color: #4C92AE;
-    background: var(--teal-soft);
-    border: 1px solid rgba(76,146,174,0.3);
-  }
-  .chip-finished {
-    color: #4F9D70;
-    background: var(--green-soft);
-    border: 1px solid rgba(79,157,112,0.3);
-  }
-  .chip-achieve {
-    color: var(--gold);
-    background: var(--gold-soft);
-    border: 1px solid var(--border);
-  }
-  .progress-track {
-    height: 5px;
-    border-radius: 4px;
-    background: var(--border);
-    margin-top: 4px;
-    overflow: hidden;
-  }
-  .progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold2));
-    border-radius: 4px;
-  }
+/* Text overlay */
+.slide-text-layer {
+  position: absolute;
+  bottom: 120px; left: 20px; right: 80px;
+  z-index: 10;
+}
+.slide-text-overlay {
+  line-height: 1.55;
+  word-break: break-word;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1);
+  /* subtitle‑style: not solid bg */
+}
+.slide-user {
+  font-size: 13px; font-weight: 700;
+  color: #fff; margin-bottom: 4px;
+  display: flex; align-items: center; gap: 6px;
+}
+.slide-user .at { color: var(--gold); }
+.slide-book-name {
+  font-size: 11.5px; color: rgba(255,255,255,0.7);
+  margin-bottom: 8px;
+  display: flex; align-items: center; gap: 5px;
+}
+.slide-hashtags {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;
+}
+.slide-hashtag {
+  font-size: 11px; color: #7EC8E3;
+  font-weight: 600;
+}
 
-  /* ===== ЛАЙКИ ПОСТА И РЕЙТИНГ КНИГИ ===== */
-  .post-actions {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    flex-wrap: wrap;
-    margin-top: 4px;
-  }
-  .like-btn {
-    background: transparent;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--muted);
-    padding: 2px 4px;
-  }
-  .like-btn.liked {
-    color: #BD5650;
-  }
-  .like-btn .cnt {
-    font-size: 12px;
-    font-weight: 700;
-  }
-  .comment-icon {
-    color: var(--muted);
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    cursor: default;
-  }
+/* Right sidebar */
+.slide-sidebar {
+  position: absolute; right: 10px; bottom: 100px;
+  z-index: 20;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.sidebar-btn {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  cursor: pointer;
+}
+.sidebar-icon {
+  width: 44px; height: 44px; border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+  backdrop-filter: blur(6px);
+  border: 1px solid rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px;
+  transition: 0.15s;
+}
+.sidebar-icon:hover { background: rgba(255,255,255,0.25); transform: scale(1.08); }
+.sidebar-icon.liked { background: rgba(189,86,80,0.35); border-color: rgba(189,86,80,0.5); }
+.sidebar-count {
+  font-size: 11px; font-weight: 700;
+  color: rgba(255,255,255,0.9);
+  text-shadow: 0 1px 4px rgba(0,0,0,0.8);
+}
 
-  .rating-block {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 6px;
-    padding-top: 6px;
-    border-top: 1px solid var(--border);
-    flex-wrap: wrap;
-  }
-  .rating-stars {
-    display: flex;
-    gap: 2px;
-    align-items: center;
-  }
-  .rating-stars .star {
-    font-size: 16px;
-    color: var(--muted);
-    cursor: pointer;
-    transition: .12s;
-    line-height: 1;
-  }
-  .rating-stars .star.on {
-    color: var(--gold);
-  }
-  .rating-stars .star:hover {
-    transform: scale(1.2);
-  }
-  .rating-label {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
-    margin-right: 4px;
-  }
+/* Bottom gradient */
+.slide-bottom-grad {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 220px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.75) 100%);
+  z-index: 5; pointer-events: none;
+}
 
-  /* ===== КОММЕНТАРИИ ===== */
-  .comments-wrapper {
-    margin-top: 8px;
-    border-top: 1px solid var(--border);
-    padding-top: 8px;
-  }
-  .comments-list {
-    display: none;
-    flex-direction: column;
-    gap: 5px;
-    margin-top: 4px;
-  }
-  .comments-list.open {
-    display: flex;
-  }
-  .comment-line {
-    font-size: 12px;
-    color: var(--dim);
-  }
-  .comment-line b {
-    color: var(--text);
-    font-weight: 700;
-  }
-  .show-comments-btn {
-    font-size: 11.5px;
-    color: var(--muted);
-    cursor: pointer;
-    font-weight: 600;
-    margin-bottom: 4px;
-    display: inline-block;
-  }
-  .show-comments-btn:hover {
-    color: var(--gold);
-  }
-  .comment-input-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 4px;
-  }
-  .comment-input-row .av {
-    width: 26px;
-    height: 26px;
-    padding: 1.5px;
-  }
-  .comment-input-row .av-inner {
-    border-width: 1.5px;
-  }
-  .comment-input-row .av-inner svg {
-    width: 13px;
-    height: 13px;
-  }
-  .comment-input {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 999px;
-    padding: 7px 13px;
-    font-size: 12px;
-    color: var(--text);
-    font-family: inherit;
-    outline: none;
-  }
-  .comment-input:focus {
-    border-color: var(--gold);
-  }
-  .send-ic {
-    color: var(--gold);
-    font-size: 16px;
-    cursor: pointer;
-    padding: 4px;
-  }
+/* No posts state */
+.shorts-empty {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  gap: 14px; text-align: center; padding: 40px;
+  color: var(--text);
+}
+.shorts-empty svg { width: 64px; height: 64px; opacity: 0.4; }
+.shorts-empty h3 { font-size: 18px; }
+.shorts-empty p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-  .empty-feed {
-    height: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    gap: 14px;
-    padding: 0 40px;
-    text-align: center;
-  }
-  .empty-feed svg {
-    width: 64px;
-    height: 64px;
-    opacity: 0.5;
-  }
-  .empty-feed h3 {
-    font-size: 17px;
-    color: var(--text);
-  }
-  .empty-feed p {
-    font-size: 13px;
-    color: var(--muted);
-    line-height: 1.55;
-    margin: 0;
-  }
-  .btn {
-    padding: 11px 20px;
-    border-radius: 13px;
-    font-family: inherit;
-    font-size: 13.5px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--text);
-    border: 1.4px solid rgba(220,181,94,0.45);
-  }
-  .btn-primary {
-    background: linear-gradient(180deg, #E8C778, #B68B33);
-    color: #1A1206;
-  }
+/* Create post FAB (shorts mode) */
+.shorts-fab {
+  position: absolute; bottom: 28px; right: 18px;
+  z-index: 50;
+  width: 52px; height: 52px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold2), var(--gold));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px;
+  box-shadow: 0 4px 20px rgba(201,168,76,0.5);
+  transition: 0.15s;
+}
+.shorts-fab:hover { transform: scale(1.05); }
 
-  /* ===== МОДАЛЬНОЕ ОКНО ===== */
-  .modal-overlay {
-    position: absolute;
-    inset: 0;
-    z-index: 100;
-    background: rgba(0,0,0,0.6);
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    opacity: 0;
-    pointer-events: none;
-    transition: opacity .22s ease;
-  }
-  .modal-overlay.open {
-    opacity: 1;
-    pointer-events: auto;
-  }
-  .modal-sheet {
-    width: 100%;
-    max-height: 85%;
-    background: var(--bg2);
-    border-radius: 24px 24px 0 0;
-    border-top: 1px solid var(--border);
-    display: flex;
-    flex-direction: column;
-    transform: translateY(100%);
-    transition: transform .26s cubic-bezier(.32,.72,0,1);
-    padding-bottom: 12px;
-  }
-  .modal-overlay.open .modal-sheet {
-    transform: translateY(0%);
-  }
-  .modal-handle {
-    width: 38px;
-    height: 4px;
-    border-radius: 3px;
-    background: var(--border);
-    margin: 10px auto 4px;
-  }
-  .modal-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 6px 18px 10px;
-  }
-  .modal-head h3 {
-    font-size: 16px;
-    color: var(--text);
-    margin: 0;
-  }
-  .modal-body {
-    padding: 6px 18px 10px;
-    overflow-y: auto;
-    flex: 1;
-  }
-  .modal-body textarea {
-    width: 100%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 12px;
-    font-size: 13px;
-    color: var(--text);
-    font-family: inherit;
-    resize: vertical;
-    min-height: 80px;
-    outline: none;
-  }
-  .modal-body textarea:focus {
-    border-color: var(--gold);
-  }
-  .book-select-row {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin: 10px 0 8px;
-  }
-  .book-select-row select {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: var(--text);
-    font-family: inherit;
-    outline: none;
-  }
-  .book-select-row select:focus {
-    border-color: var(--gold);
-  }
-  .book-select-row input {
-    flex: 1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 11px;
-    padding: 10px 12px;
-    font-size: 13px;
-    color: var(--text);
-    font-family: inherit;
-    outline: none;
-  }
-  .book-select-row input:focus {
-    border-color: var(--gold);
-  }
-  .modal-footer {
-    display: flex;
-    gap: 10px;
-    padding: 8px 18px 4px;
-  }
-  .modal-footer .btn {
-    flex: 1;
-    padding: 12px;
-    font-size: 14px;
-  }
+/* Loader */
+.shorts-loader {
+  position: absolute; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 80; background: #0d1b2a;
+}
+.spinner {
+  width: 36px; height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
 
-  .loader {
-    display: flex;
-    justify-content: center;
-    padding: 20px;
-  }
-  .spinner {
-    width: 28px;
-    height: 28px;
-    border: 3px solid var(--border);
-    border-top-color: var(--gold);
-    border-radius: 50%;
-    animation: spin .8s linear infinite;
-  }
-  @keyframes spin {
-    to { transform: rotate(360deg); }
-  }
+/* ============================================================
+   GRID VIEW
+   ============================================================ */
+#gridView {
+  position: absolute; inset: 0;
+  display: flex; flex-direction: column;
+  background: #0d1b2a;
+}
+#gridView.hidden { display: none; }
 
-  .toast {
-    position: fixed;
-    bottom: 80px;
-    left: 50%;
-    transform: translateX(-50%) translateY(20px);
-    background: var(--card2);
-    color: var(--text);
-    padding: 10px 20px;
-    border-radius: 99px;
-    border: 1px solid var(--border);
-    font-size: 13px;
-    font-weight: 600;
-    box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-    z-index: 200;
-    opacity: 0;
-    transition: 0.2s;
-    pointer-events: none;
-  }
-  .toast.show {
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-  }
+.grid-topbar {
+  flex: 0 0 auto;
+  background: #0d1b2a;
+  border-bottom: 1px solid var(--border);
+  padding: 12px 14px 8px;
+}
+.grid-header-row {
+  display: flex; align-items: center; gap: 10px; margin-bottom: 10px;
+}
+.grid-back-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: var(--card); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer; color: var(--gold);
+  flex: 0 0 auto;
+}
+.grid-header-row h2 {
+  flex: 1;
+  font-family: 'Noto Serif', serif;
+  font-size: 18px; font-weight: 700;
+  color: var(--gold);
+}
+.grid-add-btn {
+  width: 34px; height: 34px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--gold2), var(--gold));
+  border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+}
 
-  /* ================================================================
-     НАВИГАЦИЯ 430×52 (прямые углы) – единая для всех страниц
-     ================================================================ */
-  .nav-bottom {
-    position: relative;
-    width: 100%;
-    height: 52px;
-    flex: 0 0 52px;
-    background: linear-gradient(180deg,
-        rgba(20, 34, 51, 0.40) 0%,
-        rgba(20, 34, 51, 0.35) 20%,
-        rgba(20, 34, 51, 0.30) 40%,
-        rgba(20, 34, 51, 0.25) 60%,
-        rgba(20, 34, 51, 0.20) 75%,
-        rgba(20, 34, 51, 0.10) 90%,
-        rgba(20, 34, 51, 0.05) 100%
-      );
-    backdrop-filter: blur(6px);
-    border-top: 1px solid rgba(201, 168, 76, 0.06);
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 4px;
-    overflow: visible;
-    z-index: 2;
-  }
+.search-bar {
+  display: flex; align-items: center; gap: 8px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 9px 13px;
+  margin-bottom: 8px;
+}
+.search-bar svg { width: 15px; height: 15px; color: var(--dim); flex: 0 0 auto; }
+.search-input {
+  flex: 1; background: none; border: none; outline: none;
+  font-size: 13px; color: var(--text);
+  font-family: inherit;
+}
+.search-input::placeholder { color: var(--dim); }
 
-  .nav-bottom::after {
-    content: '';
-    position: absolute;
-    left: 10px;
-    right: 10px;
-    bottom: 0;
-    height: 2px;
-    background: linear-gradient(90deg,
-        transparent,
-        #D01F2F,
-        #FFFFFF,
-        #1FA463,
-        #D01F2F,
-        #FFFFFF,
-        #1FA463,
-        transparent
-      );
-    background-size: 300% 100%;
-    animation: flagFlow 6s ease-in-out infinite alternate;
-    border-radius: 0 0 2px 2px;
-    z-index: 3;
-    pointer-events: none;
-    opacity: 0.9;
-  }
+.search-filters {
+  display: flex; gap: 6px; overflow-x: auto; padding-bottom: 2px;
+}
+.search-filters::-webkit-scrollbar { display: none; }
+.filter-chip {
+  flex: 0 0 auto;
+  padding: 4px 12px; border-radius: 99px;
+  font-size: 11.5px; font-weight: 600;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid var(--border);
+  color: var(--muted); cursor: pointer;
+  transition: 0.15s;
+}
+.filter-chip.active {
+  background: var(--gold); color: #1A1206; border-color: var(--gold);
+}
 
-  @keyframes flagFlow {
-    0% { background-position: 0% 50%; }
-    50% { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
+.grid-scroll {
+  flex: 1; overflow-y: auto; scrollbar-width: thin;
+  scrollbar-color: rgba(201,168,76,0.2) transparent;
+}
+.grid-cells {
+  display: grid; grid-template-columns: repeat(3, 1fr);
+  gap: 2px; padding: 2px;
+}
+.grid-cell {
+  aspect-ratio: 2/3;
+  position: relative; overflow: hidden;
+  background: var(--card);
+  cursor: pointer;
+}
+.grid-cell img {
+  width: 100%; height: 100%; object-fit: cover;
+  transition: 0.2s;
+}
+.grid-cell:hover img { transform: scale(1.04); }
+.grid-cell-overlay {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  background: linear-gradient(transparent, rgba(0,0,0,0.7));
+  padding: 20px 6px 5px;
+  display: flex; align-items: center; gap: 4px;
+}
+.grid-cell-likes {
+  font-size: 10px; color: rgba(255,255,255,0.85);
+  font-weight: 600;
+}
+.grid-cell-no-cover {
+  width: 100%; height: 100%;
+  background: var(--card);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 32px; opacity: 0.5;
+}
 
-  .kh-nav2 {
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    width: 100%;
-    height: 100%;
-    position: relative;
-    z-index: 2;
-    gap: 2px;
-  }
+/* ============================================================
+   COMMENTS SHEET
+   ============================================================ */
+.comments-sheet-overlay {
+  position: absolute; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.comments-sheet-overlay.open {
+  opacity: 1; pointer-events: auto;
+}
+.comments-sheet {
+  width: 100%; max-height: 70%;
+  background: #142236;
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+}
+.comments-sheet-overlay.open .comments-sheet {
+  transform: translateY(0);
+}
+.sheet-handle {
+  width: 38px; height: 4px; border-radius: 3px;
+  background: var(--border); margin: 10px auto 6px;
+}
+.sheet-title {
+  font-size: 15px; font-weight: 700;
+  color: var(--text); padding: 0 18px 10px;
+  border-bottom: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: space-between;
+}
+.sheet-close {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: rgba(255,255,255,0.08);
+  border: none; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; cursor: pointer;
+}
+.comments-list-inner {
+  flex: 1; overflow-y: auto;
+  padding: 10px 16px;
+  display: flex; flex-direction: column; gap: 10px;
+}
+.comment-item {
+  display: flex; align-items: flex-start; gap: 8px;
+}
+.comment-av {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: var(--card); border: 1.5px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; flex: 0 0 auto; color: var(--gold);
+  font-weight: 700;
+}
+.comment-body { flex: 1; }
+.comment-author {
+  font-size: 12px; font-weight: 700;
+  color: var(--text); margin-bottom: 2px;
+}
+.comment-text { font-size: 13px; color: var(--muted); line-height: 1.4; }
+.comment-del {
+  background: none; border: none;
+  color: #BD5650; font-size: 14px; cursor: pointer;
+  padding: 2px 4px; flex: 0 0 auto;
+}
+.comment-empty {
+  text-align: center; color: var(--dim);
+  font-size: 13px; padding: 20px 0;
+}
+.comment-input-wrap {
+  display: flex; align-items: center; gap: 8px;
+  padding: 10px 14px 16px;
+  border-top: 1px solid var(--border);
+}
+.comment-inp {
+  flex: 1;
+  background: rgba(255,255,255,0.07);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  padding: 9px 14px; font-size: 13px;
+  color: var(--text); outline: none;
+  font-family: inherit;
+}
+.comment-inp:focus { border-color: var(--gold); }
+.comment-send {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--gold); border: none;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 16px; cursor: pointer;
+}
 
-  .nav-item {
-    background: none;
-    border: none;
-    cursor: pointer;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 2px;
-    color: #7FA9A8;
-    padding: 0 2px;
-    transition: color 0.3s;
-    font-size: 0;
-    flex: 1;
-    text-decoration: none;
-  }
+/* ============================================================
+   RATING SHEET
+   ============================================================ */
+.rating-sheet-overlay {
+  position: absolute; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.rating-sheet-overlay.open { opacity: 1; pointer-events: auto; }
+.rating-sheet {
+  width: 100%;
+  background: #142236;
+  border-radius: 20px 20px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 0 0 24px;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+}
+.rating-sheet-overlay.open .rating-sheet { transform: translateY(0); }
+.rating-stars-row {
+  display: flex; justify-content: center; gap: 6px;
+  padding: 24px 20px 10px;
+}
+.r-star {
+  font-size: 32px; cursor: pointer;
+  transition: transform 0.15s;
+  color: var(--dim);
+}
+.r-star:hover { transform: scale(1.25); }
+.r-star.on { color: var(--gold); }
+.rating-label-big {
+  text-align: center; font-size: 13px; color: var(--muted);
+  padding: 4px 20px 16px;
+}
+.rating-submit {
+  display: block; margin: 0 auto;
+  padding: 11px 32px; border-radius: 13px;
+  background: linear-gradient(180deg, var(--gold2), var(--gold));
+  border: none; font-size: 14px; font-weight: 700;
+  color: #1A1206; cursor: pointer;
+}
 
-  .nav-item span {
-    font-size: 9px;
-    color: inherit;
-    font-weight: 500;
-    line-height: 1;
-    letter-spacing: 0.1px;
-    white-space: nowrap;
-  }
+/* ============================================================
+   POST CREATION MODAL
+   ============================================================ */
+.modal-overlay {
+  position: absolute; inset: 0; z-index: 300;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.modal-overlay.open { opacity: 1; pointer-events: auto; }
+.modal-sheet {
+  width: 100%; max-height: 94%;
+  background: #0d1b2a;
+  border-radius: 24px 24px 0 0;
+  border-top: 1px solid var(--border);
+  display: flex; flex-direction: column;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+  overflow: hidden;
+}
+.modal-overlay.open .modal-sheet { transform: translateY(0); }
 
-  .nav-item svg {
-    display: block;
-    width: 20px;
-    height: 20px;
-    color: inherit;
-    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1), color 0.35s ease;
-    will-change: transform;
-  }
+.modal-topbar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 18px 10px;
+  border-bottom: 1px solid var(--border);
+  flex: 0 0 auto;
+}
+.modal-topbar h3 { font-size: 16px; font-weight: 700; color: var(--text); }
+.modal-x {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(255,255,255,0.07); border: none;
+  color: var(--muted); font-size: 15px; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+}
 
-  .nav-item.active {
-    color: #D9B23C;
-  }
+/* Step tabs */
+.modal-steps {
+  display: flex; gap: 4px; padding: 10px 18px;
+  border-bottom: 1px solid var(--border); flex: 0 0 auto;
+}
+.step-tab {
+  flex: 1; padding: 6px; border-radius: 8px;
+  border: none; background: rgba(255,255,255,0.05);
+  color: var(--dim); font-size: 11px; font-weight: 700;
+  cursor: pointer; transition: 0.15s;
+}
+.step-tab.active {
+  background: var(--gold); color: #1A1206;
+}
 
-  .nav-item.active svg {
-    transform: scale(1.2);
-    color: #D9B23C;
-  }
+.modal-body {
+  flex: 1; overflow-y: auto; padding: 14px 18px;
+  scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.2) transparent;
+}
 
-  .person-icon {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-  }
-  .person-icon svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
+/* Step 1 — Text & Book */
+.step-panel { display: none; }
+.step-panel.active { display: block; }
 
-  .book-in-hand {
-    position: absolute;
-    bottom: -2px;
-    right: -4px;
-    width: 10px;
-    height: 12px;
-    background: #D9B23C;
-    border-radius: 2px 3px 3px 2px;
-    opacity: 0;
-    transform: translateX(8px) scale(0.5) rotate(-10deg);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-  }
-  .book-in-hand::before {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    width: 3px;
-    height: 6px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 1px;
-    box-shadow: 4px 0 0 rgba(255,255,255,0.15);
-  }
-  .nav-item.active .book-in-hand {
-    opacity: 1;
-    transform: translateX(0) scale(1) rotate(0deg);
-  }
+.form-label {
+  font-size: 11.5px; font-weight: 700; color: var(--muted);
+  margin-bottom: 5px; display: block;
+}
+.form-textarea {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 12px; padding: 12px;
+  font-size: 14px; color: var(--text);
+  font-family: inherit; resize: none;
+  min-height: 90px; outline: none;
+  line-height: 1.5;
+}
+.form-textarea:focus { border-color: var(--gold); }
 
-  .crown-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-  }
-  .crown-wrap svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .crown-icon {
-    position: absolute;
-    top: -6px;
-    right: -4px;
-    font-size: 10px;
-    opacity: 0;
-    transform: scale(0.5) rotate(-10deg);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    filter: drop-shadow(0 0 4px rgba(217, 178, 60, 0.6));
-  }
-  .nav-item.active .crown-icon {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
+.form-select, .form-input {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  border-radius: 11px; padding: 10px 12px;
+  font-size: 13px; color: var(--text);
+  font-family: inherit; outline: none;
+  margin-bottom: 10px;
+}
+.form-select:focus, .form-input:focus { border-color: var(--gold); }
+.form-select option { background: #1A2D44; }
 
-  .like-wrap {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    margin: 0 auto;
-  }
-  .like-icon {
-    position: absolute;
-    font-size: 10px;
-    opacity: 0;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .like-icon.heart1 { top: -8px; left: -4px; transform: scale(0) rotate(-20deg); }
-  .like-icon.heart2 { top: -11px; left: 6px; transform: scale(0) rotate(20deg); }
-  .like-icon.heart3 { top: -2px; left: 2px; transform: scale(0) rotate(0deg); }
-  .nav-item.active .like-icon { opacity: 1; transform: scale(1) rotate(0deg); }
-  .nav-item.active .like-icon.heart1 { transition-delay: 0.05s; }
-  .nav-item.active .like-icon.heart2 { transition-delay: 0.15s; }
-  .nav-item.active .like-icon.heart3 { transition-delay: 0.25s; }
+/* Step 2 — Style */
+.style-section { margin-bottom: 18px; }
+.style-section-title {
+  font-size: 12px; font-weight: 700;
+  color: var(--muted); margin-bottom: 8px;
+}
 
-  .users-wrap {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    margin: 0 auto;
-  }
-  .person {
-    position: absolute;
-    top: 0;
-    width: 14px;
-    height: 18px;
-    transition: transform 0.4s ease;
-  }
-  .person::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 3px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 12px;
-    height: 10px;
-    border-radius: 5px 5px 0 0;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person.p1 { left: 0; }
-  .person.p2 { right: 0; }
-  .nav-item.active .person.p1 { transform: translateX(8px); }
-  .nav-item.active .person.p2 { transform: translateX(-8px); }
-  .nav-item.active .person::before,
-  .nav-item.active .person::after { background: #D9B23C; }
-  .heart-pop {
-    position: absolute;
-    top: -11px;
-    left: 15px;
-    font-size: 10px;
-    opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    transform: scale(0.5);
-  }
-  .nav-item.active .heart-pop { opacity: 1; transform: scale(1); }
+/* Font picker */
+.font-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+}
+.font-card {
+  padding: 10px 12px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer; transition: 0.15s;
+  text-align: left;
+}
+.font-card:hover { border-color: var(--gold); background: rgba(201,168,76,0.08); }
+.font-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.14); }
+.font-card-preview {
+  font-size: 16px; color: var(--text); line-height: 1.2; margin-bottom: 2px;
+}
+.font-card-name { font-size: 10px; color: var(--dim); }
 
-  .profile-wrap {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    margin: 0 auto;
-  }
-  .person-group {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  .person-small {
-    position: absolute;
-    top: 0;
-    width: 12px;
-    height: 17px;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .person-small::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 2px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person-small::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 10px;
-    height: 8px;
-    border-radius: 4px 4px 0 0;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person-small.ps1 { left: 0; }
-  .person-small.ps2 { left: 50%; transform: translateX(-50%); }
-  .person-small.ps3 { right: 0; }
-  .nav-item.active .person-small.ps1 { transform: translateX(10px) scale(0.8); }
-  .nav-item.active .person-small.ps2 { transform: translateX(0) scale(1.1); }
-  .nav-item.active .person-small.ps3 { transform: translateX(-10px) scale(0.8); }
-  .nav-item.active .person-small::before,
-  .nav-item.active .person-small::after { background: #D9B23C; }
+/* Size picker */
+.size-row { display: flex; gap: 6px; }
+.size-chip {
+  flex: 1; padding: 8px; border-radius: 8px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--muted); text-align: center;
+  cursor: pointer; transition: 0.15s;
+}
+.size-chip.selected { border-color: var(--gold); background: rgba(201,168,76,0.14); color: var(--text); }
+.size-chip span { display: block; font-weight: 700; color: var(--text); }
+.size-chip small { font-size: 9px; color: var(--dim); }
+
+/* Color picker */
+.color-row { display: flex; flex-wrap: wrap; gap: 8px; }
+.color-dot {
+  width: 30px; height: 30px; border-radius: 50%;
+  border: 2px solid transparent; cursor: pointer;
+  transition: 0.15s; flex: 0 0 auto;
+}
+.color-dot.selected { border-color: var(--gold); transform: scale(1.15); }
+.color-custom-wrap { display: flex; align-items: center; gap: 8px; margin-top: 8px; }
+.color-custom-label { font-size: 11px; color: var(--dim); }
+input[type="color"] {
+  width: 36px; height: 30px; border-radius: 6px;
+  border: 1px solid var(--border); background: none;
+  cursor: pointer; padding: 2px;
+}
+
+/* Animation picker */
+.anim-grid {
+  display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
+}
+.anim-card {
+  padding: 9px 12px; border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  cursor: pointer; transition: 0.15s;
+  display: flex; align-items: center; gap: 8px;
+}
+.anim-card:hover { border-color: var(--gold); }
+.anim-card.selected { border-color: var(--gold); background: rgba(201,168,76,0.14); }
+.anim-icon { font-size: 18px; flex: 0 0 auto; }
+.anim-label { font-size: 11.5px; color: var(--text); font-weight: 600; }
+.anim-desc { font-size: 10px; color: var(--dim); }
+
+/* Step 3 — Preview & Hashtags */
+.preview-box {
+  width: 100%; aspect-ratio: 9/13;
+  border-radius: 14px; overflow: hidden;
+  position: relative; background: #0d1b2a;
+  border: 1px solid var(--border);
+  margin-bottom: 14px;
+  display: flex; align-items: flex-end;
+}
+.preview-bg {
+  position: absolute; inset: 0;
+}
+.preview-bg img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  filter: blur(5px) brightness(0.4);
+  transform: scale(1.06);
+}
+.preview-book-img {
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -55%);
+  width: 42%; box-shadow: 0 10px 30px rgba(0,0,0,0.6);
+  border-radius: 6px; overflow: hidden;
+}
+.preview-book-img img { width: 100%; display: block; }
+.preview-grad {
+  position: absolute; bottom: 0; left: 0; right: 0; height: 55%;
+  background: linear-gradient(transparent, rgba(0,0,0,0.85));
+}
+.preview-text-wrap {
+  position: relative; z-index: 5;
+  padding: 10px 14px 14px;
+}
+.preview-text-el {
+  line-height: 1.55; word-break: break-word;
+  text-shadow: 0 2px 10px rgba(0,0,0,0.9);
+  min-height: 20px;
+}
+
+/* Hashtag section */
+.hashtag-section { margin-top: 10px; }
+.hashtag-input-row {
+  display: flex; gap: 8px; margin-bottom: 10px;
+}
+.hashtag-inp {
+  flex: 1; background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 9px 12px; font-size: 13px;
+  color: var(--text); outline: none; font-family: inherit;
+}
+.hashtag-inp:focus { border-color: var(--gold); }
+.hashtag-add-btn {
+  padding: 9px 14px; border-radius: 10px;
+  background: var(--gold); border: none;
+  font-size: 13px; font-weight: 700;
+  color: #1A1206; cursor: pointer;
+}
+.hashtag-chips {
+  display: flex; flex-wrap: wrap; gap: 6px;
+}
+.hashtag-chip {
+  padding: 5px 10px; border-radius: 99px;
+  background: rgba(126,200,227,0.12);
+  border: 1px solid rgba(126,200,227,0.3);
+  color: #7EC8E3; font-size: 12px; font-weight: 600;
+  display: flex; align-items: center; gap: 5px; cursor: pointer;
+}
+.hashtag-chip .rm { color: rgba(255,255,255,0.4); font-size: 11px; }
+.hashtag-suggestions {
+  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;
+}
+.h-suggest {
+  padding: 4px 10px; border-radius: 99px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid var(--border);
+  color: var(--dim); font-size: 11px;
+  cursor: pointer;
+}
+.h-suggest:hover { border-color: var(--gold); color: var(--gold); }
+
+.modal-footer {
+  display: flex; gap: 10px;
+  padding: 10px 18px 16px;
+  flex: 0 0 auto; border-top: 1px solid var(--border);
+}
+.btn-outline {
+  flex: 0 0 auto; padding: 12px 18px; border-radius: 12px;
+  background: transparent; border: 1.4px solid var(--border);
+  color: var(--text); font-size: 13.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.btn-primary {
+  flex: 1; padding: 12px; border-radius: 12px;
+  background: linear-gradient(180deg, var(--gold2), var(--gold));
+  border: none; font-size: 14px; font-weight: 700;
+  color: #1A1206; cursor: pointer; font-family: inherit;
+}
+.btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
+
+/* Nav step btns */
+.step-nav { display: flex; gap: 8px; }
+.step-nav-btn {
+  flex: 1; padding: 11px; border-radius: 12px;
+  border: 1.5px solid var(--border);
+  background: rgba(255,255,255,0.04);
+  color: var(--text); font-size: 13px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: 0.15s;
+}
+.step-nav-btn:hover { border-color: var(--gold); }
+.step-nav-btn.next {
+  background: var(--gold); color: #1A1206; border-color: var(--gold);
+}
+
+/* ============================================================
+   TEXT ANIMATION KEYFRAMES
+   ============================================================ */
+@keyframes textFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes letterPop {
+  from { opacity: 0; transform: translateY(8px) scale(0.8); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+@keyframes wordSlide {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes lineSlide {
+  from { opacity: 0; transform: translateX(-20px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes waveLetter {
+  0%   { transform: translateY(0); }
+  30%  { transform: translateY(-10px); }
+  60%  { transform: translateY(4px); }
+  100% { transform: translateY(0); }
+}
+@keyframes typeChar {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes wordBounce {
+  0%   { opacity: 0; transform: scale(0.3) translateY(20px); }
+  70%  { transform: scale(1.1) translateY(-4px); }
+  100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+@keyframes wordGlow {
+  from { opacity: 0; text-shadow: 0 0 20px currentColor, 0 0 40px currentColor; }
+  to   { opacity: 1; text-shadow: 0 2px 10px rgba(0,0,0,0.8); }
+}
+@keyframes cinematic {
+  0%   { opacity: 0; letter-spacing: 0.4em; }
+  100% { opacity: 1; letter-spacing: normal; }
+}
+@keyframes slideFromBottom {
+  from { opacity: 0; transform: translateY(30px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* Slide fade-in when snapped */
+@keyframes slideEnter {
+  from { opacity: 0; transform: scale(0.97); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+/* ============================================================
+   HELPERS
+   ============================================================ */
+.hidden { display: none !important; }
+.mb8 { margin-bottom: 8px; }
+.mb14 { margin-bottom: 14px; }
+
+/* Confirm dialog */
+.confirm-overlay {
+  position: absolute; inset: 0; z-index: 500;
+  background: rgba(0,0,0,0.7);
+  display: flex; align-items: center; justify-content: center;
+  opacity: 0; pointer-events: none; transition: 0.2s;
+  padding: 30px;
+}
+.confirm-overlay.open { opacity: 1; pointer-events: auto; }
+.confirm-box {
+  background: #142236; border: 1px solid var(--border);
+  border-radius: 18px; padding: 24px 22px;
+  width: 100%; max-width: 320px;
+  text-align: center;
+}
+.confirm-box h4 { font-size: 16px; color: var(--text); margin-bottom: 8px; }
+.confirm-box p { font-size: 13px; color: var(--muted); margin-bottom: 20px; line-height: 1.5; }
+.confirm-btns { display: flex; gap: 10px; }
+.confirm-btns button {
+  flex: 1; padding: 11px; border-radius: 11px;
+  font-size: 13.5px; font-weight: 700; cursor: pointer;
+  font-family: inherit;
+}
+.confirm-cancel { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); }
+.confirm-ok { background: #BD5650; border: none; color: #fff; }
 </style>
 </head>
-<body data-theme="dark">
+<body>
+<div class="app" id="app">
 
-<div class="app">
-  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
-  <div class="top-app-bar">
-    <div class="brand-mini">
-      <svg viewBox="0 0 48 48" fill="none">
-        <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-        <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
-      </svg>
-      <span>Китобхона</span>
+  <!-- ============================================================
+       SHORTS VIEW (default)
+       ============================================================ -->
+  <div id="shortsView">
+
+    <!-- Top bar (above slides, fixed) -->
+    <div class="shorts-topbar">
+      <div class="shorts-logo">
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="#C9A84C" stroke-width="3" stroke-linejoin="round"/>
+          <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="#C9A84C" stroke-width="3" stroke-linejoin="round"/>
+          <line x1="24" y1="10" x2="24" y2="36" stroke="#C9A84C" stroke-width="3"/>
+        </svg>
+        <span>Китобхона</span>
+      </div>
+      <div class="top-right-btns">
+        <button class="top-icon-btn" id="btnOpenGrid" title="Намоиши сетка">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
+            <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </button>
+      </div>
     </div>
-    <div class="top-actions">
-      <div class="icon-btn" id="createPostBtn" title="Навиштани пост">✏️</div>
+
+    <!-- Slides container -->
+    <div class="shorts-container" id="shortsContainer">
+      <!-- loader slot -->
+      <div class="short-slide" id="loaderSlide">
+        <div class="shorts-loader"><div class="spinner"></div></div>
+      </div>
+    </div>
+
+    <!-- FAB: create post -->
+    <button class="shorts-fab" id="btnCreatePost">✏️</button>
+  </div>
+
+  <!-- ============================================================
+       GRID VIEW
+       ============================================================ -->
+  <div id="gridView" class="hidden">
+    <div class="grid-topbar">
+      <div class="grid-header-row">
+        <button class="grid-back-btn" id="btnCloseGrid">←</button>
+        <h2>Китобхона</h2>
+        <button class="grid-add-btn" id="btnCreatePost2">✏️</button>
+      </div>
+      <div class="search-bar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input class="search-input" id="searchInput" placeholder="Ҷустуҷӯ...">
+      </div>
+      <div class="search-filters">
+        <button class="filter-chip active" data-filter="all">Ҳама</button>
+        <button class="filter-chip" data-filter="user">@Корбар</button>
+        <button class="filter-chip" data-filter="book">📚 Китоб</button>
+        <button class="filter-chip" data-filter="author">✍️ Муаллиф</button>
+        <button class="filter-chip" data-filter="hashtag">#Хэштег</button>
+      </div>
+    </div>
+    <div class="grid-scroll">
+      <div class="grid-cells" id="gridCells"></div>
     </div>
   </div>
 
-  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
-  <div class="screen-area">
-    <div class="screen" id="feedScreen">
-      <div class="feed" id="feedContainer">
-        <div class="loader" id="feedLoader"><div class="spinner"></div></div>
+  <!-- ============================================================
+       COMMENTS SHEET
+       ============================================================ -->
+  <div class="comments-sheet-overlay" id="commentsSheet">
+    <div class="comments-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title">
+        <span>💬 Шарҳҳо</span>
+        <button class="sheet-close" id="commentsSheetClose">✕</button>
+      </div>
+      <div class="comments-list-inner" id="commentsListInner">
+        <div class="comment-empty">Шарҳе нест</div>
+      </div>
+      <div class="comment-input-wrap">
+        <input class="comment-inp" id="commentInput" placeholder="Шарҳ нависед...">
+        <button class="comment-send" id="commentSend">➤</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== НАВИГАЦИЯ (единая для всех страниц) ===== -->
-  <div class="nav-bottom">
-    <div class="kh-nav2">
-
-      <!-- Асосӣ -->
-      <a class="nav-item" href="index.html" aria-label="Асосӣ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 11l9-8 9 8"></path>
-          <path d="M5 10v10h14V10"></path>
-          <path d="M9 20v-6h6v6"></path>
-        </svg>
-        <span>Асосӣ</span>
-      </a>
-
-      <!-- Китобхо -->
-      <a class="nav-item" href="kitobho.html" aria-label="Китобхо">
-        <div class="person-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
-          </svg>
-          <div class="book-in-hand"></div>
-        </div>
-        <span>Китобхо</span>
-      </a>
-
-      <!-- Ғолибон -->
-      <a class="nav-item" href="winners.html" aria-label="Ғолибон">
-        <div class="crown-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
-          </svg>
-          <span class="crown-icon">👑</span>
-        </div>
-        <span>Ғолибон</span>
-      </a>
-
-      <!-- Лента (активная) -->
-      <a class="nav-item active" href="Lenta.html" aria-label="Лента">
-        <div class="person-icon like-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
-          </svg>
-          <span class="like-icon heart1">❤️</span>
-          <span class="like-icon heart2">❤️</span>
-          <span class="like-icon heart3">❤️</span>
-        </div>
-        <span>Лента</span>
-      </a>
-
-      <!-- Чат -->
-      <a class="nav-item" href="chats.html" aria-label="Чат">
-        <div class="users-wrap">
-          <div class="person p1"></div>
-          <div class="person p2"></div>
-          <span class="heart-pop">❤️</span>
-        </div>
-        <span>Чат</span>
-      </a>
-
-      <!-- Профил -->
-      <a class="nav-item" href="profile.html" aria-label="Профил">
-        <div class="profile-wrap">
-          <div class="person-group">
-            <div class="person-small ps1"></div>
-            <div class="person-small ps2"></div>
-            <div class="person-small ps3"></div>
-          </div>
-        </div>
-        <span>Профил</span>
-      </a>
-
+  <!-- ============================================================
+       RATING SHEET
+       ============================================================ -->
+  <div class="rating-sheet-overlay" id="ratingSheet">
+    <div class="rating-sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-title" style="padding:12px 18px 8px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between">
+        <span>⭐ Баҳодиҳӣ</span>
+        <button class="sheet-close" id="ratingSheetClose">✕</button>
+      </div>
+      <div class="rating-stars-row" id="ratingStarsRow">
+        <span class="r-star" data-v="1">★</span><span class="r-star" data-v="2">★</span>
+        <span class="r-star" data-v="3">★</span><span class="r-star" data-v="4">★</span>
+        <span class="r-star" data-v="5">★</span><span class="r-star" data-v="6">★</span>
+        <span class="r-star" data-v="7">★</span><span class="r-star" data-v="8">★</span>
+        <span class="r-star" data-v="9">★</span><span class="r-star" data-v="10">★</span>
+      </div>
+      <div class="rating-label-big" id="ratingLabelBig">Баҳо интихоб кунед (1–10)</div>
+      <button class="rating-submit" id="ratingSubmit">Тасдиқ</button>
     </div>
   </div>
 
-  <!-- ===== МОДАЛЬНОЕ ОКНО (создание поста) ===== -->
+  <!-- ============================================================
+       POST CREATION MODAL
+       ============================================================ -->
   <div class="modal-overlay" id="postModal">
     <div class="modal-sheet">
-      <div class="modal-handle"></div>
-      <div class="modal-head"><h3>📝 Эҷоди пост</h3><div class="icon-btn" id="closeModalBtn">✕</div></div>
-      <div class="modal-body">
-        <textarea id="postContent" placeholder="Чӣ хел мегузарад? Дар бораи китобе, ки мехонед, нависед..."></textarea>
-        <div class="book-select-row">
-          <label style="font-size:12px;color:var(--muted);font-weight:600;">Номи китоб:</label>
-          <select id="postBookSelect"><option value="">Интихоб кунед (ихтиёрӣ)</option></select>
-        </div>
-        <div class="book-select-row">
-          <label style="font-size:12px;color:var(--muted);font-weight:600;">Муаллиф:</label>
-          <input type="text" id="postBookAuthor" placeholder="Номи муаллиф">
-        </div>
+      <div class="modal-topbar">
+        <h3>📝 Эҷоди пост</h3>
+        <button class="modal-x" id="postModalClose">✕</button>
       </div>
+
+      <!-- Step tabs -->
+      <div class="modal-steps">
+        <button class="step-tab active" data-step="1">1. Матн</button>
+        <button class="step-tab" data-step="2">2. Услуб</button>
+        <button class="step-tab" data-step="3">3. Пешнамоиш</button>
+      </div>
+
+      <div class="modal-body" id="modalBody">
+
+        <!-- ── STEP 1: Text & Book ── -->
+        <div class="step-panel active" id="step1">
+          <label class="form-label mb8">Матни пост</label>
+          <textarea class="form-textarea mb14" id="postContent" rows="4"
+            placeholder="Дар бораи китоб нависед... фикр, иқтибос, таассурот"></textarea>
+
+          <label class="form-label mb8">Номи китоб:</label>
+          <select class="form-select" id="postBookSelect">
+            <option value="">Интихоб кунед (ихтиёрӣ)</option>
+          </select>
+
+          <label class="form-label mb8">Муаллиф:</label>
+          <input class="form-input" id="postBookAuthor" type="text" placeholder="Номи муаллиф">
+
+          <div class="step-nav">
+            <button class="step-nav-btn next" onclick="goStep(2)">Услуб →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 2: Style ── -->
+        <div class="step-panel" id="step2">
+
+          <!-- Font picker -->
+          <div class="style-section">
+            <div class="style-section-title">🔤 Шрифт</div>
+            <div class="font-grid" id="fontGrid"></div>
+          </div>
+
+          <!-- Size picker -->
+          <div class="style-section">
+            <div class="style-section-title">📐 Андоза</div>
+            <div class="size-row">
+              <div class="size-chip selected" data-size="14"><span>A</span><small>Хурд</small></div>
+              <div class="size-chip" data-size="18"><span style="font-size:15px">A</span><small>Миёна</small></div>
+              <div class="size-chip" data-size="22"><span style="font-size:18px">A</span><small>Калон</small></div>
+              <div class="size-chip" data-size="28"><span style="font-size:22px">A</span><small>Азим</small></div>
+            </div>
+          </div>
+
+          <!-- Color picker -->
+          <div class="style-section">
+            <div class="style-section-title">🎨 Ранги матн</div>
+            <div class="color-row" id="colorRow"></div>
+            <div class="color-custom-wrap">
+              <span class="color-custom-label">Рангҳои дилхоҳ:</span>
+              <input type="color" id="customColor" value="#FFFFFF">
+            </div>
+          </div>
+
+          <!-- Animation picker -->
+          <div class="style-section">
+            <div class="style-section-title">✨ Анимасияи матн</div>
+            <div class="anim-grid" id="animGrid"></div>
+          </div>
+
+          <div class="step-nav">
+            <button class="step-nav-btn" onclick="goStep(1)">← Матн</button>
+            <button class="step-nav-btn next" onclick="goStep(3)">Пешнамоиш →</button>
+          </div>
+        </div>
+
+        <!-- ── STEP 3: Preview & Hashtags ── -->
+        <div class="step-panel" id="step3">
+
+          <div class="style-section-title mb8">👁 Пешнамоиш</div>
+          <div class="preview-box" id="previewBox">
+            <div class="preview-bg" id="previewBg">
+              <img id="previewBgImg" src="" alt="" onerror="this.style.display='none'">
+            </div>
+            <div class="preview-book-img" id="previewBookImg">
+              <img id="previewBookImgEl" src="" alt="">
+            </div>
+            <div class="preview-grad"></div>
+            <div class="preview-text-wrap">
+              <div class="preview-text-el" id="previewTextEl"></div>
+            </div>
+          </div>
+
+          <!-- Hashtags -->
+          <div class="hashtag-section">
+            <div class="style-section-title mb8">🏷️ Хэштегҳо</div>
+            <div class="hashtag-input-row">
+              <input class="hashtag-inp" id="hashtagInput" placeholder="#китоб, #хониш...">
+              <button class="hashtag-add-btn" id="hashtagAdd">+ Илова</button>
+            </div>
+            <div class="hashtag-chips" id="hashtagChips"></div>
+            <div class="style-section-title mb8" style="margin-top:10px">Пешниҳодҳо:</div>
+            <div class="hashtag-suggestions" id="hashtagSuggestions"></div>
+          </div>
+
+          <div class="step-nav" style="margin-top:14px">
+            <button class="step-nav-btn" onclick="goStep(2)">← Услуб</button>
+          </div>
+        </div>
+
+      </div><!-- /modal-body -->
+
       <div class="modal-footer">
-        <button class="btn btn-outline" id="cancelPostBtn">Бекор</button>
-        <button class="btn btn-primary" id="submitPostBtn">📤 Интишор</button>
+        <button class="btn-outline" id="postModalCancel">Бекор</button>
+        <button class="btn-primary" id="submitPostBtn">📤 Интишор</button>
       </div>
     </div>
   </div>
 
-  <!-- ===== TOAST ===== -->
+  <!-- Confirm dialog -->
+  <div class="confirm-overlay" id="confirmOverlay">
+    <div class="confirm-box">
+      <h4 id="confirmTitle"></h4>
+      <p id="confirmMsg"></p>
+      <div class="confirm-btns">
+        <button class="confirm-cancel" id="confirmCancel">Бекор</button>
+        <button class="confirm-ok" id="confirmOk">Тасдиқ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast -->
   <div class="toast" id="toast"></div>
-</div>
+</div><!-- /app -->
 
 <script>
-// ================================================================
-// ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
-// ================================================================
-document.addEventListener('DOMContentLoaded', function() {
-  if (typeof CacheManager !== 'undefined') {
-    CacheManager.init();
-  }
-  const params = new URLSearchParams(window.location.search);
-  if(params.get('action') === 'post'){
-    const bookId = localStorage.getItem('kk_publish_book');
-    if(bookId){ localStorage.removeItem('kk_publish_book'); setTimeout(() => openPostModal(bookId), 300); }
-    else { setTimeout(openPostModal, 300); }
-  }
-  loadPosts();
-});
+'use strict';
 
-// ================================================================
-// ============ ОСНОВНАЯ ЛОГИКА ЛЕНТЫ ============
-// ================================================================
-const API_BASE = KITOB_CONFIG.NEON_API_BASE;
+// ============================================================
+// CONFIG & GLOBALS
+// ============================================================
+const API_BASE = (typeof KITOB_CONFIG !== 'undefined') ? KITOB_CONFIG.NEON_API_BASE : '';
 const $ = id => document.getElementById(id);
 
-// ----- ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ -----
-function escHtml(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-function timeSince(dateStr){
-  const now = Date.now();
-  const then = new Date(dateStr).getTime();
-  const diff = Math.floor((now - then) / 1000);
-  if(diff < 60) return 'ҳозир';
-  if(diff < 3600) return Math.floor(diff/60) + ' дақиқа пеш';
-  if(diff < 86400) return Math.floor(diff/3600) + ' соат пеш';
-  if(diff < 604800) return Math.floor(diff/86400) + ' рӯз пеш';
-  return new Date(dateStr).toLocaleDateString('tg-TJ');
+let postsData = [];
+let currentUserId = null;
+let bookReactions = {};
+let activePostId = null;   // for comments/rating
+let activeBookId = null;
+let currentRating = 0;
+let currentSearchFilter = 'all';
+
+// Post creation state
+let postStyle = {
+  font: 'Roboto',
+  size: 14,
+  color: '#FFFFFF',
+  animation: 'word',
+  hashtags: []
+};
+let currentStep = 1;
+let previewCoverUrl = '';
+
+// ============================================================
+// FONT DEFINITIONS
+// ============================================================
+const FONTS = [
+  { name: 'Roboto',           label: 'Roboto',           preview: 'Китобхона' },
+  { name: 'Open Sans',        label: 'Open Sans',        preview: 'Китобхона' },
+  { name: 'PT Sans',          label: 'PT Sans',          preview: 'Китобхона' },
+  { name: 'PT Serif',         label: 'PT Serif',         preview: 'Китобхона' },
+  { name: 'Montserrat',       label: 'Montserrat',       preview: 'Китобхона' },
+  { name: 'Ubuntu',           label: 'Ubuntu',           preview: 'Китобхона' },
+  { name: 'Nunito',           label: 'Nunito',           preview: 'Китобхона' },
+  { name: 'Exo 2',            label: 'Exo 2',            preview: 'Китобхона' },
+  { name: 'Comfortaa',        label: 'Comfortaa',        preview: 'Китобхона' },
+  { name: 'Russo One',        label: 'Russo One',        preview: 'КИТОБХОНА' },
+  { name: 'Oswald',           label: 'Oswald',           preview: 'Китобхона' },
+  { name: 'Raleway',          label: 'Raleway',          preview: 'Китобхона' },
+  { name: 'Playfair Display', label: 'Playfair',         preview: 'Китобхона' },
+  { name: 'Noto Serif',       label: 'Noto Serif',       preview: 'Китобхона' },
+];
+
+const TEXT_COLORS = [
+  '#FFFFFF','#F0EAD6','#FFE680','#FFB347','#FF6B6B',
+  '#87CEEB','#98FB98','#DDA0DD','#C9A84C','#000000',
+  '#333333','#E0E0E0',
+];
+
+// ============================================================
+// ANIMATION DEFINITIONS
+// ============================================================
+const ANIMATIONS = [
+  { id: 'fade',       icon: '🌅', label: 'Намоён',       desc: 'Ҳама якбора' },
+  { id: 'letter',     icon: '🔡', label: 'Ҳарф ба ҳарф', desc: 'Ҳарф ба ҳарф' },
+  { id: 'word',       icon: '💬', label: 'Калима',        desc: 'Калима ба калима' },
+  { id: 'line',       icon: '📄', label: 'Хат ба хат',   desc: 'Сатр ба сатр' },
+  { id: 'wave',       icon: '🌊', label: 'Мавҷ',         desc: 'Ҳарфҳо мавҷ мезананд' },
+  { id: 'typewriter', icon: '⌨️', label: 'Мошини чоп',   desc: 'Мисли мошини чоп' },
+  { id: 'bounce',     icon: '🏀', label: 'Ҷаҳиш',        desc: 'Калима ҷаҳиш мекунад' },
+  { id: 'glow',       icon: '✨', label: 'Нур',           desc: 'Бо нури пайдо шудан' },
+  { id: 'cinematic',  icon: '🎬', label: 'Кино',          desc: 'Мисли субтитри кино' },
+  { id: 'slideup',    icon: '⬆️', label: 'Аз поён',       desc: 'Матн боло мебарояд' },
+];
+
+const HASHTAG_SUGGESTIONS = [
+  'китоб','хониш','адабиёт','роман','тарих',
+  'фалсафа','илм','шеър','достон','тафаккур',
+  'тасдиқ','инспиратсия','мутолиа','нависанда',
+];
+
+// ============================================================
+// UTILITIES
+// ============================================================
+function escHtml(s) {
+  if (!s) return '';
+  return String(s)
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;').replace(/"/g,'&quot;')
+    .replace(/'/g,'&#39;');
 }
-function getToken(){ return localStorage.getItem('kk_token'); }
-function showToast(msg){
+
+function timeSince(d) {
+  const diff = Math.floor((Date.now() - new Date(d).getTime()) / 1000);
+  if (diff < 60) return 'ҳозир';
+  if (diff < 3600) return Math.floor(diff/60) + ' дақ. пеш';
+  if (diff < 86400) return Math.floor(diff/3600) + ' соат пеш';
+  if (diff < 604800) return Math.floor(diff/86400) + ' рӯз пеш';
+  return new Date(d).toLocaleDateString('tg-TJ');
+}
+
+function getToken() { return localStorage.getItem('kk_token'); }
+
+function showToast(msg) {
   const t = $('toast');
   t.textContent = msg;
   t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), 2800);
-}
-function openUserProfile(userId) {
-  if (!userId) return;
-  location.href = 'profile.html?user=' + userId;
+  clearTimeout(t._t);
+  t._t = setTimeout(() => t.classList.remove('show'), 2800);
 }
 
-// ----- РАБОТА С КНИГАМИ (пути, обложки) -----
+function showConfirmDialog(msg, title, okLabel) {
+  return new Promise(resolve => {
+    $('confirmTitle').textContent = title || 'Тасдиқ';
+    $('confirmMsg').textContent = msg;
+    $('confirmOk').textContent = okLabel || 'Тасдиқ';
+    $('confirmOverlay').classList.add('open');
+    const ok = () => { $('confirmOverlay').classList.remove('open'); resolve(true); cleanup(); };
+    const cancel = () => { $('confirmOverlay').classList.remove('open'); resolve(false); cleanup(); };
+    function cleanup() {
+      $('confirmOk').removeEventListener('click', ok);
+      $('confirmCancel').removeEventListener('click', cancel);
+    }
+    $('confirmOk').addEventListener('click', ok);
+    $('confirmCancel').addEventListener('click', cancel);
+  });
+}
+
+// ============================================================
+// COVER / BOOK URL HELPERS (same as original)
+// ============================================================
 function enc(p) {
   if (!p) return '';
   return String(p).split('/').map(encodeURIComponent).join('/');
 }
 function rawUrl(folder, file) {
-  const repo = 'sharipovip/books';
-  const branch = 'main';
+  const repo = 'sharipovip/books', branch = 'main';
   let fileName = file;
   if (!fileName.includes('.')) fileName += '.pdf';
   let cleanFolder = String(folder).replace(/^main\//,'').replace(/^books\//,'');
@@ -1172,7 +1245,9 @@ function rawUrl(folder, file) {
   const encodedParts = cleanFolder ? enc(cleanFolder) : '';
   const base = `https://raw.githubusercontent.com/${repo}/${branch}/books`;
   const decodedFile = decodeURIComponent(fileName);
-  return encodedParts ? `${base}/${encodedParts}/${encodeURIComponent(decodedFile)}` : `${base}/${encodeURIComponent(decodedFile)}`;
+  return encodedParts
+    ? `${base}/${encodedParts}/${encodeURIComponent(decodedFile)}`
+    : `${base}/${encodeURIComponent(decodedFile)}`;
 }
 function coverListFromPdfUrl(pdfUrl) {
   try {
@@ -1180,8 +1255,8 @@ function coverListFromPdfUrl(pdfUrl) {
     if (!x.hostname.includes('githubusercontent.com')) return [];
     const parts = x.pathname.split('/').filter(Boolean);
     if (parts.length < 5) return [];
-    const owner = parts[0], repo = parts[1], branch = parts[2];
-    const path = parts.slice(3);
+    const [owner, repo, branch, ...rest] = parts;
+    const path = [...rest];
     const file = decodeURIComponent(path.pop() || '').replace(/\.pdf$/i, '.jpg');
     let folder = path.join('/');
     let clean = folder.replace(/^books\//, '');
@@ -1196,692 +1271,870 @@ function coverListFromPdfUrl(pdfUrl) {
 function getCoverForBook(book) {
   const folder = book.folder || 'books';
   const file = book.file || book.book_id;
-  if (!file) return 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+  if (!file) return '';
   const url = rawUrl(folder, file);
-  const coverList = coverListFromPdfUrl(url);
-  return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+  const covers = coverListFromPdfUrl(url);
+  return covers[0] || '';
 }
-function openBookFromPost(bookId, bookTitle, pdfUrl, coverUrl) {
-  if (!bookId) return;
-  let folder = 'books', file = bookId;
-  if (bookId.includes('/')) {
-    const parts = bookId.split('/');
-    file = parts.pop();
-    folder = parts.join('/');
-    if (!folder.startsWith('books/')) folder = 'books/' + folder;
-  }
-  const url = pdfUrl || rawUrl(folder, file);
-  const name = bookTitle || file.replace(/\.pdf$/i, '') || 'Китоб';
-  const cover = coverUrl || getCoverForBook({ folder, file, book_id: bookId });
-  location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
+function getCoverFromPost(post) {
+  if (post.book_cover_url) return post.book_cover_url;
+  const b = {
+    folder: post.book_folder,
+    file: post.book_file || post.book_id,
+    book_id: post.book_id
+  };
+  return getCoverForBook(b) || '';
 }
 
-// ================================================================
-// ============ ГЛОБАЛЬНЫЕ ПЕРЕМЕННЫЕ ============
-// ================================================================
-let postsData = [];
-let currentUserId = null;
-let bookProgressMap = {};
-let bookReactions = {};
-let unsubscribePosts = null;
-
-// ================================================================
-// ============ ЗАГРУЗКА ПРОГРЕССА ЧТЕНИЯ (кэшируем) ============
-// ================================================================
-async function loadReadingSessions(){
-  const token = getToken();
-  if (!token) return;
-  const cacheKey = 'kk_reading_progress';
-  let map = CacheManager ? CacheManager.get(cacheKey) : null;
-  if (map) {
-    bookProgressMap = map;
-    return;
-  }
+// ============================================================
+// PARSE POST CONTENT (extract text + style)
+// ============================================================
+function parsePostContent(raw) {
+  if (!raw) return { text: '', style: {} };
+  const SEP = '|||STYLE|||';
+  const idx = raw.indexOf(SEP);
+  if (idx === -1) return { text: raw, style: {} };
+  const text = raw.slice(0, idx);
   try {
-    const resp = await fetch(API_BASE + '/api/reading-sessions', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const sessions = await resp.json();
-    map = {};
-    sessions.forEach(s => {
-      if (!s.book_id) return;
-      const key = s.book_id;
-      if (!map[key]) map[key] = { totalDuration: 0, status: s.status || 'active' };
-      map[key].totalDuration += s.duration || 0;
-      if (s.status === 'completed') map[key].status = 'completed';
-    });
-    Object.keys(map).forEach(key => {
-      const item = map[key];
-      if (item.status === 'completed') {
-        item.progress = 100;
-        item.statusText = 'finished';
-      } else {
-        let prog = Math.min(95, Math.round((item.totalDuration / 60) * 100));
-        if (prog < 1 && item.totalDuration > 0) prog = 1;
-        item.progress = prog;
-        item.statusText = 'reading';
-      }
-    });
-    bookProgressMap = map;
-    if (CacheManager) CacheManager.set(cacheKey, map);
-  } catch(e) { console.warn('Failed to load reading sessions', e); }
+    const style = JSON.parse(raw.slice(idx + SEP.length));
+    return { text, style };
+  } catch {
+    return { text: raw, style: {} };
+  }
+}
+function buildPostContent(text, style) {
+  const SEP = '|||STYLE|||';
+  const s = {
+    font: style.font || 'Roboto',
+    size: style.size || 14,
+    color: style.color || '#FFFFFF',
+    animation: style.animation || 'word',
+    hashtags: style.hashtags || [],
+  };
+  return text + SEP + JSON.stringify(s);
 }
 
-// ================================================================
-// ============ ЗАГРУЗКА РЕЙТИНГА КНИГ (кэшируем) ============
-// ================================================================
-async function loadBookRatings(bookIds){
-  if (!bookIds || bookIds.length === 0) return;
-  const token = getToken();
-  const cacheKey = 'kk_book_reactions';
-  let cached = CacheManager ? CacheManager.get(cacheKey) : null;
-  if (cached) {
-    bookReactions = cached;
-    return;
-  }
-  // Всегда запрашиваем статистику, даже без токена
-  try {
-    const resp = await fetch(API_BASE + '/api/book-stats-batch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ book_ids: bookIds })
-    });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const data = await resp.json();
-    bookIds.forEach(id => {
-      if (!bookReactions[id]) bookReactions[id] = { stats: {}, user: {} };
-      bookReactions[id].stats = data[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
-      bookReactions[id].user = { reaction: null, rating: null };
-    });
-    // Если есть токен, загружаем реакции пользователя
-    if (token) {
-      const userResp = await fetch(API_BASE + '/api/book-reactions/batch', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ book_ids: bookIds })
+// ============================================================
+// TEXT ANIMATION ENGINE
+// ============================================================
+function animateTextOverlay(el, text, style) {
+  if (!el) return;
+  const font = style.font || 'Roboto';
+  const size = style.size || 14;
+  const color = style.color || '#FFFFFF';
+  const anim = style.animation || 'fade';
+
+  el.style.fontFamily = `'${font}', sans-serif`;
+  el.style.fontSize = size + 'px';
+  el.style.color = color;
+  el.innerHTML = '';
+
+  if (!text) return;
+
+  switch (anim) {
+
+    case 'fade': {
+      el.textContent = text;
+      el.style.opacity = '0';
+      el.style.animation = 'textFade 0.9s 0.1s forwards';
+      break;
+    }
+
+    case 'letter': {
+      el.style.opacity = '1';
+      [...text].forEach((ch, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = ch === ' ' ? '\u00A0' : ch;
+        sp.style.cssText = `display:inline-block;opacity:0;animation:letterPop 0.25s ${(i*0.045).toFixed(2)}s forwards`;
+        el.appendChild(sp);
       });
-      if (userResp.ok) {
-        const userData = await userResp.json();
-        bookIds.forEach(id => {
-          if (userData.user_reactions[id]) {
-            bookReactions[id].user = userData.user_reactions[id];
-          }
-        });
-      }
-    }
-    if (CacheManager) CacheManager.set(cacheKey, bookReactions);
-  } catch(e) {
-    console.warn('Failed to load ratings', e);
-  }
-}
-
-// ================================================================
-// ============ ЗАГРУЗКА ПОСТОВ (с кэшированием) ============
-// ================================================================
-async function loadPosts(){
-  const feed = $('feedContainer');
-  const loader = $('feedLoader');
-  loader.style.display = 'flex';
-
-  // Пытаемся взять посты из кэша
-  const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
-  if (cachedPosts) {
-    postsData = cachedPosts;
-    currentUserId = localStorage.getItem('kk_user_id');
-    await loadReadingSessions();
-    const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
-    if (bookIds.length > 0) await loadBookRatings(bookIds);
-    renderPosts(postsData);
-    loader.style.display = 'none';
-    // Подписываемся на обновления кэша
-    if (unsubscribePosts) unsubscribePosts();
-    unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
-      if (newPosts) {
-        postsData = newPosts;
-        loadReadingSessions().then(() => {
-          const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
-          if (bookIds2.length > 0) loadBookRatings(bookIds2);
-        });
-        renderPosts(postsData);
-      } else {
-        // Инвалидировано – перезагружаем с сервера
-        loadPostsFromServer();
-      }
-    });
-    // Регистрируем fetcher для polling (если WebSocket не работает)
-    if (CacheManager && typeof CacheManager.registerFetcher === 'function') {
-      CacheManager.registerFetcher(CacheManager.KEYS.POSTS, () => loadPostsFromServer());
-    }
-    return;
-  }
-
-  // Если нет в кэше – загружаем с сервера (без проверки токена)
-  await loadPostsFromServer();
-}
-
-async function loadPostsFromServer(){
-  const feed = $('feedContainer');
-  const loader = $('feedLoader');
-  try {
-    // Убираем проверку токена – посты публичные
-    await loadReadingSessions();
-    const resp = await fetch(API_BASE + '/api/posts');
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    const posts = await resp.json();
-    postsData = posts;
-    currentUserId = localStorage.getItem('kk_user_id');
-
-    const bookIds = [...new Set(posts.map(p => p.book_id).filter(Boolean))];
-    if (bookIds.length > 0) {
-      await loadBookRatings(bookIds);
+      break;
     }
 
-    // Сохраняем в кэш
-    if (CacheManager) CacheManager.set(CacheManager.KEYS.POSTS, posts);
-
-    renderPosts(posts);
-  } catch(e){
-    console.error('loadPosts error:', e);
-    feed.innerHTML = '<div class="empty-feed"><h3>Хатогӣ дар боргирӣ</h3><p>' + e.message + '</p></div>';
-  } finally { loader.style.display = 'none'; }
-}
-
-// ================================================================
-// ============ РЕНДЕРИНГ ПОСТОВ ============
-// ================================================================
-function renderPosts(posts){
-  const feed = $('feedContainer');
-  if(!posts || posts.length === 0){
-    feed.innerHTML = `<div class="empty-feed">
-      <svg viewBox="0 0 64 64" fill="none"><path d="M10 16c8-3 18-3 22 1v34c-4-4-14-4-22-1z" stroke="var(--muted)" stroke-width="2.2" stroke-linejoin="round"/><path d="M54 16c-8-3-18-3-22 1v34c4-4 14-4 22-1z" stroke="var(--muted)" stroke-width="2.2" stroke-linejoin="round"/><circle cx="46" cy="14" r="9" fill="var(--bg)" stroke="var(--gold)" stroke-width="2"/><path d="M42.5 14h7M46 10.5v7" stroke="var(--gold)" stroke-width="2" stroke-linecap="round"/></svg>
-      <h3>Лента ҳанӯз холӣ аст</h3>
-      <p>Вақте ки шумо ё дӯстонатон дар бораи китобе нависанд, он дар ин ҷо намоён мешавад.</p>
-      <button class="btn btn-outline" onclick="openPostModal()">Навиштани пост</button>
-    </div>`;
-    return;
-  }
-
-  let html = '';
-  const userId = currentUserId;
-  posts.forEach(post => {
-    const timeAgo = timeSince(post.created_at);
-    const displayName = post.display_name || post.username || 'Корбар';
-    const avatarHtml = post.avatar_url
-      ? `<img src="${post.avatar_url}" alt="">`
-      : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
-
-    let progressData = null;
-    if (post.book_id && bookProgressMap[post.book_id]) {
-      progressData = bookProgressMap[post.book_id];
-    }
-
-    let statusHtml = '', progressHtml = '';
-    if (progressData) {
-      const statusText = progressData.statusText === 'finished' ? '✅ Хатм кард' : '📖 Дар ҳоли хондан';
-      const chipClass = progressData.statusText === 'finished' ? 'chip-finished' : 'chip-reading';
-      statusHtml = `<div class="status-chip ${chipClass}">${statusText}</div>`;
-      const prog = progressData.progress || 0;
-      progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
-    }
-
-    // Обложка книги
-    const coverUrl = post.cover_url || (post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '');
-    const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
-    const finalCoverUrl = cachedCover || coverUrl;
-
-    let bookBlock = '';
-    if (post.book_id) {
-      const author = post.book_author || '';
-      bookBlock = `
-        <div class="book-block" onclick="openBookFromPost('${post.book_id}','${(post.book_title||'').replace(/'/g,"\\'")}', '${post.pdf_url||''}', '${post.cover_url||''}')">
-          <div class="thumb" style="background:var(--card2);"><img src="${finalCoverUrl}" alt="" onerror="this.style.display='none'"></div>
-          <div class="book-info">
-            <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
-            <div class="book-author">${escHtml(author)}</div>
-            ${statusHtml}${progressHtml}
-          </div>
-        </div>
-      `;
-    }
-
-    // Лайк поста
-    const liked = post.liked ? 'liked' : '';
-    const likeCount = post.likes_count || 0;
-    const likeBtnHtml = `
-      <button class="like-btn ${liked}" data-post="${post.id}">
-        <span>${liked ? '❤️' : '🤍'}</span>
-        <span class="cnt">${likeCount}</span>
-      </button>
-    `;
-
-    // Рейтинг книги (только звёзды)
-    let ratingHtml = '';
-    if (post.book_id) {
-      const stats = bookReactions[post.book_id]?.stats || { avg_rating: null, ratings_count: 0 };
-      const userRating = bookReactions[post.book_id]?.user?.rating || 0;
-      const avgRating = stats.avg_rating ? `⭐ ${parseFloat(stats.avg_rating).toFixed(1)}` : '';
-
-      let starsHtml = '';
-      for (let i = 1; i <= 10; i++) {
-        const on = i <= userRating ? 'on' : '';
-        starsHtml += `<span class="star ${on}" data-book="${post.book_id}" data-rating="${i}">${i <= userRating ? '★' : '☆'}</span>`;
-      }
-
-      ratingHtml = `
-        <div class="rating-block">
-          <span class="rating-label">${avgRating}</span>
-          <div class="rating-stars">${starsHtml}</div>
-        </div>
-      `;
-    }
-
-    // Комментарии
-    const commentCount = post.comments_count || 0;
-    const showCommentsText = commentCount > 0 ? `Дидани боз ${commentCount} шарҳ` : 'Аввалин шарҳро нависед';
-
-    const commentsBlock = `
-      <div class="comments-wrapper" data-post="${post.id}">
-        <div class="show-comments-btn" data-post="${post.id}">${showCommentsText}</div>
-        <div class="comments-list" data-post="${post.id}"></div>
-        <div class="comment-input-row">
-          <div class="av"><div class="av-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.4"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.4" stroke-linecap="round"/></svg></div></div>
-          <input class="comment-input" placeholder="Шарҳ нависед..." data-post="${post.id}">
-          <div class="send-ic" data-post="${post.id}">➤</div>
-        </div>
-      </div>
-    `;
-
-    html += `
-      <div class="post-card" data-post-id="${post.id}">
-        <div class="post-head">
-          <div class="av" onclick="openUserProfile('${post.user_id}')">
-            <div class="av-inner">${avatarHtml}</div>
-          </div>
-          <div class="post-head-text" onclick="openUserProfile('${post.user_id}')">
-            <div class="post-name">${escHtml(displayName)}</div>
-            <div class="post-time">${timeAgo}</div>
-          </div>
-          ${userId && post.user_id === userId ? `<div class="icon-btn" style="width:30px;height:30px;font-size:14px;background:transparent;border:none;color:#BD5650;cursor:pointer;" onclick="deletePost('${post.id}')">🗑</div>` : ''}
-        </div>
-        ${post.content ? `<div class="post-caption">${escHtml(post.content)}</div>` : ''}
-        ${bookBlock}
-        <div class="post-actions">
-          ${likeBtnHtml}
-          <span class="comment-icon">💬 <span class="comment-count" data-post="${post.id}">${commentCount}</span></span>
-        </div>
-        ${ratingHtml}
-        ${commentsBlock}
-      </div>
-    `;
-  });
-  feed.innerHTML = html;
-
-  // Применяем кешированные обложки
-  if (CacheManager) {
-    CacheManager.hydrateCovers(feed);
-    if (CacheManager.preloadCover) {
-      feed.querySelectorAll('img[src]').forEach(img => {
-        const src = img.getAttribute('src');
-        if (src && src.includes('githubusercontent.com')) {
-          CacheManager.preloadCover(src);
-        }
+    case 'word': {
+      el.style.opacity = '1';
+      text.split(' ').forEach((w, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = w + ' ';
+        sp.style.cssText = `display:inline-block;opacity:0;animation:wordSlide 0.4s ${(i*0.13).toFixed(2)}s forwards`;
+        el.appendChild(sp);
       });
+      break;
     }
-  }
 
-  // ==== НАВЕШИВАЕМ СОБЫТИЯ ====
-  document.querySelectorAll('.like-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const postId = this.dataset.post;
-      togglePostLike(postId, this);
-    });
-  });
-
-  document.querySelectorAll('.rating-stars .star').forEach(el => {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const bookId = this.dataset.book;
-      const rating = parseInt(this.dataset.rating);
-      handleBookRating(bookId, rating, this);
-    });
-  });
-
-  document.querySelectorAll('.show-comments-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const postId = this.dataset.post;
-      toggleComments(postId, this);
-    });
-  });
-
-  document.querySelectorAll('.send-ic').forEach(el => {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const postId = this.dataset.post;
-      const input = document.querySelector(`.comment-input[data-post="${postId}"]`);
-      if (input) sendComment(postId, input);
-    });
-  });
-  document.querySelectorAll('.comment-input').forEach(inp => {
-    inp.addEventListener('keydown', function(e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        const postId = this.dataset.post;
-        sendComment(postId, this);
-      }
-    });
-  });
-}
-
-// ================================================================
-// ============ ЛАЙКИ ПОСТОВ ============
-// ================================================================
-async function togglePostLike(postId, btn) {
-  const token = getToken();
-  if (!token) { showToast('Лутфан ворид шавед'); return; }
-  const icon = btn.querySelector('span:first-child');
-  const cnt = btn.querySelector('.cnt');
-  const currentlyLiked = btn.classList.contains('liked');
-  btn.classList.toggle('liked');
-  icon.textContent = currentlyLiked ? '🤍' : '❤️';
-  cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? -1 : 1);
-
-  try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/like', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-    });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const data = await resp.json();
-    cnt.textContent = data.likes_count;
-    if (data.liked) {
-      btn.classList.add('liked');
-      icon.textContent = '❤️';
-    } else {
-      btn.classList.remove('liked');
-      icon.textContent = '🤍';
+    case 'line': {
+      el.style.opacity = '1';
+      const lines = text.split('\n');
+      lines.forEach((line, i) => {
+        const div = document.createElement('div');
+        div.textContent = line || '\u00A0';
+        div.style.cssText = `opacity:0;animation:lineSlide 0.45s ${(i*0.22).toFixed(2)}s forwards`;
+        el.appendChild(div);
+      });
+      break;
     }
-    const post = postsData.find(p => p.id == postId);
-    if (post) post.likes_count = data.likes_count;
-    if (CacheManager) {
-      CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
+
+    case 'wave': {
+      el.style.opacity = '1';
+      [...text].forEach((ch, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = ch === ' ' ? '\u00A0' : ch;
+        sp.style.cssText = `display:inline-block;animation:waveLetter 1.2s ${(i*0.06).toFixed(2)}s infinite ease-in-out`;
+        el.appendChild(sp);
+      });
+      break;
     }
-  } catch(e) {
-    console.error('Like error:', e);
-    btn.classList.toggle('liked');
-    icon.textContent = currentlyLiked ? '❤️' : '🤍';
-    cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? 1 : -1);
-    showToast('Хатогӣ дар лайк: ' + e.message);
+
+    case 'typewriter': {
+      el.style.opacity = '1';
+      const chars = [...text];
+      chars.forEach((ch, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = ch;
+        sp.style.cssText = `opacity:0;animation:typeChar 0.01s ${(i*0.065).toFixed(2)}s forwards`;
+        el.appendChild(sp);
+      });
+      break;
+    }
+
+    case 'bounce': {
+      el.style.opacity = '1';
+      text.split(' ').forEach((w, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = w + ' ';
+        sp.style.cssText = `display:inline-block;opacity:0;animation:wordBounce 0.5s ${(i*0.14).toFixed(2)}s forwards`;
+        el.appendChild(sp);
+      });
+      break;
+    }
+
+    case 'glow': {
+      el.style.opacity = '1';
+      text.split(' ').forEach((w, i) => {
+        const sp = document.createElement('span');
+        sp.textContent = w + ' ';
+        sp.style.cssText = `display:inline-block;opacity:0;animation:wordGlow 0.6s ${(i*0.18).toFixed(2)}s forwards`;
+        el.appendChild(sp);
+      });
+      break;
+    }
+
+    case 'cinematic': {
+      el.textContent = text;
+      el.style.opacity = '0';
+      el.style.animation = 'cinematic 1.8s 0.3s forwards';
+      break;
+    }
+
+    case 'slideup': {
+      el.style.opacity = '1';
+      text.split('\n').forEach((line, i) => {
+        const div = document.createElement('div');
+        div.textContent = line || '\u00A0';
+        div.style.cssText = `opacity:0;animation:slideFromBottom 0.5s ${(i*0.2).toFixed(2)}s forwards`;
+        el.appendChild(div);
+      });
+      break;
+    }
+
+    default:
+      el.textContent = text;
   }
 }
 
-// ================================================================
-// ============ РЕЙТИНГ КНИГ (только оценка) ============
-// ================================================================
-async function handleBookRating(bookId, rating, starEl) {
+// ============================================================
+// LOAD POSTS FROM API
+// ============================================================
+async function loadPosts() {
   const token = getToken();
   if (!token) {
-    showToast('Лутфан ворид шавед, то баҳо гузоред');
+    renderShortsEmpty('Лутфан ворид шавед');
     return;
   }
-  const container = starEl.closest('.post-card');
-  const allStars = container.querySelectorAll('.rating-stars .star');
-  const currentRating = bookReactions[bookId]?.user?.rating || 0;
-  const newRating = (currentRating === rating) ? 0 : rating;
+
+  // Decode userId
+  try {
+    const payload = JSON.parse(atob(token.split('.')[1]));
+    currentUserId = payload.id || payload.user_id || null;
+  } catch {}
+
+  // Try cache first
+  let fromCache = false;
+  if (typeof CacheManager !== 'undefined') {
+    const cached = CacheManager.get(CacheManager.KEYS?.POSTS || 'kk_posts');
+    if (cached) { postsData = cached; fromCache = true; renderShorts(); renderGrid(); }
+  }
 
   try {
-    const resp = await fetch(API_BASE + '/api/book-reactions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ book_id: bookId, rating: newRating })
+    const resp = await fetch(API_BASE + '/api/posts', {
+      headers: { 'Authorization': 'Bearer ' + token }
     });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const stats = await resp.json();
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const data = await resp.json();
+    postsData = Array.isArray(data) ? data : (data.posts || []);
+    // Sort by likes desc
+    postsData.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
 
-    // Обновляем локальные данные
-    if (!bookReactions[bookId]) bookReactions[bookId] = { stats: {}, user: {} };
-    bookReactions[bookId].stats = stats;
-    bookReactions[bookId].user.rating = newRating;
+    if (typeof CacheManager !== 'undefined' && CacheManager.KEYS) {
+      CacheManager.set(CacheManager.KEYS.POSTS || 'kk_posts', postsData);
+    }
+    renderShorts();
+    renderGrid();
+  } catch (e) {
+    if (!fromCache) renderShortsEmpty('Хатогӣ: ' + e.message);
+  }
+}
 
-    // Обновляем звёзды в этом посте
-    allStars.forEach(s => {
-      const val = parseInt(s.dataset.rating);
-      if (val <= newRating) {
-        s.classList.add('on');
-        s.textContent = '★';
-      } else {
-        s.classList.remove('on');
-        s.textContent = '☆';
+// ============================================================
+// RENDER SHORTS
+// ============================================================
+function renderShorts() {
+  const container = $('shortsContainer');
+  if (!postsData.length) { renderShortsEmpty('Постҳо нестанд'); return; }
+
+  container.innerHTML = '';
+  postsData.forEach((post, idx) => {
+    const slide = buildSlide(post, idx);
+    container.appendChild(slide);
+  });
+
+  // IntersectionObserver for animation trigger
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting && e.intersectionRatio > 0.7) {
+        const slide = e.target;
+        const postId = slide.dataset.postId;
+        const post = postsData.find(p => String(p.id) === String(postId));
+        if (!post) return;
+        const textEl = slide.querySelector('.slide-text-overlay');
+        if (textEl && textEl.dataset.animated !== '1') {
+          textEl.dataset.animated = '1';
+          const { text, style } = parsePostContent(post.content);
+          animateTextOverlay(textEl, text, style);
+        }
       }
     });
+  }, { threshold: 0.7 });
 
-    // Обновляем средний рейтинг
-    const avgRating = stats.avg_rating ? `⭐ ${parseFloat(stats.avg_rating).toFixed(1)}` : '';
-    const ratingLabel = container.querySelector('.rating-label');
-    if (ratingLabel) ratingLabel.textContent = avgRating;
-
-    if (CacheManager) {
-      CacheManager.invalidateKey('kk_book_reactions');
-    }
-    showToast('Баҳо сабт шуд (⭐ ' + newRating + '/10)');
-  } catch(e) {
-    console.error('Rating error:', e);
-    showToast('Хатогӣ: ' + e.message);
-  }
+  container.querySelectorAll('.short-slide').forEach(s => io.observe(s));
 }
 
-// ================================================================
-// ============ КОММЕНТАРИИ ============
-// ================================================================
-async function toggleComments(postId, btn) {
-  const list = document.querySelector(`.comments-list[data-post="${postId}"]`);
-  if (!list) return;
-  const isOpen = list.dataset.open === 'true';
-  if (isOpen) {
-    list.dataset.open = 'false';
-    list.style.display = 'none';
-    btn.textContent = btn.textContent.replace('Пинҳон кардан', '').trim() || 'Дидани шарҳҳо';
+function buildSlide(post, idx) {
+  const { text, style } = parsePostContent(post.content);
+  const cover = getCoverFromPost(post);
+  const liked = post.user_liked || false;
+  const likes = post.likes_count || 0;
+  const comments = post.comments_count || 0;
+  const username = post.display_name || post.username || 'Корбар';
+  const bookTitle = post.book_title || '';
+  const bookAuthor = post.book_author || '';
+  const hashtags = (style.hashtags || []);
+
+  const slide = document.createElement('div');
+  slide.className = 'short-slide';
+  slide.dataset.postId = post.id;
+  slide.dataset.bookId = post.book_id || '';
+
+  slide.innerHTML = `
+    <!-- Background -->
+    <div class="slide-bg">
+      ${cover ? `<img src="${escHtml(cover)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
+    </div>
+    <!-- Center book cover -->
+    ${cover ? `
+    <div class="slide-cover-center">
+      <img src="${escHtml(cover)}" alt="${escHtml(bookTitle)}" loading="lazy">
+    </div>` : ''}
+
+    <!-- Bottom gradient -->
+    <div class="slide-bottom-grad"></div>
+
+    <!-- Sidebar -->
+    <div class="slide-sidebar">
+      <div class="sidebar-btn" data-action="like" data-post="${post.id}">
+        <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
+          ${liked ? '❤️' : '🤍'}
+        </div>
+        <span class="sidebar-count" id="likeCnt_${post.id}">${likes}</span>
+      </div>
+      <div class="sidebar-btn" data-action="comment" data-post="${post.id}">
+        <div class="sidebar-icon">💬</div>
+        <span class="sidebar-count">${comments}</span>
+      </div>
+      <div class="sidebar-btn" data-action="rating" data-post="${post.id}" data-book="${post.book_id || ''}">
+        <div class="sidebar-icon">⭐</div>
+        <span class="sidebar-count" id="ratingCnt_${post.id}">${post.book_avg_rating ? parseFloat(post.book_avg_rating).toFixed(1) : '—'}</span>
+      </div>
+    </div>
+
+    <!-- Text layer -->
+    <div class="slide-text-layer">
+      <div class="slide-user">
+        <span class="at">@${escHtml(username)}</span>
+        <span style="color:rgba(255,255,255,0.4);font-size:11px">${timeSince(post.created_at)}</span>
+      </div>
+      ${bookTitle ? `<div class="slide-book-name">📚 ${escHtml(bookTitle)}${bookAuthor ? ' · ' + escHtml(bookAuthor) : ''}</div>` : ''}
+      <!-- Animated text -->
+      <div class="slide-text-overlay"
+        style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}"
+        data-animated="0">
+      </div>
+      ${hashtags.length ? `
+      <div class="slide-hashtags">
+        ${hashtags.map(h => `<span class="slide-hashtag">#${escHtml(h)}</span>`).join('')}
+      </div>` : ''}
+    </div>
+  `;
+
+  // Sidebar click handlers
+  slide.querySelectorAll('.sidebar-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      const action = btn.dataset.action;
+      const postId = btn.dataset.post;
+      const bookId = btn.dataset.book;
+      if (action === 'like') handleLike(postId);
+      else if (action === 'comment') openComments(postId);
+      else if (action === 'rating') openRating(postId, bookId);
+    });
+  });
+
+  return slide;
+}
+
+function renderShortsEmpty(msg) {
+  const container = $('shortsContainer');
+  container.innerHTML = `
+    <div class="short-slide">
+      <div class="shorts-empty">
+        <svg viewBox="0 0 48 48" fill="none">
+          <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="#C9A84C" stroke-width="3"/>
+          <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="#C9A84C" stroke-width="3"/>
+          <line x1="24" y1="10" x2="24" y2="36" stroke="#C9A84C" stroke-width="3"/>
+        </svg>
+        <h3>${escHtml(msg)}</h3>
+        <p>Аввалин постро шумо нависед!</p>
+      </div>
+    </div>`;
+}
+
+// ============================================================
+// RENDER GRID
+// ============================================================
+function renderGrid(filter, query) {
+  const cells = $('gridCells');
+  let posts = [...postsData];
+
+  if (query && query.trim()) {
+    const q = query.trim().toLowerCase();
+    posts = posts.filter(p => {
+      if (filter === 'user') return (p.display_name||p.username||'').toLowerCase().includes(q);
+      if (filter === 'book') return (p.book_title||'').toLowerCase().includes(q);
+      if (filter === 'author') return (p.book_author||'').toLowerCase().includes(q);
+      if (filter === 'hashtag') {
+        const { style } = parsePostContent(p.content);
+        return (style.hashtags||[]).some(h => h.toLowerCase().includes(q.replace(/^#/,'')));
+      }
+      // all
+      return (p.display_name||p.username||'').toLowerCase().includes(q)
+        || (p.book_title||'').toLowerCase().includes(q)
+        || (p.book_author||'').toLowerCase().includes(q)
+        || (p.content||'').toLowerCase().includes(q);
+    });
+  }
+
+  cells.innerHTML = '';
+  if (!posts.length) {
+    cells.innerHTML = `<div style="grid-column:1/-1;text-align:center;padding:40px;color:var(--dim);font-size:14px">Натиҷае нест</div>`;
     return;
   }
-  if (list.children.length === 0) {
-    await loadComments(postId, list);
-  }
-  list.dataset.open = 'true';
-  list.style.display = 'flex';
-  btn.textContent = 'Пинҳон кардан шарҳҳо';
+  posts.forEach(post => {
+    const cover = getCoverFromPost(post);
+    const liked = post.likes_count || 0;
+    const cell = document.createElement('div');
+    cell.className = 'grid-cell';
+    cell.dataset.postId = post.id;
+    if (cover) {
+      cell.innerHTML = `
+        <img src="${escHtml(cover)}" alt="" loading="lazy" onerror="this.parentNode.innerHTML='<div class=grid-cell-no-cover>📚</div>'">
+        <div class="grid-cell-overlay">
+          <span class="grid-cell-likes">❤️ ${liked}</span>
+        </div>`;
+    } else {
+      cell.innerHTML = `<div class="grid-cell-no-cover">📚</div>
+        <div class="grid-cell-overlay"><span class="grid-cell-likes">❤️ ${liked}</span></div>`;
+    }
+    cell.addEventListener('click', () => {
+      openShortAtPost(post.id);
+    });
+    cells.appendChild(cell);
+  });
 }
 
-async function loadComments(postId, list) {
+function openShortAtPost(postId) {
+  showShorts();
+  setTimeout(() => {
+    const slide = document.querySelector(`.short-slide[data-post-id="${postId}"]`);
+    if (slide) slide.scrollIntoView({ behavior: 'smooth' });
+  }, 80);
+}
+
+// ============================================================
+// VIEW TOGGLE
+// ============================================================
+function showShorts() {
+  $('shortsView').classList.remove('hidden');
+  $('gridView').classList.add('hidden');
+}
+function showGrid() {
+  $('gridView').classList.remove('hidden');
+  $('shortsView').classList.add('hidden');
+  renderGrid(currentSearchFilter, $('searchInput').value);
+}
+
+$('btnOpenGrid').addEventListener('click', showGrid);
+$('btnCloseGrid').addEventListener('click', showShorts);
+$('btnCreatePost').addEventListener('click', () => openPostModal());
+$('btnCreatePost2').addEventListener('click', () => openPostModal());
+
+// Search
+$('searchInput').addEventListener('input', () => {
+  renderGrid(currentSearchFilter, $('searchInput').value);
+});
+document.querySelectorAll('.filter-chip').forEach(chip => {
+  chip.addEventListener('click', () => {
+    document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    currentSearchFilter = chip.dataset.filter;
+    renderGrid(currentSearchFilter, $('searchInput').value);
+  });
+});
+
+// ============================================================
+// LIKE
+// ============================================================
+async function handleLike(postId) {
   const token = getToken();
-  if (!token) { list.innerHTML = '<div class="comment-line">Ворид шавед барои дидани шарҳҳо</div>'; return; }
+  if (!token) { showToast('Лутфан ворид шавед'); return; }
+  const post = postsData.find(p => String(p.id) === String(postId));
+  if (!post) return;
+  const wasLiked = post.user_liked;
+  post.user_liked = !wasLiked;
+  post.likes_count = (post.likes_count || 0) + (wasLiked ? -1 : 1);
+  updateLikeUI(postId, post.user_liked, post.likes_count);
+  try {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/like', {
+      method: wasLiked ? 'DELETE' : 'POST',
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    showToast(wasLiked ? 'Лайк гирифта шуд' : '❤️ Лайк гузошта шуд');
+  } catch (e) {
+    // revert
+    post.user_liked = wasLiked;
+    post.likes_count = (post.likes_count || 0) + (wasLiked ? 1 : -1);
+    updateLikeUI(postId, post.user_liked, post.likes_count);
+  }
+}
+function updateLikeUI(postId, liked, count) {
+  const icon = $('likeIcon_' + postId);
+  const cnt = $('likeCnt_' + postId);
+  if (icon) { icon.textContent = liked ? '❤️' : '🤍'; icon.classList.toggle('liked', liked); }
+  if (cnt) cnt.textContent = count;
+}
+
+// ============================================================
+// COMMENTS
+// ============================================================
+function openComments(postId) {
+  activePostId = postId;
+  const overlay = $('commentsSheet');
+  overlay.classList.add('open');
+  $('commentInput').value = '';
+  $('commentsListInner').innerHTML = '<div class="comment-empty">Боргузорӣ...</div>';
+  loadComments(postId);
+}
+$('commentsSheetClose').addEventListener('click', () => {
+  $('commentsSheet').classList.remove('open');
+});
+$('commentsSheet').addEventListener('click', e => {
+  if (e.target === $('commentsSheet')) $('commentsSheet').classList.remove('open');
+});
+
+async function loadComments(postId) {
+  const token = getToken(); if (!token) return;
+  const list = $('commentsListInner');
   try {
     const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comments', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    if (!resp.ok) throw new Error();
     const comments = await resp.json();
-    if (comments.length === 0) {
-      list.innerHTML = '<div class="comment-line">Шарҳе нест</div>';
-      return;
-    }
     list.innerHTML = '';
+    if (!comments.length) { list.innerHTML = '<div class="comment-empty">Шарҳе нест</div>'; return; }
     comments.forEach(c => {
       const author = c.display_name || c.username || 'Корбар';
-      const isMine = currentUserId && (c.user_id === currentUserId || String(c.user_id) === String(currentUserId));
+      const isMine = currentUserId && String(c.user_id) === String(currentUserId);
       const div = document.createElement('div');
-      div.className = 'comment-line';
-      div.style.cssText = 'display:flex;align-items:flex-start;justify-content:space-between;gap:6px';
+      div.className = 'comment-item';
       div.innerHTML = `
-        <span><b>${escHtml(author)}:</b> ${escHtml(c.text)}</span>
-        ${isMine ? `<button onclick="deleteComment(${c.id}, ${postId}, this)" style="flex-shrink:0;background:none;border:none;color:#BD5650;font-size:14px;cursor:pointer;padding:0 2px;line-height:1" title="Нест кун">🗑</button>` : ''}
+        <div class="comment-av">${(author[0]||'?').toUpperCase()}</div>
+        <div class="comment-body">
+          <div class="comment-author">${escHtml(author)}</div>
+          <div class="comment-text">${escHtml(c.text)}</div>
+        </div>
+        ${isMine ? `<button class="comment-del" data-cid="${c.id}">🗑</button>` : ''}
       `;
+      if (isMine) {
+        div.querySelector('.comment-del').addEventListener('click', () => deleteComment(c.id, postId, div));
+      }
       list.appendChild(div);
     });
-  } catch(e) {
-    list.innerHTML = '<div class="comment-line">Хатогӣ дар боргирӣ</div>';
-  }
+  } catch { list.innerHTML = '<div class="comment-empty">Хатогӣ</div>'; }
 }
 
-async function deleteComment(commentId, postId, btn) {
-  if (!await showConfirmDialog('Шарҳи худро нест кунед?', 'Тасдиқ', 'Нест кунед')) return;
-  const token = getToken();
-  if (!token) return;
+async function deleteComment(cid, postId, el) {
+  if (!await showConfirmDialog('Шарҳи худро нест кунед?', 'Нест кардан', 'Нест кунед')) return;
+  const token = getToken(); if (!token) return;
   try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comments/' + commentId, {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
+    const r = await fetch(API_BASE + '/api/posts/' + postId + '/comments/' + cid, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    btn.closest('.comment-line').remove();
-    const countSpan = document.querySelector(`.comment-count[data-post="${postId}"]`);
-    if (countSpan) {
-      const cur = parseInt(countSpan.textContent) || 0;
-      if (cur > 0) countSpan.textContent = cur - 1;
-    }
-    showToast('Шарҳ нест карда шуд');
-    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
-  } catch(e) {
-    showToast('Хатогӣ: ' + e.message);
-  }
+    if (!r.ok) throw new Error();
+    el.remove(); showToast('Шарҳ нест карда шуд');
+  } catch { showToast('Хатогӣ'); }
 }
 
-async function sendComment(postId, input) {
-  const text = input.value.trim();
-  if (!text) return;
-  const token = getToken();
-  if (!token) { showToast('Лутфан ворид шавед'); return; }
+$('commentSend').addEventListener('click', async () => {
+  const text = $('commentInput').value.trim();
+  if (!text || !activePostId) return;
+  const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
   try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comment', {
+    const resp = await fetch(API_BASE + '/api/posts/' + activePostId + '/comment', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
     });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const newComment = await resp.json();
-    const list = document.querySelector(`.comments-list[data-post="${postId}"]`);
-    if (list) {
-      if (list.children.length === 1 && list.children[0].textContent.includes('Шарҳе нест')) {
-        list.innerHTML = '';
-      }
-      const line = document.createElement('div');
-      line.className = 'comment-line';
-      const author = newComment.display_name || newComment.username || 'Шумо';
-      line.innerHTML = `<b>${escHtml(author)}:</b> ${escHtml(newComment.text)}`;
-      list.appendChild(line);
-    }
-    const countSpan = document.querySelector(`.comment-count[data-post="${postId}"]`);
-    if (countSpan) {
-      const current = parseInt(countSpan.textContent) || 0;
-      countSpan.textContent = current + 1;
-    }
-    const post = postsData.find(p => p.id == postId);
-    if (post) post.comments_count = (post.comments_count || 0) + 1;
-    input.value = '';
+    if (!resp.ok) throw new Error();
+    const newC = await resp.json();
+    const author = newC.display_name || newC.username || 'Шумо';
+    const div = document.createElement('div');
+    div.className = 'comment-item';
+    div.innerHTML = `
+      <div class="comment-av">${(author[0]||'?').toUpperCase()}</div>
+      <div class="comment-body">
+        <div class="comment-author">${escHtml(author)}</div>
+        <div class="comment-text">${escHtml(text)}</div>
+      </div>
+    `;
+    const list = $('commentsListInner');
+    if (list.querySelector('.comment-empty')) list.innerHTML = '';
+    list.appendChild(div);
+    $('commentInput').value = '';
     showToast('Шарҳ илова шуд');
-    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
-  } catch(e) {
-    console.error('Send comment error:', e);
-    showToast('Хатогӣ: ' + e.message);
+    const post = postsData.find(p => String(p.id) === String(activePostId));
+    if (post) post.comments_count = (post.comments_count || 0) + 1;
+  } catch { showToast('Хатогӣ'); }
+});
+
+// ============================================================
+// RATING
+// ============================================================
+function openRating(postId, bookId) {
+  activePostId = postId;
+  activeBookId = bookId;
+  currentRating = 0;
+  $('ratingStarsRow').querySelectorAll('.r-star').forEach(s => s.classList.remove('on'));
+  $('ratingLabelBig').textContent = 'Баҳо интихоб кунед (1–10)';
+  $('ratingSheet').classList.add('open');
+}
+$('ratingSheetClose').addEventListener('click', () => $('ratingSheet').classList.remove('open'));
+$('ratingSheet').addEventListener('click', e => {
+  if (e.target === $('ratingSheet')) $('ratingSheet').classList.remove('open');
+});
+
+$('ratingStarsRow').querySelectorAll('.r-star').forEach(star => {
+  star.addEventListener('click', () => {
+    currentRating = parseInt(star.dataset.v);
+    $('ratingStarsRow').querySelectorAll('.r-star').forEach(s => {
+      s.classList.toggle('on', parseInt(s.dataset.v) <= currentRating);
+    });
+    $('ratingLabelBig').textContent = `Шумо: ⭐ ${currentRating} / 10`;
+  });
+});
+
+$('ratingSubmit').addEventListener('click', async () => {
+  if (!currentRating) { showToast('Баҳо интихоб кунед'); return; }
+  if (!activeBookId) { showToast('Китоб мавҷуд нест'); return; }
+  const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
+  try {
+    const resp = await fetch(API_BASE + '/api/books/' + activeBookId + '/rate', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ rating: currentRating })
+    });
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const stats = await resp.json();
+    const avg = stats.avg_rating ? parseFloat(stats.avg_rating).toFixed(1) : currentRating;
+    const cnt = $('ratingCnt_' + activePostId);
+    if (cnt) cnt.textContent = avg;
+    showToast('Баҳо сабт шуд ⭐ ' + currentRating + '/10');
+    $('ratingSheet').classList.remove('open');
+  } catch (e) { showToast('Хатогӣ: ' + e.message); }
+});
+
+// ============================================================
+// POST MODAL — STEP NAVIGATION
+// ============================================================
+function goStep(n) {
+  currentStep = n;
+  document.querySelectorAll('.step-tab').forEach(t => {
+    t.classList.toggle('active', parseInt(t.dataset.step) === n);
+  });
+  document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
+  $('step' + n).classList.add('active');
+  if (n === 3) updatePreview();
+}
+
+// ============================================================
+// BUILD STYLE PICKERS
+// ============================================================
+function buildFontGrid() {
+  const grid = $('fontGrid');
+  grid.innerHTML = '';
+  FONTS.forEach(f => {
+    const card = document.createElement('div');
+    card.className = 'font-card' + (f.name === postStyle.font ? ' selected' : '');
+    card.innerHTML = `
+      <div class="font-card-preview" style="font-family:'${f.name}',sans-serif">${f.preview}</div>
+      <div class="font-card-name">${f.label}</div>
+    `;
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.font-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      postStyle.font = f.name;
+    });
+    grid.appendChild(card);
+  });
+}
+
+function buildColorRow() {
+  const row = $('colorRow');
+  row.innerHTML = '';
+  TEXT_COLORS.forEach(c => {
+    const dot = document.createElement('div');
+    dot.className = 'color-dot' + (c === postStyle.color ? ' selected' : '');
+    dot.style.background = c;
+    if (c === '#FFFFFF') dot.style.border = '2px solid rgba(255,255,255,0.3)';
+    if (c === '#000000') dot.style.border = '2px solid rgba(255,255,255,0.15)';
+    dot.addEventListener('click', () => {
+      document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+      dot.classList.add('selected');
+      postStyle.color = c;
+      $('customColor').value = c;
+    });
+    row.appendChild(dot);
+  });
+}
+
+function buildAnimGrid() {
+  const grid = $('animGrid');
+  grid.innerHTML = '';
+  ANIMATIONS.forEach(a => {
+    const card = document.createElement('div');
+    card.className = 'anim-card' + (a.id === postStyle.animation ? ' selected' : '');
+    card.innerHTML = `
+      <div class="anim-icon">${a.icon}</div>
+      <div><div class="anim-label">${a.label}</div><div class="anim-desc">${a.desc}</div></div>
+    `;
+    card.addEventListener('click', () => {
+      document.querySelectorAll('.anim-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      postStyle.animation = a.id;
+    });
+    grid.appendChild(card);
+  });
+}
+
+function buildSizePicker() {
+  document.querySelectorAll('.size-chip').forEach(chip => {
+    chip.classList.toggle('selected', parseInt(chip.dataset.size) === postStyle.size);
+    chip.addEventListener('click', () => {
+      document.querySelectorAll('.size-chip').forEach(c => c.classList.remove('selected'));
+      chip.classList.add('selected');
+      postStyle.size = parseInt(chip.dataset.size);
+    });
+  });
+}
+
+function buildHashtagSection() {
+  const suggestions = $('hashtagSuggestions');
+  suggestions.innerHTML = '';
+  HASHTAG_SUGGESTIONS.forEach(h => {
+    const btn = document.createElement('button');
+    btn.className = 'h-suggest';
+    btn.textContent = '#' + h;
+    btn.addEventListener('click', () => addHashtag(h));
+    suggestions.appendChild(btn);
+  });
+  renderHashtags();
+}
+
+function addHashtag(raw) {
+  const h = raw.replace(/^#+/, '').trim().toLowerCase();
+  if (!h || postStyle.hashtags.includes(h)) return;
+  postStyle.hashtags.push(h);
+  renderHashtags();
+}
+
+function renderHashtags() {
+  const chips = $('hashtagChips');
+  chips.innerHTML = '';
+  postStyle.hashtags.forEach(h => {
+    const chip = document.createElement('div');
+    chip.className = 'hashtag-chip';
+    chip.innerHTML = `#${escHtml(h)} <span class="rm">✕</span>`;
+    chip.querySelector('.rm').addEventListener('click', () => {
+      postStyle.hashtags = postStyle.hashtags.filter(x => x !== h);
+      renderHashtags();
+    });
+    chips.appendChild(chip);
+  });
+}
+
+$('hashtagAdd').addEventListener('click', () => {
+  const val = $('hashtagInput').value.trim();
+  if (val) { addHashtag(val); $('hashtagInput').value = ''; }
+});
+$('hashtagInput').addEventListener('keydown', e => {
+  if (e.key === 'Enter' || e.key === ',') {
+    e.preventDefault();
+    const val = $('hashtagInput').value.trim();
+    if (val) { addHashtag(val); $('hashtagInput').value = ''; }
   }
+});
+
+$('customColor').addEventListener('input', e => {
+  postStyle.color = e.target.value;
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+});
+
+// ============================================================
+// PREVIEW UPDATE
+// ============================================================
+function updatePreview() {
+  const text = ($('postContent').value || '').trim();
+  const textEl = $('previewTextEl');
+
+  // Try to get cover from selected book
+  const sel = $('postBookSelect');
+  const selectedOpt = sel.options[sel.selectedIndex];
+  // We don't have cover url here easily, show placeholder
+  const bgImg = $('previewBgImg');
+  const bookImgEl = $('previewBookImgEl');
+  if (previewCoverUrl) {
+    bgImg.src = previewCoverUrl;
+    bookImgEl.src = previewCoverUrl;
+    $('previewBookImg').style.display = 'block';
+  } else {
+    bgImg.src = '';
+    $('previewBookImg').style.display = 'none';
+  }
+
+  animateTextOverlay(textEl, text, postStyle);
 }
 
-// ================================================================
-// ============ УДАЛЕНИЕ ПОСТА ============
-// ================================================================
-async function deletePost(postId){
-  if(!await showConfirmDialog('Шумо воқеан мехоҳед ин постро нест кунед?', 'Нест кардани пост', 'Нест кунед')) return;
-  const token = getToken();
-  if(!token) { showToast('Лутфан ворид шавед'); return; }
-  try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId, {
-      method: 'DELETE',
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    showToast('Пост нест карда шуд');
-    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
-    loadPosts();
-  } catch(e){ showToast('Хатогӣ: ' + e.message); }
-}
-
-// ================================================================
-// ============ СОЗДАНИЕ ПОСТА ============
-// ================================================================
-async function openPostModal(bookId){
-  const modal = $('postModal');
-  modal.classList.add('open');
-  const select = $('postBookSelect');
-  const authorInput = $('postBookAuthor');
-  const token = getToken();
-  if(!token) return;
-  try {
-    const resp = await fetch(API_BASE + '/api/reading-sessions', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    const sessions = await resp.json();
-    const bookMap = {};
-    sessions.forEach(s => {
-      if(s.book_id && s.book_title) {
-        const key = s.book_id;
-        if(!bookMap[key]) bookMap[key] = { id: s.book_id, title: s.book_title, author: s.book_author || '' };
-      }
-    });
-    const books = Object.values(bookMap);
-    select.innerHTML = '<option value="">Интихоб кунед (ихтиёрӣ)</option>';
-    books.forEach(b => {
-      const opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = b.title + (b.author ? ' — ' + b.author : '');
-      opt.dataset.author = b.author;
-      select.appendChild(opt);
-    });
-    if(bookId){
-      for(let opt of select.options){
-        if(opt.value === bookId){
-          opt.selected = true;
-          authorInput.value = opt.dataset.author || '';
-          break;
-        }
-      }
-    }
-    select.onchange = function(){
-      const selected = this.options[this.selectedIndex];
-      authorInput.value = selected?.dataset?.author || '';
-    };
-  } catch(e){ console.warn('Failed to load books for modal', e); }
-}
-
-function closePostModal(){
-  $('postModal').classList.remove('open');
+// ============================================================
+// OPEN/CLOSE POST MODAL
+// ============================================================
+async function openPostModal(bookId) {
+  postStyle = { font: 'Roboto', size: 14, color: '#FFFFFF', animation: 'word', hashtags: [] };
+  previewCoverUrl = '';
+  goStep(1);
+  buildFontGrid();
+  buildColorRow();
+  buildAnimGrid();
+  buildSizePicker();
+  buildHashtagSection();
   $('postContent').value = '';
-  $('postBookSelect').value = '';
   $('postBookAuthor').value = '';
+
+  const select = $('postBookSelect');
+  const token = getToken();
+  if (token) {
+    try {
+      const resp = await fetch(API_BASE + '/api/reading-sessions', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (resp.ok) {
+        const sessions = await resp.json();
+        const bookMap = {};
+        sessions.forEach(s => {
+          if (s.book_id && s.book_title && !bookMap[s.book_id])
+            bookMap[s.book_id] = { id: s.book_id, title: s.book_title, author: s.book_author || '', folder: s.folder, file: s.file };
+        });
+        const books = Object.values(bookMap);
+        select.innerHTML = '<option value="">Интихоб кунед (ихтиёрӣ)</option>';
+        books.forEach(b => {
+          const opt = document.createElement('option');
+          opt.value = b.id;
+          opt.textContent = b.title + (b.author ? ' — ' + b.author : '');
+          opt.dataset.author = b.author;
+          opt.dataset.folder = b.folder || '';
+          opt.dataset.file = b.file || b.id;
+          select.appendChild(opt);
+        });
+        if (bookId) {
+          for (const opt of select.options) {
+            if (opt.value === bookId) { opt.selected = true; break; }
+          }
+        }
+        select.onchange = function() {
+          const o = this.options[this.selectedIndex];
+          $('postBookAuthor').value = o?.dataset?.author || '';
+          // update preview cover
+          if (o?.value) {
+            previewCoverUrl = getCoverForBook({ folder: o.dataset.folder, file: o.dataset.file || o.value });
+          } else {
+            previewCoverUrl = '';
+          }
+        };
+        select.onchange();
+      }
+    } catch {}
+  }
+
+  $('postModal').classList.add('open');
 }
 
-document.getElementById('createPostBtn').addEventListener('click', () => openPostModal());
-document.getElementById('closeModalBtn').addEventListener('click', closePostModal);
-document.getElementById('cancelPostBtn').addEventListener('click', closePostModal);
-$('postModal').addEventListener('click', function(e){ if(e.target === this) closePostModal(); });
+function closePostModal() {
+  $('postModal').classList.remove('open');
+}
 
-document.getElementById('submitPostBtn').addEventListener('click', async function(){
-  const content = $('postContent').value.trim();
+$('postModalClose').addEventListener('click', closePostModal);
+$('postModalCancel').addEventListener('click', closePostModal);
+$('postModal').addEventListener('click', e => { if (e.target === $('postModal')) closePostModal(); });
+
+// ============================================================
+// SUBMIT POST
+// ============================================================
+$('submitPostBtn').addEventListener('click', async function() {
+  const text = ($('postContent').value || '').trim();
   const book_id = $('postBookSelect').value;
-  const book_author = $('postBookAuthor').value.trim();
-  let book_title = '';
-  const select = $('postBookSelect');
-  const selectedOption = select.options[select.selectedIndex];
-  if (selectedOption && selectedOption.value) {
-    book_title = selectedOption.text.split(' — ')[0].trim();
-  }
-  if(!content && !book_id) {
+  const book_author = ($('postBookAuthor').value || '').trim();
+  const sel = $('postBookSelect');
+  const selOpt = sel.options[sel.selectedIndex];
+  const book_title = selOpt?.value ? selOpt.text.split(' — ')[0].trim() : '';
+
+  if (!text && !book_id) {
     showToast('Лутфан матн ё китоб интихоб кунед');
     return;
   }
   const token = getToken();
-  if(!token) { showToast('Лутфан ворид шавед'); return; }
+  if (!token) { showToast('Лутфан ворид шавед'); return; }
+
+  const content = buildPostContent(text, postStyle);
+
   this.disabled = true; this.textContent = '...';
   try {
     const resp = await fetch(API_BASE + '/api/posts', {
@@ -1889,19 +2142,43 @@ document.getElementById('submitPostBtn').addEventListener('click', async functio
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ content, book_id, book_title, book_author, visibility: 'public' })
     });
-    if(!resp.ok) throw new Error('HTTP '+resp.status);
-    showToast('Пост нашр шуд!');
+    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    showToast('✅ Пост нашр шуд!');
     closePostModal();
-    if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
+    if (typeof CacheManager !== 'undefined' && CacheManager.KEYS)
+      CacheManager.invalidateKey(CacheManager.KEYS.POSTS || 'kk_posts');
     loadPosts();
-  } catch(e){ showToast('Хатогӣ: ' + e.message); }
-  finally { this.disabled = false; this.textContent = '📤 Интишор'; }
+  } catch (e) {
+    showToast('Хатогӣ: ' + e.message);
+  } finally {
+    this.disabled = false; this.textContent = '📤 Интишор';
+  }
 });
 
-// ================================================================
-// ============ ЗАПУСК ============
-// ================================================================
-window.addEventListener('pageshow', function(e){ if(e.persisted) loadPosts(); });
+// ============================================================
+// STEP TAB CLICKS
+// ============================================================
+document.querySelectorAll('.step-tab').forEach(tab => {
+  tab.addEventListener('click', () => goStep(parseInt(tab.dataset.step)));
+});
+
+// ============================================================
+// INIT
+// ============================================================
+document.addEventListener('DOMContentLoaded', () => {
+  if (typeof CacheManager !== 'undefined') CacheManager.init?.();
+
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('action') === 'post') {
+    const bid = localStorage.getItem('kk_publish_book');
+    if (bid) { localStorage.removeItem('kk_publish_book'); setTimeout(() => openPostModal(bid), 400); }
+    else setTimeout(openPostModal, 400);
+  }
+
+  loadPosts();
+});
+
+window.addEventListener('pageshow', e => { if (e.persisted) loadPosts(); });
 </script>
 </body>
 </html>
