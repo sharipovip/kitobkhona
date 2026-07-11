@@ -1,0 +1,44 @@
+# ===== OS files =====
+.DS_Store
+Thumbs.db
+.desktop.ini
+
+# ===== Editor =====
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# ===== Logs & Temp =====
+*.log
+*.tmp
+*.temp
+
+# ===== Backups =====
+*.bak
+*.zip
+*.tar.gz
+
+# ===== Environment =====
+.env
+.env.local
+.env.production
+
+# ===== Node (if any) =====
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# ===== Python (if any) =====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ===== Supabase =====
+supabase/.temp/
+
+# ===== Arena =====
+.arena/
