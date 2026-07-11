@@ -1280,6 +1280,11 @@
           if (resp.ok) { btn.textContent = '⭐ Закладка (✔)'; toast('Ба закладка илова шуд'); }
           else toast('Хатогӣ');
         }
+        const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
+        if (uid && typeof CacheManager !== 'undefined') {
+          CacheManager.invalidateKey('kk_favorites_' + uid);
+          CacheManager.invalidateKey('kk_sessions_' + uid);
+        }
       } catch(e) { toast('Хатогӣ'); }
     })();
   }

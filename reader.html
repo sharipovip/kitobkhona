@@ -668,9 +668,9 @@
 
   async function sendReadingSession(duration, status, pagesRead = page) {
     const token = localStorage.getItem('kk_token');
-    if (!token) return;
+    if (!token) return Promise.resolve();
     const bookId = getBookId();
-    if (!bookId || bookId === 'undefined' || bookId === 'null') return;
+    if (!bookId || bookId === 'undefined' || bookId === 'null') return Promise.resolve();
     const payload = {
       book_id: bookId,
       book_title: name,
@@ -685,6 +685,7 @@
         body: JSON.stringify(payload)
       });
       if (!r.ok) console.error('[Reader] Session error:', r.status);
+      return r;
     } catch(e) { console.error('[Reader] Session network error:', e); }
   }
 
@@ -705,7 +706,12 @@
       clearInterval(sessionInterval);
       sessionInterval = null;
       if (totalSeconds >= MIN_READ_TIME) {
-        sendReadingSession(totalSeconds, 'completed');
+        sendReadingSession(totalSeconds, 'completed').then(() => {
+          const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
+          if (uid && typeof CacheManager !== 'undefined') {
+            CacheManager.invalidateKey('kk_sessions_' + uid);
+          }
+        }).catch(() => {});
       }
       totalSeconds = 0;
       sessionStarted = false;
