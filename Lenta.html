@@ -175,12 +175,18 @@ html, body {
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
-/* Нижняя левая информация */
-.slide-bottom-info {
+/* Нижняя строка: информация слева, кнопки справа */
+.slide-bottom-row {
   position: absolute;
   bottom: 80px;
   left: 24px;
+  right: 24px;
   z-index: 12;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+}
+.slide-bottom-info {
   display: flex;
   flex-direction: column;
   gap: 3px;
@@ -201,14 +207,12 @@ html, body {
 .slide-bottom-info .info-line .book-title { font-size: 18px; }
 .slide-bottom-info .info-line .book-title:hover { text-decoration: underline; }
 
-/* Кнопки управления постом (для автора) */
+/* Кнопки управления постом (для автора) – справа */
 .post-owner-actions {
-  position: absolute;
-  bottom: 38px;
-  left: 24px;
-  z-index: 12;
   display: flex;
-  gap: 8px;
+  gap: 6px;
+  align-self: flex-end;
+  padding-bottom: 2px;
 }
 .post-owner-actions .act-btn {
   background: rgba(0,0,0,0.5);
@@ -295,17 +299,16 @@ html, body {
 .shorts-empty h3 { font-size: 18px; }
 .shorts-empty p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-/* Кнопка создания поста – теперь в верхней панели */
-.shorts-fab {
-  /* уже в top-right-btns */
-}
-
+/* Спиннер загрузки – центрирован */
 .shorts-loader {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 20px 0;
-  height: 100vh;
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
 }
 .spinner {
   width: 36px; height: 36px;
@@ -917,9 +920,7 @@ input[type="color"] {
 <body>
 <div class="app" id="app">
 
-  <!-- ============================================================
-       SHORTS VIEW (default)
-       ============================================================ -->
+  <!-- SHORTS VIEW -->
   <div id="shortsView">
     <div class="shorts-topbar">
       <div class="shorts-logo" onclick="location.href='kitobho.html'">
@@ -943,9 +944,7 @@ input[type="color"] {
     <div class="shorts-container" id="shortsContainer"></div>
   </div>
 
-  <!-- ============================================================
-       GRID VIEW
-       ============================================================ -->
+  <!-- GRID VIEW -->
   <div id="gridView" class="hidden">
     <div class="grid-topbar">
       <div class="grid-header-row">
@@ -972,9 +971,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- ============================================================
-       COMMENTS SHEET
-       ============================================================ -->
+  <!-- COMMENTS SHEET -->
   <div class="comments-sheet-overlay" id="commentsSheet">
     <div class="comments-sheet">
       <div class="sheet-handle"></div>
@@ -992,9 +989,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- ============================================================
-       RATING SHEET (10 stars)
-       ============================================================ -->
+  <!-- RATING SHEET -->
   <div class="rating-sheet-overlay" id="ratingSheet">
     <div class="rating-sheet">
       <div class="sheet-handle"></div>
@@ -1014,9 +1009,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- ============================================================
-       POST CREATION / EDIT MODAL
-       ============================================================ -->
+  <!-- POST CREATION / EDIT MODAL -->
   <div class="modal-overlay" id="postModal">
     <div class="modal-sheet">
       <div class="modal-topbar">
@@ -1148,7 +1141,7 @@ let currentRating = 0;
 let currentSearchFilter = 'all';
 let unsubscribePosts = null;
 let _loadingPosts = false;
-let editingPostId = null; // если null – создание, иначе редактирование
+let editingPostId = null;
 
 // Post creation state
 let postStyle = {
@@ -1571,7 +1564,7 @@ async function loadPosts() {
   }
 
   container.innerHTML = `
-    <div class="short-slide">
+    <div class="short-slide" style="display:flex;align-items:center;justify-content:center;">
       <div class="shorts-loader"><div class="spinner"></div></div>
     </div>
   `;
@@ -1655,7 +1648,7 @@ async function loadPostsFromServer() {
 }
 
 // ============================================================
-// RENDER SHORTS (с кнопками управления для автора)
+// RENDER SHORTS
 // ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
@@ -1755,25 +1748,25 @@ function buildSlide(post, idx) {
       ${hashtags.map(h => `<span class="slide-hashtag" data-hashtag="${escHtml(h)}">#${escHtml(h)}</span>`).join('')}
     </div>` : ''}
 
-    <!-- Нижняя информация -->
-    <div class="slide-bottom-info">
-      <div class="info-line" data-userid="${userId}">
-        <span class="gold">@${escHtml(username)}</span>
-        <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
+    <!-- Нижняя строка: информация слева, кнопки справа -->
+    <div class="slide-bottom-row">
+      <div class="slide-bottom-info">
+        <div class="info-line" data-userid="${userId}">
+          <span class="gold">@${escHtml(username)}</span>
+          <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
+        </div>
+        ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
+        ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
       </div>
-      ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
-      ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
+      ${isOwner ? `
+      <div class="post-owner-actions">
+        <button class="act-btn" title="Переименовать" data-action="edit" data-postid="${post.id}">✏️</button>
+        <button class="act-btn danger" title="Удалить" data-action="delete" data-postid="${post.id}">🗑</button>
+      </div>` : ''}
     </div>
-
-    <!-- Кнопки для автора поста -->
-    ${isOwner ? `
-    <div class="post-owner-actions">
-      <button class="act-btn" title="Переименовать" data-action="edit" data-postid="${post.id}">✏️</button>
-      <button class="act-btn danger" title="Удалить" data-action="delete" data-postid="${post.id}">🗑</button>
-    </div>` : ''}
   `;
 
-  // Обработчики
+  // Обработчики боковых кнопок
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -2165,7 +2158,7 @@ async function deletePost(postId) {
 }
 
 // ============================================================
-// РЕДАКТИРОВАНИЕ ПОСТА (открытие модалки с предзаполненными данными)
+// РЕДАКТИРОВАНИЕ ПОСТА
 // ============================================================
 async function openEditPost(postId) {
   const post = postsData.find(p => String(p.id) === String(postId));
@@ -2173,17 +2166,11 @@ async function openEditPost(postId) {
   editingPostId = postId;
   const { text, style } = parsePostContent(post.content);
 
-  // Заполняем поля
   $('postContent').value = text || '';
   $('postBookAuthor').value = post.book_author || '';
-  // Выбираем книгу в select (если есть)
   const select = $('postBookSelect');
-  // Нам нужно загрузить список книг из сессий, чтобы выбрать нужную
-  // Можно просто заполнить текстовое поле с книгой, но у нас select – лучше подставить значение
-  // Временно сохраним book_id в data-атрибут, но для простоты мы обновим select при загрузке модалки
-  // Мы перезапросим список книг при открытии модалки, поэтому здесь просто запомним book_id
   select.dataset.editBookId = post.book_id || '';
-  // Заполняем стиль
+
   postStyle = {
     font: style.font || 'Roboto',
     size: style.size || 14,
@@ -2191,20 +2178,17 @@ async function openEditPost(postId) {
     animation: style.animation || 'word',
     hashtags: style.hashtags || []
   };
-  // Обновляем UI стилей
   buildFontGrid();
   buildColorRow();
   buildAnimGrid();
   buildSizePicker();
   renderHashtags();
 
-  // Открываем модалку на первом шаге
   $('modalTitle').textContent = '✏️ Таҳрири пост';
   goStep(1);
   $('postModal').classList.add('open');
   updateSubmitButton();
 
-  // Загружаем список книг для select
   await populateBookSelect(select.dataset.editBookId);
 }
 
@@ -2234,7 +2218,6 @@ async function populateBookSelect(selectedBookId) {
       opt.dataset.file = b.file || b.id;
       select.appendChild(opt);
     });
-    // Выбираем книгу, если она была в редактируемом посте
     if (selectedBookId) {
       for (const opt of select.options) {
         if (opt.value === selectedBookId) {
@@ -2242,26 +2225,22 @@ async function populateBookSelect(selectedBookId) {
           break;
         }
       }
-      // Автоподстановка автора
       const selOpt = select.options[select.selectedIndex];
       if (selOpt && selOpt.dataset.author) {
         $('postBookAuthor').value = selOpt.dataset.author;
       }
     }
-    // Обновляем превью при выборе книги
     select.onchange = function() {
       const o = this.options[this.selectedIndex];
       if (o?.value) {
-        const author = o.dataset.author || '';
-        if (!editingPostId) { // при создании – автозаполняем, при редактировании – оставляем как есть
-          $('postBookAuthor').value = author;
+        if (!editingPostId) {
+          $('postBookAuthor').value = o.dataset.author || '';
         }
         previewCoverUrl = getCoverForBook({ folder: o.dataset.folder, file: o.dataset.file || o.value });
       } else {
         previewCoverUrl = '';
       }
     };
-    // Принудительно вызываем onchange, чтобы установить previewCoverUrl
     select.onchange();
   } catch(e) { console.warn('Failed to load books for modal', e); }
 }
@@ -2270,7 +2249,6 @@ async function populateBookSelect(selectedBookId) {
 // POST MODAL – ШАГИ И ВАЛИДАЦИЯ
 // ============================================================
 function goStep(n) {
-  // Валидация для шага 1 → 2
   if (n === 2) {
     const book_id = $('postBookSelect').value;
     const author = ($('postBookAuthor').value || '').trim();
@@ -2293,7 +2271,6 @@ function goStep(n) {
 function updateSubmitButton() {
   const submitBtn = $('submitPostBtn');
   if (!submitBtn) return;
-  // На шаге 3 проверяем наличие текста или книги (для создания/редактирования)
   const text = ($('postContent').value || '').trim();
   const book_id = $('postBookSelect').value;
   if (text || book_id) {
@@ -2458,7 +2435,7 @@ function updatePreview() {
 }
 
 // ============================================================
-// ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ (создание или редактирование)
+// ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ
 // ============================================================
 async function openPostModal(bookId) {
   editingPostId = null;
@@ -2513,14 +2490,12 @@ $('submitPostBtn').addEventListener('click', async function() {
   try {
     let resp;
     if (editingPostId) {
-      // Редактирование
       resp = await fetch(API_BASE + '/api/posts/' + editingPostId, {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify(payload)
       });
     } else {
-      // Создание
       resp = await fetch(API_BASE + '/api/posts', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
