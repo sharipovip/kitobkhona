@@ -1219,7 +1219,7 @@ function getCoverForBook(book) {
   const coverList = coverListFromPdfUrl(url);
   return coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
 }
-function openBookFromPost(bookId, bookTitle) {
+function openBookFromPost(bookId, bookTitle, pdfUrl, coverUrl) {
   if (!bookId) return;
   let folder = 'books', file = bookId;
   if (bookId.includes('/')) {
@@ -1228,9 +1228,9 @@ function openBookFromPost(bookId, bookTitle) {
     folder = parts.join('/');
     if (!folder.startsWith('books/')) folder = 'books/' + folder;
   }
-  const url = rawUrl(folder, file);
+  const url = pdfUrl || rawUrl(folder, file);
   const name = bookTitle || file.replace(/\.pdf$/i, '') || 'Китоб';
-  const cover = getCoverForBook({ folder, file, book_id: bookId });
+  const cover = coverUrl || getCoverForBook({ folder, file, book_id: bookId });
   location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
 }
 
@@ -1449,7 +1449,7 @@ let html = '';
      }
 
 // Кешируем обложку книги
-      const coverUrl = post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '';
+       const coverUrl = post.cover_url || (post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '');
       const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
       const finalCoverUrl = cachedCover || coverUrl;
 
@@ -1457,7 +1457,7 @@ let bookBlock = '';
      if (post.book_id) {
        const author = post.book_author || '';
        bookBlock = `
-         <div class="book-block" onclick="openBookFromPost('${post.book_id}','${post.book_title||''}')">
+          <div class="book-block" onclick="openBookFromPost('${post.book_id}','${(post.book_title||'').replace(/'/g,"\\'")}', '${post.pdf_url||''}', '${post.cover_url||''}')">
            <div class="thumb" style="background:var(--card2);"><img src="${finalCoverUrl}" alt="" onerror="this.style.display='none'"></div>
            <div class="book-info">
              <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
