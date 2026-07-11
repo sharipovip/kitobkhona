@@ -1166,12 +1166,13 @@
     grid.innerHTML = list.map((b) => {
       const file = b.file || ((b.name || 'book') + '.pdf');
       const name = b.name || file.replace(/\.pdf$/i, '');
-      const url = rawUrl(sub?.folder || b.folder || '', file);
-      const coverList = coverCandidates(sub?.folder || b.folder || '', file);
+      const folderFull = sub?.folder || b.folder || '';
+      const url = rawUrl(folderFull, file);
+      const coverList = coverCandidates(folderFull, file);
       const cover = coverList[0] || '';
       const coverSrc = getCachedCoverDataUrl(cover) || cover;
       const state = getBookAccessState(url);
-      const bookId = b.file || file;
+      const bookId = folderFull ? (folderFull.replace(/\/+$/, '') + '/' + file) : (b.file || file);
       const bgColor = randomColor();
       const sizeMB = b.size ? (b.size / (1024*1024)).toFixed(1) : null;
 
