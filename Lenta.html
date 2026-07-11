@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   БАЗОВЫЕ СТИЛИ (без изменений)
+   БАЗОВЫЕ СТИЛИ
    ============================================================ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -41,9 +41,6 @@ html, body {
   background: #000;
 }
 
-/* ============================================================
-   TOAST
-   ============================================================ */
 .toast {
   position: absolute; bottom: 90px; left: 50%;
   transform: translateX(-50%) translateY(20px);
@@ -98,7 +95,6 @@ html, body {
 .top-icon-btn:hover { background: rgba(255,255,255,0.22); }
 .top-right-btns { display: flex; gap: 8px; align-items: center; }
 
-/* Carousel (CSS snap) */
 .shorts-container {
   width: 100%; height: 100%;
   overflow-y: scroll;
@@ -108,7 +104,6 @@ html, body {
 }
 .shorts-container::-webkit-scrollbar { display: none; }
 
-/* Single short slide */
 .short-slide {
   width: 100%; height: 100vh;
   scroll-snap-align: start;
@@ -118,7 +113,6 @@ html, body {
   display: flex; align-items: flex-end;
 }
 
-/* Book cover background – full screen */
 .slide-bg {
   position: absolute; inset: 0;
   background: #0d1b2a;
@@ -143,7 +137,6 @@ html, body {
   width: 100%; display: block;
 }
 
-/* Text overlay – flexible centering */
 .slide-text-layer {
   position: absolute;
   bottom: 130px; left: 24px; right: 80px;
@@ -164,43 +157,51 @@ html, body {
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
-/* User name – clickable */
-.slide-user {
-  font-size: 14px; font-weight: 700;
-  color: #fff; margin-bottom: 6px;
-  display: flex; align-items: center; gap: 8px;
-  cursor: pointer;
-}
-.slide-user .at { color: var(--gold); }
-.slide-user:hover .at { text-decoration: underline; }
-
-/* Book title & author – bottom left */
-.slide-book-info {
+/* Верхняя информационная панель (имя, название книги, автор) */
+.slide-top-info {
   position: absolute;
-  bottom: 70px; left: 24px;
-  z-index: 12;
+  top: 70px;
+  left: 24px;
+  right: 80px;
+  z-index: 15;
   display: flex;
   flex-direction: column;
-  gap: 2px;
+  gap: 4px;
+  text-shadow: 0 2px 12px rgba(0,0,0,0.9);
 }
-.slide-book-name {
-  font-size: 14px; font-weight: 700;
+.slide-top-info .slide-user {
+  font-size: 16px;
+  font-weight: 700;
   color: #fff;
-  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
 }
-.slide-book-author {
-  font-size: 12px; color: rgba(255,255,255,0.7);
-  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+.slide-top-info .slide-user .at { color: var(--gold); }
+.slide-top-info .slide-user:hover .at { text-decoration: underline; }
+.slide-top-info .slide-book-name {
+  font-size: 18px;
+  font-weight: 700;
+  color: #fff;
+  cursor: pointer;
+  line-height: 1.2;
 }
-.slide-hashtags {
-  display: flex; flex-wrap: wrap; gap: 5px; margin-top: 6px;
+.slide-top-info .slide-book-name:hover { text-decoration: underline; }
+.slide-top-info .slide-book-author {
+  font-size: 14px;
+  color: rgba(255,255,255,0.8);
+  cursor: pointer;
 }
-.slide-hashtag {
-  font-size: 12px; color: #7EC8E3;
-  font-weight: 600;
+.slide-top-info .slide-book-author:hover { color: var(--gold); }
+
+.slide-bottom-grad {
+  position: absolute; bottom: 0; left: 0; right: 0;
+  height: 200px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+  z-index: 5; pointer-events: none;
 }
 
-/* Right sidebar */
 .slide-sidebar {
   position: absolute; right: 12px; bottom: 120px;
   z-index: 20;
@@ -227,15 +228,6 @@ html, body {
   text-shadow: 0 1px 4px rgba(0,0,0,0.8);
 }
 
-/* Bottom gradient */
-.slide-bottom-grad {
-  position: absolute; bottom: 0; left: 0; right: 0;
-  height: 200px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
-  z-index: 5; pointer-events: none;
-}
-
-/* No posts state */
 .shorts-empty {
   position: absolute; inset: 0;
   display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -246,7 +238,6 @@ html, body {
 .shorts-empty h3 { font-size: 18px; }
 .shorts-empty p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-/* FAB – рядом с сеткой */
 .shorts-fab {
   position: absolute; top: 12px; right: 68px;
   z-index: 51;
@@ -261,7 +252,6 @@ html, body {
 }
 .shorts-fab:hover { background: rgba(255,255,255,0.22); }
 
-/* Loader (внутри #shortsContainer, динамически создаётся) */
 .shorts-loader {
   display: flex;
   align-items: center;
@@ -561,7 +551,6 @@ html, body {
   display: flex; align-items: center; justify-content: center;
 }
 
-/* Step tabs */
 .modal-steps {
   display: flex; gap: 4px; padding: 10px 18px;
   border-bottom: 1px solid var(--border); flex: 0 0 auto;
@@ -581,7 +570,6 @@ html, body {
   scrollbar-width: thin; scrollbar-color: rgba(201,168,76,0.2) transparent;
 }
 
-/* Step 1 — Text & Book */
 .step-panel { display: none; }
 .step-panel.active { display: block; }
 
@@ -613,14 +601,12 @@ html, body {
 .form-select:focus, .form-input:focus { border-color: var(--gold); }
 .form-select option { background: #1A2D44; }
 
-/* Step 2 — Style */
 .style-section { margin-bottom: 18px; }
 .style-section-title {
   font-size: 12px; font-weight: 700;
   color: var(--muted); margin-bottom: 8px;
 }
 
-/* Font picker */
 .font-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
 }
@@ -638,7 +624,6 @@ html, body {
 }
 .font-card-name { font-size: 10px; color: var(--dim); }
 
-/* Size picker */
 .size-row { display: flex; gap: 6px; }
 .size-chip {
   flex: 1; padding: 8px; border-radius: 8px;
@@ -651,7 +636,6 @@ html, body {
 .size-chip span { display: block; font-weight: 700; color: var(--text); }
 .size-chip small { font-size: 9px; color: var(--dim); }
 
-/* Color picker */
 .color-row { display: flex; flex-wrap: wrap; gap: 8px; }
 .color-dot {
   width: 30px; height: 30px; border-radius: 50%;
@@ -667,7 +651,6 @@ input[type="color"] {
   cursor: pointer; padding: 2px;
 }
 
-/* Animation picker */
 .anim-grid {
   display: grid; grid-template-columns: repeat(2, 1fr); gap: 6px;
 }
@@ -684,7 +667,6 @@ input[type="color"] {
 .anim-label { font-size: 11.5px; color: var(--text); font-weight: 600; }
 .anim-desc { font-size: 10px; color: var(--dim); }
 
-/* Step 3 — Preview & Hashtags */
 .preview-box {
   width: 100%; aspect-ratio: 9/13;
   border-radius: 14px; overflow: hidden;
@@ -724,7 +706,6 @@ input[type="color"] {
   min-height: 20px;
 }
 
-/* Hashtag section */
 .hashtag-section { margin-top: 10px; }
 .hashtag-input-row {
   display: flex; gap: 8px; margin-bottom: 10px;
@@ -784,7 +765,6 @@ input[type="color"] {
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Step nav btns */
 .step-nav { display: flex; gap: 8px; }
 .step-nav-btn {
   flex: 1; padding: 11px; border-radius: 12px;
@@ -844,8 +824,6 @@ input[type="color"] {
   from { opacity: 0; transform: translateY(30px); }
   to   { opacity: 1; transform: translateY(0); }
 }
-
-/* Slide fade-in when snapped */
 @keyframes slideEnter {
   from { opacity: 0; transform: scale(0.97); }
   to   { opacity: 1; transform: scale(1); }
@@ -858,7 +836,6 @@ input[type="color"] {
 .mb8 { margin-bottom: 8px; }
 .mb14 { margin-bottom: 14px; }
 
-/* Confirm dialog */
 .confirm-overlay {
   position: absolute; inset: 0; z-index: 500;
   background: rgba(0,0,0,0.7);
@@ -892,8 +869,6 @@ input[type="color"] {
        SHORTS VIEW (default)
        ============================================================ -->
   <div id="shortsView">
-
-    <!-- Top bar (above slides, fixed) -->
     <div class="shorts-topbar">
       <div class="shorts-logo">
         <svg viewBox="0 0 48 48" fill="none">
@@ -913,11 +888,7 @@ input[type="color"] {
         </button>
       </div>
     </div>
-
-    <!-- Slides container -->
-    <div class="shorts-container" id="shortsContainer">
-      <!-- Здесь динамически будут вставляться слайды или спиннер -->
-    </div>
+    <div class="shorts-container" id="shortsContainer"></div>
   </div>
 
   <!-- ============================================================
@@ -1000,45 +971,33 @@ input[type="color"] {
         <h3>📝 Эҷоди пост</h3>
         <button class="modal-x" id="postModalClose">✕</button>
       </div>
-
-      <!-- Step tabs -->
       <div class="modal-steps">
         <button class="step-tab active" data-step="1">1. Матн</button>
         <button class="step-tab" data-step="2">2. Услуб</button>
         <button class="step-tab" data-step="3">3. Пешнамоиш</button>
       </div>
-
       <div class="modal-body" id="modalBody">
-
-        <!-- ── STEP 1: Text & Book ── -->
+        <!-- STEP 1 -->
         <div class="step-panel active" id="step1">
           <label class="form-label mb8">Матни пост</label>
           <textarea class="form-textarea mb14" id="postContent" rows="4"
             placeholder="Дар бораи китоб нависед... фикр, иқтибос, таассурот"></textarea>
-
           <label class="form-label mb8">Номи китоб:</label>
           <select class="form-select" id="postBookSelect">
             <option value="">Интихоб кунед (ихтиёрӣ)</option>
           </select>
-
           <label class="form-label mb8">Муаллиф:</label>
           <input class="form-input" id="postBookAuthor" type="text" placeholder="Номи муаллиф">
-
           <div class="step-nav">
             <button class="step-nav-btn next" onclick="goStep(2)">Услуб →</button>
           </div>
         </div>
-
-        <!-- ── STEP 2: Style ── -->
+        <!-- STEP 2 -->
         <div class="step-panel" id="step2">
-
-          <!-- Font picker -->
           <div class="style-section">
             <div class="style-section-title">🔤 Шрифт</div>
             <div class="font-grid" id="fontGrid"></div>
           </div>
-
-          <!-- Size picker -->
           <div class="style-section">
             <div class="style-section-title">📐 Андоза</div>
             <div class="size-row">
@@ -1048,8 +1007,6 @@ input[type="color"] {
               <div class="size-chip" data-size="28"><span style="font-size:22px">A</span><small>Азим</small></div>
             </div>
           </div>
-
-          <!-- Color picker -->
           <div class="style-section">
             <div class="style-section-title">🎨 Ранги матн</div>
             <div class="color-row" id="colorRow"></div>
@@ -1058,22 +1015,17 @@ input[type="color"] {
               <input type="color" id="customColor" value="#FFFFFF">
             </div>
           </div>
-
-          <!-- Animation picker -->
           <div class="style-section">
             <div class="style-section-title">✨ Анимасияи матн</div>
             <div class="anim-grid" id="animGrid"></div>
           </div>
-
           <div class="step-nav">
             <button class="step-nav-btn" onclick="goStep(1)">← Матн</button>
             <button class="step-nav-btn next" onclick="goStep(3)">Пешнамоиш →</button>
           </div>
         </div>
-
-        <!-- ── STEP 3: Preview & Hashtags ── -->
+        <!-- STEP 3 -->
         <div class="step-panel" id="step3">
-
           <div class="style-section-title mb8">👁 Пешнамоиш</div>
           <div class="preview-box" id="previewBox">
             <div class="preview-bg" id="previewBg">
@@ -1087,8 +1039,6 @@ input[type="color"] {
               <div class="preview-text-el" id="previewTextEl"></div>
             </div>
           </div>
-
-          <!-- Hashtags -->
           <div class="hashtag-section">
             <div class="style-section-title mb8">🏷️ Хэштегҳо</div>
             <div class="hashtag-input-row">
@@ -1099,14 +1049,11 @@ input[type="color"] {
             <div class="style-section-title mb8" style="margin-top:10px">Пешниҳодҳо:</div>
             <div class="hashtag-suggestions" id="hashtagSuggestions"></div>
           </div>
-
           <div class="step-nav" style="margin-top:14px">
             <button class="step-nav-btn" onclick="goStep(2)">← Услуб</button>
           </div>
         </div>
-
-      </div><!-- /modal-body -->
-
+      </div>
       <div class="modal-footer">
         <button class="btn-outline" id="postModalCancel">Бекор</button>
         <button class="btn-primary" id="submitPostBtn">📤 Интишор</button>
@@ -1162,7 +1109,7 @@ let currentStep = 1;
 let previewCoverUrl = '';
 
 // ============================================================
-// FONTS, COLORS, ANIMATIONS (без изменений)
+// FONTS, COLORS, ANIMATIONS
 // ============================================================
 const FONTS = [
   { name: 'Roboto',           label: 'Roboto',           preview: 'Китобхона' },
@@ -1308,6 +1255,21 @@ function getCoverFromPost(post) {
     book_id: post.book_id
   };
   return getCoverForBook(b) || '';
+}
+
+function openBookFromPost(bookId, bookTitle, pdfUrl, coverUrl) {
+  if (!bookId) return;
+  let folder = 'books', file = bookId;
+  if (bookId.includes('/')) {
+    const parts = bookId.split('/');
+    file = parts.pop();
+    folder = parts.join('/');
+    if (!folder.startsWith('books/')) folder = 'books/' + folder;
+  }
+  const url = pdfUrl || rawUrl(folder, file);
+  const name = bookTitle || file.replace(/\.pdf$/i, '') || 'Китоб';
+  const cover = coverUrl || getCoverForBook({ folder, file, book_id: bookId });
+  location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
 }
 
 // ============================================================
@@ -1545,7 +1507,7 @@ async function loadBookRatings(bookIds) {
 }
 
 // ============================================================
-// ОСНОВНЫЕ ФУНКЦИИ ЗАГРУЗКИ ПОСТОВ (ИСПРАВЛЕНЫ)
+// ОСНОВНЫЕ ФУНКЦИИ ЗАГРУЗКИ ПОСТОВ
 // ============================================================
 async function loadPosts() {
   if (_loadingPosts) return;
@@ -1558,7 +1520,6 @@ async function loadPosts() {
     return;
   }
 
-  // Показываем спиннер
   container.innerHTML = `
     <div class="short-slide">
       <div class="shorts-loader"><div class="spinner"></div></div>
@@ -1591,7 +1552,6 @@ async function loadPosts() {
     _loadingPosts = false;
   }
 
-  // Подписка на обновления (один раз)
   if (unsubscribePosts) unsubscribePosts();
   unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
     if (!newPosts || !Array.isArray(newPosts)) {
@@ -1645,7 +1605,7 @@ async function loadPostsFromServer() {
 }
 
 // ============================================================
-// RENDER SHORTS
+// RENDER SHORTS (исправлен для анимации при каждом просмотре)
 // ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
@@ -1660,20 +1620,19 @@ function renderShorts() {
     container.appendChild(slide);
   });
 
-  // IntersectionObserver для анимации
+  // IntersectionObserver – при каждом входе в зону видимости запускаем анимацию заново
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
+      const slide = e.target;
+      const postId = slide.dataset.postId;
+      const post = postsData.find(p => String(p.id) === String(postId));
+      if (!post) return;
+      const textEl = slide.querySelector('.slide-text-overlay');
+      if (!textEl) return;
       if (e.isIntersecting && e.intersectionRatio > 0.6) {
-        const slide = e.target;
-        const postId = slide.dataset.postId;
-        const post = postsData.find(p => String(p.id) === String(postId));
-        if (!post) return;
-        const textEl = slide.querySelector('.slide-text-overlay');
-        if (textEl && textEl.dataset.animated !== '1') {
-          textEl.dataset.animated = '1';
-          const { text, style } = parsePostContent(post.content);
-          animateTextOverlay(textEl, text, style);
-        }
+        // Всегда пересоздаём анимацию при входе
+        const { text, style } = parsePostContent(post.content);
+        animateTextOverlay(textEl, text, style);
       }
     });
   }, { threshold: 0.6 });
@@ -1704,20 +1663,30 @@ function buildSlide(post, idx) {
   const finalCoverUrl = cachedCover || cover;
 
   slide.innerHTML = `
-    <!-- Background (blurred) -->
+    <!-- Фоновое изображение (размытое) -->
     <div class="slide-bg">
       ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
     </div>
-    <!-- Center book cover -->
+    <!-- Центральная обложка -->
     ${finalCoverUrl ? `
     <div class="slide-cover-center">
       <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
     </div>` : ''}
 
-    <!-- Bottom gradient -->
+    <!-- Верхняя информационная панель -->
+    <div class="slide-top-info">
+      <div class="slide-user" data-userid="${userId}">
+        <span class="at">@${escHtml(username)}</span>
+        <span style="color:rgba(255,255,255,0.4);font-size:11px">${timeSince(post.created_at)}</span>
+      </div>
+      ${bookTitle ? `<div class="slide-book-name" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}">📚 ${escHtml(bookTitle)}</div>` : ''}
+      ${bookAuthor ? `<div class="slide-book-author" data-author="${escHtml(bookAuthor)}">✍️ ${escHtml(bookAuthor)}</div>` : ''}
+    </div>
+
+    <!-- Нижний градиент -->
     <div class="slide-bottom-grad"></div>
 
-    <!-- Right sidebar -->
+    <!-- Боковая панель -->
     <div class="slide-sidebar">
       <div class="sidebar-btn" data-action="like" data-post="${post.id}">
         <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
@@ -1735,32 +1704,21 @@ function buildSlide(post, idx) {
       </div>
     </div>
 
-    <!-- User name (clickable) -->
-    <div class="slide-user" data-userid="${userId}">
-      <span class="at">@${escHtml(username)}</span>
-      <span style="color:rgba(255,255,255,0.4);font-size:11px">${timeSince(post.created_at)}</span>
-    </div>
-
-    <!-- Animated text -->
+    <!-- Анимированный текст -->
     <div class="slide-text-layer">
       <div class="slide-text-overlay"
-        style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}"
-        data-animated="0">
+        style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}">
       </div>
     </div>
 
-    <!-- Book title & author – bottom left -->
-    <div class="slide-book-info">
-      ${bookTitle ? `<div class="slide-book-name">📚 ${escHtml(bookTitle)}</div>` : ''}
-      ${bookAuthor ? `<div class="slide-book-author">✍️ ${escHtml(bookAuthor)}</div>` : ''}
-      ${hashtags.length ? `
-      <div class="slide-hashtags">
-        ${hashtags.map(h => `<span class="slide-hashtag">#${escHtml(h)}</span>`).join('')}
-      </div>` : ''}
-    </div>
+    <!-- Хэштеги уже внутри slide-book-info, но у нас их нет в этом варианте, оставляем как есть -->
+    ${hashtags.length ? `
+    <div style="position:absolute; bottom:50px; left:24px; z-index:12; display:flex; flex-wrap:wrap; gap:5px;">
+      ${hashtags.map(h => `<span class="slide-hashtag" style="font-size:12px; color:#7EC8E3; font-weight:600;">#${escHtml(h)}</span>`).join('')}
+    </div>` : ''}
   `;
 
-  // Обработчики кликов на кнопки боковой панели
+  // Обработчики кликов на боковой панели
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -1777,6 +1735,46 @@ function buildSlide(post, idx) {
   slide.querySelector('.slide-user').addEventListener('click', () => {
     if (userId) location.href = 'profile.html?user=' + userId;
   });
+
+  // Клик по названию книги → открыть читалку
+  const bookNameEl = slide.querySelector('.slide-book-name');
+  if (bookNameEl) {
+    bookNameEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const bookId = bookNameEl.dataset.bookid;
+      const title = bookNameEl.dataset.title;
+      const pdfUrl = bookNameEl.dataset.pdf;
+      const coverUrl = bookNameEl.dataset.cover;
+      if (bookId) {
+        openBookFromPost(bookId, title, pdfUrl, coverUrl);
+      }
+    });
+  }
+
+  // Клик по автору → переключиться в сетку и отфильтровать по автору
+  const authorEl = slide.querySelector('.slide-book-author');
+  if (authorEl) {
+    authorEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const author = authorEl.dataset.author;
+      if (author) {
+        // Переключаемся в grid view
+        showGrid();
+        // Устанавливаем фильтр "author" и вводим имя автора в поиск
+        const searchInput = $('searchInput');
+        if (searchInput) {
+          searchInput.value = author;
+          // Обновляем фильтры: активируем "author"
+          document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.classList.remove('active');
+            if (chip.dataset.filter === 'author') chip.classList.add('active');
+          });
+          currentSearchFilter = 'author';
+          renderGrid('author', author);
+        }
+      }
+    });
+  }
 
   // Предзагрузка обложки в кэш
   if (finalCoverUrl && CacheManager && typeof CacheManager.preloadCover === 'function') {
