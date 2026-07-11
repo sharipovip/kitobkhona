@@ -127,11 +127,13 @@ html, body {
   filter: blur(8px) brightness(0.35);
   transform: scale(1.08);
 }
+/* Обложка книги – почти 9:16 */
 .slide-cover-center {
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 52%; max-width: 200px;
+  width: 65%;
+  max-width: 260px;
   box-shadow: 0 20px 60px rgba(0,0,0,0.8);
   border-radius: 8px;
   overflow: hidden;
@@ -141,24 +143,27 @@ html, body {
   width: 100%; display: block;
 }
 
-/* Текст поста (анимированный) */
+/* Текст поста – flexible: если короткий – по центру, если длинный – сверху */
 .slide-text-layer {
   position: absolute;
-  bottom: 130px; left: 24px; right: 80px;
+  top: 10%;
+  bottom: 130px;
+  left: 24px;
+  right: 80px;
   z-index: 10;
   display: flex;
   flex-direction: column;
   justify-content: center;
-  min-height: 30vh;
-  max-height: 60vh;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
+.slide-text-layer::-webkit-scrollbar { display: none; }
 .slide-text-overlay {
   line-height: 1.55;
   word-break: break-word;
   text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1);
   max-height: 100%;
   overflow-y: auto;
-  scrollbar-width: none;
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
@@ -187,6 +192,26 @@ html, body {
 .slide-bottom-info .info-line:hover .gold { text-decoration: underline; }
 .slide-bottom-info .info-line .book-title { font-size: 18px; }
 .slide-bottom-info .info-line .book-title:hover { text-decoration: underline; }
+
+/* Хэштеги – кликабельные */
+.slide-hashtags {
+  position: absolute;
+  bottom: 52px;
+  left: 24px;
+  z-index: 12;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  max-width: 70%;
+}
+.slide-hashtag {
+  font-size: 12px;
+  color: #7EC8E3;
+  font-weight: 600;
+  cursor: pointer;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+}
+.slide-hashtag:hover { text-decoration: underline; }
 
 .slide-bottom-grad {
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -1602,7 +1627,7 @@ async function loadPostsFromServer() {
 }
 
 // ============================================================
-// RENDER SHORTS (с обновлённой нижней панелью и анимацией)
+// RENDER SHORTS (с кликабельными хэштегами и правильным позиционированием текста)
 // ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
@@ -1663,7 +1688,7 @@ function buildSlide(post, idx) {
     <div class="slide-bg">
       ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
     </div>
-    <!-- Центральная обложка -->
+    <!-- Центральная обложка (65% ширины) -->
     ${finalCoverUrl ? `
     <div class="slide-cover-center">
       <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
@@ -1672,7 +1697,7 @@ function buildSlide(post, idx) {
     <!-- Нижний градиент -->
     <div class="slide-bottom-grad"></div>
 
-    <!-- Боковая панель (лайк, комментарий, рейтинг) -->
+    <!-- Боковая панель -->
     <div class="slide-sidebar">
       <div class="sidebar-btn" data-action="like" data-post="${post.id}">
         <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
@@ -1690,25 +1715,31 @@ function buildSlide(post, idx) {
       </div>
     </div>
 
-    <!-- Анимированный текст -->
+    <!-- Текст поста (flex-контейнер) -->
     <div class="slide-text-layer">
       <div class="slide-text-overlay"
         style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}">
       </div>
     </div>
 
-    <!-- Нижняя левая информация: пользователь, муаллиф, название -->
+    <!-- Хэштеги (кликабельные) -->
+    ${hashtags.length ? `
+    <div class="slide-hashtags">
+      ${hashtags.map(h => `<span class="slide-hashtag" data-hashtag="${escHtml(h)}">#${escHtml(h)}</span>`).join('')}
+    </div>` : ''}
+
+    <!-- Нижняя левая информация -->
     <div class="slide-bottom-info">
-      <div class="info-line" data-userid="${userId}" style="font-size:16px;">
+      <div class="info-line" data-userid="${userId}">
         <span class="gold">@${escHtml(username)}</span>
         <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
       </div>
-      ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}" style="font-size:15px;"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
-      ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}" style="font-size:17px;"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
+      ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
+      ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
     </div>
   `;
 
-  // Обработчики кликов на боковой панели
+  // Обработчики
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -1765,6 +1796,27 @@ function buildSlide(post, idx) {
     });
   }
 
+  // Клик по хэштегу → сетка с фильтром по хэштегу
+  slide.querySelectorAll('.slide-hashtag').forEach(el => {
+    el.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const hashtag = el.dataset.hashtag;
+      if (hashtag) {
+        showGrid();
+        const searchInput = $('searchInput');
+        if (searchInput) {
+          searchInput.value = '#' + hashtag;
+          document.querySelectorAll('.filter-chip').forEach(chip => {
+            chip.classList.remove('active');
+            if (chip.dataset.filter === 'hashtag') chip.classList.add('active');
+          });
+          currentSearchFilter = 'hashtag';
+          renderGrid('hashtag', '#' + hashtag);
+        }
+      }
+    });
+  });
+
   // Предзагрузка обложки
   if (finalCoverUrl && CacheManager && typeof CacheManager.preloadCover === 'function') {
     CacheManager.preloadCover(finalCoverUrl);
@@ -1790,7 +1842,7 @@ function renderShortsEmpty(msg) {
 }
 
 // ============================================================
-// RENDER GRID (без изменений)
+// RENDER GRID
 // ============================================================
 function renderGrid(filter, query) {
   const cells = $('gridCells');
@@ -2049,7 +2101,7 @@ $('ratingSubmit').addEventListener('click', async () => {
 });
 
 // ============================================================
-// POST MODAL – ШАГИ
+// POST MODAL – ШАГИ С ВАЛИДАЦИЕЙ
 // ============================================================
 function goStep(n) {
   // Валидация для шага 1 → 2
