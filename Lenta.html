@@ -118,7 +118,7 @@ html, body {
   display: flex; align-items: flex-end;
 }
 
-/* Book cover background */
+/* Book cover background – full screen */
 .slide-bg {
   position: absolute; inset: 0;
   background: #0d1b2a;
@@ -126,7 +126,7 @@ html, body {
 .slide-bg img {
   width: 100%; height: 100%;
   object-fit: cover;
-  filter: blur(8px) brightness(0.35);
+  filter: blur(6px) brightness(0.35);
   transform: scale(1.08);
 }
 .slide-cover-center {
@@ -143,40 +143,67 @@ html, body {
   width: 100%; display: block;
 }
 
-/* Text overlay */
+/* Text overlay – flexible centering */
 .slide-text-layer {
   position: absolute;
-  bottom: 120px; left: 20px; right: 80px;
+  bottom: 130px; left: 24px; right: 80px;
   z-index: 10;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  min-height: 40vh;
+  max-height: 65vh;
 }
 .slide-text-overlay {
   line-height: 1.55;
   word-break: break-word;
   text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1);
-  /* subtitle‑style: not solid bg */
+  max-height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
 }
+.slide-text-overlay::-webkit-scrollbar { display: none; }
+
+/* User name + time */
 .slide-user {
-  font-size: 13px; font-weight: 700;
-  color: #fff; margin-bottom: 4px;
-  display: flex; align-items: center; gap: 6px;
+  font-size: 14px; font-weight: 700;
+  color: #fff; margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
 }
 .slide-user .at { color: var(--gold); }
-.slide-book-name {
-  font-size: 11.5px; color: rgba(255,255,255,0.7);
-  margin-bottom: 8px;
-  display: flex; align-items: center; gap: 5px;
+.slide-user:hover .at { text-decoration: underline; }
+
+/* Book title & author – bottom left */
+.slide-book-info {
+  position: absolute;
+  bottom: 70px; left: 24px;
+  z-index: 12;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
 }
+.slide-book-name {
+  font-size: 14px; font-weight: 700;
+  color: #fff;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+}
+.slide-book-author {
+  font-size: 12px; color: rgba(255,255,255,0.7);
+  text-shadow: 0 2px 6px rgba(0,0,0,0.8);
+}
+
 .slide-hashtags {
   display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px;
 }
 .slide-hashtag {
-  font-size: 11px; color: #7EC8E3;
+  font-size: 12px; color: #7EC8E3;
   font-weight: 600;
 }
 
 /* Right sidebar */
 .slide-sidebar {
-  position: absolute; right: 10px; bottom: 100px;
+  position: absolute; right: 12px; bottom: 120px;
   z-index: 20;
   display: flex; flex-direction: column; align-items: center; gap: 20px;
 }
@@ -204,8 +231,8 @@ html, body {
 /* Bottom gradient */
 .slide-bottom-grad {
   position: absolute; bottom: 0; left: 0; right: 0;
-  height: 220px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.75) 100%);
+  height: 200px;
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
   z-index: 5; pointer-events: none;
 }
 
@@ -220,34 +247,20 @@ html, body {
 .shorts-empty h3 { font-size: 18px; }
 .shorts-empty p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-/* Create post FAB (shorts mode) */
+/* FAB – moved to top-right */
 .shorts-fab {
-  position: absolute; bottom: 28px; right: 18px;
-  z-index: 50;
-  width: 52px; height: 52px; border-radius: 50%;
-  background: linear-gradient(135deg, var(--gold2), var(--gold));
-  border: none; cursor: pointer;
+  position: absolute; top: 12px; right: 68px;
+  z-index: 51;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: rgba(255,255,255,0.13);
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(4px);
   display: flex; align-items: center; justify-content: center;
-  font-size: 22px;
-  box-shadow: 0 4px 20px rgba(201,168,76,0.5);
+  font-size: 16px; cursor: pointer;
+  color: #fff;
   transition: 0.15s;
 }
-.shorts-fab:hover { transform: scale(1.05); }
-
-/* Loader */
-.shorts-loader {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 80; background: #0d1b2a;
-}
-.spinner {
-  width: 36px; height: 36px;
-  border: 3px solid var(--border);
-  border-top-color: var(--gold);
-  border-radius: 50%;
-  animation: spin .8s linear infinite;
-}
-@keyframes spin { to { transform: rotate(360deg); } }
+.shorts-fab:hover { background: rgba(255,255,255,0.22); }
 
 /* ============================================================
    GRID VIEW
@@ -452,7 +465,7 @@ html, body {
 }
 
 /* ============================================================
-   RATING SHEET
+   RATING SHEET (10 stars)
    ============================================================ */
 .rating-sheet-overlay {
   position: absolute; inset: 0; z-index: 200;
@@ -755,7 +768,7 @@ input[type="color"] {
 }
 .btn-primary:disabled { opacity: 0.5; cursor: not-allowed; }
 
-/* Nav step btns */
+/* Step nav btns */
 .step-nav { display: flex; gap: 8px; }
 .step-nav-btn {
   flex: 1; padding: 11px; border-radius: 12px;
@@ -854,6 +867,62 @@ input[type="color"] {
 }
 .confirm-cancel { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); }
 .confirm-ok { background: #BD5650; border: none; color: #fff; }
+
+/* ============================================================
+   SETTINGS MODAL (как в profile.html)
+   ============================================================ */
+.settings-overlay {
+  position: absolute; inset: 0; z-index: 400;
+  background: rgba(0,0,0,0.6);
+  display: flex; align-items: flex-end;
+  opacity: 0; pointer-events: none;
+  transition: opacity 0.25s;
+}
+.settings-overlay.open { opacity: 1; pointer-events: auto; }
+.settings-sheet {
+  width: 100%;
+  background: #142236;
+  border-radius: 24px 24px 0 0;
+  border-top: 1px solid var(--border);
+  padding: 0 0 24px;
+  transform: translateY(100%);
+  transition: transform 0.28s cubic-bezier(.32,.72,0,1);
+}
+.settings-overlay.open .settings-sheet { transform: translateY(0); }
+.settings-handle {
+  width: 38px; height: 4px; border-radius: 3px;
+  background: var(--border); margin: 10px auto 6px;
+}
+.settings-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 8px 18px 12px;
+  border-bottom: 1px solid var(--border);
+}
+.settings-head h3 {
+  font-size: 17px; font-weight: 700;
+  color: var(--gold);
+}
+.settings-close {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: rgba(255,255,255,0.07); border: none;
+  color: var(--muted); font-size: 16px; cursor: pointer;
+}
+.settings-body {
+  padding: 10px 18px;
+}
+.settings-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 0;
+  border-bottom: 1px solid var(--border);
+  cursor: pointer;
+}
+.settings-item:last-child { border-bottom: none; }
+.settings-item .icon { font-size: 20px; width: 30px; text-align: center; }
+.settings-item .text { flex: 1; }
+.settings-item .text .title { font-size: 14px; font-weight: 600; color: var(--text); }
+.settings-item .text .desc { font-size: 11.5px; color: var(--muted); }
+.settings-item .arrow { color: var(--dim); font-size: 16px; }
+.settings-item:hover { background: rgba(255,255,255,0.04); border-radius: 8px; padding: 14px 8px; }
 </style>
 </head>
 <body>
@@ -875,12 +944,14 @@ input[type="color"] {
         <span>Китобхона</span>
       </div>
       <div class="top-right-btns">
+        <button class="shorts-fab" id="btnCreatePost" title="Эҷоди пост">✏️</button>
         <button class="top-icon-btn" id="btnOpenGrid" title="Намоиши сетка">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </button>
+        <button class="top-icon-btn" id="btnSettings" title="Настройка">⚙️</button>
       </div>
     </div>
 
@@ -891,9 +962,6 @@ input[type="color"] {
         <div class="shorts-loader"><div class="spinner"></div></div>
       </div>
     </div>
-
-    <!-- FAB: create post -->
-    <button class="shorts-fab" id="btnCreatePost">✏️</button>
   </div>
 
   <!-- ============================================================
@@ -946,7 +1014,7 @@ input[type="color"] {
   </div>
 
   <!-- ============================================================
-       RATING SHEET
+       RATING SHEET (10 stars)
        ============================================================ -->
   <div class="rating-sheet-overlay" id="ratingSheet">
     <div class="rating-sheet">
@@ -1098,6 +1166,61 @@ input[type="color"] {
       <div class="confirm-btns">
         <button class="confirm-cancel" id="confirmCancel">Бекор</button>
         <button class="confirm-ok" id="confirmOk">Тасдиқ</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ============================================================
+       SETTINGS MODAL (как в profile.html)
+       ============================================================ -->
+  <div class="settings-overlay" id="settingsOverlay">
+    <div class="settings-sheet">
+      <div class="settings-handle"></div>
+      <div class="settings-head">
+        <h3>⚙️ Настройка</h3>
+        <button class="settings-close" id="settingsClose">✕</button>
+      </div>
+      <div class="settings-body">
+        <div class="settings-item" onclick="toggleThemeGlobal()">
+          <span class="icon" id="settingsThemeIcon">🌙</span>
+          <div class="text">
+            <div class="title" id="settingsThemeLabel">Тарзи шаб</div>
+            <div class="desc">Тағйир додани мавзӯъ</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="openFeedbackModal()">
+          <span class="icon">📧</span>
+          <div class="text">
+            <div class="title">Тамос бо мо</div>
+            <div class="desc">Пешниҳод ва шикоят</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+        <div class="settings-item" onclick="showAboutApp()">
+          <span class="icon">📚</span>
+          <div class="text">
+            <div class="title">Дар бораи барнома</div>
+            <div class="desc">Китобхона v2.0</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+        <div class="settings-item" id="settingsLogout" style="display:none;" onclick="logoutUser()">
+          <span class="icon">🚪</span>
+          <div class="text">
+            <div class="title">Баромадан</div>
+            <div class="desc">Воридшавиро тамом кунед</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
+        <div class="settings-item" id="settingsDelete" style="display:none;" onclick="deleteAccount()">
+          <span class="icon">🗑</span>
+          <div class="text">
+            <div class="title" style="color:#BD5650;">Нест кардани ҳисоб</div>
+            <div class="desc">Ҳама маълумот нест мешавад</div>
+          </div>
+          <span class="arrow">›</span>
+        </div>
       </div>
     </div>
   </div>
@@ -1443,20 +1566,16 @@ function animateTextOverlay(el, text, style) {
 }
 
 // ============================================================
-// LOAD POSTS FROM API
+// LOAD POSTS FROM API (public – no token required for viewing)
 // ============================================================
 async function loadPosts() {
   const token = getToken();
-  if (!token) {
-    renderShortsEmpty('Лутфан ворид шавед');
-    return;
+  if (token) {
+    try {
+      const payload = JSON.parse(atob(token.split('.')[1]));
+      currentUserId = payload.id || payload.user_id || null;
+    } catch {}
   }
-
-  // Decode userId
-  try {
-    const payload = JSON.parse(atob(token.split('.')[1]));
-    currentUserId = payload.id || payload.user_id || null;
-  } catch {}
 
   // Try cache first
   let fromCache = false;
@@ -1466,9 +1585,8 @@ async function loadPosts() {
   }
 
   try {
-    const resp = await fetch(API_BASE + '/api/posts', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    // Публичный эндпоинт – без токена
+    const resp = await fetch(API_BASE + '/api/posts');
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const data = await resp.json();
     postsData = Array.isArray(data) ? data : (data.posts || []);
@@ -1501,7 +1619,7 @@ function renderShorts() {
   // IntersectionObserver for animation trigger
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting && e.intersectionRatio > 0.7) {
+      if (e.isIntersecting && e.intersectionRatio > 0.6) {
         const slide = e.target;
         const postId = slide.dataset.postId;
         const post = postsData.find(p => String(p.id) === String(postId));
@@ -1514,7 +1632,7 @@ function renderShorts() {
         }
       }
     });
-  }, { threshold: 0.7 });
+  }, { threshold: 0.6 });
 
   container.querySelectorAll('.short-slide').forEach(s => io.observe(s));
 }
@@ -1526,6 +1644,7 @@ function buildSlide(post, idx) {
   const likes = post.likes_count || 0;
   const comments = post.comments_count || 0;
   const username = post.display_name || post.username || 'Корбар';
+  const userId = post.user_id || '';
   const bookTitle = post.book_title || '';
   const bookAuthor = post.book_author || '';
   const hashtags = (style.hashtags || []);
@@ -1534,13 +1653,14 @@ function buildSlide(post, idx) {
   slide.className = 'short-slide';
   slide.dataset.postId = post.id;
   slide.dataset.bookId = post.book_id || '';
+  slide.dataset.userId = userId;
 
   slide.innerHTML = `
     <!-- Background -->
     <div class="slide-bg">
       ${cover ? `<img src="${escHtml(cover)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
     </div>
-    <!-- Center book cover -->
+    <!-- Center book cover – full screen -->
     ${cover ? `
     <div class="slide-cover-center">
       <img src="${escHtml(cover)}" alt="${escHtml(bookTitle)}" loading="lazy">
@@ -1549,7 +1669,7 @@ function buildSlide(post, idx) {
     <!-- Bottom gradient -->
     <div class="slide-bottom-grad"></div>
 
-    <!-- Sidebar -->
+    <!-- Right sidebar -->
     <div class="slide-sidebar">
       <div class="sidebar-btn" data-action="like" data-post="${post.id}">
         <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
@@ -1567,18 +1687,24 @@ function buildSlide(post, idx) {
       </div>
     </div>
 
-    <!-- Text layer -->
+    <!-- User name (clickable) -->
+    <div class="slide-user" data-userid="${userId}">
+      <span class="at">@${escHtml(username)}</span>
+      <span style="color:rgba(255,255,255,0.4);font-size:11px">${timeSince(post.created_at)}</span>
+    </div>
+
+    <!-- Animated text -->
     <div class="slide-text-layer">
-      <div class="slide-user">
-        <span class="at">@${escHtml(username)}</span>
-        <span style="color:rgba(255,255,255,0.4);font-size:11px">${timeSince(post.created_at)}</span>
-      </div>
-      ${bookTitle ? `<div class="slide-book-name">📚 ${escHtml(bookTitle)}${bookAuthor ? ' · ' + escHtml(bookAuthor) : ''}</div>` : ''}
-      <!-- Animated text -->
       <div class="slide-text-overlay"
         style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}"
         data-animated="0">
       </div>
+    </div>
+
+    <!-- Book title & author – bottom left -->
+    <div class="slide-book-info">
+      ${bookTitle ? `<div class="slide-book-name">📚 ${escHtml(bookTitle)}</div>` : ''}
+      ${bookAuthor ? `<div class="slide-book-author">✍️ ${escHtml(bookAuthor)}</div>` : ''}
       ${hashtags.length ? `
       <div class="slide-hashtags">
         ${hashtags.map(h => `<span class="slide-hashtag">#${escHtml(h)}</span>`).join('')}
@@ -1597,6 +1723,11 @@ function buildSlide(post, idx) {
       else if (action === 'comment') openComments(postId);
       else if (action === 'rating') openRating(postId, bookId);
     });
+  });
+
+  // Click on username -> profile
+  slide.querySelector('.slide-user').addEventListener('click', () => {
+    if (userId) location.href = 'profile.html?user=' + userId;
   });
 
   return slide;
@@ -1838,9 +1969,10 @@ $('commentSend').addEventListener('click', async () => {
 });
 
 // ============================================================
-// RATING
+// RATING (using /api/book-reactions)
 // ============================================================
 function openRating(postId, bookId) {
+  if (!bookId) { showToast('Китоб мавҷуд нест'); return; }
   activePostId = postId;
   activeBookId = bookId;
   currentRating = 0;
@@ -1868,10 +2000,10 @@ $('ratingSubmit').addEventListener('click', async () => {
   if (!activeBookId) { showToast('Китоб мавҷуд нест'); return; }
   const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
   try {
-    const resp = await fetch(API_BASE + '/api/books/' + activeBookId + '/rate', {
+    const resp = await fetch(API_BASE + '/api/book-reactions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ rating: currentRating })
+      body: JSON.stringify({ book_id: activeBookId, rating: currentRating })
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
     const stats = await resp.json();
@@ -2026,10 +2158,8 @@ function updatePreview() {
   const text = ($('postContent').value || '').trim();
   const textEl = $('previewTextEl');
 
-  // Try to get cover from selected book
   const sel = $('postBookSelect');
   const selectedOpt = sel.options[sel.selectedIndex];
-  // We don't have cover url here easily, show placeholder
   const bgImg = $('previewBgImg');
   const bookImgEl = $('previewBookImgEl');
   if (previewCoverUrl) {
@@ -2092,7 +2222,6 @@ async function openPostModal(bookId) {
         select.onchange = function() {
           const o = this.options[this.selectedIndex];
           $('postBookAuthor').value = o?.dataset?.author || '';
-          // update preview cover
           if (o?.value) {
             previewCoverUrl = getCoverForBook({ folder: o.dataset.folder, file: o.dataset.file || o.value });
           } else {
@@ -2163,10 +2292,126 @@ document.querySelectorAll('.step-tab').forEach(tab => {
 });
 
 // ============================================================
+// SETTINGS MODAL (как в profile.html)
+// ============================================================
+const settingsOverlay = $('settingsOverlay');
+
+function openSettingsModal() {
+  // Update theme UI
+  const isLight = document.body.getAttribute('data-theme') === 'light' ||
+                  document.body.classList.contains('light-theme');
+  const icon = $('settingsThemeIcon');
+  const label = $('settingsThemeLabel');
+  if (isLight) { icon.textContent = '☀️'; label.textContent = 'Рӯзи рӯшноӣ'; }
+  else { icon.textContent = '🌙'; label.textContent = 'Тарзи шаб'; }
+  // Show logout/delete only if logged in
+  const token = getToken();
+  const logoutRow = $('settingsLogout');
+  const deleteRow = $('settingsDelete');
+  if (token && currentUserId) {
+    logoutRow.style.display = 'flex';
+    deleteRow.style.display = 'flex';
+  } else {
+    logoutRow.style.display = 'none';
+    deleteRow.style.display = 'none';
+  }
+  settingsOverlay.classList.add('open');
+}
+
+function closeSettingsModal() {
+  settingsOverlay.classList.remove('open');
+}
+
+$('btnSettings').addEventListener('click', openSettingsModal);
+$('settingsClose').addEventListener('click', closeSettingsModal);
+settingsOverlay.addEventListener('click', e => {
+  if (e.target === settingsOverlay) closeSettingsModal();
+});
+
+function toggleThemeGlobal() {
+  const isLight = document.body.getAttribute('data-theme') === 'light' ||
+                  document.body.classList.contains('light-theme');
+  const newTheme = isLight ? 'dark' : 'light';
+  localStorage.setItem('kk_theme', newTheme);
+  document.body.setAttribute('data-theme', newTheme);
+  document.body.classList.toggle('light-theme', newTheme === 'light');
+  document.documentElement.classList.toggle('light-theme', newTheme === 'light');
+  const icon = $('settingsThemeIcon');
+  const label = $('settingsThemeLabel');
+  if (newTheme === 'light') { icon.textContent = '☀️'; label.textContent = 'Рӯзи рӯшноӣ'; }
+  else { icon.textContent = '🌙'; label.textContent = 'Тарзи шаб'; }
+}
+window.toggleThemeGlobal = toggleThemeGlobal;
+
+function showAboutApp() {
+  closeSettingsModal();
+  setTimeout(() => alert('📚 Китобхона v2.0\nКитобхонаи рақамии тоҷикӣ'), 200);
+}
+window.showAboutApp = showAboutApp;
+
+function openFeedbackModal() {
+  closeSettingsModal();
+  setTimeout(() => {
+    // Если есть модалка обратной связи на странице (profile.html), открываем её.
+    // В Lenta.html такой нет, поэтому используем email.
+    const email = prompt('📧 Тамос бо мо\nЛутфан паёми худро нависед:');
+    if (email && email.trim()) {
+      // Отправляем через поддержку
+      const token = getToken();
+      if (!token) { showToast('Лутфан ворид шавед'); return; }
+      fetch(API_BASE + '/api/support/send', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: localStorage.getItem('kk_user_email') || 'user@kitobkhona.tj',
+          category: 'Пешниҳод',
+          message: email.trim(),
+          username: localStorage.getItem('kk_username') || 'Корбар'
+        })
+      }).then(r => {
+        if (r.ok) showToast('Паёми шумо фиристода шуд!');
+        else showToast('Хатогӣ');
+      }).catch(() => showToast('Хатогӣ'));
+    }
+  }, 300);
+}
+window.openFeedbackModal = openFeedbackModal;
+
+function logoutUser() {
+  if (!confirm('Шумо воқеан мехоҳед бароед?')) return;
+  AutoLogin.logout();
+  location.href = 'login.html';
+}
+window.logoutUser = logoutUser;
+
+function deleteAccount() {
+  if (!confirm('Ҳама маълумоти шумо нест карда мешавад. Давом диҳед?')) return;
+  if (!confirm('Шумо воқеан мехоҳед профили худро нест кунед?')) return;
+  const token = getToken();
+  if (!token) return;
+  fetch(API_BASE + '/api/users/me', {
+    method: 'DELETE',
+    headers: { 'Authorization': 'Bearer ' + token }
+  }).then(r => {
+    if (r.ok) {
+      alert('Профили шумо нест карда шуд.');
+      AutoLogin.logout();
+      location.href = 'login.html';
+    } else alert('Хатогӣ');
+  }).catch(() => alert('Хатогӣ'));
+}
+window.deleteAccount = deleteAccount;
+
+// ============================================================
 // INIT
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof CacheManager !== 'undefined') CacheManager.init?.();
+
+  // Apply saved theme
+  const savedTheme = localStorage.getItem('kk_theme') || 'dark';
+  document.body.setAttribute('data-theme', savedTheme);
+  document.body.classList.toggle('light-theme', savedTheme === 'light');
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('action') === 'post') {
