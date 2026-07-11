@@ -502,7 +502,6 @@
     </div>
     <div class="top-actions">
       <button class="top-btn" onclick="toggleSearch()">🔍</button>
-      <button class="top-btn" id="bmBtn" onclick="toggleBookmark()">🔖</button>
       <button class="top-btn" onclick="shareCurrent()">↗</button>
       <button class="top-btn" onclick="toggleSettings()">⚙️</button>
     </div>
@@ -584,14 +583,6 @@
     </div>
     <div class="settings-group">
       <div class="settings-group-title">Имконот</div>
-      <div class="setting-item" onclick="showBookmarks()">
-        <div class="setting-label">🔖 Хатбаракҳо</div>
-        <div id="bmCount">0</div>
-      </div>
-      <div class="setting-item" onclick="showStats()">
-        <div class="setting-label">📊 Омори хондан</div>
-        <div>›</div>
-      </div>
       <div class="setting-item" onclick="downloadCurrent()">
         <div class="setting-label">⬇ Зеркашӣ кардан</div>
         <div>📥</div>
@@ -996,7 +987,6 @@
   async function renderPage(n, direction) {
     if (!pdf || rendering) return;
     rendering = true;
-    // Индикатор загрузки НЕ показываем при перелистывании
     try {
       const p = await pdf.getPage(n);
       const st = $('stage');
@@ -1054,12 +1044,10 @@
       $('pageInfo').textContent = page + ' / ' + pages;
       $('progressFill').style.width = (pages ? Math.round(page / pages * 100) : 0) + '%';
       saveProgress();
-      updateBm();
     } catch(e) {
       toast('Хатогӣ: ' + (e.message || e), 3000);
     } finally {
       rendering = false;
-      // Индикатор НЕ скрываем, потому что он уже скрыт или не был показан
     }
   }
 
@@ -1151,26 +1139,6 @@
     setTimeout(() => $('findInput').focus(), 80);
   }
 
-  // ===== ЗАКЛАДКИ =====
-  function bmList() {
-    try { return JSON.parse(localStorage.getItem('kk_bookmarks') || '{}') } catch(e) { return {} }
-  }
-  function toggleBookmark() {
-    const all = bmList();
-    const arr = all[url] || [];
-    const i = arr.indexOf(page);
-    if (i >= 0) { arr.splice(i, 1); toast('Хатчӯб гирифта шуд'); }
-    else { arr.push(page); arr.sort((a,b)=>a-b); toast('🔖 Хатчӯб гузошта шуд'); }
-    all[url] = arr;
-    localStorage.setItem('kk_bookmarks', JSON.stringify(all));
-    updateBm();
-  }
-  function updateBm() {
-    const arr = bmList()[url] || [];
-    $('bmBtn').textContent = arr.includes(page) ? '⭐' : '🔖';
-    if ($('bmCount')) $('bmCount').textContent = arr.length;
-  }
-
   // ===== ИСПОЛЬЗОВАНИЕ ГЛОБАЛЬНЫХ ФУНКЦИЙ =====
   async function downloadCurrent() {
     await downloadFile(url, name);
@@ -1223,23 +1191,6 @@
   function nextFind() { if (findHits.length) goFind(findIndex + 1); }
   function prevFind() { if (findHits.length) goFind(findIndex - 1); }
   function escapeHtml(s) { return String(s??'').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
-
-  function showBookmarks() {
-    const arr = bmList()[url] || [];
-    if (!arr.length) { toast('Хатбарак нест'); return; }
-    const n = prompt('Хатбаракҳо: '+arr.join(', ')+'\nСаҳифаро нависед:', arr[0]);
-    if (n) jumpPage(Number(n));
-  }
-  function showStats() {
-    const pr = getProgress();
-    alert('Китоб: '+name+'\nСаҳифа: '+page+' / '+pages+'\nПрогресс: '+(pages?Math.round(page/pages*100):0)+'%'+(pr?.ts?'\nОхирин хондан: '+new Date(pr.ts).toLocaleString():''));
-  }
-
-  // Вспомогательная функция для прыжка (используется в закладках)
-  function jumpPage(n) {
-    n = Math.max(1, Math.min(pages, n || 1));
-    renderPage(n, n > page ? 1 : -1);
-  }
 
   // ===== ЗАПУСК =====
   openPdf();
