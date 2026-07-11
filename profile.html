@@ -1451,6 +1451,18 @@
     }
     loadProfile();
     initSettings();
+    document.addEventListener('visibilitychange', function() {
+      if (!document.hidden && currentProfileUserId) {
+        if (typeof CacheManager !== 'undefined') {
+          CacheManager.invalidateKey('kk_sessions_' + currentProfileUserId);
+          CacheManager.invalidateKey('kk_favorites_' + currentProfileUserId);
+          CacheManager.invalidateKey('kk_posts_' + currentProfileUserId);
+        }
+        loadBooksCached(currentProfileUserId).then(() => renderBooks()).catch(() => {});
+        loadFavoritesCached(currentProfileUserId).then(() => renderFavorites()).catch(() => {});
+        loadPostsCached(currentProfileUserId).then(() => renderPosts()).catch(() => {});
+      }
+    });
   });
 
   // ================================================================
@@ -1774,7 +1786,9 @@
             status: s.status || 'viewed',
             rating: s.rating || null,
             sessions_count: 1,
-            last_created: s.created_at
+            last_created: s.created_at,
+            cover_url: s.cover_url || null,
+            pdf_url: s.pdf_url || null
           };
         });
         data = Object.values(map).sort((a, b) => new Date(b.last_created) - new Date(a.last_created));

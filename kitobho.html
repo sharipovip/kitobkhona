@@ -1293,8 +1293,13 @@
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
           body: JSON.stringify({ book_id: bookId || book.file, book_title: name, book_author: book.author || '', duration: 0, status: 'completed', pages_read: 0 })
         });
-        if (resp.ok) toast('✅ Китоб ҳамчун хатмшуда сабт шуд');
-        else { const err = await resp.json(); toast('Хатогӣ: ' + (err.error || '')); }
+        if (resp.ok) {
+          toast('✅ Китоб ҳамчун хатмшуда сабт шуд');
+          const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
+          if (uid && typeof CacheManager !== 'undefined') {
+            CacheManager.invalidateKey('kk_sessions_' + uid);
+          }
+        } else { const err = await resp.json(); toast('Хатогӣ: ' + (err.error || '')); }
       } catch(e) { toast('Хатогӣ'); }
     })();
   }
