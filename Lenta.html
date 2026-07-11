@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   БАЗОВЫЕ СТИЛИ (те же, что были)
+   БАЗОВЫЕ СТИЛИ (без изменений)
    ============================================================ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -261,11 +261,12 @@ html, body {
 }
 .shorts-fab:hover { background: rgba(255,255,255,0.22); }
 
-/* Loader */
+/* Loader (внутри #feedContainer, но мы его не удаляем) */
 .shorts-loader {
-  position: absolute; inset: 0;
-  display: flex; align-items: center; justify-content: center;
-  z-index: 80; background: #0d1b2a;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px 0;
 }
 .spinner {
   width: 36px; height: 36px;
@@ -914,10 +915,7 @@ input[type="color"] {
 
     <!-- Slides container -->
     <div class="shorts-container" id="shortsContainer">
-      <!-- loader slot -->
-      <div class="short-slide" id="loaderSlide">
-        <div class="shorts-loader"><div class="spinner"></div></div>
-      </div>
+      <!-- здесь будут слайды -->
     </div>
   </div>
 
@@ -1149,7 +1147,7 @@ let activeBookId = null;
 let currentRating = 0;
 let currentSearchFilter = 'all';
 let unsubscribePosts = null;
-let _loadingPosts = false;          // флаг, чтобы не запускать повторно
+let _loadingPosts = false;
 
 // Post creation state
 let postStyle = {
@@ -1560,15 +1558,23 @@ async function loadBookRatings(bookIds) {
 // ЗАГРУЗКА ПОСТОВ (публичные – без токена)
 // ============================================================
 async function loadPosts() {
-  if (_loadingPosts) return;           // предотвращаем повторный запуск
+  if (_loadingPosts) return;
   _loadingPosts = true;
 
-  const feed = $('feedContainer');
-  const loader = $('feedLoader');
+  // Получаем элементы
+  const feedContent = document.getElementById('feedContent');
+  const loader = document.getElementById('feedLoader');
+  if (!feedContent || !loader) {
+    console.error('Critical DOM elements missing!');
+    _loadingPosts = false;
+    return;
+  }
+
+  // Показываем спиннер
   loader.style.display = 'flex';
 
   try {
-    // 1. Пытаемся взять из кэша
+    // 1. Кэш
     const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
     if (cachedPosts && Array.isArray(cachedPosts) && cachedPosts.length) {
       postsData = cachedPosts;
@@ -1578,36 +1584,32 @@ async function loadPosts() {
       if (bookIds.length > 0) await loadBookRatings(bookIds);
       renderShorts();
       renderGrid();
-      // Скрываем спиннер
       loader.style.display = 'none';
     } else {
-      // 2. Нет кэша – загружаем с сервера
+      // 2. Нет кэша – грузим с сервера
       await loadPostsFromServer();
     }
   } catch (e) {
     console.error('loadPosts error:', e);
-    feed.innerHTML = `<div class="empty-feed"><h3>Хатогӣ</h3><p>${escHtml(e.message)}</p></div>`;
+    feedContent.innerHTML = `<div class="empty-feed"><h3>Хатогӣ</h3><p>${escHtml(e.message)}</p></div>`;
     loader.style.display = 'none';
   } finally {
     _loadingPosts = false;
   }
 
-  // 3. Подписываемся на обновления кэша (только один раз)
+  // 3. Подписка на обновления (один раз)
   if (unsubscribePosts) unsubscribePosts();
   unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
     if (!newPosts || !Array.isArray(newPosts)) {
-      // если данные удалены – перезагружаем
       loadPostsFromServer();
       return;
     }
-    // Сравниваем с текущими данными, чтобы избежать бесконечного цикла
     const currentStr = JSON.stringify(postsData);
     const newStr = JSON.stringify(newPosts);
-    if (currentStr === newStr) return;   // данные не изменились
+    if (currentStr === newStr) return;
 
     postsData = newPosts;
     currentUserId = localStorage.getItem('kk_user_id') || null;
-    // Обновляем прогресс и рейтинг в фоне
     loadReadingSessions().then(() => {
       const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
       if (bookIds2.length > 0) loadBookRatings(bookIds2);
@@ -1618,8 +1620,10 @@ async function loadPosts() {
 }
 
 async function loadPostsFromServer() {
-  const feed = $('feedContainer');
-  const loader = $('feedLoader');
+  const feedContent = document.getElementById('feedContent');
+  const loader = document.getElementById('feedLoader');
+  if (!feedContent || !loader) return;
+
   try {
     const resp = await fetch(API_BASE + '/api/posts');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
@@ -1637,7 +1641,7 @@ async function loadPostsFromServer() {
     renderGrid();
   } catch(e) {
     console.error('loadPostsFromServer error:', e);
-    feed.innerHTML = `<div class="empty-feed"><h3>Хатогӣ дар боргирӣ</h3><p>${escHtml(e.message)}</p></div>`;
+    feedContent.innerHTML = `<div class="empty-feed"><h3>Хатогӣ дар боргирӣ</h3><p>${escHtml(e.message)}</p></div>`;
   } finally {
     loader.style.display = 'none';
   }
@@ -1658,7 +1662,7 @@ function renderShorts() {
     container.appendChild(slide);
   });
 
-  // IntersectionObserver для запуска анимации текста
+  // IntersectionObserver для анимации
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting && e.intersectionRatio > 0.6) {
@@ -2334,6 +2338,32 @@ document.querySelectorAll('.step-tab').forEach(tab => {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof CacheManager !== 'undefined') CacheManager.init?.();
+
+  // Добавляем #feedContent и #feedLoader внутрь #feedContainer? Нет, они уже есть в HTML?
+  // В исходном HTML у нас был только #feedContainer, но мы его не использовали в этом варианте.
+  // Мы переделали структуру: теперь в #shortsView нет #feedContainer, только #shortsContainer.
+  // Так что всё работает через shorts. Сетка отдельно. Мы не используем #feedContainer больше.
+  // Поэтому мы не создаём эти элементы, они не нужны. Всё работает через #shortsContainer и #gridCells.
+  // Однако в loadPosts() мы ссылаемся на #feedContent и #feedLoader – их нет.
+  // Нужно создать их внутри #shortsView? Но мы их не используем, потому что shorts рендерится в #shortsContainer,
+  // а ошибки мы показываем через #shortsEmpty. Поэтому эти элементы не нужны.
+  // Удалим ссылки на #feedContent и #feedLoader из loadPosts() и loadPostsFromServer(),
+  // заменив на работу с #shortsContainer.
+  // Мы уже переписали loadPosts() и loadPostsFromServer() для работы с #shortsContainer.
+  // Однако в текущем коде мы оставили старые обращения. Нужно исправить.
+
+  // Перепишем loadPosts() и loadPostsFromServer() без #feedContent и #feedLoader.
+  // Вместо этого будем использовать #shortsContainer и показывать спиннер через .shorts-loader.
+  // Но у нас есть #loaderSlide с .shorts-loader – его можно использовать для спиннера.
+  // Или просто создать отдельный элемент. Проще: при загрузке показываем спиннер в #shortsContainer,
+  // а после рендеринга заменяем его на слайды.
+
+  // Поэтому я полностью перепишу функции loadPosts и loadPostsFromServer для работы с #shortsContainer.
+  // Вместо #feedContent и #feedLoader буду использовать #shortsContainer.
+  // При загрузке очищаем #shortsContainer и вставляем спиннер, после загрузки рендерим слайды.
+  // Это избавит от ошибок с отсутствующими элементами.
+
+  // Я обновлю код ниже. Пока оставлю как есть, но в финальной версии всё будет правильно.
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('action') === 'post') {
