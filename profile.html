@@ -2005,11 +2005,25 @@
   let publishedBookIds = new Set();
   let menuTarget = null;
 
+  // ===== Парсинг контента поста (извлечение чистого текста без стилей) =====
+  function parsePostContent(raw) {
+    if (!raw) return { text: '', style: {} };
+    const SEP = '|||STYLE|||';
+    const idx = raw.indexOf(SEP);
+    if (idx === -1) return { text: raw, style: {} };
+    const text = raw.slice(0, idx);
+    try {
+      const style = JSON.parse(raw.slice(idx + SEP.length));
+      return { text, style };
+    } catch {
+      return { text: raw, style: {} };
+    }
+  }
+
   // ===== RENDER =====
   function getCoverCached(url) {
     if (!url) return '';
     try {
-      // Читаем из обоих ключей
       const map1 = JSON.parse(localStorage.getItem('kk_cover_cache') || '{}');
       const map2 = JSON.parse(localStorage.getItem('kk_cache_covers') || '{}');
       const item = map1[url] || map2[url];
@@ -2108,6 +2122,8 @@
     }
     const items = await Promise.all(postsData.map(async (post) => {
       const timeAgo = timeSince(post.created_at);
+      const { text, style } = parsePostContent(post.content || '');
+      const displayText = text || post.content || '';
       let coverHtml = '';
       if (post.book_id) {
         const parts = post.book_id.includes('/') ? post.book_id.split('/') : [];
@@ -2115,20 +2131,21 @@
         let folder = parts.length > 1 ? parts.slice(0, -1).join('/') : 'books';
         if (!folder.startsWith('books/') && folder !== 'books') folder = 'books/' + folder;
         const book = { folder, file, book_id: post.book_id, book_title: post.book_title || '', cover_url: post.cover_url, pdf_url: post.pdf_url };
-      const coverUrl = post.cover_url || await getCoverForBook(book);
+        const coverUrl = post.cover_url || await getCoverForBook(book);
         coverHtml = `<img src="${coverUrl}" loading="lazy"
           onerror="this.style.display='none'"
           style="width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;margin-right:10px">`;
       }
+      const title = post.book_title || 'Пост';
       return `
         <div class="post-item" onclick="location.href='Lenta.html?post=${post.id}'" style="display:flex;align-items:flex-start">
           ${coverHtml}
           <div style="flex:1;min-width:0">
             <div class="post-header">
-              <span class="post-title">${escHtml(post.book_title ? '📖 ' + post.book_title : '📝 Пост')}</span>
+              <span class="post-title">${escHtml(title)}</span>
               <span class="post-time">${timeAgo}</span>
             </div>
-            ${post.content ? `<div class="post-content">${escHtml(post.content)}</div>` : ''}
+            ${displayText ? `<div class="post-content">${escHtml(displayText)}</div>` : ''}
             <div class="post-stats">
               <span>❤️ ${post.likes_count || 0}</span>
               <span>💬 ${post.comments_count || 0}</span>
