@@ -11,7 +11,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
 /* ============================================================
-   БАЗОВЫЕ СТИЛИ
+   БАЗОВЫЕ СТИЛИ (те же, что были)
    ============================================================ */
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
@@ -1148,6 +1148,8 @@ let activePostId = null;
 let activeBookId = null;
 let currentRating = 0;
 let currentSearchFilter = 'all';
+let unsubscribePosts = null;
+let _loadingPosts = false;          // флаг, чтобы не запускать повторно
 
 // Post creation state
 let postStyle = {
@@ -1159,7 +1161,6 @@ let postStyle = {
 };
 let currentStep = 1;
 let previewCoverUrl = '';
-let unsubscribePosts = null;
 
 // ============================================================
 // FONT DEFINITIONS
@@ -1187,9 +1188,6 @@ const TEXT_COLORS = [
   '#333333','#E0E0E0',
 ];
 
-// ============================================================
-// ANIMATION DEFINITIONS
-// ============================================================
 const ANIMATIONS = [
   { id: 'fade',       icon: '🌅', label: 'Намоён',       desc: 'Ҳама якбора' },
   { id: 'letter',     icon: '🔡', label: 'Ҳарф ба ҳарф', desc: 'Ҳарф ба ҳарф' },
@@ -1525,7 +1523,6 @@ async function loadBookRatings(bookIds) {
     return;
   }
   try {
-    // Публичная статистика
     const resp = await fetch(API_BASE + '/api/book-stats-batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1563,53 +1560,67 @@ async function loadBookRatings(bookIds) {
 // ЗАГРУЗКА ПОСТОВ (публичные – без токена)
 // ============================================================
 async function loadPosts() {
+  if (_loadingPosts) return;           // предотвращаем повторный запуск
+  _loadingPosts = true;
+
   const feed = $('feedContainer');
   const loader = $('feedLoader');
   loader.style.display = 'flex';
 
-  // Если есть кэш – показываем сразу
-  const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
-  if (cachedPosts) {
-    postsData = cachedPosts;
-    currentUserId = localStorage.getItem('kk_user_id') || null;
-    await loadReadingSessions();
-    const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
-    if (bookIds.length > 0) await loadBookRatings(bookIds);
-    renderShorts();
-    renderGrid();
-    loader.style.display = 'none';
-
-    // Подписка на обновления
-    if (unsubscribePosts) unsubscribePosts();
-    unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
-      if (newPosts) {
-        postsData = newPosts;
-        loadReadingSessions().then(() => {
-          const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
-          if (bookIds2.length > 0) loadBookRatings(bookIds2);
-        });
-        renderShorts();
-        renderGrid();
-      } else {
-        loadPostsFromServer();
-      }
-    });
-    // Регистрируем fetcher для polling
-    if (CacheManager && typeof CacheManager.registerFetcher === 'function') {
-      CacheManager.registerFetcher(CacheManager.KEYS.POSTS, () => loadPostsFromServer());
+  try {
+    // 1. Пытаемся взять из кэша
+    const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
+    if (cachedPosts && Array.isArray(cachedPosts) && cachedPosts.length) {
+      postsData = cachedPosts;
+      currentUserId = localStorage.getItem('kk_user_id') || null;
+      await loadReadingSessions();
+      const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
+      if (bookIds.length > 0) await loadBookRatings(bookIds);
+      renderShorts();
+      renderGrid();
+      // Скрываем спиннер
+      loader.style.display = 'none';
+    } else {
+      // 2. Нет кэша – загружаем с сервера
+      await loadPostsFromServer();
     }
-    return;
+  } catch (e) {
+    console.error('loadPosts error:', e);
+    feed.innerHTML = `<div class="empty-feed"><h3>Хатогӣ</h3><p>${escHtml(e.message)}</p></div>`;
+    loader.style.display = 'none';
+  } finally {
+    _loadingPosts = false;
   }
 
-  // Нет кэша – загружаем с сервера
-  await loadPostsFromServer();
+  // 3. Подписываемся на обновления кэша (только один раз)
+  if (unsubscribePosts) unsubscribePosts();
+  unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
+    if (!newPosts || !Array.isArray(newPosts)) {
+      // если данные удалены – перезагружаем
+      loadPostsFromServer();
+      return;
+    }
+    // Сравниваем с текущими данными, чтобы избежать бесконечного цикла
+    const currentStr = JSON.stringify(postsData);
+    const newStr = JSON.stringify(newPosts);
+    if (currentStr === newStr) return;   // данные не изменились
+
+    postsData = newPosts;
+    currentUserId = localStorage.getItem('kk_user_id') || null;
+    // Обновляем прогресс и рейтинг в фоне
+    loadReadingSessions().then(() => {
+      const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
+      if (bookIds2.length > 0) loadBookRatings(bookIds2);
+    });
+    renderShorts();
+    renderGrid();
+  });
 }
 
 async function loadPostsFromServer() {
   const feed = $('feedContainer');
   const loader = $('feedLoader');
   try {
-    // Публичный запрос – без токена
     const resp = await fetch(API_BASE + '/api/posts');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const posts = await resp.json();
@@ -1625,13 +1636,15 @@ async function loadPostsFromServer() {
     renderShorts();
     renderGrid();
   } catch(e) {
-    console.error('loadPosts error:', e);
+    console.error('loadPostsFromServer error:', e);
     feed.innerHTML = `<div class="empty-feed"><h3>Хатогӣ дар боргирӣ</h3><p>${escHtml(e.message)}</p></div>`;
-  } finally { loader.style.display = 'none'; }
+  } finally {
+    loader.style.display = 'none';
+  }
 }
 
 // ============================================================
-// RENDER SHORTS
+// RENDER SHORTS (без изменений)
 // ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
@@ -1685,7 +1698,6 @@ function buildSlide(post, idx) {
   slide.dataset.bookId = post.book_id || '';
   slide.dataset.userId = userId;
 
-  // Кешируем обложку через CacheManager
   const cachedCover = cover ? CacheManager?.getCachedCover(cover) : '';
   const finalCoverUrl = cachedCover || cover;
 
@@ -1746,7 +1758,6 @@ function buildSlide(post, idx) {
     </div>
   `;
 
-  // Обработчики
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -1759,12 +1770,10 @@ function buildSlide(post, idx) {
     });
   });
 
-  // Клик по имени -> профиль
   slide.querySelector('.slide-user').addEventListener('click', () => {
     if (userId) location.href = 'profile.html?user=' + userId;
   });
 
-  // Предзагрузка обложки в кэш
   if (finalCoverUrl && CacheManager && typeof CacheManager.preloadCover === 'function') {
     CacheManager.preloadCover(finalCoverUrl);
   }
@@ -1864,7 +1873,6 @@ $('btnCloseGrid').addEventListener('click', showShorts);
 $('btnCreatePost').addEventListener('click', () => openPostModal());
 $('btnCreatePost2').addEventListener('click', () => openPostModal());
 
-// Поиск
 $('searchInput').addEventListener('input', () => {
   renderGrid(currentSearchFilter, $('searchInput').value);
 });
