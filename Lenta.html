@@ -261,12 +261,13 @@ html, body {
 }
 .shorts-fab:hover { background: rgba(255,255,255,0.22); }
 
-/* Loader (внутри #feedContainer, но мы его не удаляем) */
+/* Loader (внутри #shortsContainer, динамически создаётся) */
 .shorts-loader {
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px 0;
+  height: 100vh;
 }
 .spinner {
   width: 36px; height: 36px;
@@ -915,7 +916,7 @@ input[type="color"] {
 
     <!-- Slides container -->
     <div class="shorts-container" id="shortsContainer">
-      <!-- здесь будут слайды -->
+      <!-- Здесь динамически будут вставляться слайды или спиннер -->
     </div>
   </div>
 
@@ -1161,7 +1162,7 @@ let currentStep = 1;
 let previewCoverUrl = '';
 
 // ============================================================
-// FONT DEFINITIONS
+// FONTS, COLORS, ANIMATIONS (без изменений)
 // ============================================================
 const FONTS = [
   { name: 'Roboto',           label: 'Roboto',           preview: 'Китобхона' },
@@ -1310,7 +1311,7 @@ function getCoverFromPost(post) {
 }
 
 // ============================================================
-// PARSE POST CONTENT (extract text + style)
+// PARSE POST CONTENT
 // ============================================================
 function parsePostContent(raw) {
   if (!raw) return { text: '', style: {} };
@@ -1355,14 +1356,12 @@ function animateTextOverlay(el, text, style) {
   if (!text) return;
 
   switch (anim) {
-
     case 'fade': {
       el.textContent = text;
       el.style.opacity = '0';
       el.style.animation = 'textFade 0.9s 0.1s forwards';
       break;
     }
-
     case 'letter': {
       el.style.opacity = '1';
       [...text].forEach((ch, i) => {
@@ -1373,7 +1372,6 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'word': {
       el.style.opacity = '1';
       text.split(' ').forEach((w, i) => {
@@ -1384,7 +1382,6 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'line': {
       el.style.opacity = '1';
       const lines = text.split('\n');
@@ -1396,7 +1393,6 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'wave': {
       el.style.opacity = '1';
       [...text].forEach((ch, i) => {
@@ -1407,7 +1403,6 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'typewriter': {
       el.style.opacity = '1';
       const chars = [...text];
@@ -1419,7 +1414,6 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'bounce': {
       el.style.opacity = '1';
       text.split(' ').forEach((w, i) => {
@@ -1430,7 +1424,6 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'glow': {
       el.style.opacity = '1';
       text.split(' ').forEach((w, i) => {
@@ -1441,14 +1434,12 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     case 'cinematic': {
       el.textContent = text;
       el.style.opacity = '0';
       el.style.animation = 'cinematic 1.8s 0.3s forwards';
       break;
     }
-
     case 'slideup': {
       el.style.opacity = '1';
       text.split('\n').forEach((line, i) => {
@@ -1459,14 +1450,13 @@ function animateTextOverlay(el, text, style) {
       });
       break;
     }
-
     default:
       el.textContent = text;
   }
 }
 
 // ============================================================
-// ЗАГРУЗКА СЕССИЙ ДЛЯ ПРОГРЕССА
+// ЗАГРУЗКА СЕССИЙ
 // ============================================================
 async function loadReadingSessions() {
   const token = getToken();
@@ -1509,7 +1499,7 @@ async function loadReadingSessions() {
 }
 
 // ============================================================
-// ЗАГРУЗКА РЕЙТИНГА КНИГ (для отображения среднего)
+// ЗАГРУЗКА РЕЙТИНГА
 // ============================================================
 async function loadBookRatings(bookIds) {
   if (!bookIds || bookIds.length === 0) return;
@@ -1555,26 +1545,27 @@ async function loadBookRatings(bookIds) {
 }
 
 // ============================================================
-// ЗАГРУЗКА ПОСТОВ (публичные – без токена)
+// ОСНОВНЫЕ ФУНКЦИИ ЗАГРУЗКИ ПОСТОВ (ИСПРАВЛЕНЫ)
 // ============================================================
 async function loadPosts() {
   if (_loadingPosts) return;
   _loadingPosts = true;
 
-  // Получаем элементы
-  const feedContent = document.getElementById('feedContent');
-  const loader = document.getElementById('feedLoader');
-  if (!feedContent || !loader) {
-    console.error('Critical DOM elements missing!');
+  const container = $('shortsContainer');
+  if (!container) {
+    console.error('shortsContainer not found');
     _loadingPosts = false;
     return;
   }
 
   // Показываем спиннер
-  loader.style.display = 'flex';
+  container.innerHTML = `
+    <div class="short-slide">
+      <div class="shorts-loader"><div class="spinner"></div></div>
+    </div>
+  `;
 
   try {
-    // 1. Кэш
     const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
     if (cachedPosts && Array.isArray(cachedPosts) && cachedPosts.length) {
       postsData = cachedPosts;
@@ -1583,21 +1574,24 @@ async function loadPosts() {
       const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
       if (bookIds.length > 0) await loadBookRatings(bookIds);
       renderShorts();
-      renderGrid();
-      loader.style.display = 'none';
     } else {
-      // 2. Нет кэша – грузим с сервера
       await loadPostsFromServer();
     }
   } catch (e) {
     console.error('loadPosts error:', e);
-    feedContent.innerHTML = `<div class="empty-feed"><h3>Хатогӣ</h3><p>${escHtml(e.message)}</p></div>`;
-    loader.style.display = 'none';
+    container.innerHTML = `
+      <div class="short-slide">
+        <div class="shorts-empty">
+          <h3>Хатогӣ</h3>
+          <p>${escHtml(e.message)}</p>
+        </div>
+      </div>
+    `;
   } finally {
     _loadingPosts = false;
   }
 
-  // 3. Подписка на обновления (один раз)
+  // Подписка на обновления (один раз)
   if (unsubscribePosts) unsubscribePosts();
   unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
     if (!newPosts || !Array.isArray(newPosts)) {
@@ -1620,9 +1614,8 @@ async function loadPosts() {
 }
 
 async function loadPostsFromServer() {
-  const feedContent = document.getElementById('feedContent');
-  const loader = document.getElementById('feedLoader');
-  if (!feedContent || !loader) return;
+  const container = $('shortsContainer');
+  if (!container) return;
 
   try {
     const resp = await fetch(API_BASE + '/api/posts');
@@ -1638,20 +1631,25 @@ async function loadPostsFromServer() {
 
     if (CacheManager) CacheManager.set(CacheManager.KEYS.POSTS, postsData);
     renderShorts();
-    renderGrid();
   } catch(e) {
     console.error('loadPostsFromServer error:', e);
-    feedContent.innerHTML = `<div class="empty-feed"><h3>Хатогӣ дар боргирӣ</h3><p>${escHtml(e.message)}</p></div>`;
-  } finally {
-    loader.style.display = 'none';
+    container.innerHTML = `
+      <div class="short-slide">
+        <div class="shorts-empty">
+          <h3>Хатогӣ дар боргирӣ</h3>
+          <p>${escHtml(e.message)}</p>
+        </div>
+      </div>
+    `;
   }
 }
 
 // ============================================================
-// RENDER SHORTS (без изменений)
+// RENDER SHORTS
 // ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
+  if (!container) return;
   if (!postsData.length) {
     renderShortsEmpty('Постҳо нестанд');
     return;
@@ -1762,6 +1760,7 @@ function buildSlide(post, idx) {
     </div>
   `;
 
+  // Обработчики кликов на кнопки боковой панели
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -1774,10 +1773,12 @@ function buildSlide(post, idx) {
     });
   });
 
+  // Клик по имени пользователя → профиль
   slide.querySelector('.slide-user').addEventListener('click', () => {
     if (userId) location.href = 'profile.html?user=' + userId;
   });
 
+  // Предзагрузка обложки в кэш
   if (finalCoverUrl && CacheManager && typeof CacheManager.preloadCover === 'function') {
     CacheManager.preloadCover(finalCoverUrl);
   }
@@ -2338,32 +2339,6 @@ document.querySelectorAll('.step-tab').forEach(tab => {
 // ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof CacheManager !== 'undefined') CacheManager.init?.();
-
-  // Добавляем #feedContent и #feedLoader внутрь #feedContainer? Нет, они уже есть в HTML?
-  // В исходном HTML у нас был только #feedContainer, но мы его не использовали в этом варианте.
-  // Мы переделали структуру: теперь в #shortsView нет #feedContainer, только #shortsContainer.
-  // Так что всё работает через shorts. Сетка отдельно. Мы не используем #feedContainer больше.
-  // Поэтому мы не создаём эти элементы, они не нужны. Всё работает через #shortsContainer и #gridCells.
-  // Однако в loadPosts() мы ссылаемся на #feedContent и #feedLoader – их нет.
-  // Нужно создать их внутри #shortsView? Но мы их не используем, потому что shorts рендерится в #shortsContainer,
-  // а ошибки мы показываем через #shortsEmpty. Поэтому эти элементы не нужны.
-  // Удалим ссылки на #feedContent и #feedLoader из loadPosts() и loadPostsFromServer(),
-  // заменив на работу с #shortsContainer.
-  // Мы уже переписали loadPosts() и loadPostsFromServer() для работы с #shortsContainer.
-  // Однако в текущем коде мы оставили старые обращения. Нужно исправить.
-
-  // Перепишем loadPosts() и loadPostsFromServer() без #feedContent и #feedLoader.
-  // Вместо этого будем использовать #shortsContainer и показывать спиннер через .shorts-loader.
-  // Но у нас есть #loaderSlide с .shorts-loader – его можно использовать для спиннера.
-  // Или просто создать отдельный элемент. Проще: при загрузке показываем спиннер в #shortsContainer,
-  // а после рендеринга заменяем его на слайды.
-
-  // Поэтому я полностью перепишу функции loadPosts и loadPostsFromServer для работы с #shortsContainer.
-  // Вместо #feedContent и #feedLoader буду использовать #shortsContainer.
-  // При загрузке очищаем #shortsContainer и вставляем спиннер, после загрузки рендерим слайды.
-  // Это избавит от ошибок с отсутствующими элементами.
-
-  // Я обновлю код ниже. Пока оставлю как есть, но в финальной версии всё будет правильно.
 
   const params = new URLSearchParams(window.location.search);
   if (params.get('action') === 'post') {
