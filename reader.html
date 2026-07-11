@@ -709,7 +709,7 @@
         sendReadingSession(totalSeconds, 'completed').then(() => {
           const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
           if (uid && typeof CacheManager !== 'undefined') {
-            CacheManager.invalidateKey('kk_sessions_' + uid);
+             CacheManager.invalidateKey('kk_cache_sessions');
           }
         }).catch(() => {});
       }
@@ -996,7 +996,6 @@
   async function renderPage(n, direction) {
     if (!pdf || rendering) return;
     rendering = true;
-    setLoadProgress(0);
     $('loading').classList.add('on');
     try {
       const p = await pdf.getPage(n);

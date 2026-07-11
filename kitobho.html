@@ -1282,8 +1282,8 @@
         }
         const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
         if (uid && typeof CacheManager !== 'undefined') {
-          CacheManager.invalidateKey('kk_favorites_' + uid);
-          CacheManager.invalidateKey('kk_sessions_' + uid);
+          CacheManager.invalidateKey('kk_cache_favorites');
+          CacheManager.invalidateKey('kk_cache_sessions');
         }
       } catch(e) { toast('Хатогӣ'); }
     })();
@@ -1302,7 +1302,7 @@
           toast('✅ Китоб ҳамчун хатмшуда сабт шуд');
           const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
           if (uid && typeof CacheManager !== 'undefined') {
-            CacheManager.invalidateKey('kk_sessions_' + uid);
+            CacheManager.invalidateKey('kk_cache_sessions');
           }
         } else { const err = await resp.json(); toast('Хатогӣ: ' + (err.error || '')); }
       } catch(e) { toast('Хатогӣ'); }

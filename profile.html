@@ -1454,9 +1454,9 @@
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden && currentProfileUserId) {
         if (typeof CacheManager !== 'undefined') {
-          CacheManager.invalidateKey('kk_sessions_' + currentProfileUserId);
-          CacheManager.invalidateKey('kk_favorites_' + currentProfileUserId);
-          CacheManager.invalidateKey('kk_posts_' + currentProfileUserId);
+          CacheManager.invalidateKey('kk_cache_sessions');
+          CacheManager.invalidateKey('kk_cache_favorites');
+          CacheManager.invalidateKey('kk_cache_posts');
         }
         loadBooksCached(currentProfileUserId).then(() => renderBooks()).catch(() => {});
         loadFavoritesCached(currentProfileUserId).then(() => renderFavorites()).catch(() => {});
@@ -1627,9 +1627,9 @@
       if (unsubscribePosts) { unsubscribePosts(); unsubscribePosts = null; }
 
       // Ключи кэша с привязкой к пользователю
-      const sessionKey = 'kk_sessions_' + profileId;
-      const favoritesKey = 'kk_favorites_' + profileId;
-      const postsKey = 'kk_posts_' + profileId;
+      const sessionKey = 'kk_cache_sessions';
+      const favoritesKey = 'kk_cache_favorites';
+      const postsKey = 'kk_cache_posts';
       const profileKey = 'kk_profile_' + profileId;
 
       // Пытаемся взять профиль из кэша
@@ -1741,7 +1741,7 @@
 
   // ===== КЭШИРОВАННЫЕ ФУНКЦИИ ЗАГРУЗКИ (с привязкой к пользователю) =====
   async function loadBooksCached(userId) {
-    const key = 'kk_sessions_' + userId;
+    const key = 'kk_cache_sessions';
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
     if (!data) {
       const token = localStorage.getItem('kk_token');
@@ -1803,7 +1803,7 @@
   }
 
   async function loadFavoritesCached(userId) {
-    const key = 'kk_favorites_' + userId;
+    const key = 'kk_cache_favorites';
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
     if (!data) {
       const token = localStorage.getItem('kk_token');
@@ -1826,7 +1826,7 @@
   }
 
   async function loadPostsCached(userId) {
-    const key = 'kk_posts_' + userId;
+    const key = 'kk_cache_posts';
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
     if (!data) {
       const token = localStorage.getItem('kk_token');
@@ -2309,7 +2309,7 @@
       el('ownMarks').textContent = favoritesData.length;
       renderFavorites();
       if (typeof CacheManager !== 'undefined') {
-        CacheManager.invalidateKey('kk_favorites_' + currentProfileUserId);
+        CacheManager.invalidateKey('kk_cache_favorites');
       }
     } catch (e) { await showAlertDialog('Хатогӣ: ' + e.message, 'Хатогӣ'); }
   }
