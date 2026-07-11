@@ -74,6 +74,7 @@ html, body {
 }
 .shorts-logo {
   display: flex; align-items: center; gap: 8px;
+  cursor: pointer;
 }
 .shorts-logo svg { width: 26px; height: 26px; }
 .shorts-logo span {
@@ -82,6 +83,8 @@ html, body {
   color: var(--gold);
   text-shadow: 0 2px 8px rgba(0,0,0,0.5);
 }
+.shorts-logo:hover span { text-decoration: underline; }
+
 .top-icon-btn {
   width: 36px; height: 36px; border-radius: 50%;
   background: rgba(255,255,255,0.13);
@@ -110,7 +113,8 @@ html, body {
   scroll-snap-stop: always;
   position: relative;
   overflow: hidden;
-  display: flex; align-items: flex-end;
+  display: flex;
+  align-items: flex-end;
 }
 
 .slide-bg {
@@ -137,6 +141,7 @@ html, body {
   width: 100%; display: block;
 }
 
+/* Текст поста (анимированный) */
 .slide-text-layer {
   position: absolute;
   bottom: 130px; left: 24px; right: 80px;
@@ -157,43 +162,31 @@ html, body {
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
-/* Верхняя информационная панель (имя, название книги, автор) */
-.slide-top-info {
+/* Нижняя левая информация (пользователь, автор книги, название) */
+.slide-bottom-info {
   position: absolute;
-  top: 70px;
+  bottom: 80px;
   left: 24px;
-  right: 80px;
-  z-index: 15;
+  z-index: 12;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 3px;
   text-shadow: 0 2px 12px rgba(0,0,0,0.9);
+  max-width: 70%;
 }
-.slide-top-info .slide-user {
+.slide-bottom-info .info-line {
   font-size: 16px;
   font-weight: 700;
   color: #fff;
   cursor: pointer;
-  display: inline-flex;
+  display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
-.slide-top-info .slide-user .at { color: var(--gold); }
-.slide-top-info .slide-user:hover .at { text-decoration: underline; }
-.slide-top-info .slide-book-name {
-  font-size: 18px;
-  font-weight: 700;
-  color: #fff;
-  cursor: pointer;
-  line-height: 1.2;
-}
-.slide-top-info .slide-book-name:hover { text-decoration: underline; }
-.slide-top-info .slide-book-author {
-  font-size: 14px;
-  color: rgba(255,255,255,0.8);
-  cursor: pointer;
-}
-.slide-top-info .slide-book-author:hover { color: var(--gold); }
+.slide-bottom-info .info-line .gold { color: var(--gold); }
+.slide-bottom-info .info-line:hover .gold { text-decoration: underline; }
+.slide-bottom-info .info-line .book-title { font-size: 18px; }
+.slide-bottom-info .info-line .book-title:hover { text-decoration: underline; }
 
 .slide-bottom-grad {
   position: absolute; bottom: 0; left: 0; right: 0;
@@ -777,6 +770,10 @@ input[type="color"] {
 .step-nav-btn.next {
   background: var(--gold); color: #1A1206; border-color: var(--gold);
 }
+.step-nav-btn.next:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
 
 /* ============================================================
    TEXT ANIMATION KEYFRAMES
@@ -870,7 +867,7 @@ input[type="color"] {
        ============================================================ -->
   <div id="shortsView">
     <div class="shorts-topbar">
-      <div class="shorts-logo">
+      <div class="shorts-logo" onclick="location.href='kitobho.html'">
         <svg viewBox="0 0 48 48" fill="none">
           <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="#C9A84C" stroke-width="3" stroke-linejoin="round"/>
           <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="#C9A84C" stroke-width="3" stroke-linejoin="round"/>
@@ -989,7 +986,7 @@ input[type="color"] {
           <label class="form-label mb8">Муаллиф:</label>
           <input class="form-input" id="postBookAuthor" type="text" placeholder="Номи муаллиф">
           <div class="step-nav">
-            <button class="step-nav-btn next" onclick="goStep(2)">Услуб →</button>
+            <button class="step-nav-btn next" id="step1Next" onclick="goStep(2)">Услуб →</button>
           </div>
         </div>
         <!-- STEP 2 -->
@@ -1056,7 +1053,7 @@ input[type="color"] {
       </div>
       <div class="modal-footer">
         <button class="btn-outline" id="postModalCancel">Бекор</button>
-        <button class="btn-primary" id="submitPostBtn">📤 Интишор</button>
+        <button class="btn-primary" id="submitPostBtn" disabled>📤 Интишор</button>
       </div>
     </div>
   </div>
@@ -1605,7 +1602,7 @@ async function loadPostsFromServer() {
 }
 
 // ============================================================
-// RENDER SHORTS (исправлен для анимации при каждом просмотре)
+// RENDER SHORTS (с обновлённой нижней панелью и анимацией)
 // ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
@@ -1620,7 +1617,7 @@ function renderShorts() {
     container.appendChild(slide);
   });
 
-  // IntersectionObserver – при каждом входе в зону видимости запускаем анимацию заново
+  // IntersectionObserver – при каждом входе запускаем анимацию заново
   const io = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       const slide = e.target;
@@ -1630,7 +1627,6 @@ function renderShorts() {
       const textEl = slide.querySelector('.slide-text-overlay');
       if (!textEl) return;
       if (e.isIntersecting && e.intersectionRatio > 0.6) {
-        // Всегда пересоздаём анимацию при входе
         const { text, style } = parsePostContent(post.content);
         animateTextOverlay(textEl, text, style);
       }
@@ -1673,20 +1669,10 @@ function buildSlide(post, idx) {
       <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
     </div>` : ''}
 
-    <!-- Верхняя информационная панель -->
-    <div class="slide-top-info">
-      <div class="slide-user" data-userid="${userId}">
-        <span class="at">@${escHtml(username)}</span>
-        <span style="color:rgba(255,255,255,0.4);font-size:11px">${timeSince(post.created_at)}</span>
-      </div>
-      ${bookTitle ? `<div class="slide-book-name" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}">📚 ${escHtml(bookTitle)}</div>` : ''}
-      ${bookAuthor ? `<div class="slide-book-author" data-author="${escHtml(bookAuthor)}">✍️ ${escHtml(bookAuthor)}</div>` : ''}
-    </div>
-
     <!-- Нижний градиент -->
     <div class="slide-bottom-grad"></div>
 
-    <!-- Боковая панель -->
+    <!-- Боковая панель (лайк, комментарий, рейтинг) -->
     <div class="slide-sidebar">
       <div class="sidebar-btn" data-action="like" data-post="${post.id}">
         <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
@@ -1711,11 +1697,15 @@ function buildSlide(post, idx) {
       </div>
     </div>
 
-    <!-- Хэштеги уже внутри slide-book-info, но у нас их нет в этом варианте, оставляем как есть -->
-    ${hashtags.length ? `
-    <div style="position:absolute; bottom:50px; left:24px; z-index:12; display:flex; flex-wrap:wrap; gap:5px;">
-      ${hashtags.map(h => `<span class="slide-hashtag" style="font-size:12px; color:#7EC8E3; font-weight:600;">#${escHtml(h)}</span>`).join('')}
-    </div>` : ''}
+    <!-- Нижняя левая информация: пользователь, муаллиф, название -->
+    <div class="slide-bottom-info">
+      <div class="info-line" data-userid="${userId}" style="font-size:16px;">
+        <span class="gold">@${escHtml(username)}</span>
+        <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
+      </div>
+      ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}" style="font-size:15px;"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
+      ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}" style="font-size:17px;"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
+    </div>
   `;
 
   // Обработчики кликов на боковой панели
@@ -1732,39 +1722,38 @@ function buildSlide(post, idx) {
   });
 
   // Клик по имени пользователя → профиль
-  slide.querySelector('.slide-user').addEventListener('click', () => {
-    if (userId) location.href = 'profile.html?user=' + userId;
-  });
-
-  // Клик по названию книги → открыть читалку
-  const bookNameEl = slide.querySelector('.slide-book-name');
-  if (bookNameEl) {
-    bookNameEl.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const bookId = bookNameEl.dataset.bookid;
-      const title = bookNameEl.dataset.title;
-      const pdfUrl = bookNameEl.dataset.pdf;
-      const coverUrl = bookNameEl.dataset.cover;
-      if (bookId) {
-        openBookFromPost(bookId, title, pdfUrl, coverUrl);
-      }
+  const userLine = slide.querySelector('.slide-bottom-info .info-line[data-userid]');
+  if (userLine) {
+    userLine.addEventListener('click', () => {
+      const uid = userLine.dataset.userid;
+      if (uid) location.href = 'profile.html?user=' + uid;
     });
   }
 
-  // Клик по автору → переключиться в сетку и отфильтровать по автору
-  const authorEl = slide.querySelector('.slide-book-author');
-  if (authorEl) {
-    authorEl.addEventListener('click', (e) => {
+  // Клик по названию книги → читалка
+  const bookLine = slide.querySelector('.slide-bottom-info .info-line[data-bookid]');
+  if (bookLine) {
+    bookLine.addEventListener('click', (e) => {
       e.stopPropagation();
-      const author = authorEl.dataset.author;
+      const bookId = bookLine.dataset.bookid;
+      const title = bookLine.dataset.title;
+      const pdfUrl = bookLine.dataset.pdf;
+      const coverUrl = bookLine.dataset.cover;
+      if (bookId) openBookFromPost(bookId, title, pdfUrl, coverUrl);
+    });
+  }
+
+  // Клик по автору книги → сетка с фильтром по автору
+  const authorLine = slide.querySelector('.slide-bottom-info .info-line[data-author]');
+  if (authorLine) {
+    authorLine.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const author = authorLine.dataset.author;
       if (author) {
-        // Переключаемся в grid view
         showGrid();
-        // Устанавливаем фильтр "author" и вводим имя автора в поиск
         const searchInput = $('searchInput');
         if (searchInput) {
           searchInput.value = author;
-          // Обновляем фильтры: активируем "author"
           document.querySelectorAll('.filter-chip').forEach(chip => {
             chip.classList.remove('active');
             if (chip.dataset.filter === 'author') chip.classList.add('active');
@@ -1776,7 +1765,7 @@ function buildSlide(post, idx) {
     });
   }
 
-  // Предзагрузка обложки в кэш
+  // Предзагрузка обложки
   if (finalCoverUrl && CacheManager && typeof CacheManager.preloadCover === 'function') {
     CacheManager.preloadCover(finalCoverUrl);
   }
@@ -1801,7 +1790,7 @@ function renderShortsEmpty(msg) {
 }
 
 // ============================================================
-// RENDER GRID
+// RENDER GRID (без изменений)
 // ============================================================
 function renderGrid(filter, query) {
   const cells = $('gridCells');
@@ -2063,6 +2052,16 @@ $('ratingSubmit').addEventListener('click', async () => {
 // POST MODAL – ШАГИ
 // ============================================================
 function goStep(n) {
+  // Валидация для шага 1 → 2
+  if (n === 2) {
+    const text = ($('postContent').value || '').trim();
+    const book_id = $('postBookSelect').value;
+    if (!text && !book_id) {
+      showToast('Лутфан матн нависед ё китоб интихоб кунед');
+      return;
+    }
+  }
+
   currentStep = n;
   document.querySelectorAll('.step-tab').forEach(t => {
     t.classList.toggle('active', parseInt(t.dataset.step) === n);
@@ -2070,7 +2069,30 @@ function goStep(n) {
   document.querySelectorAll('.step-panel').forEach(p => p.classList.remove('active'));
   $('step' + n).classList.add('active');
   if (n === 3) updatePreview();
+
+  // Обновляем состояние кнопки "Интишор" (шаг 3)
+  updateSubmitButton();
 }
+
+function updateSubmitButton() {
+  const submitBtn = $('submitPostBtn');
+  if (!submitBtn) return;
+  const text = ($('postContent').value || '').trim();
+  const book_id = $('postBookSelect').value;
+  if (text || book_id) {
+    submitBtn.disabled = false;
+  } else {
+    submitBtn.disabled = true;
+  }
+}
+
+// Следим за изменениями в полях на шаге 1
+document.addEventListener('DOMContentLoaded', function() {
+  const content = $('postContent');
+  const select = $('postBookSelect');
+  if (content) content.addEventListener('input', updateSubmitButton);
+  if (select) select.addEventListener('change', updateSubmitButton);
+});
 
 // ============================================================
 // ПОСТРОЕНИЕ ВЫБОРА СТИЛЯ
@@ -2276,6 +2298,7 @@ async function openPostModal(bookId) {
   }
 
   $('postModal').classList.add('open');
+  updateSubmitButton();
 }
 
 function closePostModal() {
