@@ -525,7 +525,7 @@
     </div>
   </main>
 
-  <!-- Нижняя панель (только прогресс, реакции, звёзды, номер страницы) -->
+  <!-- Нижняя панель -->
   <div class="reader-bottom-bar" id="bottomBar">
     <div class="reading-progress"><div class="reading-progress-fill" id="progressFill"></div></div>
     <div class="reaction-bar">
@@ -992,11 +992,11 @@
     } catch(e) {}
   }
 
-  // ===== ОТРИСОВКА СТРАНИЦЫ =====
+  // ===== ОТРИСОВКА СТРАНИЦЫ (БЕЗ ПОКАЗА ИНДИКАТОРА) =====
   async function renderPage(n, direction) {
     if (!pdf || rendering) return;
     rendering = true;
-    $('loading').classList.add('on');
+    // Индикатор загрузки НЕ показываем при перелистывании
     try {
       const p = await pdf.getPage(n);
       const st = $('stage');
@@ -1059,7 +1059,7 @@
       toast('Хатогӣ: ' + (e.message || e), 3000);
     } finally {
       rendering = false;
-      $('loading').classList.remove('on');
+      // Индикатор НЕ скрываем, потому что он уже скрыт или не был показан
     }
   }
 
