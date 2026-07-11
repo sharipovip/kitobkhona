@@ -227,15 +227,15 @@
     word-break: break-word;
   }
 
-  /* ===== БЛОК КНИГИ ===== */
+  /* ===== БЛОК КНИГИ (УВЕЛИЧЕННЫЙ) ===== */
   .book-block {
     display: flex;
-    gap: 11px;
+    gap: 14px;
     align-items: center;
     background: var(--card);
     border: 1px solid var(--border);
-    border-radius: 12px;
-    padding: 10px;
+    border-radius: 14px;
+    padding: 12px;
     cursor: pointer;
     transition: 0.1s;
   }
@@ -244,9 +244,9 @@
   }
   .thumb {
     position: relative;
-    width: 54px;
-    height: 76px;
-    border-radius: 7px;
+    width: 80px;  /* стало больше */
+    height: 112px; /* стало больше */
+    border-radius: 8px;
     flex: 0 0 auto;
     overflow: hidden;
     box-shadow: 0 6px 14px -6px rgba(0,0,0,0.55);
@@ -275,13 +275,13 @@
   }
   .book-title {
     font-family: 'Noto Serif', serif;
-    font-size: 14px;
+    font-size: 15px;
     font-weight: 700;
     color: var(--text);
     line-height: 1.2;
   }
   .book-author {
-    font-size: 11.5px;
+    font-size: 12px;
     color: var(--muted);
   }
   .status-chip {
@@ -323,7 +323,7 @@
     border-radius: 4px;
   }
 
-  /* ===== ЛАЙКИ, РЕАКЦИИ, ОЦЕНКИ ===== */
+  /* ===== ЛАЙКИ И РЕЙТИНГ ===== */
   .reaction-area {
     display: flex;
     align-items: center;
@@ -339,33 +339,25 @@
     gap: 10px;
     align-items: center;
   }
-  .reaction-btn {
+  .like-btn {
     background: transparent;
     border: none;
-    font-size: 20px;
+    font-size: 18px;
     cursor: pointer;
-    transition: transform .12s;
-    color: var(--muted);
-    padding: 2px 4px;
-    line-height: 1;
     display: flex;
     align-items: center;
-    gap: 2px;
-  }
-  .reaction-btn.active {
-    color: var(--gold);
-  }
-  .reaction-btn:hover {
-    transform: scale(1.2);
-  }
-  .reaction-btn .cnt {
-    font-size: 11px;
-    font-weight: 700;
+    gap: 4px;
     color: var(--muted);
+    padding: 2px 4px;
   }
-  .reaction-btn.active .cnt {
-    color: var(--gold);
+  .like-btn.liked {
+    color: #BD5650;
   }
+  .like-btn .cnt {
+    font-size: 12px;
+    font-weight: 700;
+  }
+
   .rating-stars {
     display: flex;
     gap: 3px;
@@ -389,25 +381,6 @@
     color: var(--muted);
     font-weight: 600;
     margin-right: 4px;
-  }
-
-  .like-btn {
-    background: transparent;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    color: var(--muted);
-    padding: 2px 4px;
-  }
-  .like-btn.liked {
-    color: #BD5650;
-  }
-  .like-btn .cnt {
-    font-size: 12px;
-    font-weight: 700;
   }
 
   /* ===== КОММЕНТАРИИ ===== */
@@ -683,9 +656,7 @@
     transform: translateX(-50%) translateY(0);
   }
 
-  /* ================================================================
-     НАВИГАЦИЯ 430×52 (прямые углы) – единая для всех страниц
-     ================================================================ */
+  /* ===== НАВИГАЦИЯ ===== (такая же как везде) */
   .nav-bottom {
     position: relative;
     width: 100%;
@@ -795,97 +766,19 @@
     color: #D9B23C;
   }
 
-  .person-icon {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-  }
-  .person-icon svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
+  .person-icon { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
+  .person-icon svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .book-in-hand { position: absolute; bottom: -2px; right: -4px; width: 10px; height: 12px; background: #D9B23C; border-radius: 2px 3px 3px 2px; opacity: 0; transform: translateX(8px) scale(0.5) rotate(-10deg); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); box-shadow: 0 2px 4px rgba(0,0,0,0.4); }
+  .book-in-hand::before { content: ''; position: absolute; left: 2px; top: 2px; width: 3px; height: 6px; background: rgba(255,255,255,0.3); border-radius: 1px; box-shadow: 4px 0 0 rgba(255,255,255,0.15); }
+  .nav-item.active .book-in-hand { opacity: 1; transform: translateX(0) scale(1) rotate(0deg); }
 
-  .book-in-hand {
-    position: absolute;
-    bottom: -2px;
-    right: -4px;
-    width: 10px;
-    height: 12px;
-    background: #D9B23C;
-    border-radius: 2px 3px 3px 2px;
-    opacity: 0;
-    transform: translateX(8px) scale(0.5) rotate(-10deg);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    box-shadow: 0 2px 4px rgba(0,0,0,0.4);
-  }
-  .book-in-hand::before {
-    content: '';
-    position: absolute;
-    left: 2px;
-    top: 2px;
-    width: 3px;
-    height: 6px;
-    background: rgba(255,255,255,0.3);
-    border-radius: 1px;
-    box-shadow: 4px 0 0 rgba(255,255,255,0.15);
-  }
-  .nav-item.active .book-in-hand {
-    opacity: 1;
-    transform: translateX(0) scale(1) rotate(0deg);
-  }
+  .crown-wrap { position: relative; display: inline-flex; align-items: center; justify-content: center; width: 24px; height: 24px; }
+  .crown-wrap svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+  .crown-icon { position: absolute; top: -6px; right: -4px; font-size: 10px; opacity: 0; transform: scale(0.5) rotate(-10deg); transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1); filter: drop-shadow(0 0 4px rgba(217, 178, 60, 0.6)); }
+  .nav-item.active .crown-icon { opacity: 1; transform: scale(1) rotate(0deg); }
 
-  .crown-wrap {
-    position: relative;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-  }
-  .crown-wrap svg {
-    width: 18px;
-    height: 18px;
-    fill: none;
-    stroke: currentColor;
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
-  }
-  .crown-icon {
-    position: absolute;
-    top: -6px;
-    right: -4px;
-    font-size: 10px;
-    opacity: 0;
-    transform: scale(0.5) rotate(-10deg);
-    transition: all 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
-    filter: drop-shadow(0 0 4px rgba(217, 178, 60, 0.6));
-  }
-  .nav-item.active .crown-icon {
-    opacity: 1;
-    transform: scale(1) rotate(0deg);
-  }
-
-  .like-wrap {
-    position: relative;
-    width: 24px;
-    height: 24px;
-    margin: 0 auto;
-  }
-  .like-icon {
-    position: absolute;
-    font-size: 10px;
-    opacity: 0;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
+  .like-wrap { position: relative; width: 24px; height: 24px; margin: 0 auto; }
+  .like-icon { position: absolute; font-size: 10px; opacity: 0; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
   .like-icon.heart1 { top: -8px; left: -4px; transform: scale(0) rotate(-20deg); }
   .like-icon.heart2 { top: -11px; left: 6px; transform: scale(0) rotate(20deg); }
   .like-icon.heart3 { top: -2px; left: 2px; transform: scale(0) rotate(0deg); }
@@ -894,106 +787,27 @@
   .nav-item.active .like-icon.heart2 { transition-delay: 0.15s; }
   .nav-item.active .like-icon.heart3 { transition-delay: 0.25s; }
 
-  .users-wrap {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    margin: 0 auto;
-  }
-  .person {
-    position: absolute;
-    top: 0;
-    width: 14px;
-    height: 18px;
-    transition: transform 0.4s ease;
-  }
-  .person::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 3px;
-    width: 7px;
-    height: 7px;
-    border-radius: 50%;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 12px;
-    height: 10px;
-    border-radius: 5px 5px 0 0;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person.p1 { left: 0; }
-  .person.p2 { right: 0; }
+  .users-wrap { position: relative; width: 40px; height: 20px; margin: 0 auto; }
+  .person { position: absolute; top: 0; width: 14px; height: 18px; transition: transform 0.4s ease; }
+  .person::before { content: ''; position: absolute; top: 0; left: 3px; width: 7px; height: 7px; border-radius: 50%; background: #7FA9A8; transition: background 0.4s ease; }
+  .person::after { content: ''; position: absolute; bottom: 0; left: 0; width: 12px; height: 10px; border-radius: 5px 5px 0 0; background: #7FA9A8; transition: background 0.4s ease; }
+  .person.p1 { left: 0; } .person.p2 { right: 0; }
   .nav-item.active .person.p1 { transform: translateX(8px); }
   .nav-item.active .person.p2 { transform: translateX(-8px); }
-  .nav-item.active .person::before,
-  .nav-item.active .person::after { background: #D9B23C; }
-  .heart-pop {
-    position: absolute;
-    top: -11px;
-    left: 15px;
-    font-size: 10px;
-    opacity: 0;
-    transition: opacity 0.3s ease, transform 0.3s ease;
-    transform: scale(0.5);
-  }
+  .nav-item.active .person::before, .nav-item.active .person::after { background: #D9B23C; }
+  .heart-pop { position: absolute; top: -11px; left: 15px; font-size: 10px; opacity: 0; transition: opacity 0.3s ease, transform 0.3s ease; transform: scale(0.5); }
   .nav-item.active .heart-pop { opacity: 1; transform: scale(1); }
 
-  .profile-wrap {
-    position: relative;
-    width: 40px;
-    height: 20px;
-    margin: 0 auto;
-  }
-  .person-group {
-    position: relative;
-    width: 100%;
-    height: 100%;
-  }
-  .person-small {
-    position: absolute;
-    top: 0;
-    width: 12px;
-    height: 17px;
-    transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-  }
-  .person-small::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 2px;
-    width: 6px;
-    height: 6px;
-    border-radius: 50%;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person-small::after {
-    content: '';
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    width: 10px;
-    height: 8px;
-    border-radius: 4px 4px 0 0;
-    background: #7FA9A8;
-    transition: background 0.4s ease;
-  }
-  .person-small.ps1 { left: 0; }
-  .person-small.ps2 { left: 50%; transform: translateX(-50%); }
-  .person-small.ps3 { right: 0; }
+  .profile-wrap { position: relative; width: 40px; height: 20px; margin: 0 auto; }
+  .person-group { position: relative; width: 100%; height: 100%; }
+  .person-small { position: absolute; top: 0; width: 12px; height: 17px; transition: all 0.5s cubic-bezier(0.34, 1.56, 0.64, 1); }
+  .person-small::before { content: ''; position: absolute; top: 0; left: 2px; width: 6px; height: 6px; border-radius: 50%; background: #7FA9A8; transition: background 0.4s ease; }
+  .person-small::after { content: ''; position: absolute; bottom: 0; left: 0; width: 10px; height: 8px; border-radius: 4px 4px 0 0; background: #7FA9A8; transition: background 0.4s ease; }
+  .person-small.ps1 { left: 0; } .person-small.ps2 { left: 50%; transform: translateX(-50%); } .person-small.ps3 { right: 0; }
   .nav-item.active .person-small.ps1 { transform: translateX(10px) scale(0.8); }
   .nav-item.active .person-small.ps2 { transform: translateX(0) scale(1.1); }
   .nav-item.active .person-small.ps3 { transform: translateX(-10px) scale(0.8); }
-  .nav-item.active .person-small::before,
-  .nav-item.active .person-small::after { background: #D9B23C; }
+  .nav-item.active .person-small::before, .nav-item.active .person-small::after { background: #D9B23C; }
 </style>
 </head>
 <body data-theme="dark">
@@ -1023,7 +837,7 @@
     </div>
   </div>
 
-  <!-- ===== НАВИГАЦИЯ (единая для всех страниц) ===== -->
+  <!-- ===== НАВИГАЦИЯ ===== -->
   <div class="nav-bottom">
     <div class="kh-nav2">
 
@@ -1075,7 +889,7 @@
         <span>Лента</span>
       </a>
 
-      <!-- Чат (исправлено: теперь chats.html) -->
+      <!-- Чат -->
       <a class="nav-item" href="chats.html" aria-label="Чат">
         <div class="users-wrap">
           <div class="person p1"></div>
@@ -1287,92 +1101,73 @@ async function loadReadingSessions(){
 }
 
 // ================================================================
-// ============ ЗАГРУЗКА РЕАКЦИЙ И ОЦЕНОК КНИГ (кэшируем) ============
+// ============ ЗАГРУЗКА РЕЙТИНГОВ КНИГ (только рейтинг) ============
 // ================================================================
-async function loadBookReactions(bookIds){
+async function loadBookRatings(bookIds){
   if (!bookIds || bookIds.length === 0) return;
-  const token = getToken();
-  const cacheKey = 'kk_book_reactions';
+  const cacheKey = 'kk_book_ratings';
   let cached = CacheManager ? CacheManager.get(cacheKey) : null;
   if (cached) {
     bookReactions = cached;
     return;
   }
-  if (!token) {
-    try {
-      const resp = await fetch(API_BASE + '/api/book-stats-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ book_ids: bookIds })
-      });
-      if (!resp.ok) throw new Error('HTTP '+resp.status);
-      const data = await resp.json();
-      bookIds.forEach(id => {
-        if (!bookReactions[id]) bookReactions[id] = {};
-        bookReactions[id].stats = data[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
-        bookReactions[id].user = { reaction: null, rating: null };
-      });
-      if (CacheManager) CacheManager.set(cacheKey, bookReactions);
-    } catch(e) { console.warn('Failed to load stats (no token)', e); }
-    return;
-  }
   try {
-    const resp = await fetch(API_BASE + '/api/book-reactions/batch', {
+    const resp = await fetch(API_BASE + '/api/book-stats-batch', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ book_ids: bookIds })
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const data = await resp.json();
     bookIds.forEach(id => {
       if (!bookReactions[id]) bookReactions[id] = {};
-      bookReactions[id].stats = data.stats[id] || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
-      bookReactions[id].user = data.user_reactions[id] || { reaction: null, rating: null };
+      bookReactions[id].stats = data[id] || { avg_rating: null, ratings_count: 0 };
     });
     if (CacheManager) CacheManager.set(cacheKey, bookReactions);
   } catch(e) {
-    console.warn('Failed to load reactions batch', e);
+    console.warn('Failed to load ratings (no token)', e);
   }
 }
 
 // ================================================================
-// ============ ЗАГРУЗКА ПОСТОВ (с кэшированием) ============
+// ============ ЗАГРУЗКА ПОСТОВ (с кэшированием, без токена) ============
 // ================================================================
 async function loadPosts(){
   const feed = $('feedContainer');
   const loader = $('feedLoader');
   loader.style.display = 'flex';
 
-  // Пытаемся взять посты из кэша
   const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
   if (cachedPosts) {
     postsData = cachedPosts;
     currentUserId = localStorage.getItem('kk_user_id');
     await loadReadingSessions();
     const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
-    if (bookIds.length > 0) await loadBookReactions(bookIds);
+    if (bookIds.length > 0) await loadBookRatings(bookIds);
     renderPosts(postsData);
     loader.style.display = 'none';
-    // Подписываемся на обновления кэша
+    // Подписка на обновления
     if (unsubscribePosts) unsubscribePosts();
     unsubscribePosts = CacheManager.subscribe(CacheManager.KEYS.POSTS, (newPosts) => {
       if (newPosts) {
         postsData = newPosts;
-        // Перезагружаем прогресс и реакции (можно не перезагружать, но для свежести сделаем)
         loadReadingSessions().then(() => {
           const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
-          if (bookIds2.length > 0) loadBookReactions(bookIds2);
+          if (bookIds2.length > 0) loadBookRatings(bookIds2);
         });
         renderPosts(postsData);
       } else {
-        // Инвалидировано – перезагружаем с сервера
         loadPostsFromServer();
       }
     });
+    // Регистрируем fetcher для polling (если WebSocket не работает)
+    if (CacheManager && typeof CacheManager.registerFetcher === 'function') {
+      CacheManager.registerFetcher(CacheManager.KEYS.POSTS, () => loadPostsFromServer());
+    }
     return;
   }
 
-  // Если нет в кэше – загружаем с сервера
+  // Если нет кеша – загружаем с сервера (без проверки токена)
   await loadPostsFromServer();
 }
 
@@ -1380,16 +1175,9 @@ async function loadPostsFromServer(){
   const feed = $('feedContainer');
   const loader = $('feedLoader');
   try {
-    const token = getToken();
-    if(!token){
-      feed.innerHTML = '<div class="empty-feed"><h3>Лента ҳанӯз холӣ аст</h3><p>Барои дидани лента, ворид шавед.</p></div>';
-      loader.style.display = 'none';
-      return;
-    }
+    // Убираем проверку токена – посты публичные
     await loadReadingSessions();
-    const resp = await fetch(API_BASE + '/api/posts', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
+    const resp = await fetch(API_BASE + '/api/posts');
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     const posts = await resp.json();
     postsData = posts;
@@ -1397,12 +1185,10 @@ async function loadPostsFromServer(){
 
     const bookIds = [...new Set(posts.map(p => p.book_id).filter(Boolean))];
     if (bookIds.length > 0) {
-      await loadBookReactions(bookIds);
+      await loadBookRatings(bookIds);
     }
 
-    // Сохраняем в кэш
     if (CacheManager) CacheManager.set(CacheManager.KEYS.POSTS, posts);
-
     renderPosts(posts);
   } catch(e){
     console.error('loadPosts error:', e);
@@ -1411,7 +1197,7 @@ async function loadPostsFromServer(){
 }
 
 // ================================================================
-// ============ РЕНДЕРИНГ ПОСТОВ (без изменений) ============
+// ============ РЕНДЕРИНГ ПОСТОВ (обновлён) ============
 // ================================================================
 function renderPosts(posts){
   const feed = $('feedContainer');
@@ -1425,50 +1211,50 @@ function renderPosts(posts){
     return;
   }
 
-let html = '';
-   const userId = currentUserId;
-   posts.forEach(post => {
-     const timeAgo = timeSince(post.created_at);
-     const displayName = post.display_name || post.username || 'Корбар';
-     const avatarHtml = post.avatar_url
-       ? `<img src="${post.avatar_url}" alt="">`
-       : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
+  let html = '';
+  const userId = currentUserId;
+  posts.forEach(post => {
+    const timeAgo = timeSince(post.created_at);
+    const displayName = post.display_name || post.username || 'Корбар';
+    const avatarHtml = post.avatar_url
+      ? `<img src="${post.avatar_url}" alt="">`
+      : `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
 
-     let progressData = null;
-     if (post.book_id && bookProgressMap[post.book_id]) {
-       progressData = bookProgressMap[post.book_id];
-     }
+    let progressData = null;
+    if (post.book_id && bookProgressMap[post.book_id]) {
+      progressData = bookProgressMap[post.book_id];
+    }
 
-     let statusHtml = '', progressHtml = '';
-     if (progressData) {
-       const statusText = progressData.statusText === 'finished' ? '✅ Хатм кард' : '📖 Дар ҳоли хондан';
-       const chipClass = progressData.statusText === 'finished' ? 'chip-finished' : 'chip-reading';
-       statusHtml = `<div class="status-chip ${chipClass}">${statusText}</div>`;
-       const prog = progressData.progress || 0;
-       progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
-     }
+    let statusHtml = '', progressHtml = '';
+    if (progressData) {
+      const statusText = progressData.statusText === 'finished' ? '✅ Хатм кард' : '📖 Дар ҳоли хондан';
+      const chipClass = progressData.statusText === 'finished' ? 'chip-finished' : 'chip-reading';
+      statusHtml = `<div class="status-chip ${chipClass}">${statusText}</div>`;
+      const prog = progressData.progress || 0;
+      progressHtml = `<div class="progress-track"><div class="progress-fill" style="width:${prog}%"></div></div>`;
+    }
 
-// Кешируем обложку книги
-       const coverUrl = post.cover_url || (post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '');
-      const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
-      const finalCoverUrl = cachedCover || coverUrl;
+    // Обложка (кешированная)
+    const coverUrl = post.cover_url || (post.book_id ? getCoverForBook({ folder: 'books', file: post.book_id, book_id: post.book_id }) : '');
+    const cachedCover = coverUrl ? CacheManager?.getCachedCover(coverUrl) : '';
+    const finalCoverUrl = cachedCover || coverUrl;
 
-let bookBlock = '';
-     if (post.book_id) {
-       const author = post.book_author || '';
-       bookBlock = `
-          <div class="book-block" onclick="openBookFromPost('${post.book_id}','${(post.book_title||'').replace(/'/g,"\\'")}', '${post.pdf_url||''}', '${post.cover_url||''}')">
-           <div class="thumb" style="background:var(--card2);"><img src="${finalCoverUrl}" alt="" onerror="this.style.display='none'"></div>
-           <div class="book-info">
-             <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
-             <div class="book-author">${escHtml(author)}</div>
-             ${statusHtml}${progressHtml}
-           </div>
-         </div>
-       `;
-     }
+    let bookBlock = '';
+    if (post.book_id) {
+      const author = post.book_author || '';
+      bookBlock = `
+        <div class="book-block" onclick="openBookFromPost('${post.book_id}','${(post.book_title||'').replace(/'/g,"\\'")}', '${post.pdf_url||''}', '${post.cover_url||''}')">
+          <div class="thumb" style="background:var(--card2);"><img src="${finalCoverUrl}" alt="" onerror="this.style.display='none'"></div>
+          <div class="book-info">
+            <div class="book-title">${escHtml(post.book_title || 'Китоб')}</div>
+            <div class="book-author">${escHtml(author)}</div>
+            ${statusHtml}${progressHtml}
+          </div>
+        </div>
+      `;
+    }
 
-    // Лайк поста
+    // Лайк поста (оставляем)
     const liked = post.liked ? 'liked' : '';
     const likeCount = post.likes_count || 0;
     const likeBtnHtml = `
@@ -1478,40 +1264,22 @@ let bookBlock = '';
       </button>
     `;
 
-    // Реакции книги
-    let reactionsHtml = '';
+    // Рейтинг книги (звёзды) – показываем только если есть book_id
+    let ratingHtml = '';
     if (post.book_id) {
-      const stats = bookReactions[post.book_id]?.stats || { likes:0, loves:0, dislikes:0, avg_rating:null, ratings_count:0 };
-      const userReact = bookReactions[post.book_id]?.user || { reaction: null, rating: null };
-      const activeReaction = userReact.reaction;
-      const userRating = userReact.rating || 0;
-
-      const reactions = [
-        { id: 'like', emoji: '👍', label: 'Лайк' },
-        { id: 'love', emoji: '❤️', label: 'Муҳаббат' },
-        { id: 'dislike', emoji: '👎', label: 'Нописанд' }
-      ];
-      let reactBtns = '';
-      reactions.forEach(r => {
-        const active = activeReaction === r.id ? 'active' : '';
-        const cnt = stats[r.id] || 0;
-        reactBtns += `<button class="reaction-btn ${active}" data-book="${post.book_id}" data-reaction="${r.id}">${r.emoji}<span class="cnt">${cnt}</span></button>`;
-      });
-
-      let starsHtml = '';
-      for (let i = 1; i <= 10; i++) {
-        const on = i <= userRating ? 'on' : '';
-        starsHtml += `<span class="star ${on}" data-book="${post.book_id}" data-rating="${i}">${i <= userRating ? '★' : '☆'}</span>`;
-      }
+      const stats = bookReactions[post.book_id]?.stats || { avg_rating: null, ratings_count: 0 };
       const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
-
-      reactionsHtml = `
-        <div class="reaction-area">
-          <div class="reaction-group">${reactBtns}</div>
-          <div class="rating-stars">
-            <span class="rating-label">${avgRating}</span>
-            ${starsHtml}
-          </div>
+      // звёзды (только для отображения, без кликов)
+      let starsHtml = '';
+      const userRating = 0; // в ленте не показываем личный рейтинг
+      for (let i = 1; i <= 10; i++) {
+        const on = i <= (stats.avg_rating ? Math.round(stats.avg_rating) : 0) ? 'on' : '';
+        starsHtml += `<span class="star ${on}">${on ? '★' : '☆'}</span>`;
+      }
+      ratingHtml = `
+        <div class="rating-stars">
+          <span class="rating-label">${avgRating}</span>
+          ${starsHtml}
         </div>
       `;
     }
@@ -1546,31 +1314,33 @@ let bookBlock = '';
         </div>
         ${post.content ? `<div class="post-caption">${escHtml(post.content)}</div>` : ''}
         ${bookBlock}
-        <div style="display:flex;align-items:center;gap:12px;margin-top:4px;">
-          ${likeBtnHtml}
-          <span style="color:var(--muted);font-size:14px;">💬 <span class="comment-count" data-post="${post.id}">${commentCount}</span></span>
+        <div class="reaction-area">
+          <div class="reaction-group">
+            ${likeBtnHtml}
+            <span style="color:var(--muted);font-size:14px;">💬 <span class="comment-count" data-post="${post.id}">${commentCount}</span></span>
+          </div>
+          ${ratingHtml}
         </div>
-        ${reactionsHtml}
         ${commentsBlock}
       </div>
     `;
-});
-feed.innerHTML = html;
+  });
+  feed.innerHTML = html;
 
-    // Применяем кешированные обложки и предзагружаем отсутствующие
-    if (CacheManager) {
-      CacheManager.hydrateCovers(feed);
-      if (CacheManager.preloadCover) {
-        feed.querySelectorAll('img[src]').forEach(img => {
-          const src = img.getAttribute('src');
-          if (src && src.includes('githubusercontent.com')) {
-            CacheManager.preloadCover(src);
-          }
-        });
-      }
+  // Применяем кешированные обложки и предзагружаем отсутствующие
+  if (CacheManager) {
+    CacheManager.hydrateCovers(feed);
+    if (CacheManager.preloadCover) {
+      feed.querySelectorAll('img[src]').forEach(img => {
+        const src = img.getAttribute('src');
+        if (src && src.includes('githubusercontent.com')) {
+          CacheManager.preloadCover(src);
+        }
+      });
     }
+  }
 
-   // ==== НАВЕШИВАЕМ СОБЫТИЯ (без изменений) ====
+  // ==== НАВЕШИВАЕМ СОБЫТИЯ ====
   document.querySelectorAll('.like-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
       e.stopPropagation();
@@ -1579,23 +1349,7 @@ feed.innerHTML = html;
     });
   });
 
-  document.querySelectorAll('.reaction-btn').forEach(btn => {
-    btn.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const bookId = this.dataset.book;
-      const reaction = this.dataset.reaction;
-      handleBookReaction(bookId, reaction, this);
-    });
-  });
-
-  document.querySelectorAll('.rating-stars .star').forEach(el => {
-    el.addEventListener('click', function(e) {
-      e.stopPropagation();
-      const bookId = this.dataset.book;
-      const rating = parseInt(this.dataset.rating);
-      handleBookRating(bookId, rating, this);
-    });
-  });
+  // Звёзды теперь только для отображения, клики убраны
 
   document.querySelectorAll('.show-comments-btn').forEach(btn => {
     btn.addEventListener('click', function(e) {
@@ -1625,7 +1379,7 @@ feed.innerHTML = html;
 }
 
 // ================================================================
-// ============ ЛАЙКИ ПОСТОВ ============
+// ============ ЛАЙКИ ПОСТОВ (без изменений) ============
 // ================================================================
 async function togglePostLike(postId, btn) {
   const token = getToken();
@@ -1654,9 +1408,7 @@ async function togglePostLike(postId, btn) {
     }
     const post = postsData.find(p => p.id == postId);
     if (post) post.likes_count = data.likes_count;
-    // После обновления лайка обновляем кэш постов (инвалидируем или обновляем)
     if (CacheManager) {
-      // Обновляем конкретный пост в кэше (лучше инвалидировать весь кэш)
       CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
     }
   } catch(e) {
@@ -1665,95 +1417,6 @@ async function togglePostLike(postId, btn) {
     icon.textContent = currentlyLiked ? '❤️' : '🤍';
     cnt.textContent = parseInt(cnt.textContent) + (currentlyLiked ? 1 : -1);
     showToast('Хатогӣ дар лайк: ' + e.message);
-  }
-}
-
-// ================================================================
-// ============ РЕАКЦИИ И ОЦЕНКИ КНИГ (с инвалидацией кэша реакций) ============
-// ================================================================
-async function handleBookReaction(bookId, reaction, btn) {
-  const token = getToken();
-  if (!token) { showToast('Лутфан ворид шавед'); return; }
-  const currentlyActive = btn.classList.contains('active');
-  const newReaction = currentlyActive ? null : reaction;
-  try {
-    const resp = await fetch(API_BASE + '/api/book-reactions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ book_id: bookId, reaction: newReaction })
-    });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const stats = await resp.json();
-    if (!bookReactions[bookId]) bookReactions[bookId] = { stats: {}, user: {} };
-    bookReactions[bookId].stats = stats;
-    bookReactions[bookId].user.reaction = newReaction;
-    const container = btn.closest('.post-card');
-    if (container) {
-      container.querySelectorAll('.reaction-btn').forEach(b => {
-        b.classList.remove('active');
-        const cntSpan = b.querySelector('.cnt');
-        if (cntSpan) {
-          const rid = b.dataset.reaction;
-          cntSpan.textContent = stats[rid] || 0;
-        }
-      });
-      if (newReaction) {
-        btn.classList.add('active');
-        const cntSpan = btn.querySelector('.cnt');
-        if (cntSpan) cntSpan.textContent = stats[reaction] || 0;
-      }
-      const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
-      const ratingLabel = container.querySelector('.rating-label');
-      if (ratingLabel) ratingLabel.textContent = avgRating;
-    }
-    if (CacheManager) {
-      CacheManager.invalidateKey('kk_book_reactions');
-    }
-    showToast('Реакция сабт шуд');
-  } catch(e) {
-    console.error('Reaction error:', e);
-    showToast('Хатогӣ: ' + e.message);
-  }
-}
-
-async function handleBookRating(bookId, rating, starEl) {
-  const token = getToken();
-  if (!token) { showToast('Лутфан ворид шавед'); return; }
-  const container = starEl.closest('.post-card');
-  const allStars = container.querySelectorAll('.rating-stars .star');
-  const currentRating = bookReactions[bookId]?.user?.rating || 0;
-  const newRating = (currentRating === rating) ? 0 : rating;
-  try {
-    const resp = await fetch(API_BASE + '/api/book-reactions', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ book_id: bookId, rating: newRating })
-    });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const stats = await resp.json();
-    if (!bookReactions[bookId]) bookReactions[bookId] = { stats: {}, user: {} };
-    bookReactions[bookId].stats = stats;
-    bookReactions[bookId].user.rating = newRating;
-    allStars.forEach(s => {
-      const val = parseInt(s.dataset.rating);
-      if (val <= newRating) {
-        s.classList.add('on');
-        s.textContent = '★';
-      } else {
-        s.classList.remove('on');
-        s.textContent = '☆';
-      }
-    });
-    const avgRating = stats.avg_rating ? `⭐ ${stats.avg_rating}` : '';
-    const ratingLabel = container.querySelector('.rating-label');
-    if (ratingLabel) ratingLabel.textContent = avgRating;
-    if (CacheManager) {
-      CacheManager.invalidateKey('kk_book_reactions');
-    }
-    showToast('Баҳо сабт шуд (⭐ ' + newRating + '/10)');
-  } catch(e) {
-    console.error('Rating error:', e);
-    showToast('Хатогӣ: ' + e.message);
   }
 }
 
@@ -1819,9 +1482,7 @@ async function deleteComment(commentId, postId, btn) {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    // Удаляем строку коммента
     btn.closest('.comment-line').remove();
-    // Обновляем счётчик
     const countSpan = document.querySelector(`.comment-count[data-post="${postId}"]`);
     if (countSpan) {
       const cur = parseInt(countSpan.textContent) || 0;
@@ -1867,7 +1528,6 @@ async function sendComment(postId, input) {
     if (post) post.comments_count = (post.comments_count || 0) + 1;
     input.value = '';
     showToast('Шарҳ илова шуд');
-    // Инвалидируем кэш постов, т.к. изменился комментарий
     if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
   } catch(e) {
     console.error('Send comment error:', e);
@@ -1980,7 +1640,6 @@ document.getElementById('submitPostBtn').addEventListener('click', async functio
     if(!resp.ok) throw new Error('HTTP '+resp.status);
     showToast('Пост нашр шуд!');
     closePostModal();
-    // Инвалидируем кэш постов
     if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
     loadPosts(); // перезагружаем
   } catch(e){ showToast('Хатогӣ: ' + e.message); }
