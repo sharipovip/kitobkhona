@@ -175,7 +175,7 @@ html, body {
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
-/* Нижняя строка: информация слева, кнопки справа */
+/* Нижняя строка: информация слева */
 .slide-bottom-row {
   position: absolute;
   bottom: 80px;
@@ -207,7 +207,7 @@ html, body {
 .slide-bottom-info .info-line .book-title { font-size: 18px; }
 .slide-bottom-info .info-line .book-title:hover { text-decoration: underline; }
 
-/* Кнопки управления постом (для автора) – справа */
+/* Кнопка удаления поста (для автора) – справа */
 .post-owner-actions {
   display: flex;
   gap: 6px;
@@ -566,7 +566,7 @@ html, body {
 }
 
 /* ============================================================
-   POST CREATION / EDIT MODAL
+   POST CREATION MODAL
    ============================================================ */
 .modal-overlay {
   position: absolute; inset: 0; z-index: 300;
@@ -1009,7 +1009,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- POST CREATION / EDIT MODAL -->
+  <!-- POST CREATION MODAL -->
   <div class="modal-overlay" id="postModal">
     <div class="modal-sheet">
       <div class="modal-topbar">
@@ -1141,7 +1141,6 @@ let currentRating = 0;
 let currentSearchFilter = 'all';
 let unsubscribePosts = null;
 let _loadingPosts = false;
-let editingPostId = null;
 
 // Post creation state
 let postStyle = {
@@ -1748,7 +1747,7 @@ function buildSlide(post, idx) {
       ${hashtags.map(h => `<span class="slide-hashtag" data-hashtag="${escHtml(h)}">#${escHtml(h)}</span>`).join('')}
     </div>` : ''}
 
-    <!-- Нижняя строка: информация слева, кнопки справа -->
+    <!-- Нижняя строка: информация слева, кнопка удаления справа -->
     <div class="slide-bottom-row">
       <div class="slide-bottom-info">
         <div class="info-line" data-userid="${userId}">
@@ -1760,7 +1759,6 @@ function buildSlide(post, idx) {
       </div>
       ${isOwner ? `
       <div class="post-owner-actions">
-        <button class="act-btn" title="Переименовать" data-action="edit" data-postid="${post.id}">✏️</button>
         <button class="act-btn danger" title="Удалить" data-action="delete" data-postid="${post.id}">🗑</button>
       </div>` : ''}
     </div>
@@ -1844,14 +1842,13 @@ function buildSlide(post, idx) {
     });
   });
 
-  // Кнопки управления постом
+  // Кнопка удаления поста
   slide.querySelectorAll('.post-owner-actions .act-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
       const action = btn.dataset.action;
       const postId = btn.dataset.postid;
-      if (action === 'edit') openEditPost(postId);
-      else if (action === 'delete') deletePost(postId);
+      if (action === 'delete') deletePost(postId);
     });
   });
 
@@ -2158,94 +2155,6 @@ async function deletePost(postId) {
 }
 
 // ============================================================
-// РЕДАКТИРОВАНИЕ ПОСТА
-// ============================================================
-async function openEditPost(postId) {
-  const post = postsData.find(p => String(p.id) === String(postId));
-  if (!post) { showToast('Пост не найден'); return; }
-  editingPostId = postId;
-  const { text, style } = parsePostContent(post.content);
-
-  $('postContent').value = text || '';
-  $('postBookAuthor').value = post.book_author || '';
-  const select = $('postBookSelect');
-  select.dataset.editBookId = post.book_id || '';
-
-  postStyle = {
-    font: style.font || 'Roboto',
-    size: style.size || 14,
-    color: style.color || '#FFFFFF',
-    animation: style.animation || 'word',
-    hashtags: style.hashtags || []
-  };
-  buildFontGrid();
-  buildColorRow();
-  buildAnimGrid();
-  buildSizePicker();
-  renderHashtags();
-
-  $('modalTitle').textContent = '✏️ Таҳрири пост';
-  goStep(1);
-  $('postModal').classList.add('open');
-  updateSubmitButton();
-
-  await populateBookSelect(select.dataset.editBookId);
-}
-
-async function populateBookSelect(selectedBookId) {
-  const select = $('postBookSelect');
-  const token = getToken();
-  if (!token) return;
-  try {
-    const resp = await fetch(API_BASE + '/api/reading-sessions', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    });
-    if (!resp.ok) throw new Error('HTTP '+resp.status);
-    const sessions = await resp.json();
-    const bookMap = {};
-    sessions.forEach(s => {
-      if (s.book_id && s.book_title && !bookMap[s.book_id])
-        bookMap[s.book_id] = { id: s.book_id, title: s.book_title, author: s.book_author || '', folder: s.folder, file: s.file };
-    });
-    const books = Object.values(bookMap);
-    select.innerHTML = '<option value="">Интихоб кунед</option>';
-    books.forEach(b => {
-      const opt = document.createElement('option');
-      opt.value = b.id;
-      opt.textContent = b.title + (b.author ? ' — ' + b.author : '');
-      opt.dataset.author = b.author;
-      opt.dataset.folder = b.folder || '';
-      opt.dataset.file = b.file || b.id;
-      select.appendChild(opt);
-    });
-    if (selectedBookId) {
-      for (const opt of select.options) {
-        if (opt.value === selectedBookId) {
-          opt.selected = true;
-          break;
-        }
-      }
-      const selOpt = select.options[select.selectedIndex];
-      if (selOpt && selOpt.dataset.author) {
-        $('postBookAuthor').value = selOpt.dataset.author;
-      }
-    }
-    select.onchange = function() {
-      const o = this.options[this.selectedIndex];
-      if (o?.value) {
-        if (!editingPostId) {
-          $('postBookAuthor').value = o.dataset.author || '';
-        }
-        previewCoverUrl = getCoverForBook({ folder: o.dataset.folder, file: o.dataset.file || o.value });
-      } else {
-        previewCoverUrl = '';
-      }
-    };
-    select.onchange();
-  } catch(e) { console.warn('Failed to load books for modal', e); }
-}
-
-// ============================================================
 // POST MODAL – ШАГИ И ВАЛИДАЦИЯ
 // ============================================================
 function goStep(n) {
@@ -2435,10 +2344,9 @@ function updatePreview() {
 }
 
 // ============================================================
-// ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ
+// ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ (только создание поста)
 // ============================================================
 async function openPostModal(bookId) {
-  editingPostId = null;
   $('modalTitle').textContent = '📝 Эҷоди пост';
   postStyle = { font: 'Roboto', size: 14, color: '#FFFFFF', animation: 'word', hashtags: [] };
   previewCoverUrl = '';
@@ -2451,14 +2359,52 @@ async function openPostModal(bookId) {
   $('postContent').value = '';
   $('postBookAuthor').value = '';
   $('postBookSelect').value = '';
-  await populateBookSelect(null);
+  await loadBooksForSelect();
   $('postModal').classList.add('open');
   updateSubmitButton();
 }
 
+async function loadBooksForSelect() {
+  const select = $('postBookSelect');
+  const token = getToken();
+  if (!token) return;
+  try {
+    const resp = await fetch(API_BASE + '/api/reading-sessions', {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    if (!resp.ok) throw new Error('HTTP '+resp.status);
+    const sessions = await resp.json();
+    const bookMap = {};
+    sessions.forEach(s => {
+      if (s.book_id && s.book_title && !bookMap[s.book_id])
+        bookMap[s.book_id] = { id: s.book_id, title: s.book_title, author: s.book_author || '', folder: s.folder, file: s.file };
+    });
+    const books = Object.values(bookMap);
+    select.innerHTML = '<option value="">Интихоб кунед</option>';
+    books.forEach(b => {
+      const opt = document.createElement('option');
+      opt.value = b.id;
+      opt.textContent = b.title + (b.author ? ' — ' + b.author : '');
+      opt.dataset.author = b.author;
+      opt.dataset.folder = b.folder || '';
+      opt.dataset.file = b.file || b.id;
+      select.appendChild(opt);
+    });
+    select.onchange = function() {
+      const o = this.options[this.selectedIndex];
+      if (o?.value) {
+        $('postBookAuthor').value = o.dataset.author || '';
+        previewCoverUrl = getCoverForBook({ folder: o.dataset.folder, file: o.dataset.file || o.value });
+      } else {
+        previewCoverUrl = '';
+      }
+    };
+    select.onchange();
+  } catch(e) { console.warn('Failed to load books for modal', e); }
+}
+
 function closePostModal() {
   $('postModal').classList.remove('open');
-  editingPostId = null;
 }
 
 $('postModalClose').addEventListener('click', closePostModal);
@@ -2466,7 +2412,7 @@ $('postModalCancel').addEventListener('click', closePostModal);
 $('postModal').addEventListener('click', e => { if (e.target === $('postModal')) closePostModal(); });
 
 // ============================================================
-// ОТПРАВКА / СОХРАНЕНИЕ ПОСТА
+// ОТПРАВКА НОВОГО ПОСТА (только POST)
 // ============================================================
 $('submitPostBtn').addEventListener('click', async function() {
   const text = ($('postContent').value || '').trim();
@@ -2488,22 +2434,13 @@ $('submitPostBtn').addEventListener('click', async function() {
 
   this.disabled = true; this.textContent = '...';
   try {
-    let resp;
-    if (editingPostId) {
-      resp = await fetch(API_BASE + '/api/posts/' + editingPostId, {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    } else {
-      resp = await fetch(API_BASE + '/api/posts', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
-      });
-    }
+    const resp = await fetch(API_BASE + '/api/posts', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload)
+    });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
-    showToast(editingPostId ? '✅ Пост навсозӣ шуд!' : '✅ Пост нашр шуд!');
+    showToast('✅ Пост нашр шуд!');
     closePostModal();
     if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
     loadPosts();
