@@ -138,7 +138,7 @@ const ensureCoverDataUrl = async (url, imgEl) => {
   const cached = getCachedCoverDataUrl(url);
   if (cached) { if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached); return cached; }
   try {
-    const r = await fetch(url); // Используем стандартный кэш браузера
+    const r = await fetch(url);
     if (!r.ok) return '';
     const blob = await r.blob();
     const dataUrl = await CacheManager?.blobToDataUrl(blob) || '';
@@ -553,30 +553,40 @@ async function loadHome() {
     const homeCategories = categories.filter(c => c.id !== 'peshvoi_millat');
     renderCategories(homeCategories);
 
-    // Книги Пешвои Миллат
-    const priority =
-      categories.find(c => c.id === 'peshvoi_millat') ||
-      categories.find(c => /пешвои|peshvoi|president|эмомали/i.test([c.name, c.id].join(' ')));
+    // Книги Пешвои Миллат – расширенный поиск
+    const priority = categories.find(c => c.id === 'peshvoi_millat') ||
+                     categories.find(c => c.id === 'president') ||
+                     categories.find(c => /пешвои|президент|president|peshvoi|эмомали/i.test([c.name, c.id].join(' ')));
+
+    console.log('[loadHome] priority category:', priority);
 
     if (priority) {
-      const folders = (priority.subs && priority.subs.length)
-        ? priority.subs
-        : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
-
+      const folders = (priority.subs && priority.subs.length) ? priority.subs : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
+      console.log('[loadHome] folders:', folders);
       let all = [];
       for (const ps of folders) {
         try {
           const folder = ps.folder || ps.folder_raw || ('books/' + (ps.name || ''));
+          console.log('[loadHome] loading manifest for folder:', folder);
           const arr = await loadManifest({ ...ps, folder });
+          console.log('[loadHome] loaded books:', arr.length);
           all.push(...arr.map(b => ({ ...b, _folder: folder })));
-        } catch(e) {}
+        } catch(e) {
+          console.warn('[loadHome] Error loading manifest for folder:', e);
+        }
       }
-
+      console.log('[loadHome] total books for president:', all.length);
       if (all.length) {
         $('pesvoSection').style.display = 'block';
         $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
         hydrateBookCardCovers($('pesvoBooks'));
+      } else {
+        console.warn('[loadHome] No books found for president category – hiding section');
+        $('pesvoSection').style.display = 'none';
       }
+    } else {
+      console.warn('[loadHome] President category not found');
+      $('pesvoSection').style.display = 'none';
     }
   } catch (e) {
     console.error('loadHome error', e);
