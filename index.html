@@ -627,7 +627,7 @@ function renderPopularBooks(books) {
     const name = b.book_title || file.replace(/\.pdf$/i, '') || 'Китоб';
     const url = `https://raw.githubusercontent.com/sharipovip/books/main/${enc(folder)}/${encodeURIComponent(file)}`;
     const coverList = coverCandidates(folder, file);
-    const cover = coverList[0] || '';
+    const cover = b.cover_url || coverList[0] || '';
     const coversJson = JSON.stringify(coverList);
     const coverSrc = getCachedCoverDataUrl(cover) || cover;
     return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">

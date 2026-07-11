@@ -990,6 +990,7 @@
   async function renderPage(n, direction) {
     if (!pdf || rendering) return;
     rendering = true;
+    setLoadProgress(0);
     $('loading').classList.add('on');
     try {
       const p = await pdf.getPage(n);

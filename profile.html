@@ -1159,7 +1159,7 @@
       <div class="icon-btn" id="feedTopBtn" title="Лента" onclick="location.href='Lenta.html'">📰</div>
       <div class="icon-btn" id="settingsBtn" title="Настройка" onclick="openSettings()">⚙️</div>
       <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none!important;" onclick="logoutUser()">🚪</div>
-      <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none!important;" onclick="deleteAccount()">🗑</div>
+      <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none;" onclick="deleteAccount()">🗑</div>
     </div>
   </div>
 
@@ -1520,7 +1520,7 @@
       const token = localStorage.getItem('kk_token');
       const userId = localStorage.getItem('kk_user_id');
       if (!token || !userId) { await showAlertDialog('Шумо ворид нестед', 'Хатогӣ'); return; }
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/admin/users/' + userId, {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/me', {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -2053,7 +2053,7 @@
                onerror="this.style.display='none'"
                style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
           <div class="book-overlay">${overlayContent}</div>
-          <div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>
+          ${isOwnProfile ? `<div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>` : ''}
         </div>
       `;
     }));
@@ -2092,7 +2092,7 @@
               <div class="book-meta"><span>⭐ Закладка</span></div>
             </div>
           </div>
-          <div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>
+          ${isOwnProfile ? `<div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>` : ''}
         </div>
       `;
     }
@@ -2326,9 +2326,10 @@
     menu.style.display = 'block';
     menuTarget = bookId;
     const isFav = favoritesData.some(f => f.book_id === bookId);
-    document.getElementById('menuRemoveFavorite').style.display = isFav ? 'block' : 'none';
+    document.getElementById('menuRemoveFavorite').style.display = (isOwnProfile && isFav) ? 'block' : 'none';
     const isHidden = hiddenBooks.includes(bookId);
     document.getElementById('menuHideToggle').textContent = isHidden ? '👁 Нишон додан' : '👁 Пинҳон кардан';
+    document.getElementById('menuHideToggle').style.display = isOwnProfile ? 'block' : 'none';
     const isPublished = publishedBookIds.has(bookId);
     const publishItem = document.getElementById('menuPublish');
     if (isPublished) {
@@ -2338,7 +2339,10 @@
     } else {
       publishItem.textContent = '📢 Интишор кардан дар лента';
       publishItem.style.color = '';
-      publishItem.onclick = menuPublish;
+      publishItem.onclick = isOwnProfile ? menuPublish : null;
+    }
+    if (!isOwnProfile) {
+      publishItem.style.color = 'var(--muted)';
     }
   }
   document.addEventListener('click', function() { el('bookMenu').style.display = 'none'; });
