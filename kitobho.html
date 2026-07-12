@@ -1172,7 +1172,9 @@
       const cover = coverList[0] || '';
       const coverSrc = getCachedCoverDataUrl(cover) || cover;
       const state = getBookAccessState(url);
-      const bookId = folderFull ? (folderFull.replace(/\/+$/, '') + '/' + file) : (b.file || file);
+      // Единый ID книги для рейтинга и читалки: без начального `books/`.
+      const rawBookId = folderFull ? (folderFull.replace(/\/+$/, '') + '/' + file) : (b.file || file);
+      const bookId = rawBookId.replace(/^books\//i, '');
       const bgColor = randomColor();
       const sizeMB = b.size ? (b.size / (1024*1024)).toFixed(1) : null;
 
