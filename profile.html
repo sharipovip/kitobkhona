@@ -630,10 +630,17 @@
       color: var(--cream);
       margin-bottom: 3px;
     }
-    .profile-meta .sub-info {
-      font-size: 12.5px;
-      color: var(--muted);
+    .age-gender-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 22px;
       margin-top: 2px;
+    }
+    .profile-meta .sub-info {
+      font-size: 13px;
+      color: var(--cream);
+      font-weight: 700;
     }
     .status-chip {
       display: inline-flex;
@@ -646,7 +653,7 @@
       border: 1px solid var(--line);
       padding: 3px 10px;
       border-radius: 999px;
-      margin-bottom: 6px;
+      margin-bottom: 0;
     }
     .meta-loc {
       font-size: 12.5px;
@@ -1189,8 +1196,7 @@
         </div>
         <div class="profile-meta">
           <h3 id="ownName">Китобхон</h3>
-          <div class="sub-info" id="ownAge"></div>
-          <div class="status-chip" id="ownGender" style="display:none"></div>
+          <div class="age-gender-row"><div class="sub-info" id="ownAge"></div><div class="status-chip" id="ownGender" style="display:none"></div></div>
           <div class="meta-loc" id="ownLoc">—</div>
         </div>
       </div>
@@ -1419,15 +1425,16 @@
 
   <div class="sheet-overlay" id="editOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>Таҳрири профил</h3><div class="icon-btn" id="closeEdit">✕</div></div><div class="sheet-body">
     <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12.5px;" disabled>Тағйири акс</button></div>
-    <div class="field-row"><div class="field"><label>Ном</label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб</label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
-    <div class="field"><label>Соли таваллуд</label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2026"></div>
-    <div class="field"><label>Пол</label><select id="editGender"><option value="">Интихоб кунед</option><option value="male">Мард</option><option value="female">Зан</option></select></div>
-    <div class="field"><label>Вилоят</label><select id="editRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div>
-    <div class="field-row"><div class="field"><label>Шаҳр/ноҳия</label><input type="text" id="editCity" placeholder="Шаҳр"></div><div class="field"><label>Ҷамоат</label><input type="text" id="editJamoat" placeholder="Ҷамоат"></div></div>
+    <div id="profileEditNotice" style="display:none;background:var(--gold-soft);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:12px;color:var(--cream-dim);font-size:12px;line-height:1.5"></div>
+    <div class="field-row"><div class="field"><label>Ном <span style="color:var(--red)">*</span></label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб <span style="color:var(--red)">*</span></label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
+    <div class="field"><label>Соли таваллуд <span style="color:var(--red)">*</span></label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2026"></div>
+    <div class="field"><label>Пол <span style="color:var(--red)">*</span></label><select id="editGender"><option value="">Интихоб кунед</option><option value="male">Мард</option><option value="female">Зан</option></select></div>
+    <div class="field"><label>Вилоят <span style="color:var(--red)">*</span></label><select id="editRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div>
+    <div class="field-row"><div class="field"><label>Шаҳр/ноҳия <span style="color:var(--red)">*</span></label><input type="text" id="editCity" placeholder="Шаҳр"></div><div class="field"><label>Ҷамоат</label><input type="text" id="editJamoat" placeholder="Ҷамоат"></div></div>
     <div class="field"><label>Деҳа/Село</label><input type="text" id="editVillage" placeholder="Деҳа"></div>
     <div class="field"><label>Почтаи электронӣ</label><input type="email" id="editEmail" placeholder="you@example.com"><div id="emailWarning" style="display:none;font-size:11.5px;color:var(--gold);margin-top:5px;line-height:1.4;">⚠️ Бе почтаи электронӣ барқарорсозии парол кор намекунад. Лутфан почтаи воқеӣ илова кунед.</div></div>
     <div class="field"><label>Логин (барои барқарорсозӣ)</label><input type="text" id="editUsername" placeholder="логин"></div>
-    <div class="field"><label>Пароли нав <span id="guestLabel" style="font-weight:400;color:var(--gold);display:none;">(барои гост ҳатмӣ)</span></label><input type="password" id="editPassword" placeholder="••••••••" minlength="4"><div id="passwordHint" style="font-size:11px;color:var(--muted);margin-top:4px;"></div></div>
+    <div class="field"><label>Пароли нав <span id="guestLabel" style="font-weight:400;color:var(--gold);display:none;">(барои гост ҳатмӣ)</span></label><div style="display:flex;gap:8px;align-items:stretch"><input type="password" id="editPassword" placeholder="••••••••" minlength="4" style="flex:1;min-width:0"><button type="button" id="togglePasswordBtn" class="btn btn-ghost" style="width:auto;padding:0 12px;font-size:12px">Нишон додан</button></div><div id="passwordHint" style="font-size:11px;color:var(--muted);margin-top:4px;"></div></div>
   </div>
   <div class="sheet-foot"><button class="btn btn-outline" id="cancelEdit">Бекор кардан</button><button class="btn btn-primary" id="saveEdit">Нигоҳ доштан</button></div></div></div>
 
@@ -2680,10 +2687,13 @@
   overlay.addEventListener('click', function(e) { if (e.target === overlay) closeEdit(); });
 
   let isTemporary = false;
+  let profileEditLocked = false;
   const passwordInput = el('editPassword');
   const saveBtn = el('saveEdit');
   const hintDiv = el('passwordHint');
   const guestLabel = el('guestLabel');
+  const profileEditNotice = el('profileEditNotice');
+  const togglePasswordBtn = el('togglePasswordBtn');
 
   function fillEditForm(profile) {
     el('editName').value = profile.first_name || '';
@@ -2699,7 +2709,24 @@
     el('editEmail').value = realEmail ? profile.email : '';
     el('emailWarning').style.display = realEmail ? 'none' : 'block';
     passwordInput.value = '';
+    if (togglePasswordBtn) {
+      passwordInput.type = 'password';
+      togglePasswordBtn.textContent = 'Нишон додан';
+    }
     isTemporary = profile.is_temporary === true;
+    const lockedUntil = profile.profile_edit_locked_until ? new Date(profile.profile_edit_locked_until) : null;
+    profileEditLocked = !!(lockedUntil && lockedUntil > new Date());
+    const editableFields = ['editName', 'editSurname', 'editBirthYear', 'editGender', 'editRegion', 'editCity', 'editJamoat', 'editVillage'];
+    editableFields.forEach(id => { if (el(id)) el(id).disabled = profileEditLocked; });
+    if (profileEditNotice) {
+      if (profileEditLocked) {
+        profileEditNotice.style.display = 'block';
+        profileEditNotice.textContent = '🔒 Маълумоти асосии профил аллакай сабт шудааст. Тағйири ном, насаб, санаи таваллуд ва суроға баъд аз ' + lockedUntil.toLocaleDateString('tg-TJ') + ' дастрас мешавад. Парол ва почтаи электронӣ метавонанд ҷудогона тағйир дода шаванд.';
+      } else {
+        profileEditNotice.style.display = 'block';
+        profileEditNotice.textContent = 'ℹ️ Ном, насаб, соли таваллуд, ҷинс ва суроға ҳатмӣ мебошанд. Пас аз нигоҳдорӣ маълумоти асосии профилро танҳо баъд аз як моҳ тағйир додан мумкин аст.';
+      }
+    }
     if (isTemporary) {
       guestLabel.style.display = 'inline';
       passwordInput.placeholder = 'Парол (ҳадди ақал 4 аломат)';
@@ -2713,6 +2740,12 @@
       saveBtn.disabled = false;
     }
   }
+  togglePasswordBtn?.addEventListener('click', function() {
+    const visible = passwordInput.type === 'text';
+    passwordInput.type = visible ? 'password' : 'text';
+    this.textContent = visible ? 'Нишон додан' : 'Пинҳон кардан';
+  });
+
   passwordInput.addEventListener('input', function() {
     const val = this.value;
     if (isTemporary) {
@@ -2744,7 +2777,14 @@
     const newEmail = el('editEmail').value.trim();
     const newPassword = passwordInput.value;
 
-    if (!firstName || !lastName) { showToast('Ном ва насаб ҳатмӣ аст'); return; }
+    if (!firstName || !lastName || !birthYear || !gender || !region || !city) {
+      showToast('Барои нигоҳдорӣ ном, насаб, соли таваллуд, ҷинс ва суроға ҳатмист.');
+      return;
+    }
+    if (birthYear < 1930 || birthYear > new Date().getFullYear()) {
+      showToast('Соли таваллуд нодуруст аст.');
+      return;
+    }
     if (isTemporary && !newPassword) { showToast('Барои нигоҳ доштани профил, лутфан парол ворид кунед.'); return; }
     if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { showToast('Формати почта нодуруст аст'); return; }
 
