@@ -656,10 +656,9 @@
     if (!await showConfirm('Оё мехоҳед тамоми таърихи чатро нест кунед?', 'Нест кунед', true)) return;
     try {
       const token = localStorage.getItem('kk_token');
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
         method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ user1: currentUserId, user2: peerId })
+        headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!resp.ok) throw new Error('Ошибка удаления');
       if (CacheManager) CacheManager.invalidateKey(getCacheKey());
@@ -804,24 +803,14 @@
     const msgContainer = document.getElementById('messages');
     if (pendingOutgoingCount > 0) return;
     try {
-      const { data } = await AUTH.getUser();
-      if (!data.user) {
-        msgContainer.innerHTML = '<div class="loading-msg">Логин шавед барои чат</div>';
-        return;
+      if (!currentUserId) {
+        const { data } = await AUTH.getUser();
+        if (!data.user) {
+          msgContainer.innerHTML = '<div class="loading-msg">Логин шавед барои чат</div>';
+          return;
+        }
+        currentUserId = data.user.id;
       }
-      currentUserId = data.user.id;
-
-      void (async () => {
-        try {
-          const peerProfile = await AUTH.getProfileFromRailway(peerId);
-          if (peerProfile && peerProfile.verified) {
-            document.getElementById('verifiedBadge').style.display = 'inline-block';
-          } else {
-            document.getElementById('verifiedBadge').style.display = 'none';
-          }
-        } catch (e) {}
-      })();
-
 
       let cachedMsgs = null;
       if (CacheManager) {
@@ -1085,7 +1074,7 @@
     }, 5000);
     typingInterval = setInterval(() => {
       if (!document.hidden) refreshTypingIndicator();
-    }, 1500);
+    }, 2500);
   }
 
   async function init() {

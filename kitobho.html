@@ -1117,6 +1117,18 @@
     } catch(e) { return null; }
   }
 
+  async function getBookStatsBatch(bookIds) {
+    if (!bookIds.length) return {};
+    try {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats-batch', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ book_ids: bookIds })
+      });
+      return resp.ok ? await resp.json() : {};
+    } catch(e) { return {}; }
+  }
+
   function toast(msg, d = 2400) {
     let t = document.querySelector('.toast');
     if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
@@ -1188,18 +1200,19 @@
       }
     });
 
-    document.querySelectorAll('.bk').forEach((el) => {
-      const bookId = decodeURIComponent(el.dataset.bookid);
-      if (!bookId) return;
-      getBookStats(bookId).then(stats => {
-        const badge = el.querySelector('.rating-badge');
-        if (badge) {
-          if (stats && stats.avg_rating) {
-            const avg = parseFloat(stats.avg_rating);
-            badge.textContent = `⭐ ${avg.toFixed(1)} (${stats.ratings_count || 0})`;
-          } else {
-            badge.textContent = '⭐ —';
-          }
+    const bookCards = Array.from(document.querySelectorAll('.bk'));
+    const bookIds = bookCards.map(card => decodeURIComponent(card.dataset.bookid)).filter(Boolean);
+    getBookStatsBatch(bookIds).then(statsMap => {
+      bookCards.forEach(card => {
+        const bookId = decodeURIComponent(card.dataset.bookid);
+        const stats = statsMap[bookId] || statsMap[bookId.replace(/^books\//i, '')];
+        const badge = card.querySelector('.rating-badge');
+        if (!badge) return;
+        if (stats && stats.avg_rating) {
+          const avg = parseFloat(stats.avg_rating);
+          badge.textContent = `⭐ ${avg.toFixed(1)} (${stats.ratings_count || 0})`;
+        } else {
+          badge.textContent = '⭐ —';
         }
       });
     });
