@@ -1147,7 +1147,7 @@
     grid.innerHTML = list.map((b) => {
       const file = b.file || ((b.name || 'book') + '.pdf');
       const name = b.name || file.replace(/\.pdf$/i, '');
-      const folderFull = sub?.folder || b.folder || '';
+      const folderFull = b.folder || sub?.folder || '';
       const url = rawUrl(folderFull, file);
       const coverList = coverCandidates(folderFull, file);
       const cover = coverList[0] || '';
@@ -1158,7 +1158,7 @@
       const bgColor = randomColor();
       const sizeMB = b.size ? (b.size / (1024*1024)).toFixed(1) : null;
 
-      return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(sub?.folder || b.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
+      return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(b.folder || sub?.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
         <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
           <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="this.style.display='none'">
           <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
@@ -1476,17 +1476,65 @@
     }
   }
 
+  let globalBooksIndex = null;
+  let globalBooksIndexPromise = null;
+
+  async function getGlobalBooksIndex() {
+    if (globalBooksIndex) return globalBooksIndex;
+    if (globalBooksIndexPromise) return globalBooksIndexPromise;
+    const cacheKey = 'kk_global_books_search_v1';
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (cached && cached.ts && Date.now() - cached.ts < 6 * 60 * 60 * 1000 && Array.isArray(cached.items)) {
+        globalBooksIndex = cached.items;
+        return globalBooksIndex;
+      }
+    } catch (e) {}
+    const subcategories = (DATA?.categories || []).flatMap(category => category.subs || []);
+    globalBooksIndexPromise = Promise.all(subcategories.map(async categorySub => {
+      try {
+        const list = await fetchManifest(categorySub);
+        return (list || []).map(book => ({ ...book, folder: categorySub.folder || book.folder || '', category: categorySub.name || '' }));
+      } catch (e) {
+        return [];
+      }
+    })).then(groups => {
+      const seen = new Set();
+      globalBooksIndex = groups.flat().filter(book => {
+        const key = String(book.folder || '') + '/' + String(book.file || book.name || '');
+        if (seen.has(key)) return false;
+        seen.add(key);
+        return true;
+      });
+      try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), items: globalBooksIndex })); } catch (e) {}
+      return globalBooksIndex;
+    }).finally(() => { globalBooksIndexPromise = null; });
+    return globalBooksIndexPromise;
+  }
+
+  async function searchAllBooks(query) {
+    const q = query.toLowerCase();
+    const allBooks = await getGlobalBooksIndex();
+    return allBooks.filter(book => {
+      const haystack = [book.name, book.file, book.author, book.book_author, book.category]
+        .filter(Boolean).join(' ').toLowerCase();
+      return haystack.includes(q);
+    });
+  }
+
   const searchInput = document.getElementById('searchInput');
   let searchDebounceTimer = null;
   searchInput.addEventListener('input', function() {
     clearTimeout(searchDebounceTimer);
-    searchDebounceTimer = setTimeout(() => {
+    searchDebounceTimer = setTimeout(async () => {
       const q = this.value.trim().toLowerCase();
       if (!q) {
         renderBooks(books);
         return;
       }
-      const filtered = books.filter(b => (b.name || b.file || '').toLowerCase().includes(q));
+      const grid = document.getElementById('booksGrid');
+      grid.innerHTML = '<div class="loader" style="grid-column:1/-1"></div>';
+      const filtered = await searchAllBooks(q);
       renderBooks(filtered);
     }, 180);
   });

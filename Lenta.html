@@ -165,7 +165,7 @@ html, body {
 .slide-text-overlay {
   line-height: 1.55;
   word-break: break-word;
-  text-shadow: 0 2px 12px rgba(0,0,0,0.9), 0 1px 3px rgba(0,0,0,1);
+  text-shadow: 0 3px 16px rgba(0,0,0,0.98), 0 1px 4px rgba(0,0,0,1);
   max-height: 100%;
   overflow-y: auto;
 }
@@ -255,7 +255,7 @@ html, body {
 .slide-bottom-grad {
   position: absolute; bottom: 0; left: 0; right: 0;
   height: 200px;
-  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.7) 100%);
+  background: linear-gradient(180deg, transparent 0%, rgba(0,0,0,0.86) 100%);
   z-index: 5; pointer-events: none;
 }
 
@@ -1151,9 +1151,11 @@ const FONTS = [
 ];
 
 const TEXT_COLORS = [
-  '#FFFFFF','#F0EAD6','#FFE680','#FFB347','#FF6B6B',
-  '#87CEEB','#98FB98','#DDA0DD','#C9A84C','#000000',
-  '#333333','#E0E0E0',
+  '#FFFFFF','#F8FAFC','#F0EAD6','#FFE680','#FFF0A8','#FFD166',
+  '#FFB347','#FF8A65','#FF6B6B','#F43F5E','#FB7185','#E879F9',
+  '#DDA0DD','#C084FC','#A78BFA','#87CEEB','#38BDF8','#67E8F9',
+  '#98FB98','#4ADE80','#34D399','#C9A84C','#000000','#333333',
+  '#64748B','#E0E0E0','#94A3B8','#FFFFFF',
 ];
 
 const ANIMATIONS = [
@@ -1275,16 +1277,18 @@ function getCoverFromPost(post) {
 
 function openBookFromPost(bookId, bookTitle, pdfUrl, coverUrl) {
   if (!bookId) return;
-  let folder = 'books', file = bookId;
-  if (bookId.includes('/')) {
-    const parts = bookId.split('/');
+  const cleanBookId = String(bookId).replace(/^books\//i, '');
+  const safePdfUrl = String(pdfUrl || '').replace(/&amp;/g, '&');
+  let folder = 'books', file = cleanBookId;
+  if (cleanBookId.includes('/')) {
+    const parts = cleanBookId.split('/');
     file = parts.pop();
     folder = parts.join('/');
     if (!folder.startsWith('books/')) folder = 'books/' + folder;
   }
-  const url = pdfUrl || rawUrl(folder, file);
+  const url = safePdfUrl || rawUrl(folder, file);
   const name = bookTitle || file.replace(/\.pdf$/i, '') || 'Китоб';
-  const cover = coverUrl || getCoverForBook({ folder, file, book_id: bookId });
+  const cover = coverUrl || getCoverForBook({ folder, file, book_id: cleanBookId });
   location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
 }
 
@@ -1791,12 +1795,14 @@ function buildSlide(post, idx) {
 
   const bookLine = slide.querySelector('.slide-bottom-info .info-line[data-bookid]');
   if (bookLine) {
+    bookLine.style.cursor = 'pointer';
     bookLine.addEventListener('click', (e) => {
+      e.preventDefault();
       e.stopPropagation();
-      const bookId = bookLine.dataset.bookid;
-      const title = bookLine.dataset.title;
-      const pdfUrl = bookLine.dataset.pdf;
-      const coverUrl = bookLine.dataset.cover;
+      const bookId = bookLine.getAttribute('data-bookid') || '';
+      const title = bookLine.getAttribute('data-title') || '';
+      const pdfUrl = bookLine.getAttribute('data-pdf') || '';
+      const coverUrl = bookLine.getAttribute('data-cover') || '';
       if (bookId) openBookFromPost(bookId, title, pdfUrl, coverUrl);
     });
   }
