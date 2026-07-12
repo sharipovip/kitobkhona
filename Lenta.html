@@ -1577,8 +1577,11 @@ async function loadPosts() {
       const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
       if (bookIds.length > 0) await loadBookRatings(bookIds);
       renderShorts();
+      // Показываем кэш сразу, но обязательно обновляем ленту с сервера,
+      // чтобы новый публичный пост не был скрыт до окончания TTL кэша.
+      void loadPostsFromServer(true);
     } else {
-      await loadPostsFromServer();
+      await loadPostsFromServer(false);
     }
   } catch (e) {
     console.error('loadPosts error:', e);
@@ -1615,7 +1618,7 @@ async function loadPosts() {
   });
 }
 
-async function loadPostsFromServer() {
+async function loadPostsFromServer(silent) {
   const container = $('shortsContainer');
   if (!container) return;
 
@@ -1635,14 +1638,16 @@ async function loadPostsFromServer() {
     renderShorts();
   } catch(e) {
     console.error('loadPostsFromServer error:', e);
-    container.innerHTML = `
-      <div class="short-slide">
-        <div class="shorts-empty">
-          <h3>Хатогӣ дар боргирӣ</h3>
-          <p>${escHtml(e.message)}</p>
+    if (!silent) {
+      container.innerHTML = `
+        <div class="short-slide">
+          <div class="shorts-empty">
+            <h3>Хатогӣ дар боргирӣ</h3>
+            <p>${escHtml(e.message)}</p>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
   }
 }
 
@@ -2344,9 +2349,41 @@ function updatePreview() {
 }
 
 // ============================================================
+// ДОСТУП К ПУБЛИКАЦИИ
+// ============================================================
+async function canPublishPost() {
+  const token = getToken();
+  const userId = localStorage.getItem('kk_user_id');
+  if (!token || !userId) {
+    showToast('Меҳмон метавонад постҳоро бинад, аммо барои нашр бояд ворид шавад.');
+    return false;
+  }
+  try {
+    const resp = await fetch(API_BASE + '/api/profiles/' + encodeURIComponent(userId), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const profile = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(profile.error || 'Профил дастрас нест');
+    const complete = String(profile.first_name || '').trim()
+      && String(profile.last_name || '').trim()
+      && String(profile.gender || '').trim()
+      && profile.birth_year;
+    if (!complete) {
+      showToast('Барои нашри пост аввал ном, насаб, соли таваллуд ва ҷинсро дар профил пур кунед.');
+      setTimeout(() => { location.href = 'profile.html'; }, 1200);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    showToast('Профилро санҷидан муяссар нашуд.');
+    return false;
+  }
+}
+
 // ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ (только создание поста)
 // ============================================================
 async function openPostModal(bookId) {
+  if (!await canPublishPost()) return;
   $('modalTitle').textContent = '📝 Эҷоди пост';
   postStyle = { font: 'Roboto', size: 14, color: '#FFFFFF', animation: 'word', hashtags: [] };
   previewCoverUrl = '';
@@ -2439,7 +2476,8 @@ $('submitPostBtn').addEventListener('click', async function() {
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const result = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(result.error || ('HTTP ' + resp.status));
     showToast('✅ Пост нашр шуд!');
     closePostModal();
     if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);

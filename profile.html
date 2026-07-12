@@ -1190,7 +1190,7 @@
         <div class="profile-meta">
           <h3 id="ownName">Китобхон</h3>
           <div class="sub-info" id="ownAge"></div>
-          <div class="status-chip" id="ownGender">👤</div>
+          <div class="status-chip" id="ownGender" style="display:none"></div>
           <div class="meta-loc" id="ownLoc">—</div>
         </div>
       </div>
@@ -1308,6 +1308,16 @@
           </div>
         </div>
 
+        <!-- Ёрӣ ва истифода -->
+        <div onclick="showHelpApp()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
+          <span style="font-size:20px">❓</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--cream)">Ёрӣ ва истифода</div>
+            <div style="font-size:12px;color:var(--muted)">Чӣ тавр аз барнома истифода бурдан</div>
+          </div>
+          <span style="margin-left:auto;color:var(--muted)">›</span>
+        </div>
+
         <!-- Тамос бо мо -->
         <div onclick="openFeedbackModal()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
           <span style="font-size:20px">📧</span>
@@ -1323,7 +1333,7 @@
           <span style="font-size:20px">📚</span>
           <div>
             <div style="font-size:14px;font-weight:600;color:var(--cream)">Дар бораи барнома</div>
-            <div style="font-size:12px;color:var(--muted)">Китобхона v2.0</div>
+            <div style="font-size:12px;color:var(--muted)">Нашри аввал · версияи 1.0.0</div>
           </div>
           <span style="margin-left:auto;color:var(--muted)">›</span>
         </div>
@@ -1349,23 +1359,68 @@
     <div class="sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-head"><h3>📚 Дар бораи барнома</h3><div class="icon-btn" id="closeAbout">✕</div></div>
-      <div class="sheet-body" style="padding-bottom:24px;text-align:center">
-        <div style="font-size:56px;margin:10px 0">📚</div>
-        <div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:6px">Китобхона</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Китобхонаи рақамии тоҷикӣ</div>
-        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;font-size:13px;color:var(--cream-dim);line-height:1.7">
-          <div>📌 Насха: <b style="color:var(--cream)">2.0.0</b></div>
-          <div>📚 Китобҳо: <b style="color:var(--cream)">Биш аз 500+</b></div>
-          <div>🌍 Забон: <b style="color:var(--cream)">Тоҷикӣ</b></div>
-          <div style="margin-top:10px;font-size:12px;color:var(--muted)">Барнома барои хондани китобҳои тоҷикӣ сохта шудааст.</div>
+      <div class="sheet-body" style="padding-bottom:24px;text-align:left">
+        <div style="text-align:center;font-size:56px;margin:8px 0">📚</div>
+        <div style="text-align:center;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:5px">Китобхона</div>
+        <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:18px">Манбаи дониш · Китобхонаи рақамии тоҷикӣ</div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;font-size:13px;color:var(--cream-dim);line-height:1.7">
+          <div>📌 Нашр: <b style="color:var(--cream)">1.0.0 · нашри аввал</b></div>
+          <div>🌍 Забон: <b style="color:var(--cream)">тоҷикӣ</b></div>
+          <div>📖 Самт: <b style="color:var(--cream)">китобхонӣ ва рушди дониш</b></div>
+          <div style="margin-top:12px;color:var(--cream)">Китобхона барои мутолиаи осон, нигоҳ доштани китобҳои дӯстдошта ва мубодилаи муҳаббат ба китоб сохта шудааст.</div>
+        </div>
+        <div style="margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;font-size:13px;color:var(--cream-dim);line-height:1.7">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:6px">Имкониятҳои барнома</div>
+          <div>• ҷустуҷӯ ва мутолиаи китобҳои тоҷикӣ;</div>
+          <div>• PDF-читалка бо нигоҳдории пешрафти хондан;</div>
+          <div>• закладкаҳо ва таърихи китобҳои хондашуда;</div>
+          <div>• профил, дӯстӣ ва лентаи китобӣ;</div>
+          <div>• лайк, шарҳ ва баҳодиҳии китобҳо;</div>
+          <div>• огоҳиномаҳо ва кор бо режими offline.</div>
+        </div>
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">Илм фурӯғи маърифат аст.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== МОДАЛКА "Ёрӣ ва истифода" ===== -->
+  <div class="sheet-overlay" id="helpOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><h3>❓ Ёрӣ ва истифода</h3><div class="icon-btn" id="closeHelp">✕</div></div>
+      <div class="sheet-body" style="padding-bottom:24px;text-align:left;font-size:13px;color:var(--cream-dim);line-height:1.65">
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">📚 Китобҳоро чӣ тавр хондан?</div>
+          <div>Ба «Китобҳо» дароед, категорияро интихоб кунед ва рӯйи китоб пахш намоед. Дар читалка саҳифаро иваз кунед, масштабро танзим намоед ва пешрафти хондан нигоҳ дошта мешавад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">⭐ Закладка ва кэш</div>
+          <div>Дар профили худ аз менюи китоб «Илова ба закладка»-ро интихоб кунед. Кэш барои кушодани зудтар кӯмак мекунад; тоза кардани кэш пешрафти хонданро нест намекунад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🧾 Профил</div>
+          <div>Ном, насаб, соли таваллуд ва ҷинсро пур кунед. Аватар бо акс ё нишонаи мувофиқ нишон дода мешавад. Барои нашри пост профил бояд пурра бошад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">📰 Лента ва постҳо</div>
+          <div>Постҳои нашршуда барои ҳамаи хонандагон дастрасанд. Барои нашр китоб интихоб кунед, маълумотро пур кунед ва «Интишор»-ро пахш намоед. Меҳмон ё профили нопурра метавонад постҳоро бинад, аммо нашр карда наметавонад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🤝 Дӯстон ва чат</div>
+          <div>Барои сӯҳбат аввал ба корбар дархости дӯстӣ фиристед. Чат баъд аз қабул шудани дархост дастрас мешавад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🔔 Огоҳинома ва ёрӣ</div>
+          <div>Огоҳиномаҳо танҳо бо иҷозаи шумо фаъол мешаванд. Агар китоб кушода нашавад ё мушкил пайдо шавад, аз «Тамос бо мо» истифода баред.</div>
         </div>
       </div>
     </div>
   </div>
+
   <div class="sheet-overlay" id="editOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>Таҳрири профил</h3><div class="icon-btn" id="closeEdit">✕</div></div><div class="sheet-body">
     <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12.5px;" disabled>Тағйири акс</button></div>
     <div class="field-row"><div class="field"><label>Ном</label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб</label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
-    <div class="field"><label>Соли таваллуд</label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2008"></div>
+    <div class="field"><label>Соли таваллуд</label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2026"></div>
     <div class="field"><label>Пол</label><select id="editGender"><option value="">Интихоб кунед</option><option value="male">Мард</option><option value="female">Зан</option></select></div>
     <div class="field"><label>Вилоят</label><select id="editRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div>
     <div class="field-row"><div class="field"><label>Шаҳр/ноҳия</label><input type="text" id="editCity" placeholder="Шаҳр"></div><div class="field"><label>Ҷамоат</label><input type="text" id="editJamoat" placeholder="Ҷамоат"></div></div>
@@ -1726,8 +1781,10 @@
 
       const displayName = profile.display_name || profile.username || 'Китобхон';
       el('ownName').textContent = displayName;
-      const genderMap = { 'male': '🧑 Мард', 'female': '👩 Зан', '': '👤' };
-      el('ownGender').textContent = genderMap[profile.gender] || '👤';
+      const genderMap = { male: 'Мард', female: 'Зан' };
+      const genderLabel = genderMap[profile.gender] || '';
+      el('ownGender').textContent = genderLabel;
+      el('ownGender').style.display = genderLabel ? 'inline-flex' : 'none';
       updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
       const locParts = [profile.city, profile.region].filter(Boolean);
       el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
@@ -2070,16 +2127,14 @@
       container.innerHTML = `<img class="avatar-photo" src="${esc(avatarUrl)}" alt="Аватар" onerror="this.replaceWith(document.createTextNode('?'))">`;
       return;
     }
-    if (isTemporary) {
-      container.innerHTML = '<div class="avatar-placeholder" aria-label="Гостевой профиль">?</div>';
-      return;
-    }
-
     let svg = '';
     if (gender === 'male') {
       svg = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="var(--gold)" stroke-width="1.6"/></svg>`;
     } else if (gender === 'female') {
       svg = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="var(--gold)" stroke-width="1.6"/><path d="M12 12v4m-2-2h4" stroke="var(--gold)" stroke-width="1.6"/></svg>`;
+    } else if (isTemporary) {
+      container.innerHTML = '<div class="avatar-placeholder" aria-label="Гостевой профиль">?</div>';
+      return;
     } else {
       svg = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
     }
@@ -2725,6 +2780,7 @@
   // ================================================================
   const settingsOverlay = el('settingsOverlay');
   const aboutOverlay = el('aboutOverlay');
+  const helpOverlay = el('helpOverlay');
 
   function openSettings() {
     // Обновляем состояние темы
@@ -2748,6 +2804,14 @@
   function closeSettings() { settingsOverlay.classList.remove('open'); }
   el('closeSettings').addEventListener('click', closeSettings);
   settingsOverlay.addEventListener('click', function(e) { if (e.target === settingsOverlay) closeSettings(); });
+
+  function showHelpApp() {
+    closeSettings();
+    setTimeout(() => helpOverlay.classList.add('open'), 120);
+  }
+  function closeHelpApp() { helpOverlay.classList.remove('open'); }
+  el('closeHelp').addEventListener('click', closeHelpApp);
+  helpOverlay.addEventListener('click', function(e) { if (e.target === helpOverlay) closeHelpApp(); });
 
   function showAboutApp() {
     closeSettings();
@@ -2786,6 +2850,7 @@
   }
   window.toggleThemeGlobal = toggleThemeGlobal;
   window.openSettings = openSettings;
+  window.showHelpApp = showHelpApp;
   window.showAboutApp = showAboutApp;
 
   function initSettings() {
@@ -2801,5 +2866,5 @@
   // ================================================================
   // loadProfile() вызывается в DOMContentLoaded
 </script>
-<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a19f71ec0d1409b5',t:'MTc4Mzg1Mjk4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>
