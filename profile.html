@@ -1519,9 +1519,19 @@
     }
     loadProfile();
     initSettings();
+    friendStatusTimer = setInterval(() => {
+      if (!document.hidden && currentProfileUserId && !isOwnProfile) {
+        checkFriendStatus(currentUserId, currentProfileUserId)
+          .then(() => updateFriendButtonUI())
+          .catch(() => {});
+      }
+    }, 10000);
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden && currentProfileUserId) {
         const seq = profileLoadSequence;
+        checkFriendStatus(currentUserId, currentProfileUserId)
+          .then(() => { if (seq === profileLoadSequence) updateFriendButtonUI(); })
+          .catch(() => {});
         const sessionsKey = profileCacheKey('sessions', currentProfileUserId);
         const favoritesKey = profileCacheKey('favorites', currentProfileUserId);
         const postsKey = profileCacheKey('posts', currentProfileUserId);
@@ -1541,6 +1551,10 @@
         }).catch(() => {});
       }
     });
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (friendStatusTimer) clearInterval(friendStatusTimer);
   });
 
   // ================================================================
@@ -1569,7 +1583,9 @@
   let loadedProfile = null;
   let friendStatus = null;
   let currentUserId = null;
+  let currentUserProfileComplete = null;
   let profileLoadSequence = 0;
+  let friendStatusTimer = null;
 
   // Кэш профиля, книг, закладок и постов всегда привязан к ID пользователя.
   // Старые общие ключи очищаем, чтобы данные одного профиля не попадали в другой.
@@ -1713,13 +1729,20 @@
     }
 
     el('friendBtn').style.display = 'flex';
+    if (currentUserProfileComplete === false) {
+      el('friendBtn').textContent = '📝 Профилро пур кунед';
+      el('friendBtn').className = 'btn btn-outline';
+      el('friendBtn').onclick = () => { location.href = 'profile.html'; };
+      el('friendBtn').style.opacity = '0.85';
+      return;
+    }
     if (friendStatus === 'friends') {
-      el('friendBtn').textContent = '✅ Дӯст';
+      el('friendBtn').textContent = '✅ Дӯстон';
       el('friendBtn').className = 'btn btn-ghost';
       el('friendBtn').onclick = () => removeFriend(currentProfileUserId);
       el('friendBtn').style.opacity = '1';
     } else if (friendStatus === 'pending') {
-      el('friendBtn').textContent = '⏳ Дархост фиристода шуд';
+      el('friendBtn').textContent = '⏳ Интизор шавед';
       el('friendBtn').className = 'btn btn-outline';
       el('friendBtn').onclick = null;
       el('friendBtn').style.opacity = '0.7';
@@ -1765,11 +1788,18 @@
       const postsKey = profileCacheKey('posts', profileId);
       const profileKey = 'kk_profile_' + profileId;
 
-      // Берём из кэша только профиль текущего пользователя.
-      let profile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
-      if (!profile || String(profile.id) !== String(profileId)) {
+      // Сначала получаем актуальный профиль с сервера, чтобы счётчики друзей,
+      // книг и закладок не оставались устаревшими. Кэш используется как offline-fallback.
+      const cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
+      let profile = null;
+      try {
         profile = await NEON_API.getProfile(profileId);
         if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, profile);
+      } catch (networkError) {
+        profile = cachedProfile;
+      }
+      if (!profile || String(profile.id) !== String(profileId)) {
+        throw new Error('Профиль дастрас нест');
       }
       if (loadSequence !== profileLoadSequence) return;
       console.log('[Profile] Данные профиля:', profile);
@@ -1788,8 +1818,9 @@
       updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
       const locParts = [profile.city, profile.region].filter(Boolean);
       el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
-      el('ownBooks').textContent = profile.books_count || 0;
-      el('ownFriends').textContent = profile.followers_count || 0;
+      el('ownBooks').textContent = profile.books_count_real ?? profile.books_count ?? 0;
+      el('ownFriends').textContent = profile.friends_count ?? profile.followers_count ?? 0;
+      el('ownMarks').textContent = profile.favorites_count ?? 0;
 
       let ageText = '';
       if (profile.birth_year) {
@@ -1800,18 +1831,31 @@
       }
       el('ownAge').textContent = ageText;
 
+      try {
+        const actorProfile = isOwnProfile ? profile : await NEON_API.getProfile(currentUserId);
+        currentUserProfileComplete = isCompleteProfile(actorProfile);
+      } catch (e) {
+        currentUserProfileComplete = false;
+      }
       updateFriendButtonUI();
 
-      // Загрузка друзей для счётчика (из кэша или с сервера)
-      try {
-        let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
-        if (!friends) {
-          friends = await ChatAPI.getFriends(currentUserId);
-          if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+      // Список друзей текущего аккаунта нужен только для собственного профиля.
+      // Для чужого профиля используем friends_count, рассчитанный сервером именно для него.
+      if (isOwnProfile) {
+        try {
+          let friends;
+          try {
+            // Для счётчика всегда берём свежий список, иначе принятие заявки
+            // на другом экране может не отразиться в профиле.
+            friends = await ChatAPI.getFriends(currentUserId);
+            if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+          } catch (networkError) {
+            friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : [];
+          }
+          el('ownFriends').textContent = Array.isArray(friends) ? friends.length : 0;
+        } catch(e) {
+          console.warn('Не удалось загрузить друзей', e);
         }
-        el('ownFriends').textContent = friends.length;
-      } catch(e) {
-        console.warn('Не удалось загрузить друзей', e);
       }
 
       showScreen('screen-own');
@@ -1935,7 +1979,11 @@
         return;
       }
     }
-    booksData = data;
+    booksData = Array.isArray(data) ? data : [];
+    if (String(currentProfileUserId) === String(userId)
+        && (!loadedProfile || loadedProfile.books_count_real == null)) {
+      el('ownBooks').textContent = booksData.length;
+    }
   }
 
   async function loadFavoritesCached(userId) {
@@ -1957,8 +2005,11 @@
         return;
       }
     }
-    favoritesData = data;
-    el('ownMarks').textContent = favoritesData.length;
+    favoritesData = Array.isArray(data) ? data : [];
+    if (String(currentProfileUserId) === String(userId)
+        && (!loadedProfile || loadedProfile.favorites_count == null)) {
+      el('ownMarks').textContent = favoritesData.length;
+    }
   }
 
   async function loadPostsCached(userId) {
@@ -2032,28 +2083,39 @@
   async function checkFriendStatus(myId, otherId) {
     try {
       const token = localStorage.getItem('kk_token');
-      if (!token) { friendStatus = null; return; }
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends', {
+      if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!r.ok) { friendStatus = null; return; }
-      const friends = await r.json();
-      const isFriend = friends.some(f => String(f.id) === String(otherId));
-      if (isFriend) { friendStatus = 'friends'; return; }
-      const reqR = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (reqR.ok) {
-        const requests = await reqR.json();
-        const sent = requests.some(r => String(r.from_user) === String(myId) && String(r.to_user) === String(otherId));
-        if (sent) { friendStatus = 'pending'; return; }
-        const received = requests.some(r => String(r.from_user) === String(otherId) && String(r.to_user) === String(myId));
-        if (received) { friendStatus = 'requested'; return; }
-      }
-      friendStatus = null;
+      const data = await r.json();
+      friendStatus = data.status || null;
     } catch (e) {
       console.warn('Check friend status error:', e);
       friendStatus = null;
+    }
+  }
+
+  function isCompleteProfile(profile) {
+    return !!(profile
+      && String(profile.first_name || '').trim()
+      && String(profile.last_name || '').trim()
+      && String(profile.gender || '').trim()
+      && profile.birth_year);
+  }
+
+  async function canUseSocialActions() {
+    try {
+      const profile = (isOwnProfile && loadedProfile)
+        ? loadedProfile
+        : await NEON_API.getProfile(currentUserId);
+      if (isCompleteProfile(profile)) return true;
+      showToast('Барои ин амал аввал ном, насаб, соли таваллуд ва ҷинсро дар профил пур кунед.');
+      setTimeout(() => { location.href = 'profile.html'; }, 1200);
+      return false;
+    } catch (e) {
+      showToast('Аввал профилро пур кунед.');
+      return false;
     }
   }
 
@@ -2063,6 +2125,7 @@
   async function sendFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
     if (!token) { showToast('Лутфан ворид шавед'); return; }
+    if (!await canUseSocialActions()) return;
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/request', {
         method: 'POST',
@@ -2088,6 +2151,7 @@
   async function acceptFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
     if (!token) { showToast('Лутфан ворид шавед'); return; }
+    if (!await canUseSocialActions()) return;
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
         method: 'POST',
