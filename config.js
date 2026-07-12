@@ -1,6 +1,3 @@
-// ============================================================
-// КОНФИГУРАЦИЯ КИТОБХОНА – ПОЛНАЯ ВЕРСИЯ (с блокировкой устройства)
-// ============================================================
 
 const KITOB_CONFIG = {
   NEON_API_BASE: 'https://kitobkhona-chat.onrender.com',
@@ -8,12 +5,53 @@ const KITOB_CONFIG = {
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI'
 };
 
-// ======================== НОВЫЕ ФУНКЦИИ ДЛЯ НАСТРОЕК =========================
 
-/** Версия приложения */
+
 const APP_VERSION = '1.0.0';
 
-/** Нормализует URL книги (преобразует raw GitHub в CDN) */
+const KKH_THEMES = {
+  dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
+  light: { label: 'Рӯз', icon: '☀️', bg: '#F5F0E8', bg2: '#EDE5D6', card: '#FFFDF7', card2: '#F4EBDD', text: '#243247', cream: '#243247', muted: '#667085', gold: '#A47718', gold2: '#C99D32', line: 'rgba(122,88,18,.2)', red: '#B94A43', green: '#2F8F5B' },
+  gold: { label: 'Тиллоӣ', icon: '✨', bg: '#21170D', bg2: '#302112', card: '#422B13', card2: '#573A17', text: '#FFF1C7', cream: '#FFF1C7', muted: '#D5B77A', gold: '#E2A93B', gold2: '#FFD979', line: 'rgba(226,169,59,.3)', red: '#E4775F', green: '#7ECF8B' },
+  flag: { label: 'Парчам', icon: '🇹🇯', bg: '#160F18', bg2: '#241725', card: '#30202A', card2: '#3A2630', text: '#FFF6EE', cream: '#FFF6EE', muted: '#D8B7B2', gold: '#E3B341', gold2: '#F4D27B', line: 'rgba(217,72,70,.3)', red: '#D94846', green: '#4DAA74' },
+  book: { label: 'Китоб', icon: '📖', bg: '#1B120D', bg2: '#2A1B13', card: '#3A2418', card2: '#4B3020', text: '#F7E6C5', cream: '#F7E6C5', muted: '#C9AD8C', gold: '#D8A64B', gold2: '#F0C878', line: 'rgba(216,166,75,.27)', red: '#C86A55', green: '#6CA878' }
+};
+const KKH_THEME_ORDER = ['dark', 'light', 'gold', 'flag', 'book'];
+window.KKH_THEMES = KKH_THEMES;
+
+function installThemeStyles() {
+  if (document.getElementById('kitobkhona-theme-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'kitobkhona-theme-styles';
+  style.textContent = Object.entries(KKH_THEMES).map(([name, t]) => `
+    html[data-app-theme="${name}"], body[data-app-theme="${name}"] {
+      --bg:${t.bg}; --bg2:${t.bg2}; --card:${t.card}; --card-2:${t.card2}; --card2:${t.card2};
+      --text:${t.text}; --cream:${t.cream}; --muted:${t.muted}; --gold:${t.gold}; --gold2:${t.gold2};
+      --line:${t.line}; --border:${t.line}; --red:${t.red}; --green:${t.green};
+      --gold-soft:${t.line}; --card-soft:${t.bg2};
+    }
+  `).join('');
+  document.head.appendChild(style);
+}
+
+function setAppTheme(themeName, persist = true) {
+  const name = KKH_THEMES[themeName] ? themeName : 'dark';
+  installThemeStyles();
+  document.documentElement.dataset.appTheme = name;
+  if (document.body) document.body.dataset.appTheme = name;
+  document.body?.classList.toggle('light-theme', name === 'light');
+  if (persist) localStorage.setItem('kk_theme', name);
+  const t = KKH_THEMES[name];
+  const themeBtn = document.getElementById('themeBtn');
+  if (themeBtn) themeBtn.textContent = t.icon;
+  if (typeof updateThemeUI === 'function') updateThemeUI(name);
+  document.dispatchEvent(new CustomEvent('kitobkhona-theme-change', { detail: name }));
+  return name;
+}
+
+function getAppTheme() { return localStorage.getItem('kk_theme') || 'dark'; }
+
+
 function normalizeBookUrl(url) {
   if (!url) return url;
   try {
@@ -30,7 +68,7 @@ function normalizeBookUrl(url) {
   return url;
 }
 
-/** Формирует URL книги по папке и имени файла */
+
 function getBookUrl(folder, file) {
   const repo = 'sharipovip/books';
   const branch = 'main';
@@ -41,42 +79,36 @@ function getBookUrl(folder, file) {
   return `https://raw.githubusercontent.com/${repo}/${branch}/books/${encodedFolder ? encodedFolder + '/' : ''}${encodedFile}`;
 }
 
-/** Очищает весь кэш PDF-книг */
+
 async function clearBookCache() {
   try {
-    // Удаляем все PDF из кэша браузера
     if ('caches' in window) {
       const cache = await caches.open('kitobkhona-pdf-cache-v1');
       const keys = await cache.keys();
       await Promise.all(keys.map(request => cache.delete(request)));
     }
-    // Очищаем localStorage записи о кэшированных книгах
     localStorage.removeItem('kk_cached_books');
-    // Очищаем прогресс чтения? (оставляем, чтобы не потерять)
     toast('✅ Кэш книг очищен!');
   } catch(e) {
     toast('❌ Ошибка при очистке кэша', true);
   }
 }
 
-/** Отображает информацию о программе */
+
 function showAbout() {
   alert(`Китобхона · Манбаи дониш\nНашри аввал · версия ${APP_VERSION}\n\nКитобхонаи рақамии тоҷикӣ барои мутолиа, нигоҳдории китобҳо ва рушди дониш.\nСохта шудааст бо ❤️ барои хонандагон.`);
 }
 
-/** Связь с нами - открывает модалку если есть на странице */
+
 function contactUs() {
-  // Проверяем, есть ли модалка обратной связи на странице (profile.html)
   const feedbackOverlay = document.getElementById('feedbackOverlay');
   if (feedbackOverlay) {
     feedbackOverlay.classList.add('open');
   } else {
-    // Fallback на email если модалки нет
     window.location.href = 'mailto:info@kitobkhona.tj?subject=Связь с Китобхона';
   }
 }
 
-// ======================== МОДАЛЬНОЕ ОКНО НАСТРОЕК =========================
 
 let settingsModalInstance = null;
 
@@ -184,15 +216,12 @@ function createSettingsModal() {
   `;
   document.body.appendChild(modal);
 
-  // Закрытие по клику вне модалки
   modal.addEventListener('click', function(e) {
     if (e.target === modal) closeSettingsModal();
   });
 
-  // Закрытие по кнопке
   modal.querySelector('#closeSettingsBtn').addEventListener('click', closeSettingsModal);
 
-  // Обработчики кнопок
   modal.querySelectorAll('.settings-item').forEach(item => {
     item.addEventListener('click', function() {
       const action = this.dataset.action;
@@ -229,38 +258,19 @@ function closeSettingsModal() {
   }
 }
 
-// ======================== ПЕРЕКЛЮЧЕНИЕ ТЕМЫ =========================
 
 function toggleTheme() {
-  const isLight = document.body.classList.toggle('light-theme');
-  localStorage.setItem('kk_theme', isLight ? 'light' : 'dark');
-  // Обновляем статус в модалке, если она открыта
-  const status = document.querySelector('#themeStatus');
-  if (status) status.textContent = isLight ? 'День' : 'Ночь';
-  // Также обновляем кнопку темы в правом углу (если есть)
-  const themeBtn = document.getElementById('themeBtn');
-  if (themeBtn) {
-    themeBtn.textContent = isLight ? '☀️' : '🌙';
-  }
+  const current = getAppTheme();
+  const index = KKH_THEME_ORDER.indexOf(current);
+  return setAppTheme(KKH_THEME_ORDER[(index + 1) % KKH_THEME_ORDER.length]);
 }
 
 function initTheme() {
-  const saved = localStorage.getItem('kk_theme') || 'dark';
-  if (saved === 'light') {
-    document.body.classList.add('light-theme');
-  } else {
-    document.body.classList.remove('light-theme');
-  }
-  const themeBtn = document.getElementById('themeBtn');
-  if (themeBtn) {
-    themeBtn.textContent = saved === 'light' ? '☀️' : '🌙';
-  }
+  setAppTheme(getAppTheme(), false);
 }
 
-// ======================== ИНИЦИАЛИЗАЦИЯ НАСТРОЕК =========================
 
 function initSettings() {
-  // Только на странице профиля добавляем кнопку настроек
   if (window.location.pathname.includes('profile.html')) {
     document.querySelectorAll('.brand-mini').forEach(el => {
       el.style.cursor = 'pointer';
@@ -350,7 +360,6 @@ function showConfirmDialog(message, title = 'Тасдиқ', confirmText = 'Ҳа'
   });
 }
 
-// Инициализация при загрузке DOM (БЕЗ АВТО-ЗАПРОСА УВЕДОМЛЕНИЙ!)
 function initNetworkStatus() {
   const banner = document.createElement('div');
   banner.id = 'kitobkhona-network-status';
@@ -367,12 +376,8 @@ document.addEventListener('DOMContentLoaded', function() {
   initNetworkStatus();
   initTheme();
   initSettings();
-  // Автоматический запрос уведомлений УБРАН – теперь только по клику на кнопку в модалке
 });
 
-// ================================================================
-// ============ ФУНКЦИИ ДЛЯ РАБОТЫ С ФАЙЛАМИ (без изменений) ============
-// ================================================================
 
 function fetchWithTimeout(url, options, timeoutMs) {
   timeoutMs = timeoutMs || 8000;
@@ -542,9 +547,6 @@ async function downloadFile(url, name, showProgress = true) {
   }
 }
 
-// ================================================================
-// ============ АВТОВХОД И УПРАВЛЕНИЕ АККАУНТОМ (ИСПРАВЛЕН) ============
-// ================================================================
 const AutoLogin = {
   currentUser: null,
   autoLogin: async function(showChoice) {
@@ -554,8 +556,6 @@ const AutoLogin = {
     const savedUsername = localStorage.getItem('kk_username');
     if (savedToken && savedUserId) {
       this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
-      // Не блокируем страницу ожиданием сети: сначала используем данные из localStorage,
-      // а проверку токена делаем в фоне.
       (async () => {
         try {
           const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
@@ -656,16 +656,12 @@ const AutoLogin = {
   }
 };
 
-// ================================================================
-// ============ AUTH (обёртка) ============
-// ================================================================
 const AUTH = {
   getUser: async function() {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
     const username = localStorage.getItem('kk_username');
     if (!token || !userId) return { data: { user: null } };
-    // Сначала возвращаем из localStorage — без ожидания сети
     const cached = localStorage.getItem('kk_profile_cache');
     let profile = null;
     if (cached) {
@@ -675,13 +671,11 @@ const AUTH = {
       } catch(e) {}
     }
     if (profile) {
-      // Обновляем в фоне
       NEON_API.getProfile(userId).then(p => {
         localStorage.setItem('kk_profile_cache', JSON.stringify({ ...p, _ts: Date.now() }));
       }).catch(() => {});
       return { data: { user: { id: userId, username: username || profile.username || 'user', display_name: profile.display_name || username || 'Китобхон', ...profile } } };
     }
-    // Нет кэша — грузим с сервера
     try {
       profile = await NEON_API.getProfile(userId);
       localStorage.setItem('kk_profile_cache', JSON.stringify({ ...profile, _ts: Date.now() }));
@@ -697,9 +691,6 @@ const AUTH = {
   logout: function() { AutoLogin.logout(); }
 };
 
-// ================================================================
-// ============ CHAT API ============
-// ================================================================
 const ChatAPI = {
   getFriends: async function(userId) {
     const token = localStorage.getItem('kk_token');
@@ -765,9 +756,6 @@ const ChatAPI = {
   }
 };
 
-// ================================================================
-// ============ NEON API ============
-// ================================================================
 const NEON_API = {
   getProfile: async function(userId) {
     const token = localStorage.getItem('kk_token');
@@ -829,9 +817,6 @@ const NEON_API = {
   }
 };
 
-// ================================================================
-// ============ SUPABASE API ============
-// ================================================================
 async function apiGet(table, opts) {
   opts = opts || {};
   const eq = opts.eq, order = opts.order, limit = opts.limit;
@@ -848,9 +833,6 @@ async function apiGet(table, opts) {
   return await r.json();
 }
 
-// ================================================================
-// ============ НОВЫЕ ФУНКЦИИ ДЛЯ УВЕДОМЛЕНИЙ И ОБЪЯВЛЕНИЙ ============
-// ================================================================
 
 async function getNotifications() {
   const token = localStorage.getItem('kk_token');
@@ -921,8 +903,6 @@ function loadFirebaseMessagingSdk() {
     script.onerror = () => reject(new Error('Failed to load Firebase script: ' + url));
     document.head.appendChild(script);
   });
-  // Firebase Messaging must load after firebase-app-compat. Parallel loading causes
-  // the intermittent "firebase.messaging is not a function / INTERNAL" error.
   firebaseSdkPromise = loadScript(urls[0])
     .then(() => loadScript(urls[1]))
     .then(() => {
@@ -1003,12 +983,9 @@ async function initFirebaseMessaging() {
     await registerFcmToken();
     return;
   }
-  // Автозапрос: если пользователь залогинен и разрешение ещё не спрашивали
   if (token && Notification.permission === 'default') {
-    // небольшой delay, чтобы страница успела загрузиться
     setTimeout(async () => {
       try {
-        // Красивый pre-prompt
         const ok = await showConfirmDialog('🔔 Огоҳиҳои китобҳои навро фаъол созем?\n\nШумо аз китобҳои нав, паёмҳо ва ғолибон огоҳ мешавед.');
         if (ok) {
           await requestPushPermission();
@@ -1018,7 +995,6 @@ async function initFirebaseMessaging() {
   }
 }
 
-// Foreground FCM messages – показываем тост, обновляем badge
 async function initFcmForeground() {
   try {
     await loadFirebaseMessagingSdk();
@@ -1028,9 +1004,7 @@ async function initFcmForeground() {
         const title = payload.notification?.title || 'Китобхона';
         const body = payload.notification?.body || '';
         if (typeof toast === 'function') toast('🔔 ' + title + (body ? ': ' + body : ''));
-        // обновляем badge если функция есть
         if (typeof updateNotifBadge === 'function') updateNotifBadge();
-        // системное уведомление тоже покажем, если страница не в фокусе
         if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
           new Notification(title, { body, icon: '/icon-192.png' });
         }
@@ -1039,7 +1013,6 @@ async function initFcmForeground() {
   } catch(e) { console.warn('FCM foreground init failed', e); }
 }
 
-// вызываем foreground listener после инициализации
 const _oldInitFM = initFirebaseMessaging;
 initFirebaseMessaging = async function() { await _oldInitFM(); initFcmForeground(); };
 
@@ -1066,16 +1039,12 @@ async function getAdminQuotes() {
   }
 }
 
-// ================================================================
-// ============ ВСПОМОГАТЕЛЬНЫЕ ФУНКЦИИ ============
-// ================================================================
 function esc(str) {
   if (str == null) return '';
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 function el(id) { return document.getElementById(id); }
 
-// ======================== ГЛОБАЛЬНЫЙ ТОСТ (если не определён) =========================
 if (typeof toast !== 'function') {
   window.toast = function(msg, isErr) {
     const t = document.createElement('div');

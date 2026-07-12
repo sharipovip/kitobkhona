@@ -10,9 +10,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
 <style>
-/* ============================================================
-   БАЗОВЫЕ СТИЛИ
-   ============================================================ */
+
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
 
 :root {
@@ -56,9 +54,7 @@ html, body {
 }
 .toast.show { opacity:1; transform: translateX(-50%) translateY(0); }
 
-/* ============================================================
-   SHORTS VIEW
-   ============================================================ */
+
 #shortsView {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
@@ -151,7 +147,7 @@ html, body {
   width: 100%; display: block;
 }
 
-/* Текст поста */
+
 .slide-text-layer {
   position: absolute;
   top: 10%;
@@ -175,7 +171,7 @@ html, body {
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
-/* Нижняя строка: информация слева */
+
 .slide-bottom-row {
   position: absolute;
   bottom: 80px;
@@ -207,7 +203,7 @@ html, body {
 .slide-bottom-info .info-line .book-title { font-size: 18px; }
 .slide-bottom-info .info-line .book-title:hover { text-decoration: underline; }
 
-/* Кнопка удаления поста (для автора) – справа */
+
 .post-owner-actions {
   display: flex;
   gap: 6px;
@@ -236,7 +232,7 @@ html, body {
   background: rgba(200,50,50,0.4);
 }
 
-/* Хэштеги */
+
 .slide-hashtags {
   position: absolute;
   bottom: 52px;
@@ -299,7 +295,7 @@ html, body {
 .shorts-empty h3 { font-size: 18px; }
 .shorts-empty p { font-size: 13px; color: var(--muted); line-height: 1.55; }
 
-/* Спиннер загрузки – центрирован */
+
 .shorts-loader {
   display: flex;
   align-items: center;
@@ -319,9 +315,7 @@ html, body {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* ============================================================
-   GRID VIEW
-   ============================================================ */
+
 #gridView {
   position: absolute; inset: 0;
   display: flex; flex-direction: column;
@@ -427,9 +421,7 @@ html, body {
   font-size: 32px; opacity: 0.5;
 }
 
-/* ============================================================
-   COMMENTS SHEET
-   ============================================================ */
+
 .comments-sheet-overlay {
   position: absolute; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.6);
@@ -521,9 +513,7 @@ html, body {
   font-size: 16px; cursor: pointer;
 }
 
-/* ============================================================
-   RATING SHEET (10 stars)
-   ============================================================ */
+
 .rating-sheet-overlay {
   position: absolute; inset: 0; z-index: 200;
   background: rgba(0,0,0,0.6);
@@ -565,9 +555,7 @@ html, body {
   color: #1A1206; cursor: pointer;
 }
 
-/* ============================================================
-   POST CREATION MODAL
-   ============================================================ */
+
 .modal-overlay {
   position: absolute; inset: 0; z-index: 300;
   background: rgba(0,0,0,0.7);
@@ -833,9 +821,7 @@ input[type="color"] {
   cursor: not-allowed;
 }
 
-/* ============================================================
-   TEXT ANIMATION KEYFRAMES
-   ============================================================ */
+
 @keyframes textFade {
   from { opacity: 0; }
   to { opacity: 1; }
@@ -884,9 +870,7 @@ input[type="color"] {
   to   { opacity: 1; transform: scale(1); }
 }
 
-/* ============================================================
-   HELPERS
-   ============================================================ */
+
 .hidden { display: none !important; }
 .mb8 { margin-bottom: 8px; }
 .mb14 { margin-bottom: 14px; }
@@ -920,7 +904,7 @@ input[type="color"] {
 <body>
 <div class="app" id="app">
 
-  <!-- SHORTS VIEW -->
+  
   <div id="shortsView">
     <div class="shorts-topbar">
       <div class="shorts-logo" onclick="location.href='kitobho.html'">
@@ -944,7 +928,7 @@ input[type="color"] {
     <div class="shorts-container" id="shortsContainer"></div>
   </div>
 
-  <!-- GRID VIEW -->
+  
   <div id="gridView" class="hidden">
     <div class="grid-topbar">
       <div class="grid-header-row">
@@ -971,7 +955,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- COMMENTS SHEET -->
+  
   <div class="comments-sheet-overlay" id="commentsSheet">
     <div class="comments-sheet">
       <div class="sheet-handle"></div>
@@ -989,7 +973,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- RATING SHEET -->
+  
   <div class="rating-sheet-overlay" id="ratingSheet">
     <div class="rating-sheet">
       <div class="sheet-handle"></div>
@@ -1009,7 +993,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- POST CREATION MODAL -->
+  
   <div class="modal-overlay" id="postModal">
     <div class="modal-sheet">
       <div class="modal-topbar">
@@ -1022,7 +1006,7 @@ input[type="color"] {
         <button class="step-tab" data-step="3">3. Пешнамоиш</button>
       </div>
       <div class="modal-body" id="modalBody">
-        <!-- STEP 1 -->
+        
         <div class="step-panel active" id="step1">
           <label class="form-label mb8">Матни пост</label>
           <textarea class="form-textarea mb14" id="postContent" rows="4"
@@ -1037,7 +1021,7 @@ input[type="color"] {
             <button class="step-nav-btn next" id="step1Next" onclick="goStep(2)">Услуб →</button>
           </div>
         </div>
-        <!-- STEP 2 -->
+        
         <div class="step-panel" id="step2">
           <div class="style-section">
             <div class="style-section-title">🔤 Шрифт</div>
@@ -1069,7 +1053,7 @@ input[type="color"] {
             <button class="step-nav-btn next" onclick="goStep(3)">Пешнамоиш →</button>
           </div>
         </div>
-        <!-- STEP 3 -->
+        
         <div class="step-panel" id="step3">
           <div class="style-section-title mb8">👁 Пешнамоиш</div>
           <div class="preview-box" id="previewBox">
@@ -1106,7 +1090,7 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- Confirm dialog -->
+  
   <div class="confirm-overlay" id="confirmOverlay">
     <div class="confirm-box">
       <h4 id="confirmTitle"></h4>
@@ -1118,16 +1102,13 @@ input[type="color"] {
     </div>
   </div>
 
-  <!-- Toast -->
+  
   <div class="toast" id="toast"></div>
-</div><!-- /app -->
+</div>
 
 <script>
 'use strict';
 
-// ============================================================
-// CONFIG & GLOBALS
-// ============================================================
 const API_BASE = (typeof KITOB_CONFIG !== 'undefined') ? KITOB_CONFIG.NEON_API_BASE : '';
 const $ = id => document.getElementById(id);
 
@@ -1142,7 +1123,6 @@ let currentSearchFilter = 'all';
 let unsubscribePosts = null;
 let _loadingPosts = false;
 
-// Post creation state
 let postStyle = {
   font: 'Roboto',
   size: 14,
@@ -1153,9 +1133,6 @@ let postStyle = {
 let currentStep = 1;
 let previewCoverUrl = '';
 
-// ============================================================
-// FONTS, COLORS, ANIMATIONS
-// ============================================================
 const FONTS = [
   { name: 'Roboto',           label: 'Roboto',           preview: 'Китобхона' },
   { name: 'Open Sans',        label: 'Open Sans',        preview: 'Китобхона' },
@@ -1198,9 +1175,6 @@ const HASHTAG_SUGGESTIONS = [
   'тасдиқ','инспиратсия','мутолиа','нависанда',
 ];
 
-// ============================================================
-// UTILITIES
-// ============================================================
 function escHtml(s) {
   if (!s) return '';
   return String(s)
@@ -1245,9 +1219,6 @@ function showConfirmDialog(msg, title, okLabel) {
   });
 }
 
-// ============================================================
-// COVER / BOOK URL HELPERS
-// ============================================================
 function enc(p) {
   if (!p) return '';
   return String(p).split('/').map(encodeURIComponent).join('/');
@@ -1317,9 +1288,6 @@ function openBookFromPost(bookId, bookTitle, pdfUrl, coverUrl) {
   location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
 }
 
-// ============================================================
-// PARSE POST CONTENT
-// ============================================================
 function parsePostContent(raw) {
   if (!raw) return { text: '', style: {} };
   const SEP = '|||STYLE|||';
@@ -1345,9 +1313,6 @@ function buildPostContent(text, style) {
   return text + SEP + JSON.stringify(s);
 }
 
-// ============================================================
-// TEXT ANIMATION ENGINE
-// ============================================================
 function animateTextOverlay(el, text, style) {
   if (!el) return;
   const font = style.font || 'Roboto';
@@ -1462,9 +1427,6 @@ function animateTextOverlay(el, text, style) {
   }
 }
 
-// ============================================================
-// ЗАГРУЗКА СЕССИЙ И РЕЙТИНГА
-// ============================================================
 async function loadReadingSessions() {
   const token = getToken();
   if (!token) return;
@@ -1548,10 +1510,6 @@ async function loadBookRatings(bookIds) {
   }
 }
 
-// ============================================================
-// ПОРЯДОК ЛЕНТЫ: новые и ещё не просмотренные сначала,
-// затем случайная взвешенная выдача популярных постов.
-// ============================================================
 const FEED_SEEN_KEY = 'kk_seen_feed_posts';
 
 function getSeenFeedPosts() {
@@ -1594,15 +1552,10 @@ function orderFeedPosts(posts) {
   const seen = getSeenFeedPosts();
   const unseen = list.filter(post => !seen[String(post.id)]);
   const alreadySeen = list.filter(post => seen[String(post.id)]);
-  // Новые записи — от самой свежей к более старой.
   unseen.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
-  // Просмотренные — каждый раз в новом порядке, но популярные получают больший вес.
   return unseen.concat(weightedRandomPosts(alreadySeen));
 }
 
-// ============================================================
-// ЗАГРУЗКА ПОСТОВ
-// ============================================================
 async function loadPosts() {
   if (_loadingPosts) return;
   _loadingPosts = true;
@@ -1629,8 +1582,6 @@ async function loadPosts() {
       const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
       if (bookIds.length > 0) await loadBookRatings(bookIds);
       renderShorts();
-      // Показываем кэш сразу, но обязательно обновляем ленту с сервера,
-      // чтобы новый публичный пост не был скрыт до окончания TTL кэша.
       void loadPostsFromServer(true);
     } else {
       await loadPostsFromServer(false);
@@ -1702,9 +1653,6 @@ async function loadPostsFromServer(silent) {
   }
 }
 
-// ============================================================
-// RENDER SHORTS
-// ============================================================
 function renderShorts() {
   const container = $('shortsContainer');
   if (!container) return;
@@ -1761,11 +1709,11 @@ function buildSlide(post, idx) {
   const finalCoverUrl = cachedCover || cover;
 
   slide.innerHTML = `
-    <!-- Фон -->
+    
     <div class="slide-bg">
       ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
     </div>
-    <!-- Обложка -->
+    
     ${finalCoverUrl ? `
     <div class="slide-cover-center">
       <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
@@ -1773,7 +1721,7 @@ function buildSlide(post, idx) {
 
     <div class="slide-bottom-grad"></div>
 
-    <!-- Боковая панель -->
+    
     <div class="slide-sidebar">
       <div class="sidebar-btn" data-action="like" data-post="${post.id}">
         <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
@@ -1791,20 +1739,20 @@ function buildSlide(post, idx) {
       </div>
     </div>
 
-    <!-- Текст поста -->
+    
     <div class="slide-text-layer">
       <div class="slide-text-overlay"
         style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}">
       </div>
     </div>
 
-    <!-- Хэштеги -->
+    
     ${hashtags.length ? `
     <div class="slide-hashtags">
       ${hashtags.map(h => `<span class="slide-hashtag" data-hashtag="${escHtml(h)}">#${escHtml(h)}</span>`).join('')}
     </div>` : ''}
 
-    <!-- Нижняя строка: информация слева, кнопка удаления справа -->
+    
     <div class="slide-bottom-row">
       <div class="slide-bottom-info">
         <div class="info-line" data-userid="${userId}">
@@ -1821,7 +1769,6 @@ function buildSlide(post, idx) {
     </div>
   `;
 
-  // Обработчики боковых кнопок
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -1834,7 +1781,6 @@ function buildSlide(post, idx) {
     });
   });
 
-  // Пользователь → профиль
   const userLine = slide.querySelector('.slide-bottom-info .info-line[data-userid]');
   if (userLine) {
     userLine.addEventListener('click', () => {
@@ -1843,7 +1789,6 @@ function buildSlide(post, idx) {
     });
   }
 
-  // Название книги → читалка
   const bookLine = slide.querySelector('.slide-bottom-info .info-line[data-bookid]');
   if (bookLine) {
     bookLine.addEventListener('click', (e) => {
@@ -1856,7 +1801,6 @@ function buildSlide(post, idx) {
     });
   }
 
-  // Автор книги → сетка с фильтром
   const authorLine = slide.querySelector('.slide-bottom-info .info-line[data-author]');
   if (authorLine) {
     authorLine.addEventListener('click', (e) => {
@@ -1878,7 +1822,6 @@ function buildSlide(post, idx) {
     });
   }
 
-  // Хэштеги → сетка с фильтром
   slide.querySelectorAll('.slide-hashtag').forEach(el => {
     el.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1899,7 +1842,6 @@ function buildSlide(post, idx) {
     });
   });
 
-  // Кнопка удаления поста
   slide.querySelectorAll('.post-owner-actions .act-btn').forEach(btn => {
     btn.addEventListener('click', (e) => {
       e.stopPropagation();
@@ -1909,7 +1851,6 @@ function buildSlide(post, idx) {
     });
   });
 
-  // Предзагрузка обложки
   if (finalCoverUrl && CacheManager && typeof CacheManager.preloadCover === 'function') {
     CacheManager.preloadCover(finalCoverUrl);
   }
@@ -1933,9 +1874,6 @@ function renderShortsEmpty(msg) {
     </div>`;
 }
 
-// ============================================================
-// RENDER GRID
-// ============================================================
 function renderGrid(filter, query) {
   const cells = $('gridCells');
   let posts = [...postsData];
@@ -1991,9 +1929,6 @@ function openShortAtPost(postId) {
   }, 80);
 }
 
-// ============================================================
-// VIEW TOGGLE
-// ============================================================
 function showShorts() {
   $('shortsView').classList.remove('hidden');
   $('gridView').classList.add('hidden');
@@ -2021,9 +1956,6 @@ document.querySelectorAll('.filter-chip').forEach(chip => {
   });
 });
 
-// ============================================================
-// LIKE
-// ============================================================
 async function handleLike(postId) {
   const token = getToken();
   if (!token) { showToast('Лутфан ворид шавед'); return; }
@@ -2053,9 +1985,6 @@ function updateLikeUI(postId, liked, count) {
   if (cnt) cnt.textContent = count;
 }
 
-// ============================================================
-// COMMENTS
-// ============================================================
 function openComments(postId) {
   activePostId = postId;
   const overlay = $('commentsSheet');
@@ -2145,9 +2074,6 @@ $('commentSend').addEventListener('click', async () => {
   } catch { showToast('Хатогӣ'); }
 });
 
-// ============================================================
-// RATING
-// ============================================================
 function openRating(postId, bookId) {
   if (!bookId) { showToast('Китоб мавҷуд нест'); return; }
   activePostId = postId;
@@ -2192,9 +2118,6 @@ $('ratingSubmit').addEventListener('click', async () => {
   } catch (e) { showToast('Хатогӣ: ' + e.message); }
 });
 
-// ============================================================
-// УДАЛЕНИЕ ПОСТА
-// ============================================================
 async function deletePost(postId) {
   if (!await showConfirmDialog('Шумо воқеан мехоҳед ин постро нест кунед?', 'Нест кардани пост', 'Нест кунед')) return;
   const token = getToken();
@@ -2211,9 +2134,6 @@ async function deletePost(postId) {
   } catch(e) { showToast('Хатогӣ: ' + e.message); }
 }
 
-// ============================================================
-// POST MODAL – ШАГИ И ВАЛИДАЦИЯ
-// ============================================================
 function goStep(n) {
   if (n === 2) {
     const book_id = $('postBookSelect').value;
@@ -2242,13 +2162,10 @@ function updateSubmitButton() {
   const author = ($('postBookAuthor').value || '').trim();
   const bookReady = !!book_id && !!author;
 
-  // На второй шаг можно перейти только после выбора книги и автора.
   if (nextBtn) nextBtn.disabled = !bookReady;
-  // Кнопка публикации тоже неактивна без обязательных данных.
   if (submitBtn) submitBtn.disabled = !(bookReady && (text || book_id));
 }
 
-// Следим за изменениями полей
 document.addEventListener('DOMContentLoaded', function() {
   const content = $('postContent');
   const select = $('postBookSelect');
@@ -2258,9 +2175,6 @@ document.addEventListener('DOMContentLoaded', function() {
   if (author) author.addEventListener('input', updateSubmitButton);
 });
 
-// ============================================================
-// ПОСТРОЕНИЕ ВЫБОРА СТИЛЯ
-// ============================================================
 function buildFontGrid() {
   const grid = $('fontGrid');
   grid.innerHTML = '';
@@ -2381,9 +2295,6 @@ $('customColor').addEventListener('input', e => {
   document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
 });
 
-// ============================================================
-// ПРЕВЬЮ
-// ============================================================
 function updatePreview() {
   const text = ($('postContent').value || '').trim();
   const textEl = $('previewTextEl');
@@ -2402,9 +2313,6 @@ function updatePreview() {
   animateTextOverlay(textEl, text, postStyle);
 }
 
-// ============================================================
-// ДОСТУП К ПУБЛИКАЦИИ
-// ============================================================
 async function canPublishPost() {
   const token = getToken();
   const userId = localStorage.getItem('kk_user_id');
@@ -2434,8 +2342,6 @@ async function canPublishPost() {
   }
 }
 
-// ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ (только создание поста)
-// ============================================================
 async function openPostModal(bookId) {
   if (!await canPublishPost()) return;
   $('modalTitle').textContent = '📝 Эҷоди пост';
@@ -2502,9 +2408,6 @@ $('postModalClose').addEventListener('click', closePostModal);
 $('postModalCancel').addEventListener('click', closePostModal);
 $('postModal').addEventListener('click', e => { if (e.target === $('postModal')) closePostModal(); });
 
-// ============================================================
-// ОТПРАВКА НОВОГО ПОСТА (только POST)
-// ============================================================
 $('submitPostBtn').addEventListener('click', async function() {
   const text = ($('postContent').value || '').trim();
   const book_id = $('postBookSelect').value;
@@ -2548,16 +2451,10 @@ $('submitPostBtn').addEventListener('click', async function() {
   }
 });
 
-// ============================================================
-// КЛИК ПО ВКЛАДКАМ ШАГОВ
-// ============================================================
 document.querySelectorAll('.step-tab').forEach(tab => {
   tab.addEventListener('click', () => goStep(parseInt(tab.dataset.step)));
 });
 
-// ============================================================
-// ЗАПУСК
-// ============================================================
 document.addEventListener('DOMContentLoaded', () => {
   if (typeof CacheManager !== 'undefined') CacheManager.init?.();
 

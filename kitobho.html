@@ -9,9 +9,7 @@
 <script src="config.js"></script>
 <script src="cache.js"></script>
 <style>
-  /* ================================================================
-     ЕДИНЫЙ СТИЛЬ (все стили внутри)
-     ================================================================ */
+  
   * {
     margin: 0;
     padding: 0;
@@ -70,11 +68,11 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    border-radius: 0 !important; /* прямые углы */
+    border-radius: 0 !important; 
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
   }
 
-  /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+  
   .content-wrapper {
     flex: 1;
     overflow-y: auto;
@@ -88,7 +86,7 @@
   .content-wrapper::-webkit-scrollbar-track { background: transparent; }
   .content-wrapper::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
 
-  /* ===== STICKY HEADER (категории + подкатегории) ===== */
+  
   .sticky-header {
     position: sticky;
     top: 0;
@@ -97,7 +95,7 @@
     padding-top: 2px;
   }
 
-  /* ===== SHELF (КАТЕГОРИИ) ===== */
+  
   .shelf-section { padding: 10px 0 6px; }
   .shelf-wrap { position: relative; overflow: hidden; }
   .shelf-row {
@@ -176,7 +174,7 @@
     box-shadow: 0 4px 8px rgba(0,0,0,0.45);
   }
 
-  /* ===== ПОДКАТЕГОРИИ + ПОИСК ===== */
+  
   .subcategories-section {
     padding: 6px 0 6px;
     display: flex;
@@ -247,7 +245,7 @@
   }
   .kh-search input::placeholder { color: #8b7355; opacity: 0.6; }
 
-  /* ===== СЕТКА КНИГ ===== */
+  
   .books-section {
     padding: 8px 0 0;
   }
@@ -389,7 +387,7 @@
     background: var(--gold);
   }
 
-  /* ===== БЛОК ДЕЙСТВИЙ ПОВЕРХ ОБЛОЖКИ ===== */
+  
   .bk-actions {
     display: none;
     position: absolute;
@@ -479,9 +477,7 @@
     grid-column: 1 / -1;
   }
 
-  /* ================================================================
-     НАВИГАЦИЯ 430×52 (прямые углы) – единая для всех страниц
-     ================================================================ */
+  
   .nav-bottom {
     position: relative;
     width: 100%;
@@ -791,7 +787,7 @@
   .nav-item.active .person-small::before,
   .nav-item.active .person-small::after { background: #D9B23C; }
 
-  /* ===== СВЕТЛАЯ ТЕМА ===== */
+  
   .light-theme .shelf-fade { background: linear-gradient(90deg, transparent, var(--bg)); }
   .light-theme .shelf-board { background: linear-gradient(180deg, #b8953a, #8a6a2e); }
   .light-theme .kh-search { background: radial-gradient(ellipse at 30% 30%, #ffffff, #f0e6d0 80%); }
@@ -803,12 +799,12 @@
 
 <div class="app-container">
 
-  <!-- ===== ОСНОВНОЙ КОНТЕНТ (без верхней панели) ===== -->
+  
   <div class="content-wrapper" id="contentWrapper">
 
-    <!-- STICKY HEADER (категории + подкатегории) -->
+    
     <div class="sticky-header">
-      <!-- SHELF (категории) -->
+      
       <div class="shelf-section">
         <div class="shelf-wrap">
           <div class="shelf-row" id="shelfRow"><div class="loader" style="margin:10px auto;"></div></div>
@@ -817,7 +813,7 @@
         <div class="shelf-board"></div>
       </div>
 
-      <!-- ПОДКАТЕГОРИИ + ПОИСК -->
+      
       <div class="subcategories-section" id="subcatContainer">
         <div class="kh-search">
           <svg viewBox="0 0 24 24" fill="none" stroke="#8b7355" stroke-width="2.5">
@@ -829,7 +825,7 @@
       </div>
     </div>
 
-    <!-- BOOKS GRID -->
+    
     <div class="books-section">
       <div class="books-grid12" id="booksGrid">
         <div class="loader" style="grid-column:1/-1;"></div>
@@ -837,11 +833,11 @@
     </div>
   </div>
 
-  <!-- ===== НАВИГАЦИЯ (единая, 6 пунктов) ===== -->
+  
   <div class="nav-bottom">
     <div class="kh-nav2">
 
-      <!-- Асосӣ -->
+      
       <a class="nav-item" href="index.html" aria-label="Асосӣ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 11l9-8 9 8"></path>
@@ -851,7 +847,7 @@
         <span>Асосӣ</span>
       </a>
 
-      <!-- Китобхо (активный) -->
+      
       <a class="nav-item active" href="kitobho.html" aria-label="Китобхо">
         <div class="person-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -863,7 +859,7 @@
         <span>Китобхо</span>
       </a>
 
-      <!-- Ғолибон -->
+      
       <a class="nav-item" href="winners.html" aria-label="Ғолибон">
         <div class="crown-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -875,7 +871,7 @@
         <span>Ғолибон</span>
       </a>
 
-      <!-- Лента -->
+      
       <a class="nav-item" href="Lenta.html" aria-label="Лента">
         <div class="person-icon like-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -889,7 +885,7 @@
         <span>Лента</span>
       </a>
 
-      <!-- Чат -->
+      
       <a class="nav-item" href="chats.html" aria-label="Чат">
         <div class="users-wrap">
           <div class="person p1"></div>
@@ -899,7 +895,7 @@
         <span>Чат</span>
       </a>
 
-      <!-- Профил -->
+      
       <a class="nav-item" href="profile.html" aria-label="Профил">
         <div class="profile-wrap">
           <div class="person-group">
@@ -917,26 +913,17 @@
 </div>
 
 <script>
-  // ================================================================
-  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
-  // ================================================================
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();
     }
   });
 
-  // ================================================================
-  // ============ ТЕМА (скрытое переключение, без иконки) ============
-  // ================================================================
   (function initTheme() {
     const saved = localStorage.getItem('kk_theme') || 'dark';
     if (saved === 'light') document.body.classList.add('light-theme');
   })();
 
-  // ================================================================
-  // ============ ОСНОВНЫЕ ПЕРЕМЕННЫЕ (оригинальные) ============
-  // ================================================================
   const BOOKS_JSON_URLS = [
     'books.json?t=' + Date.now(),
     'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t=' + Date.now()
@@ -948,7 +935,6 @@
 
   function getCoverCacheMap() {
     try {
-      // Читаем из обоих ключей (старый + новый CacheManager)
       const map1 = JSON.parse(localStorage.getItem('kk_cover_cache') || '{}');
       const map2 = JSON.parse(localStorage.getItem('kk_cache_covers') || '{}');
       return Object.assign({}, map1, map2);
@@ -1031,7 +1017,6 @@
     });
   }
 
-  // ===== ЗАГРУЗКА BOOKS.JSON (оригинальная) =====
   async function fetchJsonFast(u, ms = 4500) {
     const ctrl = new AbortController();
     const t = setTimeout(() => ctrl.abort(), ms);
@@ -1121,7 +1106,6 @@
     return list;
   }
 
-  // ===== РЕЙТИНГ =====
   async function getBookStats(bookId) {
     if (!bookId) return null;
     try {
@@ -1133,7 +1117,6 @@
     } catch(e) { return null; }
   }
 
-  // ===== TOAST =====
   function toast(msg, d = 2400) {
     let t = document.querySelector('.toast');
     if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
@@ -1143,7 +1126,6 @@
     t._timer = setTimeout(() => t.classList.remove('show'), d);
   }
 
-  // ===== КЭШ =====
   function cachedMap() {
     try { return JSON.parse(localStorage.getItem('kk_cached_books') || '{}'); } catch(e) { return {}; }
   }
@@ -1154,7 +1136,6 @@
     const m = cachedMap(); delete m[url]; setCachedMap(m);
   }
 
-  // ===== RENDER BOOKS (оригинальная) =====
   function renderBooks(list) {
     const grid = document.getElementById('booksGrid');
     if (!list || !list.length) {
@@ -1172,7 +1153,6 @@
       const cover = coverList[0] || '';
       const coverSrc = getCachedCoverDataUrl(cover) || cover;
       const state = getBookAccessState(url);
-      // Единый ID книги для рейтинга и читалки: без начального `books/`.
       const rawBookId = folderFull ? (folderFull.replace(/\/+$/, '') + '/' + file) : (b.file || file);
       const bookId = rawBookId.replace(/^books\//i, '');
       const bgColor = randomColor();
@@ -1186,7 +1166,7 @@
           <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>
           <div class="rating-badge">⭐ ...</div>
           ${sizeMB ? `<div class="size-badge">${sizeMB} МБ</div>` : ''}
-          <!-- Блок действий поверх обложки -->
+          
           <div class="bk-actions" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-bookid="${encodeURIComponent(bookId)}">
             <button class="btn btn-close-actions" onclick="event.stopPropagation(); closeActiveActions();">✕</button>
             <button class="btn btn-primary btn-read">📖 Хондан</button>
@@ -1201,7 +1181,6 @@
 
     hydrateBookCardCovers(grid);
 
-    // Предзагружаем обложки в кэш
     grid.querySelectorAll('img[data-cover-url]').forEach(img => {
       const cover = img.getAttribute('data-cover-url') || '';
       if (cover && CacheManager && typeof CacheManager.preloadCover === 'function') {
@@ -1209,7 +1188,6 @@
       }
     });
 
-    // Рейтинги (загружаются асинхронно в фоне, не блокируя UI)
     document.querySelectorAll('.bk').forEach((el) => {
       const bookId = decodeURIComponent(el.dataset.bookid);
       if (!bookId) return;
@@ -1226,7 +1204,6 @@
       });
     });
 
-    // Обработчики кнопок
     document.querySelectorAll('.bk-actions').forEach(actions => {
       const url = decodeURIComponent(actions.dataset.url);
       const name = decodeURIComponent(actions.dataset.name);
@@ -1259,7 +1236,6 @@
     });
   }
 
-  // ===== ОБРАБОТЧИКИ ДЕЙСТВИЙ (оригинальные) =====
   function handleFavorite(bookId, book, name, btn) {
     const token = localStorage.getItem('kk_token');
     if (!token) { toast('Лутфан ворид шавед'); return; }
@@ -1338,7 +1314,6 @@
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
-  // ===== УПРАВЛЕНИЕ АКТИВНЫМИ КНОПКАМИ =====
   function closeActiveActions() {
     if (activeBookElement) {
       const actions = activeBookElement.querySelector('.bk-actions');
@@ -1363,7 +1338,6 @@
     if (!e.target.closest('.bk')) closeActiveActions();
   });
 
-  // ===== КАТЕГОРИИ =====
   function renderCategories(cats) {
     const row = document.getElementById('shelfRow');
     row.innerHTML = cats.map((c, i) => {
@@ -1438,7 +1412,6 @@
     }
   }
 
-  // ===== ПОДКАТЕГОРИИ =====
   function renderSubcategories(cat) {
     const container = document.getElementById('subcatContainer');
     const search = container.querySelector('.kh-search');
@@ -1476,16 +1449,13 @@
     }
   }
 
-  // ===== ЗАГРУЗКА КНИГ (с кэшированием) =====
   async function loadBooksForSubcategory(sub) {
     const grid = document.getElementById('booksGrid');
     const cacheKey = 'kk_books_' + sub.folder;
-    // Пытаемся взять из кэша
     let list = CacheManager ? CacheManager.get(cacheKey) : null;
     if (list && list.length) {
       books = list;
       renderBooks(list);
-      // Обновляем в фоне
       fetchManifest(sub).then(fresh => {
         if (fresh && fresh.length) {
           if (CacheManager) CacheManager.set(cacheKey, fresh);
@@ -1495,7 +1465,6 @@
       }).catch(() => {});
       return;
     }
-    // Если нет в кэше – загружаем
     grid.innerHTML = '<div class="loader" style="grid-column:1/-1;"></div>';
     try {
       list = await fetchManifest(sub);
@@ -1507,7 +1476,6 @@
     }
   }
 
-  // ===== ПОИСК =====
   const searchInput = document.getElementById('searchInput');
   let searchDebounceTimer = null;
   searchInput.addEventListener('input', function() {
@@ -1523,7 +1491,6 @@
     }, 180);
   });
 
-  // ===== ЗАПУСК =====
   (async function init() {
     try {
       await loadBooksJson();
@@ -1535,7 +1502,6 @@
     }
   })();
 
-  // ===== ВСПОМОГАТЕЛЬНАЯ esc =====
   function esc(str) {
     if (!str) return '';
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');

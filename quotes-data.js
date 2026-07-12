@@ -1,4 +1,3 @@
-// quotes-data.js — 50 цитат из официальных материалов president.tj
 window.QUOTES = [
   {
     "id": 1,

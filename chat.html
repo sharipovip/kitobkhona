@@ -10,7 +10,7 @@
   <script src="cache.js"></script>
   <link rel="stylesheet" href="assets/css/index.css">
   <style>
-    /* ===== СТИЛИ ЧАТА ===== */
+    
     @import url('https://fonts.googleapis.com/css2?family=Noto+Sans:wght@400;500;600;700&display=swap');
 
     :root {
@@ -406,7 +406,7 @@
       background: #f0f0f0;
     }
 
-    /* ===== ПАНЕЛЬ ЭМОДЖИ ===== */
+    
     .emoji-panel {
       display: none;
       position: absolute;
@@ -444,7 +444,7 @@
       50% { opacity: 1; }
     }
 
-    /* Кастомный диалог подтверждения */
+    
     .confirm-overlay {
       position: fixed;
       inset: 0;
@@ -511,7 +511,7 @@
 
   <main class="main-content">
     <div class="chat-container">
-      <!-- Шапка чата -->
+      
       <div class="chat-header">
         <div class="head-avatar" id="chatAvatar">👤</div>
         <div class="head-info">
@@ -521,7 +521,8 @@
           </div>
           <div class="head-status" id="headStatus">
             <span class="online-dot"></span>
-            <span>Дӯст</span>
+            <span id="friendStatusLabel">Дӯст</span>
+            <span id="typingIndicator" style="display:none;color:#25D366;font-weight:700">Навишта истодааст...</span>
             <span class="word-badge" id="wordCounter">Шумо метавонед 100 калимаи дигар фиристед</span>
             <span class="chat-closed-badge" id="chatClosedBadge">🔒 Чат баста</span>
           </div>
@@ -544,12 +545,12 @@
         </div>
       </div>
 
-      <!-- Область сообщений -->
+      
       <div class="messages" id="messages">
         <div class="loading-msg"><div class="spinner"></div> Боргирӣ...</div>
       </div>
 
-      <!-- Композер -->
+      
       <div class="composer" id="composer">
         <div id="emojiPanel" class="emoji-panel"></div>
         <div class="input-row">
@@ -566,9 +567,6 @@
 </div>
 
 <script>
-  // ================================================================
-  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
-  // ================================================================
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();
@@ -576,9 +574,6 @@
     init();
   });
 
-  // ================================================================
-  // ============ ОСНОВНОЙ КОД ЧАТА С КЭШИРОВАНИЕМ ============
-  // ================================================================
   const qs = new URL(location.href).searchParams;
   const peerId = qs.get('to') || '';
   const peerName = decodeURIComponent(qs.get('name') || 'Чат');
@@ -587,15 +582,15 @@
 
   let currentUserId = null;
   let pollInterval = null;
+  let typingInterval = null;
   let pendingOutgoingCount = 0;
+  let typingTimer = null;
   let chatIsOpen = true; // по умолчанию открыт
 
-  // Ключ кэша для сообщений
   function getCacheKey() {
     return 'kk_chat_messages_' + peerId;
   }
 
-  // ===== МЕНЮ =====
   const menuBtn = document.getElementById('menuBtn');
   const popupMenu = document.getElementById('popupMenu');
 
@@ -617,7 +612,6 @@
     }
   });
 
-  // ===== УДАЛИТЬ ЧАТ =====
   function showToast(msg) {
     let t = document.getElementById('chatToast');
     if (!t) {
@@ -671,7 +665,6 @@
     }
   }
 
-  // ===== ОЧИСТИТЬ ЧАТ =====
   async function clearChatLocal() {
     popupMenu.classList.remove('open');
     if (!await showConfirm('Оё мехоҳед ҳамаи паёмҳои ин чатро тоза кунед?', 'Тоза кунед', false)) return;
@@ -693,7 +686,6 @@
     }
   }
 
-  // ===== ПОЖАЛОВАТЬСЯ =====
   async function reportUser() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
@@ -706,7 +698,6 @@
     }
   }
 
-  // ===== ПОЛУЧЕНИЕ СТАТУСА ЧАТА =====
   async function fetchChatStatus() {
     try {
       const token = localStorage.getItem('kk_token');
@@ -735,10 +726,8 @@
     }
   }
 
-  // ===== ЗАГРУЗКА СООБЩЕНИЙ (С КЭШИРОВАНИЕМ) =====
   async function refreshMessagesFromServer(keepScroll = true, cachedMsgs = null) {
     const msgContainer = document.getElementById('messages');
-    // Не заменяем DOM во время отправки: иначе сообщение визуально исчезает.
     if (pendingOutgoingCount > 0) return;
     try {
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
@@ -750,7 +739,6 @@
         return;
       }
       if (CacheManager) CacheManager.set(getCacheKey(), msgs);
-      // Не перерисовываем если есть временные сообщения (с sending-dots)
       if (msgContainer.querySelector('.sending-dots')) return;
       renderMessages(msgs, msgContainer);
       if (!keepScroll) scrollToBottom();
@@ -779,7 +767,6 @@
       }
       currentUserId = data.user.id;
 
-      // Параллельно поднимаем дополнительную информацию, но не блокируем рендер.
       void (async () => {
         try {
           const peerProfile = await AUTH.getProfileFromRailway(peerId);
@@ -791,9 +778,7 @@
         } catch (e) {}
       })();
 
-     // void fetchChatStatus();
 
-      // Пытаемся сразу показать сообщения из кэша.
       let cachedMsgs = null;
       if (CacheManager) {
         cachedMsgs = CacheManager.get(getCacheKey());
@@ -810,7 +795,6 @@
         msgContainer.innerHTML = '<div class="loading-msg">Открываем чат…</div>';
       }
 
-      // Обновляем в фоне, не блокируя интерфейс.
       void refreshMessagesFromServer(keepScroll, cachedMsgs);
 
     } catch (e) {
@@ -822,7 +806,6 @@
     }
   }
 
-  // ===== РЕНДЕРИНГ СООБЩЕНИЙ =====
   function renderMessages(msgs, container) {
     if (!msgs || msgs.length === 0) {
       container.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
@@ -833,7 +816,6 @@
     msgs.forEach(m => {
       const isMine = String(m.sender_id) === String(currentUserId);
       const time = timeLabel(m.created_at);
-      // Сообщение, полученное с сервера, уже доставлено: показываем две галочки.
       const checkHtml = `<span class="check delivered" title="Доставлено">✓✓</span>`;
       const dateLabel = formatDate(m.created_at);
       if (dateLabel !== lastDate) {
@@ -897,7 +879,33 @@
     } catch (e) {}
   }
 
-  // ===== ОТПРАВКА СООБЩЕНИЯ (с обновлением кэша) =====
+  async function sendTypingState(typing) {
+    const token = localStorage.getItem('kk_token');
+    if (!token || !peerId) return;
+    try {
+      await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/typing', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ receiver_id: peerId, typing })
+      });
+    } catch (e) {}
+  }
+
+  async function refreshTypingIndicator() {
+    const token = localStorage.getItem('kk_token');
+    const indicator = document.getElementById('typingIndicator');
+    const status = document.getElementById('friendStatusLabel');
+    if (!token || !indicator || !status || !peerId) return;
+    try {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/typing/' + encodeURIComponent(peerId), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = r.ok ? await r.json() : { typing: false };
+      indicator.style.display = data.typing ? 'inline' : 'none';
+      status.style.display = data.typing ? 'none' : 'inline';
+    } catch (e) {}
+  }
+
   async function sendMessage() {
     if (!chatIsOpen) {
       showToast('Чат баста шудааст');
@@ -932,7 +940,6 @@
     textEl.querySelector('.bubble-text').textContent = text;
     const meta = document.createElement('div');
     meta.className = 'bubble-meta';
-    // Пока запрос выполняется — одна галочка. Никакого исчезновения текста.
     meta.innerHTML = time + ' <span class="check pending" title="Отправляется">✓</span>';
     bubble.appendChild(textEl);
     bubble.appendChild(meta);
@@ -943,7 +950,6 @@
 
     try {
       const sentMsg = await ChatAPI.sendMessage(currentUserId, peerId, text);
-      // Сервер принял сообщение — меняем одну галочку на две.
       const pendingCheck = meta.querySelector('.check.pending');
       if (pendingCheck) {
         pendingCheck.className = 'check delivered';
@@ -958,8 +964,6 @@
           CacheManager.set(cacheKey, cached);
         }
       }
-      // Не перерисовываем весь чат сразу после отправки: это убирает мигание.
-      // Серверные изменения будут получены следующим polling-запросом.
       updateWordCounter();
     } catch (e) {
       const pendingCheck = meta.querySelector('.check.pending');
@@ -974,7 +978,6 @@
     }
   }
 
-  // ===== ЭМОДЖИ =====
   const EMOJIS = [
     '😀','😂','😄','😆','😉','😊','😍','😎','😐','😒',
     '😔','😕','😘','😚','😜','😟','😢','😥','😨','😭',
@@ -1015,6 +1018,13 @@
   document.getElementById('msgInput').addEventListener('input', function() {
     this.style.height = '0';
     this.style.height = Math.min(this.scrollHeight, 110) + 'px';
+    clearTimeout(typingTimer);
+    if (this.value.trim()) {
+      sendTypingState(true);
+      typingTimer = setTimeout(() => sendTypingState(false), 1200);
+    } else {
+      sendTypingState(false);
+    }
   });
 
   function goBack() {
@@ -1024,10 +1034,14 @@
 
   function startPolling() {
     if (pollInterval) clearInterval(pollInterval);
+    if (typingInterval) clearInterval(typingInterval);
     pollInterval = setInterval(() => {
       if (document.hidden) return;
       loadMessages(true);
     }, 5000);
+    typingInterval = setInterval(() => {
+      if (!document.hidden) refreshTypingIndicator();
+    }, 1500);
   }
 
   async function init() {
@@ -1043,6 +1057,9 @@
 
   window.addEventListener('beforeunload', () => {
     if (pollInterval) clearInterval(pollInterval);
+    if (typingInterval) clearInterval(typingInterval);
+    clearTimeout(typingTimer);
+    sendTypingState(false);
   });
 
   function esc(str) {

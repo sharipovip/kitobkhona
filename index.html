@@ -22,7 +22,7 @@
 <main class="main-content">
 <section class="hero-section"><div class="hero-kicker" id="heroKicker">Суханҳои Пешвои муаззами миллат дар бораи <b>маориф</b></div><div class="hero-inner"><div class="president-photo-wrap"><div class="president-photo"><img id="heroImg" src="assets/hero/01-president-official.jpg" alt="Пешвои миллат" loading="eager"></div></div><div class="hero-quote-block"><div class="hero-quote-text" id="heroQuote" style="transition: all 0.3s ease;">Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад</div></div></div><div class="hero-flag-stripe"></div><div id="heroTag" style="display:none"></div><div class="hero-dots" id="heroDots"></div></section>
 
-<!-- Блок активного объявления -->
+
 <div id="announcementBanner" style="display:none; background:linear-gradient(135deg,#1A3A5C,#2A5298); padding:12px 16px; border-radius:12px; margin:0 12px 12px; color:#fff; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
   <div style="display:flex; align-items:center; gap:8px;">
     <span style="font-size:20px;">📢</span>
@@ -31,7 +31,7 @@
   </div>
 </div>
 
-<!-- Уведомление об обновлении цитат -->
+
 <div id="quotesUpdatedBanner" style="display:none; background:#2E7D32; padding:8px 16px; border-radius:10px; margin:0 12px 12px; color:#fff; font-size:13px; text-align:center;">
   ✅ Цитаты были обновлены! (страница обновлена)
 </div>
@@ -45,7 +45,7 @@
 <div class="categories-section"><div class="section-row"><div class="section-title">📂 Категорияҳо</div><button class="see-all-btn" onclick="location.href='kitobho.html'">Ҳама</button></div><div class="categories-grid" id="catGrid"><div class="loader"></div></div></div>
 </main>
 
-<!-- ===== ФИКСИРОВАННАЯ ОБЁРТКА ДЛЯ НАВИГАЦИИ ===== -->
+
 <div class="nav-fixed-wrapper">
   <div class="nav-bottom" id="navBottom">
     <div class="kh-nav2">
@@ -113,16 +113,10 @@
 
 </div>
 <script>
-// ================================================================
-// ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
-// ================================================================
 document.addEventListener('DOMContentLoaded', () => {
   CacheManager.init();
 });
 
-// ================================================================
-// ============ ОСНОВНЫЕ КОНСТАНТЫ И ПЕРЕМЕННЫЕ ============
-// ================================================================
 const BOOKS_JSON_URLS = [
   'books.json?t=' + Date.now(),
   'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t=' + Date.now()
@@ -131,7 +125,6 @@ const $ = id => document.getElementById(id);
 const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
 let DATA = null;
 
-// Функции кэширования обложек теперь в CacheManager
 const getCachedCoverDataUrl = (url) => CacheManager?.getCachedCover(url) || '';
 const setCachedCoverDataUrl = (url, dataUrl) => CacheManager?.setCachedCover(url, dataUrl);
 const ensureCoverDataUrl = async (url, imgEl) => {
@@ -172,7 +165,6 @@ function hydrateBookCardCovers(root = document) {
    });
  }
 
-// ============ ТЕМА ============
 function theme(t) {
   document.body.classList.toggle('light-theme', t === 'light');
   localStorage.setItem('kk_theme', t);
@@ -181,9 +173,6 @@ function theme(t) {
 $('themeBtn').onclick = () => theme(localStorage.getItem('kk_theme') === 'light' ? 'dark' : 'light');
 theme(localStorage.getItem('kk_theme') || 'dark');
 
-// ================================================================
-// ============ СЛАЙДЕР ЦИТАТ ============
-// ================================================================
 let hero = window.QUOTES || [];
 if (!hero.length) {
   hero = [
@@ -271,9 +260,6 @@ if (window.location.search.includes('quotes_updated')) {
   setTimeout(() => banner.style.display = 'none', 5000);
 }
 
-// ================================================================
-// ============ ОСТАЛЬНЫЕ ФУНКЦИИ (С КЭШЕМ) ============
-// ================================================================
 async function loadAnnouncementCached() {
   let data = CacheManager.get(CacheManager.KEYS.ANNOUNCEMENT);
   if (!data) {
@@ -307,7 +293,6 @@ async function updateNotifBadge() {
     }
   } catch (e) { badge.style.display = 'none'; }
 }
-// ===== Центр уведомлений =====
 function showNotificationsModal(items) {
   let old = document.getElementById('notifModal');
   if (old) old.remove();
@@ -345,7 +330,6 @@ $('notifBtn')?.addEventListener('click', async function() {
   try {
     const notifications = await getNotifications();
     showNotificationsModal(notifications);
-    // помечаем прочитанными
     for (const n of notifications) {
       if (!n.is_read) markNotificationRead(n.id);
     }
@@ -528,7 +512,6 @@ $('homeSearch').addEventListener('input', () => {
   searchTimer = setTimeout(() => searchHome($('homeSearch').value), 350);
 });
 
-// ============ ЗАГРУЗКА КАТЕГОРИЙ С КЭШЕМ ============
 function renderCategories(cats) {
   const grid = $('catGrid');
   if (!cats || !cats.length) {
@@ -553,7 +536,6 @@ async function loadHome() {
     const homeCategories = categories.filter(c => c.id !== 'peshvoi_millat');
     renderCategories(homeCategories);
 
-    // Книги Пешвои Миллат – расширенный поиск
     const priority = categories.find(c => c.id === 'peshvoi_millat') ||
                      categories.find(c => c.id === 'president') ||
                      categories.find(c => /пешвои|президент|president|peshvoi|эмомали/i.test([c.name, c.id].join(' ')));
@@ -592,7 +574,6 @@ async function loadHome() {
     console.error('loadHome error', e);
   }
 
-  // Популярные книги с кэшем
   await loadPopularBooksCached();
 }
 
@@ -655,7 +636,6 @@ function renderPopularBooks(books) {
   }).join('');
   $('popBooks').innerHTML = html;
   hydrateBookCardCovers($('popBooks'));
-  // Предзагрузка обложек в кэш
   $('popBooks').querySelectorAll('img[data-cover-url]').forEach(img => {
     const c = img.getAttribute('data-cover-url');
     if (c && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(c);
@@ -713,34 +693,27 @@ function esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-// ================================================================
-// ============ ЗАПУСК (С ПРОВЕРКОЙ НА ANDROID) ============
-// ================================================================
 
 loadAnnouncementCached();
 updateNotifBadge();
 loadContinue();
 loadHome();
 
-// --- Service Worker + FCM ---
 const isAndroidApp = (typeof AndroidBridge !== 'undefined' || navigator.userAgent.includes('KitobkhonaApp'));
 
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js', { scope: './' })
     .then(reg => {
       if (!isAndroidApp) {
-        // Инициализируем FCM после успешной регистрации SW
         setTimeout(() => initFirebaseMessaging(), 800);
       }
     })
     .catch(err => {
-      // SW registration failed
     });
 } else if (!isAndroidApp) {
   initFirebaseMessaging();
 }
 
-// ============ ПЕРЕДАЁМ USER_ID И AUTH_TOKEN В ANDROID ============
 if (typeof AndroidBridge !== 'undefined') {
     const userId = localStorage.getItem('kk_user_id');
     const authToken = localStorage.getItem('kk_token');

@@ -6,9 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <script src="config.js"></script>
 <style>
-  /* ================================================================
-     ЕДИНЫЙ СТИЛЬ (все стили внутри)
-     ================================================================ */
+  
   * {
     margin: 0;
     padding: 0;
@@ -71,11 +69,11 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    border-radius: 0 !important; /* прямые углы */
+    border-radius: 0 !important; 
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
   }
 
-  /* ===== ВЕРХНЯЯ ПАНЕЛЬ (как в Lenta) ===== */
+  
   .top-app-bar {
     display: flex;
     align-items: center;
@@ -121,7 +119,7 @@
     background: var(--card2);
   }
 
-  /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+  
   .screen-area {
     flex: 1 1 auto;
     overflow: hidden;
@@ -147,7 +145,7 @@
     border-radius: 2px;
   }
 
-  /* ===== ОРИГИНАЛЬНЫЕ СТИЛИ (адаптированы) ===== */
+  
   .choice-screen {
     display: flex;
     flex-direction: column;
@@ -505,7 +503,7 @@
     to { transform: rotate(360deg); }
   }
 
-  /* ===== МОДАЛ ЗАБЫЛ ПАРОЛЬ ===== */
+  
   .reset-overlay {
     position: fixed;
     inset: 0;
@@ -575,7 +573,7 @@
 
 <div class="app">
 
-  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+  
   <div class="top-app-bar">
     <div class="brand-mini">
       <svg viewBox="0 0 48 48" fill="none">
@@ -590,11 +588,11 @@
     </div>
   </div>
 
-  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  
   <div class="screen-area">
     <div class="screen" id="loginScreen">
 
-      <!-- ЭКРАН ВЫБОРА -->
+      
       <div class="choice-screen" id="choiceScreen">
         <h2>Ба Китобхона хуш омадед! 📚</h2>
         <p>Шумо метавонед ҳамчун <b>меҳмон</b> ворид шавед ё <b>ҳисоби шахсӣ</b> созед.</p>
@@ -607,7 +605,7 @@
         </div>
       </div>
 
-      <!-- ФОРМЫ ВХОДА / РЕГИСТРАЦИИ -->
+      
       <div class="tabs" id="tabs">
         <div class="tab-thumb"></div>
         <div class="tab active" id="tabLogin" data-mode="login">Вуруд</div>
@@ -654,14 +652,14 @@
     </div>
   </div>
 
-  <!-- ===== ФУТЕР С КНОПКОЙ ===== -->
+  
   <div class="footer" id="formFooter">
     <button class="cta" id="ctaBtn">Ворид шудан</button>
   </div>
 
 </div>
 
-<!-- МОДАЛ ЗАБЫЛ ПАРОЛЬ -->
+
 <div class="reset-overlay" id="resetOverlay">
   <div class="reset-card">
     <h3>Барқарорсозии рамз</h3>
@@ -684,7 +682,6 @@
   }
   function clearMsg(){ el('msg').className = 'msg'; }
 
-  // ===== ВЫБОР ГОСТЯ =====
   async function chooseGuest() {
     try {
       el('choiceScreen').style.display = 'none';
@@ -749,7 +746,6 @@
     btn.querySelector('svg').setAttribute('stroke', isPw ? '#E8C879' : '#6E7F97');
   }
 
-  // ==================== ИСПРАВЛЕННАЯ ФУНКЦИЯ ВХОДА ====================
   async function doLogin() {
     const identifier = el('loginIdentifier').value.trim();
     const password = el('pwLogin').value;
@@ -768,7 +764,6 @@
         role = payload.role || 'user';
       } catch (e) {}
 
-      // ===== РЕДИРЕКТ В ЗАВИСИМОСТИ ОТ РОЛИ =====
       setTimeout(function() {
         if (role === 'admin') {
           window.location.href = 'admin.html';
@@ -787,7 +782,6 @@
     }
   }
 
-  // ==================== РЕГИСТРАЦИЯ ====================
   async function doRegister() {
     const name = el('regName').value.trim();
     const surname = el('regSurname').value.trim();
@@ -864,7 +858,6 @@
     else doRegister();
   });
 
-  // ===== ЗАБЫЛ ПАРОЛЬ =====
   function openReset() {
     el('resetOverlay').classList.add('open');
     el('resetStatus').textContent = ''; el('resetStatus').className = 'reset-status';
@@ -906,7 +899,6 @@
     } catch (e) { el('resetStatus').textContent = 'Хатогӣ: ' + e.message; el('resetStatus').className = 'reset-status bad'; }
   }
 
-  // ==================== АВТО-РЕДИРЕКТ (ОБНОВЛЁН) ====================
   (async function() {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
@@ -916,7 +908,6 @@
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (r.ok) {
-          // ===== ПАРСИМ РОЛЬ =====
           let role = 'user';
           try {
             const payload = JSON.parse(atob(token.split('.')[1]));

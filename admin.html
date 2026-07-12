@@ -217,7 +217,7 @@ input:checked + .slider:before{transform:translateX(18px);}
   main{padding:18px 16px 50px;}
 }
 
-/* === Стили для редактора цитат === */
+
 .quote-item {
   border:1px solid var(--border-color);
   border-radius:8px;
@@ -282,7 +282,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </div>
     </div>
 
-    <!-- ---- DASHBOARD ---- -->
+    
     <section class="section active" data-page="dashboard">
       <div class="grid grid-kpi" id="kpiRow" style="margin-bottom:18px;"></div>
       <div class="grid grid-2" style="margin-bottom:16px;">
@@ -298,7 +298,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </div>
     </section>
 
-    <!-- ---- USERS ---- -->
+    
     <section class="section" data-page="users">
       <div class="toolbar">
         <input type="text" class="search-input" id="userSearch" placeholder="Поиск по логину или имени…">
@@ -310,7 +310,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </table></div></div>
     </section>
 
-    <!-- ---- REPORTS ---- -->
+    
     <section class="section" data-page="reports">
       <div class="card"><div class="table-wrap"><table>
         <thead><tr><th>От кого</th><th>На кого</th><th>Причина</th><th>Статус</th><th>Дата</th><th></th></tr></thead>
@@ -318,7 +318,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </table></div></div>
     </section>
 
-    <!-- ---- BLOCKED ---- -->
+    
     <section class="section" data-page="blocked">
       <div class="card"><div class="table-wrap"><table>
         <thead><tr><th>ID</th><th>Логин</th><th>Имя</th><th>Город</th><th>Зарегистрирован</th><th></th></tr></thead>
@@ -326,7 +326,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </table></div></div>
     </section>
 
-    <!-- ---- FEEDBACKS (ОБНОВЛЁН) ---- -->
+    
     <section class="section" data-page="feedbacks">
       <div class="toolbar">
         <select id="fbCategoryFilter" style="padding:9px 12px;border:1px solid var(--border);border-radius:7px;">
@@ -337,7 +337,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       <div id="feedbackList"><div class="empty">Загрузка…</div></div>
     </section>
 
-    <!-- ---- QUOTES (ЛОКАЛЬНЫЙ РЕДАКТОР) ---- -->
+    
     <section class="section" data-page="quotes">
       <div class="card" style="margin-bottom:16px;">
         <div style="display:flex; align-items:center; flex-wrap:wrap; gap:12px;">
@@ -357,7 +357,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </div>
     </section>
 
-    <!-- ---- ANNOUNCEMENT (с длительностью) ---- -->
+    
     <section class="section" data-page="announce">
       <div class="grid grid-2">
         <div class="card">
@@ -391,7 +391,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </div>
     </section>
 
-    <!-- ---- SCHEDULE (УВЕДОМЛЕНИЯ) ---- -->
+    
     <section class="section" data-page="schedule">
       <div class="grid grid-2">
         <div class="card">
@@ -431,7 +431,7 @@ input:checked + .slider:before{transform:translateX(18px);}
       </div>
     </section>
 
-    <!-- ---- BOOKS ---- -->
+    
     <section class="section" data-page="books">
       <div class="toolbar">
         <select id="booksPeriod">
@@ -451,7 +451,7 @@ input:checked + .slider:before{transform:translateX(18px);}
 </div>
 
 <script>
-/* ===================== ТЕМА ===================== */
+
 (function initTheme() {
   const saved = localStorage.getItem('admin_theme') || 'light';
   document.documentElement.setAttribute('data-theme', saved);
@@ -466,10 +466,10 @@ document.getElementById('themeToggle').addEventListener('click', function() {
   this.textContent = next === 'dark' ? '☀️' : '🌙';
 });
 
-/* ===================== CONFIG ===================== */
+
 const API_BASE = 'https://kitobkhona-chat.onrender.com';
 
-/* ===================== AUTH CHECK ===================== */
+
 (function checkAdminAuth() {
   const token = localStorage.getItem('kk_token');
   if (!token) { location.href = 'login.html'; return; }
@@ -479,7 +479,7 @@ const API_BASE = 'https://kitobkhona-chat.onrender.com';
   } catch(e) { location.href = 'login.html'; }
 })();
 
-/* ===================== HELPERS ===================== */
+
 async function api(path, method = 'GET', body = null){
   const token = localStorage.getItem('kk_token');
   const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
@@ -509,12 +509,12 @@ function escapeHtml(s){
 }
 function escAttr(s){ return escapeHtml(s); }
 
-/* ===================== BOOT ===================== */
+
 document.getElementById('pageDate').textContent = new Date().toLocaleDateString('ru-RU', { day:'numeric', month:'long', year:'numeric' });
 document.getElementById('footDate').textContent = new Date().toLocaleDateString('ru-RU', { day:'numeric', month:'short', year:'numeric' });
 loadDashboard();
 
-/* ===================== NAVIGATION ===================== */
+
 const pageTitles = {
   dashboard:'Дэшборд', users:'Пользователи', reports:'Жалобы', blocked:'Заблокированные',
   feedbacks:'Обращения', quotes:'Цитаты президента', announce:'Объявление',
@@ -532,7 +532,7 @@ document.getElementById('navlist').addEventListener('click', (e) => {
   if (loaders[page]) loaders[page]();
 });
 
-/* ===================== DASHBOARD ===================== */
+
 let charts = {};
 function destroyChart(key){ if (charts[key]) { charts[key].destroy(); delete charts[key]; } }
 
@@ -620,7 +620,7 @@ function renderTopBooks(list){
     <span class="mono">♥ ${b.total_likes}</span></div>`).join('');
 }
 
-/* ===================== USERS ===================== */
+
 let allUsers = [];
 async function loadUsers(){
   try {
@@ -687,7 +687,7 @@ document.getElementById('usersBody').addEventListener('click', async (e) => {
   } catch (err) { toast(err.message, true); }
 });
 
-/* ===================== REPORTS ===================== */
+
 async function loadReports(){
   try {
     const list = await api('/api/admin/reports');
@@ -709,7 +709,7 @@ document.getElementById('reportsBody').addEventListener('click', async (e) => {
   catch (err) { toast(err.message, true); }
 });
 
-/* ===================== BLOCKED ===================== */
+
 async function loadBlocked(){
   try {
     const list = await api('/api/admin/blocked');
@@ -728,7 +728,7 @@ document.getElementById('blockedBody').addEventListener('click', async (e) => {
   catch (err) { toast(err.message, true); }
 });
 
-/* ===================== FEEDBACKS (ОБНОВЛЁН) ===================== */
+
 async function loadFeedbacks(){
   try {
     const list = await api('/api/feedbacks');
@@ -762,7 +762,6 @@ async function renderFeedbacks(list, filterCat){
 
 document.getElementById('refreshFb').addEventListener('click', loadFeedbacks);
 
-// Обработчик кликов
 document.getElementById('feedbackList').addEventListener('click', async (e) => {
   const btn = e.target.closest('button');
   if (!btn) return;
@@ -794,9 +793,7 @@ document.getElementById('feedbackList').addEventListener('click', async (e) => {
   }
 });
 
-/* ================================================================
-   ==================== QUOTES (ЛОКАЛЬНЫЙ РЕДАКТОР) ====================
-   ================================================================ */
+
 let localQuotes = [];
 let dragSrcIndex = null;
 
@@ -980,9 +977,7 @@ document.getElementById('fontDec').addEventListener('click', () => {
   document.querySelectorAll('.quote-textarea').forEach(el => el.style.fontSize = currentFontSize + 'px');
 });
 
-/* ================================================================
-   ==================== ANNOUNCEMENTS ====================
-   ================================================================ */
+
 
 async function loadAnnounce(){
   try {
@@ -1046,9 +1041,7 @@ document.getElementById('annHistory').addEventListener('click', async (e) => {
   } catch (err) { toast(err.message, true); }
 });
 
-/* ================================================================
-   ==================== SCHEDULE ====================
-   ================================================================ */
+
 const WD_LABELS = [['Пн',1],['Вт',2],['Ср',3],['Чт',4],['Пт',5],['Сб',6],['Вс',0]];
 let selectedWeekdays = new Set();
 
@@ -1114,9 +1107,7 @@ document.getElementById('sendNowBtn').addEventListener('click', async () => {
   } catch (err) { toast(err.message, true); }
 });
 
-/* ================================================================
-   ==================== BOOKS ====================
-   ================================================================ */
+
 async function loadBooks(){
   try {
     const period = document.getElementById('booksPeriod').value;
@@ -1131,9 +1122,6 @@ async function loadBooks(){
 }
 document.getElementById('booksPeriod').addEventListener('change', loadBooks);
 
-// ================================================================
-// ==================== ИНИЦИАЛИЗАЦИЯ ====================
-// ================================================================
 loadAnnounce();
 loadSchedule();
 

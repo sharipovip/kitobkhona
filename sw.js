@@ -1,4 +1,3 @@
-// Китобхона Service Worker – v5 unified (cache + FCM + periodic sync)
 const CACHE_NAME = 'kitobkhona-v6';
 const LOCAL_FILES = [
   './',
@@ -21,7 +20,6 @@ const LOCAL_FILES = [
   './icon-512.png'
 ];
 
-// Периодическое обновление books.json в фоне
 const BOOKS_JSON_URL = 'books.json';
 const SYNC_INTERVAL = 60 * 60 * 1000; // 1 час
 
@@ -45,7 +43,6 @@ self.addEventListener('activate', (event) => {
     })
   );
   self.clients.claim();
-  // Запускаем периодическое обновление
   scheduleBooksJsonUpdate();
 });
 
@@ -56,7 +53,6 @@ async function updateBooksJson() {
     if (response.ok) {
       await cache.put(BOOKS_JSON_URL, response.clone());
       console.log('[SW] books.json updated in cache');
-      // Уведомляем клиентов об обновлении
       const clients = await self.clients.matchAll();
       clients.forEach(client => client.postMessage({ type: 'books_json_updated' }));
     }
@@ -66,9 +62,7 @@ async function updateBooksJson() {
 }
 
 function scheduleBooksJsonUpdate() {
-  // Первое обновление через 5 минут после активации
   setTimeout(updateBooksJson, 5 * 60 * 1000);
-  // Затем каждые SYNC_INTERVAL
   setInterval(updateBooksJson, SYNC_INTERVAL);
 }
 
@@ -119,7 +113,6 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// ==================== Firebase Cloud Messaging ====================
 try {
   importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js');
   importScripts('https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js');
@@ -154,15 +147,12 @@ try {
   console.warn('[SW] Firebase init skipped:', e.message);
 }
 
-// Убрал дублирующий обработчик push - теперь только FCM обрабатывает уведомления
 
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   const data = event.notification.data || {};
-  // Определяем URL на основе типа уведомления
   let url = '/kitobkhona/';
   if (data.type === 'chat' || data.chat_id || data.sender_id) {
-    // Просто открываем список чатов — безопасно
     url = '/kitobkhona/chats.html';
   } else if (data.type === 'feed' || data.post_id) {
     url = '/kitobkhona/Lenta.html';

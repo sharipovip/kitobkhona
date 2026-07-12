@@ -7,9 +7,7 @@
 <script src="config.js"></script>
 <script src="cache.js"></script>
 <style>
-  /* ================================================================
-     ЕДИНЫЙ СТИЛЬ (все стили внутри)
-     ================================================================ */
+  
   * {
     margin: 0;
     padding: 0;
@@ -72,11 +70,11 @@
     flex-direction: column;
     overflow: hidden;
     position: relative;
-    border-radius: 0 !important; /* прямые углы */
+    border-radius: 0 !important; 
     box-shadow: 0 0 20px rgba(0,0,0,0.5);
   }
 
-  /* ===== ВЕРХНЯЯ ПАНЕЛЬ (как в Lenta) ===== */
+  
   .top-app-bar {
     display: flex;
     align-items: center;
@@ -122,7 +120,7 @@
     background: var(--card2);
   }
 
-  /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+  
   .screen-area {
     flex: 1 1 auto;
     overflow: hidden;
@@ -148,7 +146,7 @@
     border-radius: 2px;
   }
 
-  /* ===== ОРИГИНАЛЬНЫЕ СТИЛИ (адаптированы) ===== */
+  
   .ornament {
     height: 10px;
     margin: 12px 0 4px;
@@ -458,9 +456,7 @@
     to { transform: rotate(360deg); }
   }
 
-  /* ================================================================
-     НАВИГАЦИЯ 430×52 (прямые углы) – единая для всех страниц
-     ================================================================ */
+  
   .nav-bottom {
     position: relative;
     width: 100%;
@@ -774,7 +770,7 @@
 <body data-theme="dark">
 
 <div class="app">
-  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+  
   <div class="top-app-bar">
     <div class="brand-mini">
       <svg viewBox="0 0 48 48" fill="none">
@@ -789,7 +785,7 @@
     </div>
   </div>
 
-  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  
   <div class="screen-area">
     <div class="screen" id="chatsScreen">
       <div class="ornament"></div>
@@ -803,11 +799,11 @@
     </div>
   </div>
 
-  <!-- ===== НАВИГАЦИЯ (единая, 6 пунктов) ===== -->
+  
   <div class="nav-bottom">
     <div class="kh-nav2">
 
-      <!-- Асосӣ -->
+      
       <a class="nav-item" href="index.html" aria-label="Асосӣ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 11l9-8 9 8"></path>
@@ -817,7 +813,7 @@
         <span>Асосӣ</span>
       </a>
 
-      <!-- Китобхо -->
+      
       <a class="nav-item" href="kitobho.html" aria-label="Китобхо">
         <div class="person-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -829,7 +825,7 @@
         <span>Китобхо</span>
       </a>
 
-      <!-- Ғолибон -->
+      
       <a class="nav-item" href="winners.html" aria-label="Ғолибон">
         <div class="crown-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -841,7 +837,7 @@
         <span>Ғолибон</span>
       </a>
 
-      <!-- Лента -->
+      
       <a class="nav-item" href="Lenta.html" aria-label="Лента">
         <div class="person-icon like-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -855,7 +851,7 @@
         <span>Лента</span>
       </a>
 
-      <!-- Чат (активный) -->
+      
       <a class="nav-item active" href="chats.html" aria-label="Чат">
         <div class="users-wrap">
           <div class="person p1"></div>
@@ -865,7 +861,7 @@
         <span>Чат</span>
       </a>
 
-      <!-- Профил -->
+      
       <a class="nav-item" href="profile.html" aria-label="Профил">
         <div class="profile-wrap">
           <div class="person-group">
@@ -896,9 +892,6 @@
     clearTimeout(t._timer);
     t._timer = setTimeout(() => { t.style.opacity='0'; t.style.transform='translateX(-50%) translateY(20px)'; }, 2500);
   }
-  // ================================================================
-  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
-  // ================================================================
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();
@@ -906,17 +899,11 @@
     loadData();
   });
 
-  // ================================================================
-  // ============ ТЕМА ============
-  // ================================================================
   (function initTheme() {
     const saved = localStorage.getItem('kk_theme') || 'dark';
     document.body.dataset.theme = saved;
   })();
 
-  // ================================================================
-  // ============ ОСНОВНАЯ ЛОГИКА С КЭШИРОВАНИЕМ ============
-  // ================================================================
   const $ = id => document.getElementById(id);
 
   const clsList = ['c1','c2','c3','c4','c5','c6'];
@@ -950,7 +937,6 @@
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
   }
 
-  // Получить профиль пользователя с кэшированием
   async function getProfileCached(userId) {
     const key = 'kk_profile_' + userId;
     let profile = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
@@ -971,7 +957,6 @@
     const scroll = document.getElementById('chatsScroll');
 
     try {
-      // Получаем текущего пользователя (из кэша или из AUTH)
       let user = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.PROFILE) : null;
       if (!user) {
         const { data } = await AUTH.getUser();
@@ -991,7 +976,6 @@
         return;
       }
 
-      // ---- ДРУЗЬЯ (из кэша или с сервера) ----
       let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
       if (!friends) {
         friends = await ChatAPI.getFriends(currentUser.id);
@@ -1000,7 +984,6 @@
         }
       }
 
-      // ---- ЗАЯВКИ (из кэша или с сервера) ----
       let requests = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.REQUESTS) : null;
       if (!requests) {
         requests = await ChatAPI.getFriendRequests(currentUser.id);
@@ -1009,7 +992,6 @@
         }
       }
 
-      // ---- ПОДПИСКИ НА ОБНОВЛЕНИЯ ----
       if (typeof CacheManager !== 'undefined') {
         if (unsubscribeFriends) unsubscribeFriends();
         unsubscribeFriends = CacheManager.subscribe(CacheManager.KEYS.FRIENDS, (newFriends) => {
@@ -1049,10 +1031,8 @@
   }
 
   async function renderChats(friends, requests, scroll) {
-    // Получение профилей отправителей заявок и друзей (с кэшированием)
     let html = '';
 
-    // ---- ЗАЯВКИ ----
     if(requests.length) {
       html += `
         <div class="section-label">
@@ -1081,7 +1061,6 @@
       html += `</div><div class="divider-soft"></div>`;
     }
 
-    // ---- ДРУЗЬЯ ----
     html += `
       <div class="section-label">
         <div class="t">Дӯстон</div>
@@ -1122,7 +1101,6 @@
 
     scroll.innerHTML = html;
 
-    // Поиск
     const searchInput = document.getElementById('searchInput');
     searchInput.removeEventListener('input', handleSearch);
     searchInput.addEventListener('input', handleSearch);
@@ -1137,7 +1115,6 @@
     });
   }
 
-  // Принять заявку (с инвалидацией кэша)
   async function acceptRequest(fromUserId) {
     try {
       await ChatAPI.acceptFriendRequestByUser(fromUserId);
@@ -1152,7 +1129,6 @@
   }
   window.acceptRequest = acceptRequest;
 
-  // Отклонить заявку (с инвалидацией кэша)
   async function declineRequest(requestId) {
     try {
       await ChatAPI.declineFriendRequest(requestId);
@@ -1166,7 +1142,6 @@
   }
   window.declineRequest = declineRequest;
 
-  // Открыть чат
   function openChat(userId, name) {
     location.href = `chat.html?to=${encodeURIComponent(userId)}&name=${encodeURIComponent(name)}`;
   }

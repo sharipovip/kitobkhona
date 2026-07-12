@@ -152,10 +152,10 @@ body:before {
   border-radius: 2px;
 }
 
-/* ===== HERO SECTION – СТИКИ ВВЕРХУ С ОТСТУПОМ ===== */
+
 .hero-section {
   position: sticky;
-  top: 2px; /* небольшой отступ сверху, чтобы не обрезалось */
+  top: 2px; 
   z-index: 10;
   margin: 0 16px 16px;
   border-radius: 28px;
@@ -202,8 +202,8 @@ body:before {
   z-index: 2;
 }
 
-/* ===== ФОТО ПРЕЗИДЕНТА С НОВОЙ РАМКОЙ ===== */
-/* ===== ФОТО ПРЕЗИДЕНТА — МЯГКИЙ ОРЕОЛ ===== */
+
+
 .president-photo-wrap {
   position: relative;
   display: inline-block;
@@ -213,7 +213,7 @@ body:before {
   margin: 0 auto;
 }
 
-/* Сам круг (уменьшен) */
+
 .president-photo {
   width: 80px;
   height: 80px;
@@ -233,7 +233,7 @@ body:before {
   display: block;
 }
 
-/* Первый слой — размытый ореол (туман) */
+
 .president-photo-wrap::before {
   content: '';
   position: absolute;
@@ -251,7 +251,7 @@ body:before {
   pointer-events: none;
 }
 
-/* Второй слой — более плотное свечение */
+
 .president-photo-wrap::after {
   content: '';
   position: absolute;
@@ -270,7 +270,7 @@ body:before {
   pointer-events: none;
 }
 
-/* Общая анимация движения */
+
 @keyframes borderFlow {
   0% { background-position: 0% 50%; }
   50% { background-position: 50% 50%; }
@@ -357,7 +357,7 @@ body:before {
   background: var(--gold2);
 }
 
-/* ===== ОСТАЛЬНЫЕ ЭЛЕМЕНТЫ (без изменений) ===== */
+
 .section-header-row,
 .section-row {
   display: flex;
@@ -802,7 +802,7 @@ body:before {
   animation: softTap 2s ease-in-out infinite;
 }
 
-/* ===== НАВИГАЦИЯ (единая, как в навигации.html) ===== */
+
 .nav-bottom {
   position: relative;
   width: 100%;
@@ -1117,7 +1117,7 @@ body:before {
   background: #D9B23C;
 }
 
-/* Адаптация для светлой темы */
+
 .light-theme .nav-bottom {
   background: linear-gradient(180deg,
     rgba(245, 240, 232, 0.85) 0%,
@@ -1139,7 +1139,7 @@ body:before {
   background: #D9B23C;
 }
 
-/* ===== ПРОЧИЕ ВСПОМОГАТЕЛЬНЫЕ КЛАССЫ ===== */
+
 .empty {
   color: var(--muted);
   text-align: center;

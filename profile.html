@@ -7,7 +7,7 @@
   <script src="config.js"></script>
   <script src="cache.js"></script>
   <style>
-    /* ===== ОБНОВЛЁННЫЙ СТИЛЬ (единый для всех страниц) ===== */
+    
     :root {
       --bg: #0B1726;
       --bg-2: #0E2034;
@@ -80,7 +80,7 @@
       overflow: hidden;
     }
 
-    /* ===== ВЕРХНЯЯ ПАНЕЛЬ (как в Lenta) ===== */
+    
     .top-app-bar {
       display: flex;
       align-items: center;
@@ -127,7 +127,7 @@
       background: var(--card-2);
     }
 
-    /* ===== КОНТЕНТ ===== */
+    
     .screen-area {
       flex: 1 1 auto;
       overflow: hidden;
@@ -156,7 +156,7 @@
       display: none;
     }
 
-    /* ===== НАВИГАЦИЯ (единая, 430×52, прямые углы) ===== */
+    
     .nav-bottom {
       position: relative;
       width: 100%;
@@ -466,7 +466,7 @@
     .nav-item.active .person-small::before,
     .nav-item.active .person-small::after { background: #D9B23C; }
 
-    /* ===== ОСТАЛЬНЫЕ СТИЛИ ===== */
+    
     .guest-wrap {
       min-height: calc(100vh - 70px);
       display: flex;
@@ -629,6 +629,22 @@
       font-size: 17px;
       color: var(--cream);
       margin-bottom: 3px;
+    }
+    .theme-choice {
+      flex: 0 0 auto;
+      border: 1px solid var(--line);
+      border-radius: 999px;
+      padding: 7px 10px;
+      background: var(--card-2);
+      color: var(--cream);
+      font: 600 11px inherit;
+      cursor: pointer;
+      white-space: nowrap;
+    }
+    .theme-choice.active {
+      background: var(--gold);
+      color: var(--bg);
+      border-color: var(--gold);
     }
     .age-gender-row {
       display: flex;
@@ -1144,7 +1160,7 @@
       transform: scale(1.05);
     }
 
-    /* ===== Стили для модалки Связь с нами ===== */
+    
     .feedback-select {
       width: 100%;
       background: var(--card);
@@ -1164,7 +1180,7 @@
 <body data-theme="dark">
 <div class="app">
 
-  <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ (как в Lenta) ===== -->
+  
   <div class="top-app-bar">
     <div class="brand-mini">
       <svg viewBox="0 0 48 48" fill="none">
@@ -1183,7 +1199,7 @@
     </div>
   </div>
 
-  <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+  
   <div class="screen-area">
     <div class="screen" id="screen-loading"><div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div></div>
     <div class="screen" id="screen-error" hidden><div class="loading-screen"><div style="font-size:48px">⚠️</div><div style="color:var(--cream);font-weight:700;font-size:15px;">Хатогӣ</div><div id="errorMsg" style="color:var(--muted);font-size:13px;max-width:300px;"></div><button class="retry-btn" onclick="location.reload()">Боз кӯшидан</button><button class="retry-btn" style="background:var(--card-soft);color:var(--cream);border:1px solid var(--line);margin-top:6px;" onclick="goLogin()">Ворид шудан</button></div></div>
@@ -1216,11 +1232,11 @@
     </div>
   </div>
 
-  <!-- ===== НАВИГАЦИЯ (единая, 6 пунктов) ===== -->
+  
   <div class="nav-bottom">
     <div class="kh-nav2">
 
-      <!-- Асосӣ -->
+      
       <a class="nav-item" href="index.html" aria-label="Асосӣ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 11l9-8 9 8"></path>
@@ -1230,7 +1246,7 @@
         <span>Асосӣ</span>
       </a>
 
-      <!-- Китобхо -->
+      
       <a class="nav-item" href="kitobho.html" aria-label="Китобхо">
         <div class="person-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1242,7 +1258,7 @@
         <span>Китобхо</span>
       </a>
 
-      <!-- Ғолибон -->
+      
       <a class="nav-item" href="winners.html" aria-label="Ғолибон">
         <div class="crown-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1254,7 +1270,7 @@
         <span>Ғолибон</span>
       </a>
 
-      <!-- Лента -->
+      
       <a class="nav-item" href="Lenta.html" aria-label="Лента">
         <div class="person-icon like-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1268,7 +1284,7 @@
         <span>Лента</span>
       </a>
 
-      <!-- Чат -->
+      
       <a class="nav-item" href="chats.html" aria-label="Чат">
         <div class="users-wrap">
           <div class="person p1"></div>
@@ -1278,7 +1294,7 @@
         <span>Чат</span>
       </a>
 
-      <!-- Профил (активный) -->
+      
       <a class="nav-item active" href="profile.html" aria-label="Профил">
         <div class="profile-wrap">
           <div class="person-group">
@@ -1293,7 +1309,7 @@
     </div>
   </div>
 
-  <!-- ===== ШТОРКА НАСТРОЕК ===== -->
+  
   <div class="sheet-overlay" id="settingsOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -1303,7 +1319,7 @@
       </div>
       <div class="sheet-body" style="padding-bottom:24px">
 
-        <!-- Тема -->
+        
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)">
           <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:var(--cream)">
             <span id="settingsThemeIcon" style="font-size:20px">🌙</span>
@@ -1313,8 +1329,18 @@
             <div id="themeToggleKnob" style="position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:var(--gold);transition:.3s"></div>
           </div>
         </div>
+        <div style="padding:12px 0 14px;border-bottom:1px solid var(--line)">
+          <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Интихоби мавзӯъ</div>
+          <div id="themeChoices" style="display:flex;gap:7px;overflow-x:auto;padding-bottom:2px">
+            <button type="button" class="theme-choice" data-theme-choice="dark">🌙 Шаб</button>
+            <button type="button" class="theme-choice" data-theme-choice="light">☀️ Рӯз</button>
+            <button type="button" class="theme-choice" data-theme-choice="gold">✨ Тиллоӣ</button>
+            <button type="button" class="theme-choice" data-theme-choice="flag">🇹🇯 Парчам</button>
+            <button type="button" class="theme-choice" data-theme-choice="book">📖 Китоб</button>
+          </div>
+        </div>
 
-        <!-- Ёрӣ ва истифода -->
+        
         <div onclick="showHelpApp()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
           <span style="font-size:20px">❓</span>
           <div>
@@ -1324,7 +1350,7 @@
           <span style="margin-left:auto;color:var(--muted)">›</span>
         </div>
 
-        <!-- Тамос бо мо -->
+        
         <div onclick="openFeedbackModal()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
           <span style="font-size:20px">📧</span>
           <div>
@@ -1334,7 +1360,7 @@
           <span style="margin-left:auto;color:var(--muted)">›</span>
         </div>
 
-        <!-- Дар бораи барнома -->
+        
         <div id="aboutAppBtn" onclick="showAboutApp()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
           <span style="font-size:20px">📚</span>
           <div>
@@ -1344,13 +1370,13 @@
           <span style="margin-left:auto;color:var(--muted)">›</span>
         </div>
 
-        <!-- Баромадан -->
+        
         <div id="settingsLogout" style="display:none;flex-direction:row;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer" onclick="logoutUser()">
           <span style="font-size:20px">🚪</span>
           <div style="font-size:14px;font-weight:600;color:var(--cream)">Баромадан</div>
         </div>
 
-        <!-- Нест кардани ҳисоб -->
+        
         <div id="settingsDelete" style="display:none;flex-direction:row;align-items:center;gap:12px;padding:16px 0;cursor:pointer" onclick="deleteAccount()">
           <span style="font-size:20px">🗑</span>
           <div style="font-size:14px;font-weight:600;color:var(--red)">Нест кардани ҳисоб</div>
@@ -1360,7 +1386,7 @@
     </div>
   </div>
 
-  <!-- ===== МОДАЛКА "Дар бораи барнома" ===== -->
+  
   <div class="sheet-overlay" id="aboutOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -1389,7 +1415,7 @@
     </div>
   </div>
 
-  <!-- ===== МОДАЛКА "Ёрӣ ва истифода" ===== -->
+  
   <div class="sheet-overlay" id="helpOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -1438,7 +1464,7 @@
   </div>
   <div class="sheet-foot"><button class="btn btn-outline" id="cancelEdit">Бекор кардан</button><button class="btn btn-primary" id="saveEdit">Нигоҳ доштан</button></div></div></div>
 
-  <!-- ===== ПОПАП-МЕНЮ ===== -->
+  
   <div class="popup-menu" id="bookMenu">
     <div class="item" onclick="menuPublish()" id="menuPublish">📢 Интишор кардан дар лента</div>
     <div class="item" onclick="menuFavorite()">⭐ Илова ба закладка</div>
@@ -1446,7 +1472,7 @@
     <div class="item" onclick="menuToggleHide()" id="menuHideToggle">👁 Пинҳон кардан</div>
   </div>
 
-  <!-- ===== МОДАЛКА "Связь с нами" ===== -->
+  
   <div class="sheet-overlay" id="feedbackOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
@@ -1481,9 +1507,6 @@
 </div>
 
 <script>
-  // ================================================================
-  // ============ TOAST УВЕДОМЛЕНИЯ ============
-  // ================================================================
   (function() {
     const style = document.createElement('style');
     style.textContent = `
@@ -1517,9 +1540,6 @@
   window.showAlertDialog = showAlertDialog;
   window.showConfirmDialog = showConfirmDialog;
 
-  // ================================================================
-  // ============ ИНИЦИАЛИЗАЦИЯ КЭША ============
-  // ================================================================
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();
@@ -1564,9 +1584,6 @@
     if (friendStatusTimer) clearInterval(friendStatusTimer);
   });
 
-  // ================================================================
-  // ============ ТЕМА ============
-  // ================================================================
   function el(id) { return document.getElementById(id); }
   function showScreen(id) {
     ['screen-loading', 'screen-error', 'screen-guest', 'screen-own'].forEach(function(s) {
@@ -1580,9 +1597,6 @@
   }
   function goLogin() { location.href = 'login.html'; }
 
-  // ================================================================
-  // ============ ПАРАМЕТРЫ URL И СОСТОЯНИЕ ============
-  // ================================================================
   const qs = new URL(location.href).searchParams;
   const targetUserId = qs.get('user') || null;
   let currentProfileUserId = null;
@@ -1594,8 +1608,6 @@
   let profileLoadSequence = 0;
   let friendStatusTimer = null;
 
-  // Кэш профиля, книг, закладок и постов всегда привязан к ID пользователя.
-  // Старые общие ключи очищаем, чтобы данные одного профиля не попадали в другой.
   function profileCacheKey(type, userId) {
     return 'kk_cache_' + type + '_' + encodeURIComponent(String(userId));
   }
@@ -1644,12 +1656,8 @@
     });
   }
 
-  // ================================================================
-  // ============ ВЫХОД И УДАЛЕНИЕ АККАУНТА ============
-  // ================================================================
   async function logoutUser() {
     if (await showConfirmDialog('Шумо воқеан мехоҳед бароед?', 'Баромадан')) {
-      // Очищаем весь кэш при выходе
       if (typeof CacheManager !== 'undefined') {
         const keys = Object.keys(localStorage);
         keys.forEach(k => {
@@ -1691,9 +1699,6 @@
   window.logoutUser = logoutUser;
   window.deleteAccount = deleteAccount;
 
-  // ================================================================
-  // ============ НАВИГАЦИЯ ПО КНОПКАМ ============
-  // ================================================================
   function goToChats() {
     if (isOwnProfile) {
       location.href = 'chats.html';
@@ -1708,9 +1713,6 @@
   }
   window.goToChats = goToChats;
 
-  // ================================================================
-  // ============ ОСНОВНАЯ ЗАГРУЗКА ПРОФИЛЯ (С КЭШЕМ ПО ID) ============
-  // ================================================================
   let unsubscribeSessions = null;
   let unsubscribeFavorites = null;
   let unsubscribePosts = null;
@@ -1807,19 +1809,15 @@
       showScreen('screen-loading');
       clearProfileScopedCache(profileId);
 
-      // Отписываемся от старых подписок
       if (unsubscribeSessions) { unsubscribeSessions(); unsubscribeSessions = null; }
       if (unsubscribeFavorites) { unsubscribeFavorites(); unsubscribeFavorites = null; }
       if (unsubscribePosts) { unsubscribePosts(); unsubscribePosts = null; }
 
-      // Ключи кэша всегда привязаны к конкретному пользователю.
       const sessionKey = profileCacheKey('sessions', profileId);
       const favoritesKey = profileCacheKey('favorites', profileId);
       const postsKey = profileCacheKey('posts', profileId);
       const profileKey = 'kk_profile_' + profileId;
 
-      // Свой профиль открываем сразу из кэша, чтобы не показывать 7–8 секунд
-      // экран загрузки. Затем тихо обновляем данные с сервера.
       const cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
       const validCachedProfile = cachedProfile && String(cachedProfile.id) === String(profileId);
       let profile = (isOwnProfile && validCachedProfile) ? cachedProfile : null;
@@ -1862,16 +1860,11 @@
       }
       updateFriendButtonUI();
 
-      // Список друзей текущего аккаунта нужен только для собственного профиля.
-      // Для чужого профиля используем friends_count, рассчитанный сервером именно для него.
       if (isOwnProfile) {
-        // Не задерживаем показ собственного профиля сетевым запросом.
         void (async () => {
           try {
             let friends;
             try {
-              // Для счётчика всегда берём свежий список, иначе принятие заявки
-              // на другом экране может не отразиться в профиле.
               friends = await ChatAPI.getFriends(currentUserId);
               if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
             } catch (networkError) {
@@ -1891,7 +1884,6 @@
       renderFavorites();
       renderPosts();
 
-      // Загрузка данных в фоне, чтобы страница не висела 3–4 секунды на "Боргирӣ..."
       checkFriendStatus(currentUserId, profileId)
         .then(() => updateFriendButtonUI())
         .catch(e => console.warn('Не удалось проверить статус дружбы', e));
@@ -1908,9 +1900,7 @@
       loadHiddenBooksCached()
         .catch(e => console.warn('Не удалось обновить скрытые книги', e));
 
-      // Подписываемся на обновления кэша для книг, закладок и постов (с привязкой к пользователю)
       if (typeof CacheManager !== 'undefined') {
-        // Сессии
         unsubscribeSessions = CacheManager.subscribe(sessionKey, (newData) => {
           if (newData) {
             booksData = newData;
@@ -1919,7 +1909,6 @@
             loadBooksCached(profileId);
           }
         });
-        // Закладки
         unsubscribeFavorites = CacheManager.subscribe(favoritesKey, (newData) => {
           if (newData) {
             favoritesData = newData;
@@ -1928,7 +1917,6 @@
             loadFavoritesCached(profileId);
           }
         });
-        // Посты
         unsubscribePosts = CacheManager.subscribe(postsKey, (newData) => {
           if (newData) {
             postsData = newData;
@@ -1947,7 +1935,6 @@
     }
   }
 
-  // ===== КЭШИРОВАННЫЕ ФУНКЦИИ ЗАГРУЗКИ (с привязкой к пользователю) =====
   async function loadBooksCached(userId) {
     const key = profileCacheKey('sessions', userId);
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
@@ -2084,9 +2071,6 @@
     hiddenBooks = data;
   }
 
-  // ================================================================
-  // ============ ИНИЦИАЛИЗАЦИЯ ВКЛАДОК ============
-  // ================================================================
   function initTabs() {
     document.querySelectorAll('.tabs').forEach(function(tabsEl) {
       const newTabs = tabsEl.cloneNode(true);
@@ -2105,9 +2089,6 @@
     });
   }
 
-  // ================================================================
-  // ============ ПРОВЕРКА СТАТУСА ДРУЖБЫ ============
-  // ================================================================
   async function checkFriendStatus(myId, otherId) {
     try {
       const token = localStorage.getItem('kk_token');
@@ -2147,9 +2128,6 @@
     }
   }
 
-  // ================================================================
-  // ============ ДЕЙСТВИЯ С ДРУЗЬЯМИ ============
-  // ================================================================
   async function sendFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
     if (!token) { showToast('Лутфан ворид шавед'); return; }
@@ -2207,14 +2185,10 @@
     await showAlertDialog('Функсияи нест кардан ҳанӯз дастгирӣ намешавад.', 'Маълумот');
   }
 
-  // ================================================================
-  // ============ АВАТАР ============
-  // ================================================================
   function updateAvatar(gender, avatarUrl, isTemporary) {
     const container = el('avatarInner');
     if (!container) return;
 
-    // Настоящее фото имеет приоритет. Для гостевого профиля без фото показываем '?'.
     if (avatarUrl) {
       container.innerHTML = `<img class="avatar-photo" src="${esc(avatarUrl)}" alt="Аватар" onerror="this.replaceWith(document.createTextNode('?'))">`;
       return;
@@ -2233,9 +2207,6 @@
     container.innerHTML = svg;
   }
 
-  // ================================================================
-  // ============ ДАННЫЕ И РЕНДЕРИНГ ============
-  // ================================================================
   let booksData = [];
   let favoritesData = [];
   let postsData = [];
@@ -2243,7 +2214,6 @@
   let publishedBookIds = new Set();
   let menuTarget = null;
 
-  // ===== Парсинг контента поста (извлечение чистого текста без стилей) =====
   function parsePostContent(raw) {
     if (!raw) return { text: '', style: {} };
     const SEP = '|||STYLE|||';
@@ -2272,7 +2242,6 @@
     return 'Пост';
   }
 
-  // ===== RENDER =====
   function getCoverCached(url) {
     if (!url) return '';
     try {
@@ -2402,9 +2371,6 @@
     container.innerHTML = '<div class="post-list">' + items.join('') + '</div>';
   }
 
-  // ================================================================
-  // ============ ВСПОМОГАТЕЛЬНЫЕ ДЛЯ КНИГ ============
-  // ================================================================
   let coversManifestCache = null;
 
   async function loadCoversManifest() {
@@ -2519,9 +2485,6 @@
     return new Date(dateStr).toLocaleDateString('tg-TJ');
   }
 
-  // ================================================================
-  // ============ ОТКРЫТИЕ КНИГИ ============
-  // ================================================================
   async function openBook(book) {
     if (!book) return;
     if (typeof book === 'object' && book.getAttribute) {
@@ -2554,9 +2517,6 @@
     location.href = `reader.html?url=${encodeURIComponent(normUrl)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
   }
 
-  // ================================================================
-  // ============ УДАЛЕНИЕ ЗАКЛАДКИ ============
-  // ================================================================
   async function removeFavoriteDirect(bookId) {
     if (!bookId) return;
     if (!await showConfirmDialog('Хориҷ кардани китоб аз закладка?', 'Тасдиқ', 'Хориҷ кунед')) return;
@@ -2576,9 +2536,6 @@
     } catch (e) { await showAlertDialog('Хатогӣ: ' + e.message, 'Хатогӣ'); }
   }
 
-  // ================================================================
-  // ============ МЕНЮ ДЛЯ КНИГ ============
-  // ================================================================
   function showMenu(e, bookId) {
     e.stopPropagation();
     const menu = el('bookMenu');
@@ -2676,9 +2633,6 @@
     }
   }
 
-  // ================================================================
-  // ============ РЕДАКТИРОВАНИЕ ============
-  // ================================================================
   const overlay = el('editOverlay');
   function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); }
   function closeEdit() { overlay.classList.remove('open'); }
@@ -2814,7 +2768,6 @@
       }
       showToast('Профиль навсозӣ шуд!');
       closeEdit();
-      // Инвалидируем кэш профиля
       if (typeof CacheManager !== 'undefined') {
         const key = 'kk_profile_' + currentProfileUserId;
         CacheManager.invalidateKey(key);
@@ -2826,9 +2779,6 @@
     }
   });
 
-  // ================================================================
-  // ============ ФУНКЦИЯ "СВЯЗЬ С НАМИ" ============
-  // ================================================================
   const feedbackOverlay = el('feedbackOverlay');
   const feedbackText = el('feedbackText');
   const feedbackCategory = el('feedbackCategory');
@@ -2838,7 +2788,6 @@
     feedbackOverlay.classList.add('open');
     feedbackText.value = '';
     feedbackCategory.value = 'Китоб кушода намешавад';
-    // Автоподстановка email пользователя
     const userEmail = loadedProfile && loadedProfile.email &&
       !loadedProfile.email.endsWith('@kitobkhona.tj') &&
       !loadedProfile.email.endsWith('@guest.kitobkhona.tj')
@@ -2900,20 +2849,15 @@
     }
   });
 
-  // ================================================================
-  // ============ НАСТРОЙКИ (Тамос бо мо) ============
-  // ================================================================
   const settingsOverlay = el('settingsOverlay');
   const aboutOverlay = el('aboutOverlay');
   const helpOverlay = el('helpOverlay');
 
   function openSettings() {
-    // Обновляем состояние темы
     const isLight = document.body.getAttribute('data-theme') === 'light' ||
                     document.documentElement.classList.contains('light-theme') ||
                     document.body.classList.contains('light-theme');
     updateThemeUI(isLight);
-    // Показываем кнопки выхода/удаления только для своего профиля
     const logoutRow = el('settingsLogout');
     const deleteRow = el('settingsDelete');
     if (isOwnProfile) {
@@ -2945,51 +2889,50 @@
   el('closeAbout').addEventListener('click', () => aboutOverlay.classList.remove('open'));
   aboutOverlay.addEventListener('click', function(e) { if (e.target === aboutOverlay) aboutOverlay.classList.remove('open'); });
 
-  function updateThemeUI(isLight) {
+  function updateThemeUI(themeName) {
+    const name = typeof themeName === 'string' ? themeName : (window.getAppTheme ? getAppTheme() : 'dark');
+    const theme = window.KKH_THEMES && KKH_THEMES[name] ? KKH_THEMES[name] : { icon: '🌙', label: 'Шаб' };
     const icon = el('settingsThemeIcon');
     const label = el('settingsThemeLabel');
     const knob = el('themeToggleKnob');
     const sw = el('themeToggleSwitch');
-    if (isLight) {
-      if (icon) icon.textContent = '☀️';
-      if (label) label.textContent = 'Рӯзи рӯшноӣ';
-      if (knob) knob.style.left = '25px';
-      if (sw) sw.style.background = 'var(--gold)';
-    } else {
-      if (icon) icon.textContent = '🌙';
-      if (label) label.textContent = 'Тарзи шаб';
-      if (knob) knob.style.left = '3px';
-      if (sw) sw.style.background = 'var(--card-2)';
-    }
+    if (icon) icon.textContent = theme.icon;
+    if (label) label.textContent = theme.label;
+    if (knob) knob.style.left = name === 'light' ? '25px' : '3px';
+    if (sw) sw.style.background = name === 'light' ? 'var(--gold)' : 'var(--card-2)';
+    document.querySelectorAll('.theme-choice').forEach(button => {
+      button.classList.toggle('active', button.dataset.themeChoice === name);
+    });
   }
 
   function toggleThemeGlobal() {
-    const isCurrentlyLight = localStorage.getItem('kk_theme') === 'light';
-    const newTheme = isCurrentlyLight ? 'dark' : 'light';
-    localStorage.setItem('kk_theme', newTheme);
-    // Применяем на текущей странице
-    document.body.setAttribute('data-theme', newTheme);
-    document.body.classList.toggle('light-theme', newTheme === 'light');
-    document.documentElement.classList.toggle('light-theme', newTheme === 'light');
-    updateThemeUI(newTheme === 'light');
+    if (typeof toggleTheme === 'function') toggleTheme();
+    else if (typeof setAppTheme === 'function') setAppTheme('dark');
+    updateThemeUI(typeof getAppTheme === 'function' ? getAppTheme() : 'dark');
   }
+  window.setAppThemeGlobal = function(name) {
+    if (typeof setAppTheme === 'function') setAppTheme(name);
+    updateThemeUI(name);
+  };
+  document.querySelectorAll('.theme-choice').forEach(button => {
+    button.addEventListener('click', () => window.setAppThemeGlobal(button.dataset.themeChoice));
+  });
   window.toggleThemeGlobal = toggleThemeGlobal;
   window.openSettings = openSettings;
   window.showHelpApp = showHelpApp;
   window.showAboutApp = showAboutApp;
 
   function initSettings() {
-    // Применяем сохранённую тему при загрузке
-    const saved = localStorage.getItem('kk_theme') || 'dark';
-    document.body.setAttribute('data-theme', saved);
-    document.body.classList.toggle('light-theme', saved === 'light');
-    document.documentElement.classList.toggle('light-theme', saved === 'light');
+    const saved = typeof getAppTheme === 'function' ? getAppTheme() : (localStorage.getItem('kk_theme') || 'dark');
+    if (typeof setAppTheme === 'function') setAppTheme(saved, false);
+    else {
+      document.body.setAttribute('data-theme', saved);
+      document.body.classList.toggle('light-theme', saved === 'light');
+      document.documentElement.classList.toggle('light-theme', saved === 'light');
+    }
+    updateThemeUI(saved);
   }
 
-  // ================================================================
-  // ============ ЗАПУСК ============
-  // ================================================================
-  // loadProfile() вызывается в DOMContentLoaded
 </script>
 </body>
 </html>

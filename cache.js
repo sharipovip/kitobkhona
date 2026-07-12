@@ -1,8 +1,4 @@
-/*
- * Китобхона CacheManager — версия 1.0.0
- * Лёгкий общий кэш для PWA без сборщика.
- * Данные профиля в profile.html используют собственные ключи с ID пользователя.
- */
+
 (function () {
   'use strict';
 
@@ -41,7 +37,6 @@
         }
         return parsed.value;
       }
-      // Поддержка старого формата, если он был сохранён напрямую.
       return parsed;
     } catch (e) {
       return null;
@@ -52,7 +47,6 @@
     try {
       localStorage.setItem(PREFIX + key, JSON.stringify({ value: value, ts: Date.now() }));
     } catch (e) {
-      // Кэш не должен ломать приложение при переполнении localStorage.
       console.warn('[CacheManager] localStorage write skipped:', e.message);
     }
   }
@@ -81,7 +75,6 @@
     if (!key) return;
     memory.delete(key);
     try { localStorage.removeItem(PREFIX + key); } catch (e) {}
-    // Также удаляем несколько старых вариантов хранения.
     try { localStorage.removeItem(key); } catch (e) {}
     notify(key, null);
   }
@@ -156,7 +149,6 @@
   function init() {
     if (initialized) return;
     initialized = true;
-    // WebSocket подключается только если страница его явно настроит.
     window.CacheManager._ws = null;
     window.CacheManager._wsConnected = false;
   }

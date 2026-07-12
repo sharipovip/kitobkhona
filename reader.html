@@ -8,7 +8,7 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="config.js"></script>
 <style>
-  /* ===== ОСНОВНЫЕ ПЕРЕМЕННЫЕ ===== */
+  
   :root {
     --bg: #0d1b2a;
     --panel: rgba(13, 27, 42, 0.92);
@@ -64,7 +64,7 @@
     box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 60px rgba(0, 0, 0, 0.55);
   }
 
-  /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+  
   .reader-top-bar {
     position: absolute;
     top: 0;
@@ -118,7 +118,7 @@
 
   .top-actions { display: flex; gap: 6px; }
 
-  /* ===== ОСНОВНАЯ ОБЛАСТЬ ===== */
+  
   .reader-main {
     flex: 1;
     position: relative;
@@ -197,7 +197,7 @@
     pointer-events: none;
   }
 
-  /* ===== ЗОНЫ ПЕРЕЛИСТЫВАНИЯ ===== */
+  
   .page-nav-area {
     position: absolute;
     top: 0;
@@ -209,7 +209,7 @@
   .page-nav-left { left: 0; }
   .page-nav-right { right: 0; }
 
-  /* ===== НИЖНЯЯ ПАНЕЛЬ (только прогресс, реакции и звёзды) ===== */
+  
   .reader-bottom-bar {
     position: absolute;
     bottom: 0;
@@ -302,7 +302,7 @@
     margin: 0 8px;
   }
 
-  /* ===== ПАНЕЛИ (НАСТРОЙКИ, ПОИСК) ===== */
+  
   .panel {
     position: absolute;
     z-index: 160;
@@ -493,7 +493,7 @@
 </head>
 <body>
 <div class="reader-wrapper">
-  <!-- Верхняя панель -->
+  
   <div class="reader-top-bar" id="topBar">
     <button class="btn-back" onclick="goBack()">←</button>
     <div class="book-title-block">
@@ -507,7 +507,7 @@
     </div>
   </div>
 
-  <!-- Основная область -->
+  
   <main class="reader-main" id="readerMain">
     <div class="page-stage" id="stage">
       <div class="page-container" id="pageContainer">
@@ -524,7 +524,7 @@
     </div>
   </main>
 
-  <!-- Нижняя панель -->
+  
   <div class="reader-bottom-bar" id="bottomBar">
     <div class="reading-progress"><div class="reading-progress-fill" id="progressFill"></div></div>
     <div class="reaction-bar">
@@ -550,7 +550,7 @@
     </div>
   </div>
 
-  <!-- Панель настроек -->
+  
   <div class="panel settings-panel" id="settingsPanel">
     <div class="settings-header">
       <div class="panel-title">⚙️ Танзимот</div>
@@ -590,7 +590,7 @@
     </div>
   </div>
 
-  <!-- Панель поиска -->
+  
   <div class="panel search-panel" id="searchPanel">
     <div class="settings-header">
       <div class="panel-title">🔍 Ҷустуҷӯ</div>
@@ -608,13 +608,11 @@
     <div id="findResult" class="find-results"></div>
   </div>
 
-  <!-- Toast -->
+  
   <div class="toast" id="toast"></div>
 </div>
 
 <script>
-  // ================================================================
-  // ============ PDF.JS и ОСНОВНЫЕ ПЕРЕМЕННЫЕ ============
   pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
 
   const $ = id => document.getElementById(id);
@@ -631,8 +629,6 @@
   cover = safeDecode(cover);
   $('bookTitle').textContent = name;
 
-  // ================================================================
-  // ============ BOOK ID (для сессий и реакций) ============
   function getBookId() {
     try {
       const u = new URL(url);
@@ -649,8 +645,6 @@
     }
   }
 
-  // ================================================================
-  // ============ СЕССИЯ ЧТЕНИЯ ============
   let sessionInterval = null;
   let totalSeconds = 0;
   const SESSION_INTERVAL = 30;
@@ -725,8 +719,6 @@
     else location.href = 'kitobho.html';
   };
 
-  // ================================================================
-  // ============ РЕАКЦИИ И РЕЙТИНГ ============
   let currentReaction = null;
   let currentRating = 0;
 
@@ -844,8 +836,6 @@
     });
   });
 
-  // ================================================================
-  // ============ ОСНОВНЫЕ ФУНКЦИИ READER ============
   function toast(msg, d = 2200) {
     const t = $('toast');
     t.textContent = msg;
@@ -920,7 +910,6 @@
     } catch(e) {}
   }
 
-  // ===== ЗАГРУЗКА PDF =====
   async function loadPdfFrom(pdfUrl) {
     setLoadProgress(0);
     const cached = await cachedPdfData(pdfUrl);
@@ -983,7 +972,6 @@
     } catch(e) {}
   }
 
-  // ===== ОТРИСОВКА СТРАНИЦЫ (БЕЗ ПОКАЗА ИНДИКАТОРА) =====
   async function renderPage(n, direction) {
     if (!pdf || rendering) return;
     rendering = true;
@@ -1008,7 +996,6 @@
       const currentSlot = $('currentSlot');
       const nextSlot = $('nextSlot');
 
-      // Сохраняем старую страницу в next
       const oldCanvas = currentSlot.querySelector('canvas');
       if (oldCanvas) {
         nextSlot.innerHTML = '';
@@ -1027,7 +1014,6 @@
         }, 500);
       }
 
-      // Вставляем новую страницу
       currentSlot.innerHTML = '';
       currentSlot.appendChild(cv);
       currentSlot.className = 'page-slot current';
@@ -1058,7 +1044,6 @@
     renderPage(n, d);
   }
 
-  // ===== ОБРАБОТКА КЛИКОВ =====
   $('readerMain').addEventListener('click', e => {
     if (e.target.closest('.page-nav-area')) return;
     bars = !bars;
@@ -1066,7 +1051,6 @@
     $('bottomBar').classList.toggle('hidden', !bars);
   });
 
-  // ===== УЛУЧШЕННЫЙ СВАЙП =====
   let sx = 0, sy = 0, drag = false, startTime = 0;
   const stageEl = $('stage');
   stageEl.addEventListener('touchstart', e => {
@@ -1108,7 +1092,6 @@
     }
   }, { passive: true });
 
-  // ===== НАСТРОЙКИ =====
   function setTheme(t) {
     document.body.classList.toggle('light-reading', t === 'light');
     localStorage.setItem('kk_reader_theme', t);
@@ -1139,7 +1122,6 @@
     setTimeout(() => $('findInput').focus(), 80);
   }
 
-  // ===== ИСПОЛЬЗОВАНИЕ ГЛОБАЛЬНЫХ ФУНКЦИЙ =====
   async function downloadCurrent() {
     await downloadFile(url, name);
   }
@@ -1147,7 +1129,6 @@
     await shareFile(url, name);
   }
 
-  // ===== ПОИСК =====
   let findHits = [], findIndex = -1;
   async function findText() {
     const q = $('findInput').value.trim();
@@ -1192,7 +1173,6 @@
   function prevFind() { if (findHits.length) goFind(findIndex - 1); }
   function escapeHtml(s) { return String(s??'').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 
-  // ===== ЗАПУСК =====
   openPdf();
 </script>
 </body>

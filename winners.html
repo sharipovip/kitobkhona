@@ -7,9 +7,7 @@
   <script src="config.js"></script>
   <script src="cache.js"></script>
   <style>
-    /* ================================================================
-       ЕДИНЫЙ СТИЛЬ (все стили внутри)
-       ================================================================ */
+    
     * {
       margin: 0;
       padding: 0;
@@ -64,11 +62,11 @@
       flex-direction: column;
       overflow: hidden;
       position: relative;
-      border-radius: 0 !important; /* прямые углы */
+      border-radius: 0 !important; 
       box-shadow: 0 0 20px rgba(0,0,0,0.5);
     }
 
-    /* ===== ВЕРХНЯЯ ПАНЕЛЬ ===== */
+    
     .topbar {
       display: flex;
       justify-content: space-between;
@@ -89,7 +87,7 @@
       cursor: pointer;
     }
 
-    /* ===== КОНТЕНТНАЯ ОБЛАСТЬ ===== */
+    
     .content-wrapper {
       flex: 1;
       overflow-y: auto;
@@ -102,7 +100,7 @@
     .content-wrapper::-webkit-scrollbar-track { background: transparent; }
     .content-wrapper::-webkit-scrollbar-thumb { background: rgba(201,168,76,0.2); border-radius: 2px; }
 
-    /* ===== ФИЛЬТРЫ ===== */
+    
     .filters-wrap {
       margin-bottom: 12px;
     }
@@ -184,7 +182,7 @@
       pointer-events: none;
     }
 
-    /* ===== ПОДИУМ ===== */
+    
     .podium {
       display: flex;
       align-items: flex-end;
@@ -274,7 +272,7 @@
     .step-2 { height: 44px; background: linear-gradient(180deg,#EDEFF1,#8B919B); color:#1c1f22; font-size:18px; }
     .step-3 { height: 34px; background: linear-gradient(180deg,#E9C09A,#8A5B33); color:#241404; font-size:18px; }
 
-    /* ===== ТОП-100 ===== */
+    
     .list-head {
       display: flex;
       align-items: center;
@@ -431,7 +429,7 @@
       color: #1A1206;
     }
 
-    /* ===== НАВИГАЦИЯ 430×52 (прямые углы) ===== */
+    
     .nav-bottom {
       position: relative;
       width: 100%;
@@ -745,16 +743,16 @@
 <body>
   <div class="app">
 
-    <!-- ===== ВЕРХНЯЯ ПАНЕЛЬ ===== -->
+    
     <div class="topbar">
       <h2>🏆 Ғолибон</h2>
       <span class="icon" id="themeToggle" style="display:none">🌙</span>
     </div>
 
-    <!-- ===== ОСНОВНОЙ КОНТЕНТ ===== -->
+    
     <div class="content-wrapper">
 
-      <!-- ФИЛЬТРЫ -->
+      
       <div class="filters-wrap">
         <div class="segmented" id="periodSwitch">
           <button data-period="all" class="active"><span class="crown">👑</span>Ҳама вақт</button>
@@ -785,18 +783,18 @@
         </div>
       </div>
 
-      <!-- КОНТЕЙНЕР ДЛЯ РЕЙТИНГА -->
+      
       <div id="winnersContent">
         <div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>
       </div>
 
     </div>
 
-    <!-- ===== НАВИГАЦИЯ ===== -->
+    
     <div class="nav-bottom">
       <div class="kh-nav2">
 
-        <!-- Асосӣ -->
+        
         <a class="nav-item" href="index.html" aria-label="Асосӣ">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 11l9-8 9 8"></path>
@@ -806,7 +804,7 @@
           <span>Асосӣ</span>
         </a>
 
-        <!-- Китобхо -->
+        
         <a class="nav-item" href="kitobho.html" aria-label="Китобхо">
           <div class="person-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -818,7 +816,7 @@
           <span>Китобхо</span>
         </a>
 
-        <!-- Ғолибон (активный) -->
+        
         <a class="nav-item active" href="winners.html" aria-label="Ғолибон">
           <div class="crown-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -830,7 +828,7 @@
           <span>Ғолибон</span>
         </a>
 
-        <!-- Лента -->
+        
         <a class="nav-item" href="Lenta.html" aria-label="Лента">
           <div class="person-icon like-wrap">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -844,7 +842,7 @@
           <span>Лента</span>
         </a>
 
-        <!-- Чат -->
+        
         <a class="nav-item" href="chats.html" aria-label="Чат">
           <div class="users-wrap">
             <div class="person p1"></div>
@@ -854,7 +852,7 @@
           <span>Чат</span>
         </a>
 
-        <!-- Профил -->
+        
         <a class="nav-item" href="profile.html" aria-label="Профил">
           <div class="profile-wrap">
             <div class="person-group">
@@ -872,18 +870,12 @@
   </div>
 
   <script>
-    // ================================================================
-    // ИНИЦИАЛИЗАЦИЯ КЭША
-    // ================================================================
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof CacheManager !== 'undefined') {
         CacheManager.init();
       }
     });
 
-    // ================================================================
-    // ПЕРЕКЛЮЧЕНИЕ ТЕМЫ
-    // ================================================================
     (function() {
       const themeToggle = document.getElementById('themeToggle');
       const savedTheme = localStorage.getItem('kk_theme') || 'dark';
@@ -903,9 +895,6 @@
       }
     })();
 
-    // ================================================================
-    // ОСНОВНАЯ ЛОГИКА СТРАНИЦЫ ҒОЛИБОН
-    // ================================================================
     function openUserProfile(userId) {
       if (userId) location.href = 'profile.html?user=' + userId;
     }
@@ -950,7 +939,6 @@
       const container = document.getElementById('winnersContent');
       const cacheKey = 'kk_winners_' + period;
 
-      // Пытаемся получить данные из кэша
       let data = CacheManager ? CacheManager.get(cacheKey) : null;
       if (data) {
         allData = data;
@@ -960,7 +948,6 @@
         return;
       }
 
-      // Нет в кэше – загружаем с сервера
       container.innerHTML = '<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
       try {
         const result = await AutoLogin.autoLogin(false);
@@ -986,7 +973,6 @@
         allData.top3 = allData.top3.map(u => ({ ...u, age: getAge(u.birth_year) }));
         allData.top100 = allData.top100.map(u => ({ ...u, age: getAge(u.birth_year) }));
 
-        // Сохраняем в кэш
         if (CacheManager) CacheManager.set(cacheKey, data);
 
         applyFilters();
@@ -1005,7 +991,6 @@
 
       let html = '';
 
-      // ПОДИУМ
       html += `<div class="podium">`;
       const podiumOrder = [1, 0, 2];
       const medalClass = ['silver', 'gold', 'bronze'];
@@ -1048,7 +1033,6 @@
       }
       html += `</div>`;
 
-      // ТОП-100
       html += `
         <div class="list-head">
           <div class="eyebrow">Рейтинги пурра</div>
@@ -1118,11 +1102,9 @@
       renderWinners(allData.top3, filtered);
     }
 
-    // Обработчики фильтров
     document.getElementById('ageFilter').addEventListener('change', applyFilters);
     document.getElementById('regionFilter').addEventListener('change', applyFilters);
 
-    // Переключатели периода
     document.getElementById('periodSwitch').addEventListener('click', (e) => {
       const btn = e.target.closest('button[data-period]');
       if (!btn) return;
@@ -1134,7 +1116,6 @@
       loadWinners(period);
     });
 
-    // Запуск
     loadWinners('all');
   </script>
 </body>
