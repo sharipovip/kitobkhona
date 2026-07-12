@@ -584,6 +584,19 @@
       width: 38px;
       height: 38px;
     }
+    .avatar-inner .avatar-photo {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 50%;
+      display: block;
+    }
+    .avatar-placeholder {
+      color: var(--gold);
+      font-size: 34px;
+      line-height: 1;
+      font-weight: 800;
+    }
     .stats-row {
       flex: 1;
       display: flex;
@@ -617,10 +630,17 @@
       color: var(--cream);
       margin-bottom: 3px;
     }
-    .profile-meta .sub-info {
-      font-size: 12.5px;
-      color: var(--muted);
+    .age-gender-row {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      min-height: 22px;
       margin-top: 2px;
+    }
+    .profile-meta .sub-info {
+      font-size: 13px;
+      color: var(--cream);
+      font-weight: 700;
     }
     .status-chip {
       display: inline-flex;
@@ -633,7 +653,7 @@
       border: 1px solid var(--line);
       padding: 3px 10px;
       border-radius: 999px;
-      margin-bottom: 6px;
+      margin-bottom: 0;
     }
     .meta-loc {
       font-size: 12.5px;
@@ -1176,8 +1196,7 @@
         </div>
         <div class="profile-meta">
           <h3 id="ownName">Китобхон</h3>
-          <div class="sub-info" id="ownAge"></div>
-          <div class="status-chip" id="ownGender">👤</div>
+          <div class="age-gender-row"><div class="sub-info" id="ownAge"></div><div class="status-chip" id="ownGender" style="display:none"></div></div>
           <div class="meta-loc" id="ownLoc">—</div>
         </div>
       </div>
@@ -1295,6 +1314,16 @@
           </div>
         </div>
 
+        <!-- Ёрӣ ва истифода -->
+        <div onclick="showHelpApp()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
+          <span style="font-size:20px">❓</span>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--cream)">Ёрӣ ва истифода</div>
+            <div style="font-size:12px;color:var(--muted)">Чӣ тавр аз барнома истифода бурдан</div>
+          </div>
+          <span style="margin-left:auto;color:var(--muted)">›</span>
+        </div>
+
         <!-- Тамос бо мо -->
         <div onclick="openFeedbackModal()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
           <span style="font-size:20px">📧</span>
@@ -1310,7 +1339,7 @@
           <span style="font-size:20px">📚</span>
           <div>
             <div style="font-size:14px;font-weight:600;color:var(--cream)">Дар бораи барнома</div>
-            <div style="font-size:12px;color:var(--muted)">Китобхона v2.0</div>
+            <div style="font-size:12px;color:var(--muted)">Нашри аввал · версияи 1.0.0</div>
           </div>
           <span style="margin-left:auto;color:var(--muted)">›</span>
         </div>
@@ -1336,30 +1365,76 @@
     <div class="sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-head"><h3>📚 Дар бораи барнома</h3><div class="icon-btn" id="closeAbout">✕</div></div>
-      <div class="sheet-body" style="padding-bottom:24px;text-align:center">
-        <div style="font-size:56px;margin:10px 0">📚</div>
-        <div style="font-size:22px;font-weight:800;color:var(--gold);margin-bottom:6px">Китобхона</div>
-        <div style="font-size:13px;color:var(--muted);margin-bottom:18px">Китобхонаи рақамии тоҷикӣ</div>
-        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;text-align:left;font-size:13px;color:var(--cream-dim);line-height:1.7">
-          <div>📌 Насха: <b style="color:var(--cream)">2.0.0</b></div>
-          <div>📚 Китобҳо: <b style="color:var(--cream)">Биш аз 500+</b></div>
-          <div>🌍 Забон: <b style="color:var(--cream)">Тоҷикӣ</b></div>
-          <div style="margin-top:10px;font-size:12px;color:var(--muted)">Барнома барои хондани китобҳои тоҷикӣ сохта шудааст.</div>
+      <div class="sheet-body" style="padding-bottom:24px;text-align:left">
+        <div style="text-align:center;font-size:56px;margin:8px 0">📚</div>
+        <div style="text-align:center;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:5px">Китобхона</div>
+        <div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:18px">Манбаи дониш · Китобхонаи рақамии тоҷикӣ</div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;font-size:13px;color:var(--cream-dim);line-height:1.7">
+          <div>📌 Нашр: <b style="color:var(--cream)">1.0.0 · нашри аввал</b></div>
+          <div>🌍 Забон: <b style="color:var(--cream)">тоҷикӣ</b></div>
+          <div>📖 Самт: <b style="color:var(--cream)">китобхонӣ ва рушди дониш</b></div>
+          <div style="margin-top:12px;color:var(--cream)">Китобхона барои мутолиаи осон, нигоҳ доштани китобҳои дӯстдошта ва мубодилаи муҳаббат ба китоб сохта шудааст.</div>
+        </div>
+        <div style="margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;font-size:13px;color:var(--cream-dim);line-height:1.7">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:6px">Имкониятҳои барнома</div>
+          <div>• ҷустуҷӯ ва мутолиаи китобҳои тоҷикӣ;</div>
+          <div>• PDF-читалка бо нигоҳдории пешрафти хондан;</div>
+          <div>• закладкаҳо ва таърихи китобҳои хондашуда;</div>
+          <div>• профил, дӯстӣ ва лентаи китобӣ;</div>
+          <div>• лайк, шарҳ ва баҳодиҳии китобҳо;</div>
+          <div>• огоҳиномаҳо ва кор бо режими offline.</div>
+        </div>
+        <div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">Илм фурӯғи маърифат аст.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ===== МОДАЛКА "Ёрӣ ва истифода" ===== -->
+  <div class="sheet-overlay" id="helpOverlay">
+    <div class="sheet">
+      <div class="sheet-handle"></div>
+      <div class="sheet-head"><h3>❓ Ёрӣ ва истифода</h3><div class="icon-btn" id="closeHelp">✕</div></div>
+      <div class="sheet-body" style="padding-bottom:24px;text-align:left;font-size:13px;color:var(--cream-dim);line-height:1.65">
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">📚 Китобҳоро чӣ тавр хондан?</div>
+          <div>Ба «Китобҳо» дароед, категорияро интихоб кунед ва рӯйи китоб пахш намоед. Дар читалка саҳифаро иваз кунед, масштабро танзим намоед ва пешрафти хондан нигоҳ дошта мешавад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">⭐ Закладка ва кэш</div>
+          <div>Дар профили худ аз менюи китоб «Илова ба закладка»-ро интихоб кунед. Кэш барои кушодани зудтар кӯмак мекунад; тоза кардани кэш пешрафти хонданро нест намекунад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🧾 Профил</div>
+          <div>Ном, насаб, соли таваллуд ва ҷинсро пур кунед. Аватар бо акс ё нишонаи мувофиқ нишон дода мешавад. Барои нашри пост профил бояд пурра бошад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">📰 Лента ва постҳо</div>
+          <div>Постҳои нашршуда барои ҳамаи хонандагон дастрасанд. Барои нашр китоб интихоб кунед, маълумотро пур кунед ва «Интишор»-ро пахш намоед. Меҳмон ё профили нопурра метавонад постҳоро бинад, аммо нашр карда наметавонад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🤝 Дӯстон ва чат</div>
+          <div>Барои сӯҳбат аввал ба корбар дархости дӯстӣ фиристед. Чат баъд аз қабул шудани дархост дастрас мешавад.</div>
+        </div>
+        <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px">
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🔔 Огоҳинома ва ёрӣ</div>
+          <div>Огоҳиномаҳо танҳо бо иҷозаи шумо фаъол мешаванд. Агар китоб кушода нашавад ё мушкил пайдо шавад, аз «Тамос бо мо» истифода баред.</div>
         </div>
       </div>
     </div>
   </div>
+
   <div class="sheet-overlay" id="editOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>Таҳрири профил</h3><div class="icon-btn" id="closeEdit">✕</div></div><div class="sheet-body">
     <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12.5px;" disabled>Тағйири акс</button></div>
-    <div class="field-row"><div class="field"><label>Ном</label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб</label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
-    <div class="field"><label>Соли таваллуд</label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2008"></div>
-    <div class="field"><label>Пол</label><select id="editGender"><option value="">Интихоб кунед</option><option value="male">Мард</option><option value="female">Зан</option></select></div>
-    <div class="field"><label>Вилоят</label><select id="editRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div>
-    <div class="field-row"><div class="field"><label>Шаҳр/ноҳия</label><input type="text" id="editCity" placeholder="Шаҳр"></div><div class="field"><label>Ҷамоат</label><input type="text" id="editJamoat" placeholder="Ҷамоат"></div></div>
+    <div id="profileEditNotice" style="display:none;background:var(--gold-soft);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:12px;color:var(--cream-dim);font-size:12px;line-height:1.5"></div>
+    <div class="field-row"><div class="field"><label>Ном <span style="color:var(--red)">*</span></label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб <span style="color:var(--red)">*</span></label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
+    <div class="field"><label>Соли таваллуд <span style="color:var(--red)">*</span></label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2026"></div>
+    <div class="field"><label>Пол <span style="color:var(--red)">*</span></label><select id="editGender"><option value="">Интихоб кунед</option><option value="male">Мард</option><option value="female">Зан</option></select></div>
+    <div class="field"><label>Вилоят <span style="color:var(--red)">*</span></label><select id="editRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div>
+    <div class="field-row"><div class="field"><label>Шаҳр/ноҳия <span style="color:var(--red)">*</span></label><input type="text" id="editCity" placeholder="Шаҳр"></div><div class="field"><label>Ҷамоат</label><input type="text" id="editJamoat" placeholder="Ҷамоат"></div></div>
     <div class="field"><label>Деҳа/Село</label><input type="text" id="editVillage" placeholder="Деҳа"></div>
     <div class="field"><label>Почтаи электронӣ</label><input type="email" id="editEmail" placeholder="you@example.com"><div id="emailWarning" style="display:none;font-size:11.5px;color:var(--gold);margin-top:5px;line-height:1.4;">⚠️ Бе почтаи электронӣ барқарорсозии парол кор намекунад. Лутфан почтаи воқеӣ илова кунед.</div></div>
     <div class="field"><label>Логин (барои барқарорсозӣ)</label><input type="text" id="editUsername" placeholder="логин"></div>
-    <div class="field"><label>Пароли нав <span id="guestLabel" style="font-weight:400;color:var(--gold);display:none;">(барои гост ҳатмӣ)</span></label><input type="password" id="editPassword" placeholder="••••••••" minlength="4"><div id="passwordHint" style="font-size:11px;color:var(--muted);margin-top:4px;"></div></div>
+    <div class="field"><label>Пароли нав <span id="guestLabel" style="font-weight:400;color:var(--gold);display:none;">(барои гост ҳатмӣ)</span></label><div style="display:flex;gap:8px;align-items:stretch"><input type="password" id="editPassword" placeholder="••••••••" minlength="4" style="flex:1;min-width:0"><button type="button" id="togglePasswordBtn" class="btn btn-ghost" style="width:auto;padding:0 12px;font-size:12px">Нишон додан</button></div><div id="passwordHint" style="font-size:11px;color:var(--muted);margin-top:4px;"></div></div>
   </div>
   <div class="sheet-foot"><button class="btn btn-outline" id="cancelEdit">Бекор кардан</button><button class="btn btn-primary" id="saveEdit">Нигоҳ доштан</button></div></div></div>
 
@@ -1451,18 +1526,42 @@
     }
     loadProfile();
     initSettings();
+    friendStatusTimer = setInterval(() => {
+      if (!document.hidden && currentProfileUserId && !isOwnProfile) {
+        checkFriendStatus(currentUserId, currentProfileUserId)
+          .then(() => updateFriendButtonUI())
+          .catch(() => {});
+      }
+    }, 10000);
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden && currentProfileUserId) {
-        if (typeof CacheManager !== 'undefined') {
-          CacheManager.invalidateKey('kk_cache_sessions');
-          CacheManager.invalidateKey('kk_cache_favorites');
-          CacheManager.invalidateKey('kk_cache_posts');
+        const seq = profileLoadSequence;
+        checkFriendStatus(currentUserId, currentProfileUserId)
+          .then(() => { if (seq === profileLoadSequence) updateFriendButtonUI(); })
+          .catch(() => {});
+        const sessionsKey = profileCacheKey('sessions', currentProfileUserId);
+        const favoritesKey = profileCacheKey('favorites', currentProfileUserId);
+        const postsKey = profileCacheKey('posts', currentProfileUserId);
+        if (typeof CacheManager !== 'undefined' && typeof CacheManager.invalidateKey === 'function') {
+          CacheManager.invalidateKey(sessionsKey);
+          CacheManager.invalidateKey(favoritesKey);
+          CacheManager.invalidateKey(postsKey);
         }
-        loadBooksCached(currentProfileUserId).then(() => renderBooks()).catch(() => {});
-        loadFavoritesCached(currentProfileUserId).then(() => renderFavorites()).catch(() => {});
-        loadPostsCached(currentProfileUserId).then(() => renderPosts()).catch(() => {});
+        loadBooksCached(currentProfileUserId).then(() => {
+          if (seq === profileLoadSequence) renderBooks();
+        }).catch(() => {});
+        loadFavoritesCached(currentProfileUserId).then(() => {
+          if (seq === profileLoadSequence) renderFavorites();
+        }).catch(() => {});
+        loadPostsCached(currentProfileUserId).then(() => {
+          if (seq === profileLoadSequence) renderPosts();
+        }).catch(() => {});
       }
     });
+  });
+
+  window.addEventListener('beforeunload', () => {
+    if (friendStatusTimer) clearInterval(friendStatusTimer);
   });
 
   // ================================================================
@@ -1491,6 +1590,59 @@
   let loadedProfile = null;
   let friendStatus = null;
   let currentUserId = null;
+  let currentUserProfileComplete = null;
+  let profileLoadSequence = 0;
+  let friendStatusTimer = null;
+
+  // Кэш профиля, книг, закладок и постов всегда привязан к ID пользователя.
+  // Старые общие ключи очищаем, чтобы данные одного профиля не попадали в другой.
+  function profileCacheKey(type, userId) {
+    return 'kk_cache_' + type + '_' + encodeURIComponent(String(userId));
+  }
+
+  function clearProfileScopedCache(keepUserId) {
+    const keepId = String(keepUserId);
+    const keepKeys = new Set([
+      'kk_profile_' + keepId,
+      profileCacheKey('sessions', keepId),
+      profileCacheKey('favorites', keepId),
+      profileCacheKey('posts', keepId)
+    ]);
+    const oldKeys = [];
+
+    Object.keys(localStorage).forEach((key) => {
+      const isOldSharedKey = ['kk_cache_sessions', 'kk_cache_favorites', 'kk_cache_posts'].includes(key);
+      const isProfileKey = key.startsWith('kk_profile_') && key !== 'kk_profile_cache';
+      const isProfileDataKey = /^kk_cache_(sessions|favorites|posts)_/.test(key);
+      if ((isOldSharedKey || isProfileKey || isProfileDataKey) && !keepKeys.has(key)) {
+        oldKeys.push(key);
+        localStorage.removeItem(key);
+      }
+    });
+
+    if (typeof CacheManager !== 'undefined' && typeof CacheManager.invalidateKey === 'function') {
+      oldKeys.forEach((key) => {
+        try { CacheManager.invalidateKey(key); } catch (e) {}
+      });
+    }
+  }
+
+  function resetProfileDataView() {
+    booksData = [];
+    favoritesData = [];
+    postsData = [];
+    hiddenBooks = [];
+    loadedProfile = null;
+    friendStatus = null;
+    ['ownBooks', 'ownFriends', 'ownMarks'].forEach((id) => {
+      const node = el(id);
+      if (node) node.textContent = '0';
+    });
+    ['panelBooks', 'panelMarks', 'panelPosts'].forEach((id) => {
+      const node = el(id);
+      if (node) node.innerHTML = '<div class="empty-state">Боргирӣ...</div>';
+    });
+  }
 
   // ================================================================
   // ============ ВЫХОД И УДАЛЕНИЕ АККАУНТА ============
@@ -1584,13 +1736,20 @@
     }
 
     el('friendBtn').style.display = 'flex';
+    if (currentUserProfileComplete === false) {
+      el('friendBtn').textContent = '📝 Профилро пур кунед';
+      el('friendBtn').className = 'btn btn-outline';
+      el('friendBtn').onclick = () => { location.href = 'profile.html'; };
+      el('friendBtn').style.opacity = '0.85';
+      return;
+    }
     if (friendStatus === 'friends') {
-      el('friendBtn').textContent = '✅ Дӯст';
+      el('friendBtn').textContent = '✅ Дӯстон';
       el('friendBtn').className = 'btn btn-ghost';
       el('friendBtn').onclick = () => removeFriend(currentProfileUserId);
       el('friendBtn').style.opacity = '1';
     } else if (friendStatus === 'pending') {
-      el('friendBtn').textContent = '⏳ Дархост фиристода шуд';
+      el('friendBtn').textContent = '⏳ Интизор шавед';
       el('friendBtn').className = 'btn btn-outline';
       el('friendBtn').onclick = null;
       el('friendBtn').style.opacity = '0.7';
@@ -1607,37 +1766,76 @@
     }
   }
 
+  function applyProfileHeader(profile) {
+    const displayName = profile.display_name || profile.username || 'Китобхон';
+    el('ownName').textContent = displayName;
+    const genderMap = { male: 'Мард', female: 'Зан' };
+    const genderLabel = genderMap[profile.gender] || '';
+    el('ownGender').textContent = genderLabel;
+    el('ownGender').style.display = genderLabel ? 'inline-flex' : 'none';
+    updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
+    const locParts = [profile.city, profile.region].filter(Boolean);
+    el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
+    el('ownBooks').textContent = profile.books_count_real ?? profile.books_count ?? 0;
+    el('ownFriends').textContent = profile.friends_count ?? profile.followers_count ?? 0;
+    el('ownMarks').textContent = profile.favorites_count ?? 0;
+
+    let ageText = '';
+    if (profile.birth_year) {
+      ageText = (new Date().getFullYear() - profile.birth_year) + ' сола';
+    } else if (profile.age) {
+      ageText = profile.age + ' сола';
+    }
+    el('ownAge').textContent = ageText;
+  }
+
   async function loadProfile() {
     try {
       const savedToken = localStorage.getItem('kk_token');
       const savedUserId = localStorage.getItem('kk_user_id');
       const result = await AutoLogin.autoLogin(false);
       if (!result && !savedToken && !savedUserId) { showScreen('screen-guest'); return; }
-      currentUserId = (result && result.userId) ? result.userId : savedUserId;
+      currentUserId = String((result && result.userId) ? result.userId : (savedUserId || ''));
       if (!currentUserId) { showScreen('screen-guest'); return; }
 
-      let profileId = targetUserId || currentUserId;
+      const profileId = String(targetUserId || currentUserId);
       if (!profileId) { showScreen('screen-guest'); return; }
+      const loadSequence = ++profileLoadSequence;
       currentProfileUserId = profileId;
       isOwnProfile = (profileId === currentUserId);
+      resetProfileDataView();
+      showScreen('screen-loading');
+      clearProfileScopedCache(profileId);
 
       // Отписываемся от старых подписок
       if (unsubscribeSessions) { unsubscribeSessions(); unsubscribeSessions = null; }
       if (unsubscribeFavorites) { unsubscribeFavorites(); unsubscribeFavorites = null; }
       if (unsubscribePosts) { unsubscribePosts(); unsubscribePosts = null; }
 
-      // Ключи кэша с привязкой к пользователю
-      const sessionKey = 'kk_cache_sessions';
-      const favoritesKey = 'kk_cache_favorites';
-      const postsKey = 'kk_cache_posts';
+      // Ключи кэша всегда привязаны к конкретному пользователю.
+      const sessionKey = profileCacheKey('sessions', profileId);
+      const favoritesKey = profileCacheKey('favorites', profileId);
+      const postsKey = profileCacheKey('posts', profileId);
       const profileKey = 'kk_profile_' + profileId;
 
-      // Пытаемся взять профиль из кэша
-      let profile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
-      if (!profile || profile.id !== profileId) {
-        profile = await NEON_API.getProfile(profileId);
-        if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, profile);
+      // Свой профиль открываем сразу из кэша, чтобы не показывать 7–8 секунд
+      // экран загрузки. Затем тихо обновляем данные с сервера.
+      const cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
+      const validCachedProfile = cachedProfile && String(cachedProfile.id) === String(profileId);
+      let profile = (isOwnProfile && validCachedProfile) ? cachedProfile : null;
+      let loadedFromCache = !!profile;
+      if (!profile) {
+        try {
+          profile = await NEON_API.getProfile(profileId);
+          if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, profile);
+        } catch (networkError) {
+          profile = cachedProfile;
+        }
       }
+      if (!profile || String(profile.id) !== String(profileId)) {
+        throw new Error('Профиль дастрас нест');
+      }
+      if (loadSequence !== profileLoadSequence) return;
       console.log('[Profile] Данные профиля:', profile);
       loadedProfile = profile;
       if (profile.blocked === true) {
@@ -1645,37 +1843,47 @@
         return;
       }
 
-      const displayName = profile.display_name || profile.username || 'Китобхон';
-      el('ownName').textContent = displayName;
-      const genderMap = { 'male': '🧑 Мард', 'female': '👩 Зан', '': '👤' };
-      el('ownGender').textContent = genderMap[profile.gender] || '👤';
-      updateAvatar(profile.gender);
-      const locParts = [profile.city, profile.region].filter(Boolean);
-      el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
-      el('ownBooks').textContent = profile.books_count || 0;
-      el('ownFriends').textContent = profile.followers_count || 0;
-
-      let ageText = '';
-      if (profile.birth_year) {
-        const age = new Date().getFullYear() - profile.birth_year;
-        ageText = age + ' сола';
-      } else if (profile.age) {
-        ageText = profile.age + ' сола';
+      applyProfileHeader(profile);
+      if (loadedFromCache && isOwnProfile) {
+        void NEON_API.getProfile(profileId).then(freshProfile => {
+          if (loadSequence !== profileLoadSequence || String(currentProfileUserId) !== String(profileId)) return;
+          loadedProfile = freshProfile;
+          if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, freshProfile);
+          applyProfileHeader(freshProfile);
+          currentUserProfileComplete = isCompleteProfile(freshProfile);
+        }).catch(() => {});
       }
-      el('ownAge').textContent = ageText;
 
+      try {
+        const actorProfile = isOwnProfile ? profile : await NEON_API.getProfile(currentUserId);
+        currentUserProfileComplete = isCompleteProfile(actorProfile);
+      } catch (e) {
+        currentUserProfileComplete = false;
+      }
       updateFriendButtonUI();
 
-      // Загрузка друзей для счётчика (из кэша или с сервера)
-      try {
-        let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
-        if (!friends) {
-          friends = await ChatAPI.getFriends(currentUserId);
-          if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
-        }
-        el('ownFriends').textContent = friends.length;
-      } catch(e) {
-        console.warn('Не удалось загрузить друзей', e);
+      // Список друзей текущего аккаунта нужен только для собственного профиля.
+      // Для чужого профиля используем friends_count, рассчитанный сервером именно для него.
+      if (isOwnProfile) {
+        // Не задерживаем показ собственного профиля сетевым запросом.
+        void (async () => {
+          try {
+            let friends;
+            try {
+              // Для счётчика всегда берём свежий список, иначе принятие заявки
+              // на другом экране может не отразиться в профиле.
+              friends = await ChatAPI.getFriends(currentUserId);
+              if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+            } catch (networkError) {
+              friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : [];
+            }
+            if (loadSequence === profileLoadSequence) {
+              el('ownFriends').textContent = Array.isArray(friends) ? friends.length : 0;
+            }
+          } catch(e) {
+            console.warn('Не удалось загрузить друзей', e);
+          }
+        })();
       }
 
       showScreen('screen-own');
@@ -1689,13 +1897,13 @@
         .catch(e => console.warn('Не удалось проверить статус дружбы', e));
 
       loadBooksCached(profileId)
-        .then(() => renderBooks())
+        .then(() => { if (loadSequence === profileLoadSequence) renderBooks(); })
         .catch(e => console.warn('Не удалось обновить книги', e));
       loadFavoritesCached(profileId)
-        .then(() => renderFavorites())
+        .then(() => { if (loadSequence === profileLoadSequence) renderFavorites(); })
         .catch(e => console.warn('Не удалось обновить закладки', e));
       loadPostsCached(profileId)
-        .then(() => renderPosts())
+        .then(() => { if (loadSequence === profileLoadSequence) renderPosts(); })
         .catch(e => console.warn('Не удалось обновить посты', e));
       loadHiddenBooksCached()
         .catch(e => console.warn('Не удалось обновить скрытые книги', e));
@@ -1741,7 +1949,7 @@
 
   // ===== КЭШИРОВАННЫЕ ФУНКЦИИ ЗАГРУЗКИ (с привязкой к пользователю) =====
   async function loadBooksCached(userId) {
-    const key = 'kk_cache_sessions';
+    const key = profileCacheKey('sessions', userId);
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
     if (!data) {
       const token = localStorage.getItem('kk_token');
@@ -1799,11 +2007,15 @@
         return;
       }
     }
-    booksData = data;
+    booksData = Array.isArray(data) ? data : [];
+    if (String(currentProfileUserId) === String(userId)
+        && (!loadedProfile || loadedProfile.books_count_real == null)) {
+      el('ownBooks').textContent = booksData.length;
+    }
   }
 
   async function loadFavoritesCached(userId) {
-    const key = 'kk_cache_favorites';
+    const key = profileCacheKey('favorites', userId);
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
     if (!data) {
       const token = localStorage.getItem('kk_token');
@@ -1821,12 +2033,15 @@
         return;
       }
     }
-    favoritesData = data;
-    el('ownMarks').textContent = favoritesData.length;
+    favoritesData = Array.isArray(data) ? data : [];
+    if (String(currentProfileUserId) === String(userId)
+        && (!loadedProfile || loadedProfile.favorites_count == null)) {
+      el('ownMarks').textContent = favoritesData.length;
+    }
   }
 
   async function loadPostsCached(userId) {
-    const key = 'kk_cache_posts';
+    const key = profileCacheKey('posts', userId);
     let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
     if (!data) {
       const token = localStorage.getItem('kk_token');
@@ -1896,28 +2111,39 @@
   async function checkFriendStatus(myId, otherId) {
     try {
       const token = localStorage.getItem('kk_token');
-      if (!token) { friendStatus = null; return; }
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends', {
+      if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!r.ok) { friendStatus = null; return; }
-      const friends = await r.json();
-      const isFriend = friends.some(f => f.id === otherId);
-      if (isFriend) { friendStatus = 'friends'; return; }
-      const reqR = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests', {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (reqR.ok) {
-        const requests = await reqR.json();
-        const sent = requests.some(r => r.from_user === myId && r.to_user === otherId);
-        if (sent) { friendStatus = 'pending'; return; }
-        const received = requests.some(r => r.from_user === otherId && r.to_user === myId);
-        if (received) { friendStatus = 'requested'; return; }
-      }
-      friendStatus = null;
+      const data = await r.json();
+      friendStatus = data.status || null;
     } catch (e) {
       console.warn('Check friend status error:', e);
       friendStatus = null;
+    }
+  }
+
+  function isCompleteProfile(profile) {
+    return !!(profile
+      && String(profile.first_name || '').trim()
+      && String(profile.last_name || '').trim()
+      && String(profile.gender || '').trim()
+      && profile.birth_year);
+  }
+
+  async function canUseSocialActions() {
+    try {
+      const profile = (isOwnProfile && loadedProfile)
+        ? loadedProfile
+        : await NEON_API.getProfile(currentUserId);
+      if (isCompleteProfile(profile)) return true;
+      showToast('Барои ин амал аввал ном, насаб, соли таваллуд ва ҷинсро дар профил пур кунед.');
+      setTimeout(() => { location.href = 'profile.html'; }, 1200);
+      return false;
+    } catch (e) {
+      showToast('Аввал профилро пур кунед.');
+      return false;
     }
   }
 
@@ -1927,6 +2153,7 @@
   async function sendFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
     if (!token) { showToast('Лутфан ворид шавед'); return; }
+    if (!await canUseSocialActions()) return;
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/request', {
         method: 'POST',
@@ -1952,6 +2179,7 @@
   async function acceptFriendRequest(otherId) {
     const token = localStorage.getItem('kk_token');
     if (!token) { showToast('Лутфан ворид шавед'); return; }
+    if (!await canUseSocialActions()) return;
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
         method: 'POST',
@@ -1982,13 +2210,23 @@
   // ================================================================
   // ============ АВАТАР ============
   // ================================================================
-  function updateAvatar(gender) {
+  function updateAvatar(gender, avatarUrl, isTemporary) {
     const container = el('avatarInner');
+    if (!container) return;
+
+    // Настоящее фото имеет приоритет. Для гостевого профиля без фото показываем '?'.
+    if (avatarUrl) {
+      container.innerHTML = `<img class="avatar-photo" src="${esc(avatarUrl)}" alt="Аватар" onerror="this.replaceWith(document.createTextNode('?'))">`;
+      return;
+    }
     let svg = '';
     if (gender === 'male') {
       svg = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="var(--gold)" stroke-width="1.6"/></svg>`;
     } else if (gender === 'female') {
       svg = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="var(--gold)" stroke-width="1.6"/><path d="M12 12v4m-2-2h4" stroke="var(--gold)" stroke-width="1.6"/></svg>`;
+    } else if (isTemporary) {
+      container.innerHTML = '<div class="avatar-placeholder" aria-label="Гостевой профиль">?</div>';
+      return;
     } else {
       svg = `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg>`;
     }
@@ -2018,6 +2256,20 @@
     } catch {
       return { text: raw, style: {} };
     }
+  }
+
+  function getPostBookTitle(post) {
+    const directTitle = String(post && post.book_title || '').trim();
+    if (directTitle) return directTitle;
+    const bookId = String(post && post.book_id || '').trim();
+    if (bookId) {
+      try {
+        const file = decodeURIComponent(bookId.split('/').pop() || bookId);
+        const title = file.replace(/\.pdf$/i, '').replace(/[_.-]+/g, ' ').trim();
+        if (title) return title;
+      } catch (e) {}
+    }
+    return 'Пост';
   }
 
   // ===== RENDER =====
@@ -2122,8 +2374,6 @@
     }
     const items = await Promise.all(postsData.map(async (post) => {
       const timeAgo = timeSince(post.created_at);
-      const { text, style } = parsePostContent(post.content || '');
-      const displayText = text || post.content || '';
       let coverHtml = '';
       if (post.book_id) {
         const parts = post.book_id.includes('/') ? post.book_id.split('/') : [];
@@ -2136,19 +2386,14 @@
           onerror="this.style.display='none'"
           style="width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;margin-right:10px">`;
       }
-      const title = post.book_title || 'Пост';
+      const title = getPostBookTitle(post);
       return `
         <div class="post-item" onclick="location.href='Lenta.html?post=${post.id}'" style="display:flex;align-items:flex-start">
           ${coverHtml}
           <div style="flex:1;min-width:0">
             <div class="post-header">
-              <span class="post-title">${escHtml(title)}</span>
+              <span class="post-title">📚 ${escHtml(title)}</span>
               <span class="post-time">${timeAgo}</span>
-            </div>
-            ${displayText ? `<div class="post-content">${escHtml(displayText)}</div>` : ''}
-            <div class="post-stats">
-              <span>❤️ ${post.likes_count || 0}</span>
-              <span>💬 ${post.comments_count || 0}</span>
             </div>
           </div>
         </div>
@@ -2325,8 +2570,8 @@
       favoritesData = favoritesData.filter(f => f.book_id !== bookId);
       el('ownMarks').textContent = favoritesData.length;
       renderFavorites();
-      if (typeof CacheManager !== 'undefined') {
-        CacheManager.invalidateKey('kk_cache_favorites');
+      if (typeof CacheManager !== 'undefined' && typeof CacheManager.invalidateKey === 'function') {
+        CacheManager.invalidateKey(profileCacheKey('favorites', currentProfileUserId));
       }
     } catch (e) { await showAlertDialog('Хатогӣ: ' + e.message, 'Хатогӣ'); }
   }
@@ -2442,10 +2687,13 @@
   overlay.addEventListener('click', function(e) { if (e.target === overlay) closeEdit(); });
 
   let isTemporary = false;
+  let profileEditLocked = false;
   const passwordInput = el('editPassword');
   const saveBtn = el('saveEdit');
   const hintDiv = el('passwordHint');
   const guestLabel = el('guestLabel');
+  const profileEditNotice = el('profileEditNotice');
+  const togglePasswordBtn = el('togglePasswordBtn');
 
   function fillEditForm(profile) {
     el('editName').value = profile.first_name || '';
@@ -2461,7 +2709,24 @@
     el('editEmail').value = realEmail ? profile.email : '';
     el('emailWarning').style.display = realEmail ? 'none' : 'block';
     passwordInput.value = '';
+    if (togglePasswordBtn) {
+      passwordInput.type = 'password';
+      togglePasswordBtn.textContent = 'Нишон додан';
+    }
     isTemporary = profile.is_temporary === true;
+    const lockedUntil = profile.profile_edit_locked_until ? new Date(profile.profile_edit_locked_until) : null;
+    profileEditLocked = !!(lockedUntil && lockedUntil > new Date());
+    const editableFields = ['editName', 'editSurname', 'editBirthYear', 'editGender', 'editRegion', 'editCity', 'editJamoat', 'editVillage'];
+    editableFields.forEach(id => { if (el(id)) el(id).disabled = profileEditLocked; });
+    if (profileEditNotice) {
+      if (profileEditLocked) {
+        profileEditNotice.style.display = 'block';
+        profileEditNotice.textContent = '🔒 Маълумоти асосии профил аллакай сабт шудааст. Тағйири ном, насаб, санаи таваллуд ва суроға баъд аз ' + lockedUntil.toLocaleDateString('tg-TJ') + ' дастрас мешавад. Парол ва почтаи электронӣ метавонанд ҷудогона тағйир дода шаванд.';
+      } else {
+        profileEditNotice.style.display = 'block';
+        profileEditNotice.textContent = 'ℹ️ Ном, насаб, соли таваллуд, ҷинс ва суроға ҳатмӣ мебошанд. Пас аз нигоҳдорӣ маълумоти асосии профилро танҳо баъд аз як моҳ тағйир додан мумкин аст.';
+      }
+    }
     if (isTemporary) {
       guestLabel.style.display = 'inline';
       passwordInput.placeholder = 'Парол (ҳадди ақал 4 аломат)';
@@ -2475,6 +2740,12 @@
       saveBtn.disabled = false;
     }
   }
+  togglePasswordBtn?.addEventListener('click', function() {
+    const visible = passwordInput.type === 'text';
+    passwordInput.type = visible ? 'password' : 'text';
+    this.textContent = visible ? 'Нишон додан' : 'Пинҳон кардан';
+  });
+
   passwordInput.addEventListener('input', function() {
     const val = this.value;
     if (isTemporary) {
@@ -2506,7 +2777,14 @@
     const newEmail = el('editEmail').value.trim();
     const newPassword = passwordInput.value;
 
-    if (!firstName || !lastName) { showToast('Ном ва насаб ҳатмӣ аст'); return; }
+    if (!firstName || !lastName || !birthYear || !gender || !region || !city) {
+      showToast('Барои нигоҳдорӣ ном, насаб, соли таваллуд, ҷинс ва суроға ҳатмист.');
+      return;
+    }
+    if (birthYear < 1930 || birthYear > new Date().getFullYear()) {
+      showToast('Соли таваллуд нодуруст аст.');
+      return;
+    }
     if (isTemporary && !newPassword) { showToast('Барои нигоҳ доштани профил, лутфан парол ворид кунед.'); return; }
     if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { showToast('Формати почта нодуруст аст'); return; }
 
@@ -2627,6 +2905,7 @@
   // ================================================================
   const settingsOverlay = el('settingsOverlay');
   const aboutOverlay = el('aboutOverlay');
+  const helpOverlay = el('helpOverlay');
 
   function openSettings() {
     // Обновляем состояние темы
@@ -2650,6 +2929,14 @@
   function closeSettings() { settingsOverlay.classList.remove('open'); }
   el('closeSettings').addEventListener('click', closeSettings);
   settingsOverlay.addEventListener('click', function(e) { if (e.target === settingsOverlay) closeSettings(); });
+
+  function showHelpApp() {
+    closeSettings();
+    setTimeout(() => helpOverlay.classList.add('open'), 120);
+  }
+  function closeHelpApp() { helpOverlay.classList.remove('open'); }
+  el('closeHelp').addEventListener('click', closeHelpApp);
+  helpOverlay.addEventListener('click', function(e) { if (e.target === helpOverlay) closeHelpApp(); });
 
   function showAboutApp() {
     closeSettings();
@@ -2688,6 +2975,7 @@
   }
   window.toggleThemeGlobal = toggleThemeGlobal;
   window.openSettings = openSettings;
+  window.showHelpApp = showHelpApp;
   window.showAboutApp = showAboutApp;
 
   function initSettings() {

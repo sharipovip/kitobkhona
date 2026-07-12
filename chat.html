@@ -251,6 +251,9 @@
       line-height: 1;
     }
     .check.read { color: var(--wa-check-blue); }
+    .check.pending { color: var(--wa-check-grey); font-size: 14px; font-weight: 700; letter-spacing: -2px; }
+    .check.delivered { color: var(--wa-check-blue); font-size: 14px; font-weight: 700; letter-spacing: -2px; }
+    .check.failed { color: #e06b62; font-size: 14px; }
 
     .composer {
       flex: 0 0 auto;
@@ -584,6 +587,7 @@
 
   let currentUserId = null;
   let pollInterval = null;
+  let pendingOutgoingCount = 0;
   let chatIsOpen = true; // по умолчанию открыт
 
   // Ключ кэша для сообщений
@@ -722,6 +726,8 @@
   // ===== ЗАГРУЗКА СООБЩЕНИЙ (С КЭШИРОВАНИЕМ) =====
   async function refreshMessagesFromServer(keepScroll = true, cachedMsgs = null) {
     const msgContainer = document.getElementById('messages');
+    // Не заменяем DOM во время отправки: иначе сообщение визуально исчезает.
+    if (pendingOutgoingCount > 0) return;
     try {
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
       if (!msgs || msgs.length === 0) {
@@ -752,6 +758,7 @@
 
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
+    if (pendingOutgoingCount > 0) return;
     try {
       const { data } = await AUTH.getUser();
       if (!data.user) {
@@ -812,14 +819,10 @@
     let html = '';
     let lastDate = '';
     msgs.forEach(m => {
-      const isMine = m.sender_id === currentUserId;
+      const isMine = String(m.sender_id) === String(currentUserId);
       const time = timeLabel(m.created_at);
-      const checkHtml = `<span class="check read" title="Прочитано">
-             <svg width="15" height="15" viewBox="0 0 15 15" fill="none">
-               <circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/>
-               <path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/>
-             </svg>
-           </span>`;
+      // Сообщение, полученное с сервера, уже доставлено: показываем две галочки.
+      const checkHtml = `<span class="check delivered" title="Доставлено">✓✓</span>`;
       const dateLabel = formatDate(m.created_at);
       if (dateLabel !== lastDate) {
         html += `<div class="date-sep">${dateLabel}</div>`;
@@ -917,20 +920,23 @@
     textEl.querySelector('.bubble-text').textContent = text;
     const meta = document.createElement('div');
     meta.className = 'bubble-meta';
-    // Анимация отправки (три точки)
-    meta.innerHTML = time + ' <span class="sending-dots">...</span>';
+    // Пока запрос выполняется — одна галочка. Никакого исчезновения текста.
+    meta.innerHTML = time + ' <span class="check pending" title="Отправляется">✓</span>';
     bubble.appendChild(textEl);
     bubble.appendChild(meta);
     row.appendChild(bubble);
     msgContainer.appendChild(row);
     scrollToBottom();
+    pendingOutgoingCount += 1;
 
     try {
       const sentMsg = await ChatAPI.sendMessage(currentUserId, peerId, text);
-      // Заменяем анимацию на галочку
-      const dotsEl = meta.querySelector('.sending-dots');
-      if (dotsEl) {
-        dotsEl.outerHTML = `<span class="check read"><svg width="15" height="15" viewBox="0 0 15 15" fill="none"><circle cx="7.5" cy="7.5" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M4.5 7.5L6.5 9.5L10.5 5.5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+      // Сервер принял сообщение — меняем одну галочку на две.
+      const pendingCheck = meta.querySelector('.check.pending');
+      if (pendingCheck) {
+        pendingCheck.className = 'check delivered';
+        pendingCheck.title = 'Доставлено';
+        pendingCheck.textContent = '✓✓';
       }
       if (CacheManager) {
         const cacheKey = getCacheKey();
@@ -940,12 +946,19 @@
           CacheManager.set(cacheKey, cached);
         }
       }
-      // Обновляем в фоне без перерисовки всего чата
-      void refreshMessagesFromServer(true);
+      // Не перерисовываем весь чат сразу после отправки: это убирает мигание.
+      // Серверные изменения будут получены следующим polling-запросом.
+      updateWordCounter();
     } catch (e) {
-      const dotsEl = meta.querySelector('.sending-dots');
-      if (dotsEl) dotsEl.textContent = '⚠';
+      const pendingCheck = meta.querySelector('.check.pending');
+      if (pendingCheck) {
+        pendingCheck.className = 'check failed';
+        pendingCheck.title = 'Не отправлено';
+        pendingCheck.textContent = '⚠';
+      }
       console.error(e);
+    } finally {
+      pendingOutgoingCount = Math.max(0, pendingOutgoingCount - 1);
     }
   }
 

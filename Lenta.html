@@ -1549,6 +1549,58 @@ async function loadBookRatings(bookIds) {
 }
 
 // ============================================================
+// ПОРЯДОК ЛЕНТЫ: новые и ещё не просмотренные сначала,
+// затем случайная взвешенная выдача популярных постов.
+// ============================================================
+const FEED_SEEN_KEY = 'kk_seen_feed_posts';
+
+function getSeenFeedPosts() {
+  try { return JSON.parse(localStorage.getItem(FEED_SEEN_KEY) || '{}'); }
+  catch (e) { return {}; }
+}
+
+function markFeedPostSeen(postId) {
+  if (!postId) return;
+  const seen = getSeenFeedPosts();
+  seen[String(postId)] = Date.now();
+  const cutoff = Date.now() - 30 * 24 * 60 * 60 * 1000;
+  Object.keys(seen).forEach(id => { if (!seen[id] || seen[id] < cutoff) delete seen[id]; });
+  const ids = Object.keys(seen);
+  if (ids.length > 500) {
+    ids.sort((a, b) => seen[a] - seen[b]).slice(0, ids.length - 500).forEach(id => delete seen[id]);
+  }
+  try { localStorage.setItem(FEED_SEEN_KEY, JSON.stringify(seen)); } catch (e) {}
+}
+
+function weightedRandomPosts(posts) {
+  const pool = Array.isArray(posts) ? posts.slice() : [];
+  const result = [];
+  while (pool.length) {
+    const weights = pool.map(post => 1 + Math.pow(Math.max(0, Number(post.likes_count) || 0), 0.75));
+    const total = weights.reduce((sum, weight) => sum + weight, 0);
+    let point = Math.random() * total;
+    let index = 0;
+    for (; index < pool.length - 1; index++) {
+      point -= weights[index];
+      if (point <= 0) break;
+    }
+    result.push(pool.splice(index, 1)[0]);
+  }
+  return result;
+}
+
+function orderFeedPosts(posts) {
+  const list = Array.isArray(posts) ? posts.filter(Boolean) : [];
+  const seen = getSeenFeedPosts();
+  const unseen = list.filter(post => !seen[String(post.id)]);
+  const alreadySeen = list.filter(post => seen[String(post.id)]);
+  // Новые записи — от самой свежей к более старой.
+  unseen.sort((a, b) => new Date(b.created_at || 0) - new Date(a.created_at || 0));
+  // Просмотренные — каждый раз в новом порядке, но популярные получают больший вес.
+  return unseen.concat(weightedRandomPosts(alreadySeen));
+}
+
+// ============================================================
 // ЗАГРУЗКА ПОСТОВ
 // ============================================================
 async function loadPosts() {
@@ -1571,14 +1623,17 @@ async function loadPosts() {
   try {
     const cachedPosts = CacheManager ? CacheManager.get(CacheManager.KEYS.POSTS) : null;
     if (cachedPosts && Array.isArray(cachedPosts) && cachedPosts.length) {
-      postsData = cachedPosts;
+      postsData = orderFeedPosts(cachedPosts);
       currentUserId = localStorage.getItem('kk_user_id') || null;
       await loadReadingSessions();
       const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
       if (bookIds.length > 0) await loadBookRatings(bookIds);
       renderShorts();
+      // Показываем кэш сразу, но обязательно обновляем ленту с сервера,
+      // чтобы новый публичный пост не был скрыт до окончания TTL кэша.
+      void loadPostsFromServer(true);
     } else {
-      await loadPostsFromServer();
+      await loadPostsFromServer(false);
     }
   } catch (e) {
     console.error('loadPosts error:', e);
@@ -1604,7 +1659,7 @@ async function loadPosts() {
     const newStr = JSON.stringify(newPosts);
     if (currentStr === newStr) return;
 
-    postsData = newPosts;
+    postsData = orderFeedPosts(newPosts);
     currentUserId = localStorage.getItem('kk_user_id') || null;
     loadReadingSessions().then(() => {
       const bookIds2 = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
@@ -1615,7 +1670,7 @@ async function loadPosts() {
   });
 }
 
-async function loadPostsFromServer() {
+async function loadPostsFromServer(silent) {
   const container = $('shortsContainer');
   if (!container) return;
 
@@ -1623,8 +1678,7 @@ async function loadPostsFromServer() {
     const resp = await fetch(API_BASE + '/api/posts');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const posts = await resp.json();
-    postsData = Array.isArray(posts) ? posts : (posts.posts || []);
-    postsData.sort((a, b) => (b.likes_count || 0) - (a.likes_count || 0));
+    postsData = orderFeedPosts(Array.isArray(posts) ? posts : (posts.posts || []));
     currentUserId = localStorage.getItem('kk_user_id') || null;
 
     const bookIds = [...new Set(postsData.map(p => p.book_id).filter(Boolean))];
@@ -1635,14 +1689,16 @@ async function loadPostsFromServer() {
     renderShorts();
   } catch(e) {
     console.error('loadPostsFromServer error:', e);
-    container.innerHTML = `
-      <div class="short-slide">
-        <div class="shorts-empty">
-          <h3>Хатогӣ дар боргирӣ</h3>
-          <p>${escHtml(e.message)}</p>
+    if (!silent) {
+      container.innerHTML = `
+        <div class="short-slide">
+          <div class="shorts-empty">
+            <h3>Хатогӣ дар боргирӣ</h3>
+            <p>${escHtml(e.message)}</p>
+          </div>
         </div>
-      </div>
-    `;
+      `;
+    }
   }
 }
 
@@ -1668,9 +1724,10 @@ function renderShorts() {
       const postId = slide.dataset.postId;
       const post = postsData.find(p => String(p.id) === String(postId));
       if (!post) return;
-      const textEl = slide.querySelector('.slide-text-overlay');
-      if (!textEl) return;
       if (e.isIntersecting && e.intersectionRatio > 0.6) {
+        markFeedPostSeen(postId);
+        const textEl = slide.querySelector('.slide-text-overlay');
+        if (!textEl) return;
         const { text, style } = parsePostContent(post.content);
         animateTextOverlay(textEl, text, style);
       }
@@ -2179,14 +2236,16 @@ function goStep(n) {
 
 function updateSubmitButton() {
   const submitBtn = $('submitPostBtn');
-  if (!submitBtn) return;
+  const nextBtn = $('step1Next');
   const text = ($('postContent').value || '').trim();
   const book_id = $('postBookSelect').value;
-  if (text || book_id) {
-    submitBtn.disabled = false;
-  } else {
-    submitBtn.disabled = true;
-  }
+  const author = ($('postBookAuthor').value || '').trim();
+  const bookReady = !!book_id && !!author;
+
+  // На второй шаг можно перейти только после выбора книги и автора.
+  if (nextBtn) nextBtn.disabled = !bookReady;
+  // Кнопка публикации тоже неактивна без обязательных данных.
+  if (submitBtn) submitBtn.disabled = !(bookReady && (text || book_id));
 }
 
 // Следим за изменениями полей
@@ -2344,9 +2403,41 @@ function updatePreview() {
 }
 
 // ============================================================
+// ДОСТУП К ПУБЛИКАЦИИ
+// ============================================================
+async function canPublishPost() {
+  const token = getToken();
+  const userId = localStorage.getItem('kk_user_id');
+  if (!token || !userId) {
+    showToast('Меҳмон метавонад постҳоро бинад, аммо барои нашр бояд ворид шавад.');
+    return false;
+  }
+  try {
+    const resp = await fetch(API_BASE + '/api/profiles/' + encodeURIComponent(userId), {
+      headers: { 'Authorization': 'Bearer ' + token }
+    });
+    const profile = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(profile.error || 'Профил дастрас нест');
+    const complete = String(profile.first_name || '').trim()
+      && String(profile.last_name || '').trim()
+      && String(profile.gender || '').trim()
+      && profile.birth_year;
+    if (!complete) {
+      showToast('Барои нашри пост аввал ном, насаб, соли таваллуд ва ҷинсро дар профил пур кунед.');
+      setTimeout(() => { location.href = 'profile.html'; }, 1200);
+      return false;
+    }
+    return true;
+  } catch (e) {
+    showToast('Профилро санҷидан муяссар нашуд.');
+    return false;
+  }
+}
+
 // ОТКРЫТЬ/ЗАКРЫТЬ МОДАЛКУ (только создание поста)
 // ============================================================
 async function openPostModal(bookId) {
+  if (!await canPublishPost()) return;
   $('modalTitle').textContent = '📝 Эҷоди пост';
   postStyle = { font: 'Roboto', size: 14, color: '#FFFFFF', animation: 'word', hashtags: [] };
   previewCoverUrl = '';
@@ -2422,6 +2513,11 @@ $('submitPostBtn').addEventListener('click', async function() {
   const selOpt = sel.options[sel.selectedIndex];
   const book_title = selOpt?.value ? selOpt.text.split(' — ')[0].trim() : '';
 
+  if (!book_id || !book_author) {
+    showToast('Лутфан аввал китоб ва муаллифро пур кунед');
+    goStep(1);
+    return;
+  }
   if (!text && !book_id) {
     showToast('Лутфан матн ё китоб интихоб кунед');
     return;
@@ -2439,7 +2535,8 @@ $('submitPostBtn').addEventListener('click', async function() {
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     });
-    if (!resp.ok) throw new Error('HTTP ' + resp.status);
+    const result = await resp.json().catch(() => ({}));
+    if (!resp.ok) throw new Error(result.error || ('HTTP ' + resp.status));
     showToast('✅ Пост нашр шуд!');
     closePostModal();
     if (CacheManager) CacheManager.invalidateKey(CacheManager.KEYS.POSTS);
