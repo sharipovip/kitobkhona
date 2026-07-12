@@ -1339,6 +1339,14 @@
             <button type="button" class="theme-choice" data-theme-choice="book">📖 Китоб</button>
           </div>
         </div>
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)">
+          <div style="font-size:13px;color:var(--cream)">Забон / Language</div>
+          <select id="languageSelect" style="background:var(--card-2);color:var(--cream);border:1px solid var(--line);border-radius:10px;padding:7px 9px;font-size:12px">
+            <option value="tg">Тоҷикӣ</option>
+            <option value="ru">Русский</option>
+            <option value="en">English</option>
+          </select>
+        </div>
 
         
         <div onclick="showHelpApp()" style="display:flex;align-items:center;gap:12px;padding:16px 0;border-bottom:1px solid var(--line);cursor:pointer">
@@ -2931,6 +2939,13 @@
       document.documentElement.classList.toggle('light-theme', saved === 'light');
     }
     updateThemeUI(saved);
+    const languageSelect = el('languageSelect');
+    if (languageSelect) {
+      languageSelect.value = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
+      languageSelect.addEventListener('change', () => {
+        if (typeof setAppLanguage === 'function') setAppLanguage(languageSelect.value);
+      });
+    }
   }
 
 </script>
