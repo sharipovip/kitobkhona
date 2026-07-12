@@ -152,7 +152,7 @@ function getBookAccessState(url) {
   const online = navigator.onLine;
   if (!online) {
     return cached
-      ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+      ? { show: false, icon: '', bg: '', dim: false }
       : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
   }
   return { show: false, icon: '', bg: '', dim: false };
@@ -264,7 +264,7 @@ function setHero(i) {
   const duration = (h.displayDuration || 12) * 1000;
   heroAuto = setTimeout(() => setHero(hi + 1), duration);
 }
-setHero(0);
+setHero(Math.floor(Math.random() * hero.length));
 if (window.location.search.includes('quotes_updated')) {
   const banner = document.getElementById('quotesUpdatedBanner');
   banner.style.display = 'block';
@@ -435,7 +435,7 @@ function bookCard(b, folder, badge = '') {
            onerror="let a=JSON.parse(this.dataset.covers); let i=(+this.dataset.i)+1; this.dataset.i=i; if(a[i]) this.src=a[i]; else { this.style.display='none'; this.parentNode.querySelector('span').style.display='flex'; }"
            style="${coverStyle}">
       <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span>
-      <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:6px;right:6px;z-index:2;padding:4px 6px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
+      <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
     </div>
     <div class="book-name">${esc(name)}</div>
     ${badge ? `<div style="position:absolute;top:4px;right:4px;font-size:16px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))">${badge}</div>` : ''}

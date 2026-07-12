@@ -674,11 +674,23 @@
   // ===== ОЧИСТИТЬ ЧАТ =====
   async function clearChatLocal() {
     popupMenu.classList.remove('open');
-    if (!await showConfirm('Оё мехоҳед паёмҳоро аз интерфейс тоза кунед?', 'Тоза кунед', false)) return;
-    const container = document.getElementById('messages');
-    container.innerHTML = '<div class="loading-msg">Чат очищен</div>';
-    if (CacheManager) CacheManager.invalidateKey(getCacheKey());
-    setTimeout(() => { loadMessages(false); }, 500);
+    if (!await showConfirm('Оё мехоҳед ҳамаи паёмҳои ин чатро тоза кунед?', 'Тоза кунед', false)) return;
+    if (!currentUserId || !peerId) return;
+    try {
+      const token = localStorage.getItem('kk_token');
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
+        method: 'DELETE',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user1: currentUserId, user2: peerId })
+      });
+      if (!resp.ok) throw new Error('Очистка не удалась');
+      const container = document.getElementById('messages');
+      container.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+      if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(getCacheKey());
+      showToast('Чат тоза карда шуд');
+    } catch (e) {
+      showToast('Хатогӣ: ' + e.message);
+    }
   }
 
   // ===== ПОЖАЛОВАТЬСЯ =====

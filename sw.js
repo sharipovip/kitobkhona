@@ -1,5 +1,5 @@
 // Китобхона Service Worker – v5 unified (cache + FCM + periodic sync)
-const CACHE_NAME = 'kitobkhona-v5';
+const CACHE_NAME = 'kitobkhona-v6';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -15,6 +15,8 @@ const LOCAL_FILES = [
   './config.js',
   './cache.js',
   './manifest.json',
+  './offline.html',
+  './favicon.ico',
   './icon-192.png',
   './icon-512.png'
 ];
@@ -73,6 +75,20 @@ function scheduleBooksJsonUpdate() {
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) {
+    return;
+  }
+  if (event.request.mode === 'navigate') {
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
+        })
+        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./offline.html')))
+    );
     return;
   }
   if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {

@@ -1000,8 +1000,8 @@
     const cached = !!cachedMap()[url];
     const online = navigator.onLine;
     if (!online) {
-      return cached
-        ? { show: true, icon: '🔓', bg: 'rgba(52,120,246,0.9)', dim: false }
+        return cached
+        ? { show: false, icon: '', bg: '', dim: false }
         : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
     }
     return { show: false, icon: '', bg: '', dim: false };
@@ -1181,7 +1181,7 @@
       return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(sub?.folder || b.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
         <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
           <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="this.style.display='none'">
-          <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:6px;right:6px;z-index:2;padding:4px 6px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
+          <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
           <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
           <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>
           <div class="rating-badge">⭐ ...</div>

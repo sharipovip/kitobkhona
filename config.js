@@ -351,7 +351,20 @@ function showConfirmDialog(message, title = 'Тасдиқ', confirmText = 'Ҳа'
 }
 
 // Инициализация при загрузке DOM (БЕЗ АВТО-ЗАПРОСА УВЕДОМЛЕНИЙ!)
+function initNetworkStatus() {
+  const banner = document.createElement('div');
+  banner.id = 'kitobkhona-network-status';
+  banner.textContent = 'Шумо интернет надоред · баъзе имкониятҳо дастрас нестанд';
+  banner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:70px;z-index:99999;display:none;padding:10px 14px;border-radius:14px;background:#42202a;color:#ffe9e9;border:1px solid rgba(255,120,120,.45);font:600 13px/1.35 Arial,sans-serif;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)';
+  document.body.appendChild(banner);
+  const update = () => { banner.style.display = navigator.onLine ? 'none' : 'block'; };
+  window.addEventListener('offline', update);
+  window.addEventListener('online', update);
+  update();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  initNetworkStatus();
   initTheme();
   initSettings();
   // Автоматический запрос уведомлений УБРАН – теперь только по клику на кнопку в модалке
@@ -879,30 +892,50 @@ const KKH_FCM = {
 vapidKey: 'BNhCnlt0kKCnYpeBGqYGRHikPqXCkpkt3Fj5G7X2XDM8EV7qj3xLtDQa8PYh_Sp3g21CLCdz7GoBILxMjnBFUJM'
 };
 
+let firebaseSdkPromise = null;
+
 function loadFirebaseMessagingSdk() {
-  if (window.firebase && window.firebase.messaging) {
+  if (firebaseSdkPromise) return firebaseSdkPromise;
+  if (window.firebase && typeof window.firebase.messaging === 'function') {
+    if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(KKH_FCM.firebaseConfig);
     return Promise.resolve();
   }
   const urls = [
     'https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js',
     'https://www.gstatic.com/firebasejs/9.22.2/firebase-messaging-compat.js'
   ];
-  return Promise.all(urls.map(url => new Promise((resolve, reject) => {
-    if (document.querySelector(`script[src="${url}"]`)) {
-      resolve();
+  const loadScript = (url) => new Promise((resolve, reject) => {
+    const existing = document.querySelector(`script[src="${url}"]`);
+    if (existing) {
+      if (window.firebase && url.includes('firebase-messaging') && typeof window.firebase.messaging !== 'function') {
+        existing.addEventListener('load', resolve, { once: true });
+      } else {
+        resolve();
+      }
       return;
     }
     const script = document.createElement('script');
     script.src = url;
-    script.async = true;
+    script.async = false;
     script.onload = resolve;
     script.onerror = () => reject(new Error('Failed to load Firebase script: ' + url));
     document.head.appendChild(script);
-  }))).then(() => {
-    if (window.firebase && !firebase.apps.length) {
-      firebase.initializeApp(KKH_FCM.firebaseConfig);
-    }
   });
+  // Firebase Messaging must load after firebase-app-compat. Parallel loading causes
+  // the intermittent "firebase.messaging is not a function / INTERNAL" error.
+  firebaseSdkPromise = loadScript(urls[0])
+    .then(() => loadScript(urls[1]))
+    .then(() => {
+      if (!window.firebase || typeof window.firebase.messaging !== 'function') {
+        throw new Error('Firebase Messaging SDK is unavailable');
+      }
+      if (!firebase.apps || !firebase.apps.length) firebase.initializeApp(KKH_FCM.firebaseConfig);
+    })
+    .catch(error => {
+      firebaseSdkPromise = null;
+      throw error;
+    });
+  return firebaseSdkPromise;
 }
 
 async function registerFcmToken() {
