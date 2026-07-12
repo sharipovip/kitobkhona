@@ -538,6 +538,10 @@
             <span>Очистить чат</span>
           </div>
           <div class="divider"></div>
+          <div class="item danger" onclick="blockUser()">
+            <span class="icon">🚫</span>
+            <span>Блокировать пользователя</span>
+          </div>
           <div class="item danger" onclick="reportUser()">
             <span class="icon">⚠️</span>
             <span>Пожаловаться</span>
@@ -686,6 +690,29 @@
     }
   }
 
+  async function blockUser() {
+    popupMenu.classList.remove('open');
+    if (!currentUserId || !peerId) return;
+    if (!await showConfirm('Корбар дигар ба шумо навишта наметавонад ва дӯстӣ бекор мешавад. Давом диҳем?', 'Блокировать', true)) return;
+    try {
+      const token = localStorage.getItem('kk_token');
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/block', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ user_id: peerId })
+      });
+      const data = await resp.json().catch(() => ({}));
+      if (!resp.ok) throw new Error(data.error || 'Блокировка не удалась');
+      document.getElementById('msgInput').disabled = true;
+      document.getElementById('sendBtn').disabled = true;
+      document.getElementById('msgInput').placeholder = 'Корбар блок карда шуд';
+      if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+      showToast('Корбар блок карда шуд');
+    } catch (e) {
+      showToast('Хатогӣ: ' + e.message);
+    }
+  }
+
   async function reportUser() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
@@ -754,6 +781,23 @@
         msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
       }
     }
+  }
+
+  async function fetchBlockStatus() {
+    const token = localStorage.getItem('kk_token');
+    if (!token || !peerId) return false;
+    try {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/block-status/' + encodeURIComponent(peerId), {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      const data = r.ok ? await r.json() : { blocked: false };
+      if (data.blocked) {
+        document.getElementById('msgInput').disabled = true;
+        document.getElementById('sendBtn').disabled = true;
+        document.getElementById('msgInput').placeholder = 'Корбар блок карда шуд';
+      }
+      return !!data.blocked;
+    } catch (e) { return false; }
   }
 
   async function loadMessages(keepScroll = true) {
@@ -1051,6 +1095,7 @@
       return;
     }
     currentUserId = data.user.id;
+    void fetchBlockStatus();
     void loadMessages(false);
     startPolling();
   }
@@ -1069,6 +1114,7 @@
 
   window.deleteChat = deleteChat;
   window.clearChatLocal = clearChatLocal;
+  window.blockUser = blockUser;
   window.reportUser = reportUser;
 </script>
 </body>
