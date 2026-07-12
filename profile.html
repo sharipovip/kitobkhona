@@ -1759,6 +1759,29 @@
     }
   }
 
+  function applyProfileHeader(profile) {
+    const displayName = profile.display_name || profile.username || 'Китобхон';
+    el('ownName').textContent = displayName;
+    const genderMap = { male: 'Мард', female: 'Зан' };
+    const genderLabel = genderMap[profile.gender] || '';
+    el('ownGender').textContent = genderLabel;
+    el('ownGender').style.display = genderLabel ? 'inline-flex' : 'none';
+    updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
+    const locParts = [profile.city, profile.region].filter(Boolean);
+    el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
+    el('ownBooks').textContent = profile.books_count_real ?? profile.books_count ?? 0;
+    el('ownFriends').textContent = profile.friends_count ?? profile.followers_count ?? 0;
+    el('ownMarks').textContent = profile.favorites_count ?? 0;
+
+    let ageText = '';
+    if (profile.birth_year) {
+      ageText = (new Date().getFullYear() - profile.birth_year) + ' сола';
+    } else if (profile.age) {
+      ageText = profile.age + ' сола';
+    }
+    el('ownAge').textContent = ageText;
+  }
+
   async function loadProfile() {
     try {
       const savedToken = localStorage.getItem('kk_token');
@@ -1788,15 +1811,19 @@
       const postsKey = profileCacheKey('posts', profileId);
       const profileKey = 'kk_profile_' + profileId;
 
-      // Сначала получаем актуальный профиль с сервера, чтобы счётчики друзей,
-      // книг и закладок не оставались устаревшими. Кэш используется как offline-fallback.
+      // Свой профиль открываем сразу из кэша, чтобы не показывать 7–8 секунд
+      // экран загрузки. Затем тихо обновляем данные с сервера.
       const cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
-      let profile = null;
-      try {
-        profile = await NEON_API.getProfile(profileId);
-        if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, profile);
-      } catch (networkError) {
-        profile = cachedProfile;
+      const validCachedProfile = cachedProfile && String(cachedProfile.id) === String(profileId);
+      let profile = (isOwnProfile && validCachedProfile) ? cachedProfile : null;
+      let loadedFromCache = !!profile;
+      if (!profile) {
+        try {
+          profile = await NEON_API.getProfile(profileId);
+          if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, profile);
+        } catch (networkError) {
+          profile = cachedProfile;
+        }
       }
       if (!profile || String(profile.id) !== String(profileId)) {
         throw new Error('Профиль дастрас нест');
@@ -1809,27 +1836,16 @@
         return;
       }
 
-      const displayName = profile.display_name || profile.username || 'Китобхон';
-      el('ownName').textContent = displayName;
-      const genderMap = { male: 'Мард', female: 'Зан' };
-      const genderLabel = genderMap[profile.gender] || '';
-      el('ownGender').textContent = genderLabel;
-      el('ownGender').style.display = genderLabel ? 'inline-flex' : 'none';
-      updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
-      const locParts = [profile.city, profile.region].filter(Boolean);
-      el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
-      el('ownBooks').textContent = profile.books_count_real ?? profile.books_count ?? 0;
-      el('ownFriends').textContent = profile.friends_count ?? profile.followers_count ?? 0;
-      el('ownMarks').textContent = profile.favorites_count ?? 0;
-
-      let ageText = '';
-      if (profile.birth_year) {
-        const age = new Date().getFullYear() - profile.birth_year;
-        ageText = age + ' сола';
-      } else if (profile.age) {
-        ageText = profile.age + ' сола';
+      applyProfileHeader(profile);
+      if (loadedFromCache && isOwnProfile) {
+        void NEON_API.getProfile(profileId).then(freshProfile => {
+          if (loadSequence !== profileLoadSequence || String(currentProfileUserId) !== String(profileId)) return;
+          loadedProfile = freshProfile;
+          if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, freshProfile);
+          applyProfileHeader(freshProfile);
+          currentUserProfileComplete = isCompleteProfile(freshProfile);
+        }).catch(() => {});
       }
-      el('ownAge').textContent = ageText;
 
       try {
         const actorProfile = isOwnProfile ? profile : await NEON_API.getProfile(currentUserId);
@@ -1842,20 +1858,25 @@
       // Список друзей текущего аккаунта нужен только для собственного профиля.
       // Для чужого профиля используем friends_count, рассчитанный сервером именно для него.
       if (isOwnProfile) {
-        try {
-          let friends;
+        // Не задерживаем показ собственного профиля сетевым запросом.
+        void (async () => {
           try {
-            // Для счётчика всегда берём свежий список, иначе принятие заявки
-            // на другом экране может не отразиться в профиле.
-            friends = await ChatAPI.getFriends(currentUserId);
-            if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
-          } catch (networkError) {
-            friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : [];
+            let friends;
+            try {
+              // Для счётчика всегда берём свежий список, иначе принятие заявки
+              // на другом экране может не отразиться в профиле.
+              friends = await ChatAPI.getFriends(currentUserId);
+              if (typeof CacheManager !== 'undefined') CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
+            } catch (networkError) {
+              friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : [];
+            }
+            if (loadSequence === profileLoadSequence) {
+              el('ownFriends').textContent = Array.isArray(friends) ? friends.length : 0;
+            }
+          } catch(e) {
+            console.warn('Не удалось загрузить друзей', e);
           }
-          el('ownFriends').textContent = Array.isArray(friends) ? friends.length : 0;
-        } catch(e) {
-          console.warn('Не удалось загрузить друзей', e);
-        }
+        })();
       }
 
       showScreen('screen-own');

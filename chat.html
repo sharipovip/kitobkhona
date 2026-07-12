@@ -587,6 +587,7 @@
 
   let currentUserId = null;
   let pollInterval = null;
+  let pendingOutgoingCount = 0;
   let chatIsOpen = true; // по умолчанию открыт
 
   // Ключ кэша для сообщений
@@ -725,6 +726,8 @@
   // ===== ЗАГРУЗКА СООБЩЕНИЙ (С КЭШИРОВАНИЕМ) =====
   async function refreshMessagesFromServer(keepScroll = true, cachedMsgs = null) {
     const msgContainer = document.getElementById('messages');
+    // Не заменяем DOM во время отправки: иначе сообщение визуально исчезает.
+    if (pendingOutgoingCount > 0) return;
     try {
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
       if (!msgs || msgs.length === 0) {
@@ -755,6 +758,7 @@
 
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
+    if (pendingOutgoingCount > 0) return;
     try {
       const { data } = await AUTH.getUser();
       if (!data.user) {
@@ -923,6 +927,7 @@
     row.appendChild(bubble);
     msgContainer.appendChild(row);
     scrollToBottom();
+    pendingOutgoingCount += 1;
 
     try {
       const sentMsg = await ChatAPI.sendMessage(currentUserId, peerId, text);
@@ -952,6 +957,8 @@
         pendingCheck.textContent = '⚠';
       }
       console.error(e);
+    } finally {
+      pendingOutgoingCount = Math.max(0, pendingOutgoingCount - 1);
     }
   }
 

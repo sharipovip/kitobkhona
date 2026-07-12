@@ -2236,14 +2236,16 @@ function goStep(n) {
 
 function updateSubmitButton() {
   const submitBtn = $('submitPostBtn');
-  if (!submitBtn) return;
+  const nextBtn = $('step1Next');
   const text = ($('postContent').value || '').trim();
   const book_id = $('postBookSelect').value;
-  if (text || book_id) {
-    submitBtn.disabled = false;
-  } else {
-    submitBtn.disabled = true;
-  }
+  const author = ($('postBookAuthor').value || '').trim();
+  const bookReady = !!book_id && !!author;
+
+  // На второй шаг можно перейти только после выбора книги и автора.
+  if (nextBtn) nextBtn.disabled = !bookReady;
+  // Кнопка публикации тоже неактивна без обязательных данных.
+  if (submitBtn) submitBtn.disabled = !(bookReady && (text || book_id));
 }
 
 // Следим за изменениями полей
@@ -2511,6 +2513,11 @@ $('submitPostBtn').addEventListener('click', async function() {
   const selOpt = sel.options[sel.selectedIndex];
   const book_title = selOpt?.value ? selOpt.text.split(' — ')[0].trim() : '';
 
+  if (!book_id || !book_author) {
+    showToast('Лутфан аввал китоб ва муаллифро пур кунед');
+    goStep(1);
+    return;
+  }
   if (!text && !book_id) {
     showToast('Лутфан матн ё китоб интихоб кунед');
     return;
