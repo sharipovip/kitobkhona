@@ -420,6 +420,48 @@ function showConfirmDialog(message, title = 'Тасдиқ', confirmText = 'Ҳа'
   });
 }
 
+function ensureChatUnreadBadge() {
+  const hosts = document.querySelectorAll('a[href="chats.html"], button[onclick*="chats.html"]');
+  hosts.forEach(host => {
+    host.style.position = 'relative';
+    let badge = host.querySelector('.kk-chat-unread-badge');
+    if (!badge) {
+      badge = document.createElement('span');
+      badge.className = 'kk-chat-unread-badge';
+      badge.style.cssText = 'position:absolute;top:-4px;right:4px;min-width:18px;height:18px;padding:0 5px;border-radius:10px;background:#d94846;color:#fff;font:700 10px/18px Arial,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:20;display:none;pointer-events:none';
+      host.appendChild(badge);
+    }
+  });
+}
+
+async function updateChatUnreadBadge() {
+  ensureChatUnreadBadge();
+  const badges = document.querySelectorAll('.kk-chat-unread-badge');
+  if (!badges.length) return;
+  const token = localStorage.getItem('kk_token');
+  if (!token) {
+    badges.forEach(badge => { badge.style.display = 'none'; });
+    return;
+  }
+  try {
+    const summary = await ChatAPI.getChatSummary();
+    const total = Math.max(0, Number(summary?.total_unread || 0));
+    badges.forEach(badge => {
+      badge.textContent = total > 99 ? '99+' : String(total);
+      badge.style.display = total > 0 ? 'block' : 'none';
+    });
+  } catch (e) {}
+}
+
+function initChatUnreadBadge() {
+  ensureChatUnreadBadge();
+  updateChatUnreadBadge();
+  setInterval(() => {
+    if (!document.hidden) updateChatUnreadBadge();
+  }, 30000);
+  window.addEventListener('kitobkhona:new-message', updateChatUnreadBadge);
+}
+
 function initNetworkStatus() {
   const banner = document.createElement('div');
   banner.id = 'kitobkhona-network-status';
@@ -434,6 +476,7 @@ function initNetworkStatus() {
 
 document.addEventListener('DOMContentLoaded', function() {
   initNetworkStatus();
+  initChatUnreadBadge();
   initTheme();
   setAppLanguage(getAppLanguage(), false);
   initSettings();
@@ -799,6 +842,27 @@ const ChatAPI = {
     if (!r.ok) throw new Error('Ошибка получения сообщений: ' + r.status);
     return await r.json();
   },
+  getChatSummary: async function() {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/chat-summary', {
+      headers: { 'Authorization': 'Bearer ' + token, 'Cache-Control': 'no-cache' },
+      cache: 'no-store'
+    }, 8000);
+    if (!r.ok) throw new Error('Ошибка сводки чатов: ' + r.status);
+    return await r.json();
+  },
+  markMessagesRead: async function(peerId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token || !peerId) return null;
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/messages/read', {
+      method: 'POST',
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+      body: JSON.stringify({ peer_id: peerId })
+    }, 8000);
+    if (!r.ok) throw new Error('Ошибка отметки сообщений: ' + r.status);
+    return await r.json();
+  },
   sendMessage: async function(senderId, receiverId, text) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
@@ -1162,11 +1226,13 @@ if (typeof toast !== 'function') {
         try {
           const data = JSON.parse(event.data);
           if (data.type === 'new_message' && data.message) {
+            const sender = data.message.sender_name || data.message.sender_username || 'Новое сообщение';
             const body = String(data.message.text || 'Новое сообщение').slice(0, 120);
+            const notificationTitle = sender + ' · новое сообщение';
             if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-              new Notification('Новое сообщение', { body, icon: './icon-192.png' });
+              new Notification(notificationTitle, { body, icon: './icon-192.png' });
             } else if (typeof toast === 'function') {
-              toast('💬 ' + body);
+              toast('💬 ' + sender + ': ' + body);
             }
             if (typeof updateNotifBadge === 'function') updateNotifBadge();
             window.dispatchEvent(new CustomEvent('kitobkhona:new-message', { detail: data.message }));

@@ -647,6 +647,11 @@
     const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
     renderMessages(next, container);
     if (wasAtBottom) scrollToBottom();
+    if (String(message.sender_id) === String(peerId) && typeof ChatAPI !== 'undefined') {
+      ChatAPI.markMessagesRead(peerId)
+        .then(() => window.updateChatUnreadBadge?.())
+        .catch(() => {});
+    }
   }
 
   function connectChatSocket() {
@@ -865,6 +870,7 @@
         if (isAtBottom) scrollToBottom();
       }
       updateWordCounter();
+      window.updateChatUnreadBadge?.();
     } catch (e) {
       console.error(e);
       const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
@@ -941,7 +947,9 @@
     msgs.forEach(m => {
       const isMine = String(m.sender_id) === String(currentUserId);
       const time = timeLabel(m.created_at);
-      const checkHtml = `<span class="check delivered" title="Доставлено">✓✓</span>`;
+      const checkClass = m.status === 'read' ? 'read' : 'delivered';
+      const checkTitle = m.status === 'read' ? 'Прочитано' : 'Доставлено';
+      const checkHtml = `<span class="check ${checkClass}" title="${checkTitle}">✓✓</span>`;
       const dateLabel = formatDate(m.created_at);
       if (dateLabel !== lastDate) {
         html += `<div class="date-sep">${dateLabel}</div>`;

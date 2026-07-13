@@ -924,6 +924,7 @@
 
   let currentUser = null;
   let friendsCache = [];
+  let chatSummary = { total_unread: 0, by_peer: {} };
   let unsubscribeFriends = null;
   let unsubscribeRequests = null;
 
@@ -1005,6 +1006,13 @@
         }
       }
 
+      try {
+        chatSummary = await ChatAPI.getChatSummary();
+      } catch (summaryError) {
+        chatSummary = { total_unread: 0, by_peer: {} };
+        console.warn('[Chats] Chat summary unavailable:', summaryError);
+      }
+
       if (typeof CacheManager !== 'undefined') {
         if (unsubscribeFriends) unsubscribeFriends();
         unsubscribeFriends = CacheManager.subscribe(CacheManager.KEYS.FRIENDS, (newFriends) => {
@@ -1043,7 +1051,14 @@
     }
   }
 
-  async function renderChats(friends, requests, scroll) {
+  let summaryRefreshTimer = null;
+  window.addEventListener('kitobkhona:new-message', () => {
+    if (!currentUser || document.hidden) return;
+    clearTimeout(summaryRefreshTimer);
+    summaryRefreshTimer = setTimeout(() => loadData(), 250);
+  });
+
+  async function renderChats(friends, requests, scroll, summary = chatSummary) {
     let html = '';
 
     if(requests.length) {
@@ -1085,25 +1100,38 @@
     if(friends.length === 0) {
       html += `<div class="empty-hint">Барои оғози чат аввал дӯст ҷӯед</div>`;
     } else {
-      for(const id of friends) {
+      const friendIds = [...friends].sort((a, b) => {
+        const ta = new Date(summary?.by_peer?.[String(a)]?.created_at || 0).getTime();
+        const tb = new Date(summary?.by_peer?.[String(b)]?.created_at || 0).getTime();
+        return tb - ta;
+      });
+      for(const id of friendIds) {
         const profile = await getProfileCached(id);
         const name = profile?.display_name || profile?.username || 'Китобхон';
         const initials = getInitials(name);
         const cls = getCls(id.charCodeAt(0) || 0);
-        const online = Math.random() > 0.6;
+        const lastMessage = summary?.by_peer?.[String(id)] || null;
+        const unreadCount = Number(lastMessage?.unread_count || 0);
+        const isUnread = unreadCount > 0;
+        const preview = lastMessage
+          ? (String(lastMessage.sender_id) === String(currentUser.id)
+              ? 'Шумо: ' + lastMessage.text
+              : (lastMessage.sender_name || name) + ': ' + lastMessage.text)
+          : 'Паёмҳо баъди навиштан';
+        const badge = isUnread ? `<span class="badge">${unreadCount > 99 ? '99+' : unreadCount}</span>` : '';
         html += `
           <div class="chat-item" data-chat-user="${id}" onclick="openChat('${id}','${esc(name)}')">
             <div class="avatar-wrap">
-              <div class="avatar ${cls} ${online ? 'ring' : ''}">${esc(initials)}</div>
-              ${online ? '<div class="online-dot"></div>' : ''}
+              <div class="avatar ${cls}">${esc(initials)}</div>
             </div>
             <div class="chat-mid">
               <div class="chat-top">
                 <div class="chat-name">${esc(name)}</div>
-                <div class="chat-time"></div>
+                <div class="chat-time${isUnread ? ' unread' : ''}">${lastMessage ? formatTime(lastMessage.created_at) : ''}</div>
               </div>
               <div class="chat-bottom">
-                <div class="chat-msg">Паёмҳо баъди навиштан</div>
+                <div class="chat-msg${isUnread ? ' unread-text' : ''}">${esc(preview)}</div>
+                ${badge}
               </div>
             </div>
             <button type="button" class="chat-delete-btn" data-delete-chat="${id}" title="Нест кардани чат" aria-label="Нест кардани чат">🗑</button>
