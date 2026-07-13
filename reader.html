@@ -681,7 +681,9 @@
   function queuePendingSession(payload) {
     if (!payload || !payload.book_id || !payload.duration) return;
     const items = readPendingSessions();
-    const existing = items.find(item => item.book_id === payload.book_id);
+    const existing = payload.queue_id ? null : items.find(item =>
+      item.book_id === payload.book_id && Number(item.readyAt || 0) > Date.now()
+    );
     if (existing) {
       existing.duration = Math.max(0, Number(existing.duration || 0)) + Math.max(0, Number(payload.duration || 0));
       existing.pages_read = Math.max(Number(existing.pages_read || 0), Number(payload.pages_read || 0));
@@ -692,6 +694,12 @@
       items.push(payload);
     }
     writePendingSessions(items);
+    schedulePendingFlush();
+  }
+
+  function removePendingSession(queueId) {
+    if (!queueId) return;
+    writePendingSessions(readPendingSessions().filter(item => item.queue_id !== queueId));
     schedulePendingFlush();
   }
 
@@ -723,6 +731,9 @@
   }
 
   async function flushPendingSessions() {
+    if (window.KKReadingQueue && typeof window.KKReadingQueue.flush === 'function') {
+      return window.KKReadingQueue.flush();
+    }
     if (pendingFlushRunning || !localStorage.getItem('kk_token')) return;
     pendingFlushRunning = true;
     try {
@@ -775,14 +786,19 @@
       readyAt: Date.now() + 10 * 60 * 1000
     };
     if (duration >= MIN_READ_TIME) {
+      const backup = {
+        ...payload,
+        queue_id: 'reading-' + Date.now() + '-' + Math.random().toString(36).slice(2, 9),
+        readyAt: Date.now() + 60 * 1000
+      };
+      queuePendingSession(backup);
       sendReadingSession(duration, 'completed', pagesRead).then((response) => {
         if (response?.ok) {
+          removePendingSession(backup.queue_id);
           const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
           if (uid && typeof CacheManager !== 'undefined') CacheManager.invalidateKey('kk_cache_sessions');
-        } else {
-          queuePendingSession(payload);
         }
-      }).catch(() => queuePendingSession(payload));
+      }).catch(() => {});
     } else {
       queuePendingSession(payload);
     }

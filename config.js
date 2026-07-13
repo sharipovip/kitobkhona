@@ -420,50 +420,6 @@ function showConfirmDialog(message, title = 'Тасдиқ', confirmText = 'Ҳа'
   });
 }
 
-function ensureChatUnreadBadge() {
-  const hosts = document.querySelectorAll('a[href="chats.html"], button[onclick*="chats.html"]');
-  hosts.forEach(host => {
-    host.style.position = 'relative';
-    let badge = host.querySelector('.kk-chat-unread-badge');
-    if (!badge) {
-      badge = document.createElement('span');
-      badge.className = 'kk-chat-unread-badge';
-      badge.style.cssText = 'position:absolute;top:-4px;right:4px;min-width:18px;height:18px;padding:0 5px;border-radius:10px;background:#d94846;color:#fff;font:700 10px/18px Arial,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:20;display:none;pointer-events:none';
-      host.appendChild(badge);
-    }
-  });
-}
-
-async function updateChatUnreadBadge() {
-  ensureChatUnreadBadge();
-  const badges = document.querySelectorAll('.kk-chat-unread-badge');
-  if (!badges.length) return;
-  const token = localStorage.getItem('kk_token');
-  if (!token) {
-    badges.forEach(badge => { badge.style.display = 'none'; });
-    return;
-  }
-  try {
-    const summary = await ChatAPI.getChatSummary();
-    const total = Math.max(0, Number(summary?.total_unread || 0));
-    badges.forEach(badge => {
-      badge.textContent = total > 99 ? '99+' : String(total);
-      badge.style.display = total > 0 ? 'block' : 'none';
-    });
-  } catch (e) {
-    console.warn('[Chat unread] summary unavailable:', e.message || e);
-  }
-}
-
-function initChatUnreadBadge() {
-  ensureChatUnreadBadge();
-  updateChatUnreadBadge();
-  setInterval(() => {
-    if (!document.hidden) updateChatUnreadBadge();
-  }, 30000);
-  window.addEventListener('kitobkhona:new-message', updateChatUnreadBadge);
-}
-
 function initNetworkStatus() {
   const banner = document.createElement('div');
   banner.id = 'kitobkhona-network-status';
@@ -478,7 +434,6 @@ function initNetworkStatus() {
 
 document.addEventListener('DOMContentLoaded', function() {
   initNetworkStatus();
-  initChatUnreadBadge();
   initTheme();
   setAppLanguage(getAppLanguage(), false);
   initSettings();
@@ -1279,5 +1234,80 @@ if (typeof toast !== 'function') {
     } else {
       setTimeout(connect, 500);
     }
+  }
+})();
+
+(function initReadingQueue() {
+  const queueKey = 'kk_pending_reading_sessions';
+  let running = false;
+  let timer = null;
+
+  function readQueue() {
+    try {
+      const value = JSON.parse(localStorage.getItem(queueKey) || '[]');
+      return Array.isArray(value) ? value : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writeQueue(items) {
+    try { localStorage.setItem(queueKey, JSON.stringify(items.slice(-50))); } catch (e) {}
+  }
+
+  function schedule() {
+    if (timer) clearTimeout(timer);
+    const next = readQueue().sort((a, b) => Number(a.readyAt || 0) - Number(b.readyAt || 0))[0];
+    if (!next) return;
+    const delay = Math.max(1000, Number(next.readyAt || Date.now()) - Date.now());
+    timer = setTimeout(flush, Math.min(delay, 24 * 60 * 60 * 1000));
+  }
+
+  async function flush() {
+    if (running || !localStorage.getItem('kk_token')) return;
+    running = true;
+    try {
+      const now = Date.now();
+      const waiting = [];
+      for (const item of readQueue()) {
+        if (Number(item.readyAt || 0) > now) {
+          waiting.push(item);
+          continue;
+        }
+        try {
+          const response = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
+            method: 'POST',
+            headers: {
+              'Authorization': 'Bearer ' + localStorage.getItem('kk_token'),
+              'Content-Type': 'application/json',
+              'Cache-Control': 'no-store'
+            },
+            cache: 'no-store',
+            body: JSON.stringify({
+              book_id: item.book_id,
+              book_title: item.book_title || 'Китоб',
+              duration: Math.max(0, Math.round(Number(item.duration) || 0)),
+              status: item.status || 'completed',
+              pages_read: Math.max(0, Number(item.pages_read) || 0)
+            })
+          }, 8000);
+          if (!response.ok) throw new Error('HTTP ' + response.status);
+        } catch (e) {
+          waiting.push({ ...item, readyAt: Date.now() + 60 * 1000 });
+        }
+      }
+      writeQueue(waiting);
+    } finally {
+      running = false;
+      schedule();
+    }
+  }
+
+  window.KKReadingQueue = { flush };
+  window.addEventListener('online', flush);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', () => setTimeout(flush, 1000), { once: true });
+  } else {
+    setTimeout(flush, 1000);
   }
 })();

@@ -648,9 +648,7 @@
     renderMessages(next, container);
     if (wasAtBottom) scrollToBottom();
     if (String(message.sender_id) === String(peerId) && typeof ChatAPI !== 'undefined') {
-      ChatAPI.markMessagesRead(peerId)
-        .then(() => window.updateChatUnreadBadge?.())
-        .catch(() => {});
+      ChatAPI.markMessagesRead(peerId).catch(() => {});
     }
   }
 
@@ -870,7 +868,6 @@
         if (isAtBottom) scrollToBottom();
       }
       updateWordCounter();
-      window.updateChatUnreadBadge?.();
     } catch (e) {
       console.error(e);
       const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
