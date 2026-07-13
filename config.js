@@ -803,7 +803,7 @@ const ChatAPI = {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
     const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/chat-summary', {
-      headers: { 'Authorization': 'Bearer ' + token, 'Cache-Control': 'no-cache' },
+      headers: { 'Authorization': 'Bearer ' + token },
       cache: 'no-store'
     }, 8000);
     if (!r.ok) throw new Error('Ошибка сводки чатов: ' + r.status);
@@ -1153,89 +1153,32 @@ if (typeof toast !== 'function') {
   };
 }
 
-(function initKitobkhonaPresence() {
-  let socket = null;
-  let reconnectTimer = null;
-
-  const isChatPage = /\/chat\.html$/i.test(location.pathname);
-  const getSocketUrl = () => {
-    const apiBase = String(KITOB_CONFIG.NEON_API_BASE || '').replace(/\/+$/, '');
-    const wsBase = apiBase.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
-    return wsBase + '/?token=' + encodeURIComponent(localStorage.getItem('kk_token') || '');
-  };
-
-  function close() {
-    if (reconnectTimer) clearTimeout(reconnectTimer);
-    reconnectTimer = null;
-    if (socket) {
-      try { socket.close(1000, 'Page hidden'); } catch (e) {}
+function getCoverUrlCandidates(url) {
+  const original = String(url || '').trim();
+  if (!original) return [];
+  const result = [];
+  try {
+    const parsed = new URL(original);
+    if (parsed.hostname === 'raw.githubusercontent.com') {
+      const decodedPath = decodeURIComponent(parsed.pathname).replace(/^\/+/, '');
+      const parts = decodedPath.split('/').filter(Boolean);
+      if (parts.length >= 4) {
+        const owner = parts.shift();
+        const repo = parts.shift();
+        const branch = parts.shift();
+        const filePath = parts.map(part => encodeURIComponent(part)).join('/');
+        result.push(`https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${filePath}`);
+        result.push(`https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${filePath}`);
+      }
     }
-    socket = null;
-  }
+  } catch (e) {}
+  result.push(original);
+  return [...new Set(result)];
+}
 
-  function connect() {
-    if (isChatPage || document.hidden || socket || !localStorage.getItem('kk_token')) return;
-    if (!('WebSocket' in window)) return;
-    try {
-      const current = new WebSocket(getSocketUrl());
-      socket = current;
-      current.onmessage = (event) => {
-        try {
-          const data = JSON.parse(event.data);
-          if (data.type === 'new_message' && data.message) {
-            const sender = data.message.sender_name || data.message.sender_username || 'Новое сообщение';
-            const body = String(data.message.text || 'Новое сообщение').slice(0, 120);
-            const notificationTitle = sender + ' · новое сообщение';
-            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
-              new Notification(notificationTitle, { body, icon: './icon-192.png' });
-            } else if (typeof toast === 'function') {
-              toast('💬 ' + sender + ': ' + body);
-            }
-            if (typeof updateNotifBadge === 'function') updateNotifBadge();
-            window.dispatchEvent(new CustomEvent('kitobkhona:new-message', { detail: data.message }));
-          }
-          if (data.type === 'profile_updated') {
-            window.dispatchEvent(new CustomEvent('kitobkhona:profile-updated', { detail: data }));
-          }
-        } catch (e) {}
-      };
-      current.onclose = () => {
-        if (socket !== current) return;
-        socket = null;
-        if (!document.hidden && localStorage.getItem('kk_token')) {
-          reconnectTimer = setTimeout(() => {
-            reconnectTimer = null;
-            connect();
-          }, 5000);
-        }
-      };
-      current.onerror = () => {
-        try { current.close(); } catch (e) {}
-      };
-    } catch (e) {
-      socket = null;
-    }
-  }
-
-  window.KKPresence = {
-    connect,
-    close,
-    isOnline: () => !!socket && socket.readyState === WebSocket.OPEN
-  };
-
-  if (!isChatPage) {
-    window.addEventListener('online', connect);
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) close();
-      else connect();
-    });
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(connect, 500), { once: true });
-    } else {
-      setTimeout(connect, 500);
-    }
-  }
-})();
+function getCoverUrl(url) {
+  return getCoverUrlCandidates(url)[0] || String(url || '');
+}
 
 (function initReadingQueue() {
   const queueKey = 'kk_pending_reading_sessions';

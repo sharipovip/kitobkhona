@@ -2224,7 +2224,7 @@
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
     const cards = await Promise.all(booksData.map(async (book, idx) => {
       const c = colors[idx % colors.length];
-      const coverUrl = book.cover_url || await getCoverForBook(book);
+      const coverUrl = book.cover_url ? getCoverUrl(book.cover_url) : await getCoverForBook(book);
       const views = book.sessions_count || 0;
       const minutes = Math.round(book.total_duration || 0);
       const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '📚');
@@ -2268,7 +2268,7 @@
         if (!folder.startsWith('books/')) folder = 'books/' + folder;
       }
       const book = { folder, file, book_id: f.book_id, book_title: f.book_title || 'Китоб', cover_url: f.cover_url, pdf_url: f.pdf_url };
-      const coverUrl = f.cover_url || await getCoverForBook(book);
+      const coverUrl = f.cover_url ? getCoverUrl(f.cover_url) : await getCoverForBook(book);
       const bookDataEnc = encodeURIComponent(JSON.stringify(book));
       html += `
         <div class="book-card ${c}">
@@ -2304,7 +2304,7 @@
         let folder = parts.length > 1 ? parts.slice(0, -1).join('/') : 'books';
         if (!folder.startsWith('books/') && folder !== 'books') folder = 'books/' + folder;
         const book = { folder, file, book_id: post.book_id, book_title: post.book_title || '', cover_url: post.cover_url, pdf_url: post.pdf_url };
-        const coverUrl = post.cover_url || await getCoverForBook(book);
+        const coverUrl = post.cover_url ? getCoverUrl(post.cover_url) : await getCoverForBook(book);
         coverHtml = `<img src="${coverUrl}" loading="lazy"
           onerror="this.style.display='none'"
           style="width:44px;height:60px;object-fit:cover;border-radius:6px;flex-shrink:0;margin-right:10px">`;
@@ -2330,7 +2330,10 @@
   async function loadCoversManifest() {
     if (coversManifestCache) return coversManifestCache;
     try {
-      const r = await fetch('https://raw.githubusercontent.com/sharipovip/books/main/covers_manifest.json');
+      const manifestUrl = typeof getCoverUrl === 'function'
+        ? getCoverUrl('https://raw.githubusercontent.com/sharipovip/books/main/covers_manifest.json')
+        : 'https://raw.githubusercontent.com/sharipovip/books/main/covers_manifest.json';
+      const r = await fetch(manifestUrl);
       if (!r.ok) { console.warn('[Covers] manifest HTTP', r.status); return null; }
       coversManifestCache = await r.json();
       console.log('[Covers] manifest yuklandi,', Object.keys(coversManifestCache).length, 'ta kalit');
@@ -2364,14 +2367,14 @@
         candidates.push(`books/${fullFolder}/${cleanFile}`);
       }
       for (const key of candidates) {
-        if (manifest[key]) { coverUrl = manifest[key]; break; }
+        if (manifest[key]) { coverUrl = getCoverUrl(manifest[key]); break; }
       }
     }
     if (!coverUrl) {
       source = 'fallback';
       const url = rawUrl(folder, file);
       const coverList = coverListFromPdfUrl(url);
-      coverUrl = coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=';
+      coverUrl = getCoverUrl(coverList[0] || coverList[1] || coverList[2] || 'https://via.placeholder.com/120x170/1A2D44/FFFFFF?text=');
     }
     console.log('[Covers]', source, '|', 'file:', file, '| folder:', folder, '| url:', coverUrl);
     return coverUrl;

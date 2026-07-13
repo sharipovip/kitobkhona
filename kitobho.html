@@ -1063,7 +1063,7 @@
       `${base}/covers/${enc(clean)}/${jpg}`,
       `${base}/covers/books/${enc(clean)}/${jpg}`,
       `${base}/covers/${enc(folder)}/${jpg}`
-    ];
+    ].map(url => typeof getCoverUrl === 'function' ? getCoverUrl(url) : url);
   }
 
   async function fetchManifest(su) {
@@ -1082,7 +1082,9 @@
     } catch(e) {}
     let list = [];
     try {
-      const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+      const rawManifestUrl = `https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`;
+      const manifestUrl = typeof getCoverUrl === 'function' ? getCoverUrl(rawManifestUrl) : rawManifestUrl;
+      const r = await fetch(manifestUrl, { cache: 'no-store' });
       if (r.ok) {
         const j = await r.json();
         list = Array.isArray(j.books) ? j.books : [];
