@@ -872,6 +872,7 @@
           <span class="heart-pop">❤️</span>
         </div>
         <span>Чат</span>
+        <span id="chatsNavUnread" class="kk-chat-unread-badge" style="position:absolute;top:-4px;right:4px;min-width:18px;height:18px;padding:0 5px;border-radius:10px;background:#d94846;color:#fff;font:700 10px/18px Arial,sans-serif;text-align:center;box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:20;display:none;pointer-events:none"></span>
       </a>
 
       
@@ -946,6 +947,14 @@
     return d.getDate() + ' ' + ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'][d.getMonth()];
   }
 
+  function applyChatSummaryBadge(summary) {
+    const badge = document.getElementById('chatsNavUnread');
+    if (!badge) return;
+    const total = Math.max(0, Number(summary?.total_unread || 0));
+    badge.textContent = total > 99 ? '99+' : String(total);
+    badge.style.display = total > 0 ? 'block' : 'none';
+  }
+
   function esc(str) {
     if (!str) return '';
     return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
@@ -1012,6 +1021,7 @@
         chatSummary = { total_unread: 0, by_peer: {} };
         console.warn('[Chats] Chat summary unavailable:', summaryError);
       }
+      applyChatSummaryBadge(chatSummary);
 
       if (typeof CacheManager !== 'undefined') {
         if (unsubscribeFriends) unsubscribeFriends();

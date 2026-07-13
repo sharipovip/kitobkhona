@@ -450,7 +450,9 @@ async function updateChatUnreadBadge() {
       badge.textContent = total > 99 ? '99+' : String(total);
       badge.style.display = total > 0 ? 'block' : 'none';
     });
-  } catch (e) {}
+  } catch (e) {
+    console.warn('[Chat unread] summary unavailable:', e.message || e);
+  }
 }
 
 function initChatUnreadBadge() {
