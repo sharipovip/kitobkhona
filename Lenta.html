@@ -1289,7 +1289,11 @@ function openBookFromPost(bookId, bookTitle, pdfUrl, coverUrl) {
   const url = safePdfUrl || rawUrl(folder, file);
   const name = bookTitle || file.replace(/\.pdf$/i, '') || 'Китоб';
   const cover = coverUrl || getCoverForBook({ folder, file, book_id: cleanBookId });
-  location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
+  const coverValue = String(cover || '').trim();
+  const coverParam = coverValue && !/^data:/i.test(coverValue)
+    ? `&cover=${encodeURIComponent(coverValue)}`
+    : '';
+  location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}${coverParam}`;
 }
 
 function parsePostContent(raw) {
@@ -1764,7 +1768,7 @@ function buildSlide(post, idx) {
           <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
         </div>
         ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
-        ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(finalCoverUrl)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
+        ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(cover)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
       </div>
       ${isOwner ? `
       <div class="post-owner-actions">

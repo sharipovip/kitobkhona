@@ -1319,7 +1319,11 @@
   function openReader(url, name, cover = '') {
     url = decodeURIComponent(url); name = decodeURIComponent(name); cover = decodeURIComponent(cover || '');
     if (!navigator.onLine && !isCached(url)) { toast('Ин китоб ҳоло дастрас нест, зеро интернет нест ва китоб ҳифз нашудааст.'); return; }
-    location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
+    const coverValue = String(cover || '').trim();
+    const coverParam = coverValue && !/^data:/i.test(coverValue)
+      ? `&cover=${encodeURIComponent(coverValue)}`
+      : '';
+    location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}${coverParam}`;
   }
 
   function randomColor() {

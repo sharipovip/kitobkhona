@@ -427,7 +427,12 @@ function bookCard(b, folder, badge = '') {
 }
 
 function openReader(url, name, cover = '') {
-  location.href = `reader.html?url=${url}&name=${name}&cover=${cover}`;
+  let decodedCover = '';
+  try { decodedCover = decodeURIComponent(cover || ''); } catch (e) { decodedCover = ''; }
+  const coverParam = decodedCover && !/^data:/i.test(decodedCover)
+    ? `&cover=${encodeURIComponent(decodedCover)}`
+    : '';
+  location.href = `reader.html?url=${url}&name=${name}${coverParam}`;
 }
 
 const manifestCache = new Map();

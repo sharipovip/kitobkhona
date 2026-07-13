@@ -766,35 +766,6 @@
       align-items: center;
       gap: 3px;
     }
-    .book-card.hidden .book-cover {
-      filter: blur(4px);
-      opacity: 0.5;
-    }
-    .book-card.hidden .book-overlay {
-      background: rgba(0,0,0,0.5);
-      justify-content: center;
-      align-items: center;
-      text-align: center;
-    }
-    .book-card.hidden .book-overlay .book-title,
-    .book-card.hidden .book-overlay .book-meta {
-      display: none;
-    }
-    .book-card.hidden .book-overlay .hidden-label {
-      display: block;
-      color: #fff;
-      font-size: 12px;
-      font-weight: 700;
-      background: rgba(0,0,0,0.6);
-      padding: 4px 10px;
-      border-radius: 99px;
-      border: 1px solid rgba(255,255,255,0.2);
-      backdrop-filter: blur(6px);
-      margin: 0 auto;
-    }
-    .book-card .hidden-label {
-      display: none;
-    }
     .book-card .menu-dots {
       position: absolute;
       top: 6px;
@@ -1477,7 +1448,6 @@
     <div class="item" onclick="menuPublish()" id="menuPublish">📢 Интишор кардан дар лента</div>
     <div class="item" onclick="menuFavorite()">⭐ Илова ба закладка</div>
     <div class="item" onclick="menuRemoveFavorite()" id="menuRemoveFavorite">❌ Хориҷ аз закладка</div>
-    <div class="item" onclick="menuToggleHide()" id="menuHideToggle">👁 Пинҳон кардан</div>
   </div>
 
   
@@ -1662,7 +1632,6 @@
     booksData = [];
     favoritesData = [];
     postsData = [];
-    hiddenBooks = [];
     loadedProfile = null;
     friendStatus = null;
     ['ownBooks', 'ownFriends', 'ownMarks'].forEach((id) => {
@@ -1916,9 +1885,6 @@
       loadPostsCached(profileId)
         .then(() => { if (loadSequence === profileLoadSequence) renderPosts(); })
         .catch(e => console.warn('Не удалось обновить посты', e));
-      loadHiddenBooksCached()
-        .catch(e => console.warn('Не удалось обновить скрытые книги', e));
-
       if (typeof CacheManager !== 'undefined') {
         unsubscribeSessions = CacheManager.subscribe(sessionKey, (newData) => {
           if (newData) {
@@ -2068,28 +2034,6 @@
     postsData = data;
   }
 
-  async function loadHiddenBooksCached() {
-    const key = 'kk_hidden_books_' + currentUserId;
-    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
-    if (!data) {
-      const token = localStorage.getItem('kk_token');
-      if (!token) { hiddenBooks = []; return; }
-      try {
-        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books', {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (!r.ok) { hiddenBooks = []; return; }
-        data = await r.json();
-        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
-      } catch (e) {
-        console.warn('[Profile] Load hidden error:', e);
-        hiddenBooks = [];
-        return;
-      }
-    }
-    hiddenBooks = data;
-  }
-
   function initTabs() {
     document.querySelectorAll('.tabs').forEach(function(tabsEl) {
       const newTabs = tabsEl.cloneNode(true);
@@ -2229,7 +2173,6 @@
   let booksData = [];
   let favoritesData = [];
   let postsData = [];
-  let hiddenBooks = [];
   let publishedBookIds = new Set();
   let menuTarget = null;
 
@@ -2281,32 +2224,24 @@
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
     const cards = await Promise.all(booksData.map(async (book, idx) => {
       const c = colors[idx % colors.length];
-      const isHidden = hiddenBooks.includes(book.book_id);
-      const hiddenClass = isHidden ? 'hidden' : '';
       const coverUrl = book.cover_url || await getCoverForBook(book);
       const views = book.sessions_count || 0;
-      const hours = Math.round(book.total_duration / 60);
-      const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '👁');
-      const bookData = JSON.stringify(book);
-      let overlayContent = '';
-      if (isHidden) {
-        overlayContent = `<div class="hidden-label">🔒 Пинҳон</div>`;
-      } else {
-        overlayContent = `
-          <div class="book-title">${esc(book.book_title)}</div>
-          <div class="book-meta">
-            <span>${statusLabel}</span>
-            <span>⏱ ${hours} мин</span>
-            <span>👁 ${views}</span>
-          </div>
-        `;
-      }
+      const minutes = Math.round(book.total_duration || 0);
+      const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '📚');
+      const bookData = encodeURIComponent(JSON.stringify(book));
       return `
-        <div class="book-card ${hiddenClass} ${c}" data-book='${bookData}' onclick="openBook(this)">
+        <div class="book-card ${c}" data-book='${bookData}' onclick="openBook(this)">
           <img class="book-cover" src="${coverUrl}" alt="${esc(book.book_title)}" loading="lazy"
                onerror="this.style.display='none'"
                style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
-          <div class="book-overlay">${overlayContent}</div>
+          <div class="book-overlay">
+            <div class="book-title">${esc(book.book_title)}</div>
+            <div class="book-meta">
+              <span>${statusLabel}</span>
+              <span>⏱ ${minutes} мин</span>
+              <span>📚 ${views}</span>
+            </div>
+          </div>
           ${isOwnProfile ? `<div class="menu-dots" onclick="event.stopPropagation(); showMenu(event, '${book.book_id}')">⋮</div>` : ''}
         </div>
       `;
@@ -2533,7 +2468,11 @@
     const name = book.book_title || file.replace(/\.pdf$/i, '') || 'Китоб';
     const cover = book.cover_url || await getCoverForBook(book);
     const normUrl = normalizeBookUrl(url);
-    location.href = `reader.html?url=${encodeURIComponent(normUrl)}&name=${encodeURIComponent(name)}&cover=${encodeURIComponent(cover)}`;
+    const coverValue = String(cover || '').trim();
+    const coverParam = coverValue && !/^data:/i.test(coverValue)
+      ? `&cover=${encodeURIComponent(coverValue)}`
+      : '';
+    location.href = `reader.html?url=${encodeURIComponent(normUrl)}&name=${encodeURIComponent(name)}${coverParam}`;
   }
 
   async function removeFavoriteDirect(bookId) {
@@ -2565,9 +2504,6 @@
     menuTarget = bookId;
     const isFav = favoritesData.some(f => f.book_id === bookId);
     document.getElementById('menuRemoveFavorite').style.display = (isOwnProfile && isFav) ? 'block' : 'none';
-    const isHidden = hiddenBooks.includes(bookId);
-    document.getElementById('menuHideToggle').textContent = isHidden ? '👁 Нишон додан' : '👁 Пинҳон кардан';
-    document.getElementById('menuHideToggle').style.display = isOwnProfile ? 'block' : 'none';
     const isPublished = publishedBookIds.has(bookId);
     const publishItem = document.getElementById('menuPublish');
     if (isPublished) {
@@ -2620,36 +2556,6 @@
     if (!menuTarget) return;
     removeFavoriteDirect(menuTarget);
     el('bookMenu').style.display = 'none';
-  }
-
-  function menuToggleHide() {
-    if (!menuTarget) return;
-    const isHidden = hiddenBooks.includes(menuTarget);
-    const token = localStorage.getItem('kk_token');
-    if (!token) { showToast('Ворид шавед'); return; }
-    const key = 'kk_hidden_books_' + currentUserId;
-    if (isHidden) {
-      fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books/' + encodeURIComponent(menuTarget), {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      }).then(() => {
-        hiddenBooks = hiddenBooks.filter(id => id !== menuTarget);
-        if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(key);
-        renderBooks();
-        el('bookMenu').style.display = 'none';
-      }).catch(() => showToast('Хатогӣ'));
-    } else {
-      fetch(KITOB_CONFIG.NEON_API_BASE + '/api/hidden-books', {
-        method: 'POST',
-        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ book_id: menuTarget })
-      }).then(() => {
-        hiddenBooks.push(menuTarget);
-        if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(key);
-        renderBooks();
-        el('bookMenu').style.display = 'none';
-      }).catch(() => showToast('Хатогӣ'));
-    }
   }
 
   const overlay = el('editOverlay');

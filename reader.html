@@ -627,6 +627,7 @@
   url = safeDecode(url);
   name = safeDecode(name);
   cover = safeDecode(cover);
+  if (/^data:/i.test(String(cover).trim())) cover = '';
   $('bookTitle').textContent = name;
 
   function getBookId() {
