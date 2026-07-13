@@ -1254,7 +1254,7 @@ function coverListFromPdfUrl(pdfUrl) {
       `${base}/covers/${enc(clean)}/${encodeURIComponent(file)}`,
       `${base}/covers/books/${enc(clean)}/${encodeURIComponent(file)}`,
       `${base}/covers/${enc(folder)}/${encodeURIComponent(file)}`
-    ].map(url => typeof getCoverUrl === 'function' ? getCoverUrl(url) : url);
+    ];
   } catch(e) { return []; }
 }
 function getCoverForBook(book) {
@@ -1266,7 +1266,7 @@ function getCoverForBook(book) {
   return covers[0] || '';
 }
 function getCoverFromPost(post) {
-  if (post.cover_url) return typeof getCoverUrl === 'function' ? getCoverUrl(post.cover_url) : post.cover_url;
+  if (post.cover_url) return post.cover_url;
   const b = {
     folder: post.book_folder || 'books',
     file: post.book_file || post.book_id,

@@ -671,7 +671,6 @@ const AutoLogin = {
             localStorage.setItem('kk_user_id', loginData.userId);
             localStorage.setItem('kk_username', loginData.username);
             this.currentUser = { token: loginData.token, userId: loginData.userId, username: loginData.username };
-            window.KKPresence?.connect();
             return this.currentUser;
           }
           throw new Error(loginData.error || 'Не удалось войти');
@@ -682,7 +681,6 @@ const AutoLogin = {
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       this.currentUser = { token: data.token, userId: data.userId, username: data.username };
-      window.KKPresence?.connect();
       return this.currentUser;
     } catch (e) {
       console.error('[AutoLogin] Ошибка:', e);
@@ -706,7 +704,6 @@ const AutoLogin = {
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       this.currentUser = { token: data.token, userId: data.userId, username: data.username };
-      window.KKPresence?.connect();
       return this.currentUser;
     } catch (e) { console.error('[Login] Ошибка:', e); throw e; }
   },
@@ -717,7 +714,6 @@ const AutoLogin = {
     localStorage.removeItem('kk_device_blocked');
     localStorage.removeItem('kk_guest_password');
     this.currentUser = null;
-    window.KKPresence?.close();
   }
 };
 
@@ -1153,6 +1149,7 @@ if (typeof toast !== 'function') {
   };
 }
 
+
 function getCoverUrlCandidates(url) {
   const original = String(url || '').trim();
   if (!original) return [];
@@ -1175,82 +1172,14 @@ function getCoverUrlCandidates(url) {
   result.push(original);
   return [...new Set(result)];
 }
+function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url || ''); }
 
-function getCoverUrl(url) {
-  return getCoverUrlCandidates(url)[0] || String(url || '');
-}
 
 (function initReadingQueue() {
-  const queueKey = 'kk_pending_reading_sessions';
-  let running = false;
-  let timer = null;
-
-  function readQueue() {
-    try {
-      const value = JSON.parse(localStorage.getItem(queueKey) || '[]');
-      return Array.isArray(value) ? value : [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  function writeQueue(items) {
-    try { localStorage.setItem(queueKey, JSON.stringify(items.slice(-50))); } catch (e) {}
-  }
-
-  function schedule() {
-    if (timer) clearTimeout(timer);
-    const next = readQueue().sort((a, b) => Number(a.readyAt || 0) - Number(b.readyAt || 0))[0];
-    if (!next) return;
-    const delay = Math.max(1000, Number(next.readyAt || Date.now()) - Date.now());
-    timer = setTimeout(flush, Math.min(delay, 24 * 60 * 60 * 1000));
-  }
-
-  async function flush() {
-    if (running || !localStorage.getItem('kk_token')) return;
-    running = true;
-    try {
-      const now = Date.now();
-      const waiting = [];
-      for (const item of readQueue()) {
-        if (Number(item.readyAt || 0) > now) {
-          waiting.push(item);
-          continue;
-        }
-        try {
-          const response = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
-            method: 'POST',
-            headers: {
-              'Authorization': 'Bearer ' + localStorage.getItem('kk_token'),
-              'Content-Type': 'application/json',
-              'Cache-Control': 'no-store'
-            },
-            cache: 'no-store',
-            body: JSON.stringify({
-              book_id: item.book_id,
-              book_title: item.book_title || 'Китоб',
-              duration: Math.max(0, Math.round(Number(item.duration) || 0)),
-              status: item.status || 'completed',
-              pages_read: Math.max(0, Number(item.pages_read) || 0)
-            })
-          }, 8000);
-          if (!response.ok) throw new Error('HTTP ' + response.status);
-        } catch (e) {
-          waiting.push({ ...item, readyAt: Date.now() + 60 * 1000 });
-        }
-      }
-      writeQueue(waiting);
-    } finally {
-      running = false;
-      schedule();
-    }
-  }
-
-  window.KKReadingQueue = { flush };
-  window.addEventListener('online', flush);
-  if (document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', () => setTimeout(flush, 1000), { once: true });
-  } else {
-    setTimeout(flush, 1000);
-  }
+  const queueKey='kk_pending_reading_sessions'; let running=false; let timer=null;
+  function readQueue(){try{const v=JSON.parse(localStorage.getItem(queueKey)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
+  function writeQueue(v){try{localStorage.setItem(queueKey,JSON.stringify(v.slice(-50)))}catch(e){} }
+  function schedule(){if(timer)clearTimeout(timer);const n=readQueue().sort((a,b)=>Number(a.readyAt||0)-Number(b.readyAt||0))[0];if(n)timer=setTimeout(flush,Math.max(1000,Math.min(86400000,Number(n.readyAt||Date.now())-Date.now())))}
+  async function flush(){if(running||!localStorage.getItem('kk_token'))return;running=true;try{const now=Date.now(),wait=[];for(const x of readQueue()){if(Number(x.readyAt||0)>now){wait.push(x);continue}try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({book_id:x.book_id,book_title:x.book_title||'Китоб',duration:Math.max(0,Math.round(Number(x.duration)||0)),status:x.status||'completed',pages_read:Math.max(0,Number(x.pages_read)||0)})},8000);if(!r.ok)throw Error('HTTP '+r.status)}catch(e){wait.push({...x,readyAt:Date.now()+60000})}}writeQueue(wait)}finally{running=false;schedule()}}
+  window.KKReadingQueue={flush};window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(flush,1000),{once:true});else setTimeout(flush,1000)
 })();

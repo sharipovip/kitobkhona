@@ -122,16 +122,12 @@
   }
 
   async function preloadCover(url) {
-    if (!url) return '';
-    const resolvedUrl = typeof window.getCoverUrl === 'function' ? window.getCoverUrl(url) : url;
-    const cached = getCachedCover(resolvedUrl) || getCachedCover(url);
-    if (cached) return cached;
+    if (!url || getCachedCover(url)) return getCachedCover(url);
     try {
-      const response = await fetch(resolvedUrl, { cache: 'force-cache' });
+      const response = await fetch(url, { cache: 'force-cache' });
       if (!response.ok) return '';
       const dataUrl = await blobToDataUrl(await response.blob());
-      setCachedCover(resolvedUrl, dataUrl);
-      if (resolvedUrl !== url) setCachedCover(url, dataUrl);
+      setCachedCover(url, dataUrl);
       return dataUrl;
     } catch (e) {
       return '';

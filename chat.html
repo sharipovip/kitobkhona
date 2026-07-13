@@ -599,6 +599,37 @@
     return 'kk_chat_messages_' + peerId;
   }
 
+  function getPersistentChatCacheKey() {
+    return 'kk_chat_messages_persist_' + peerId;
+  }
+
+  function getChatCache() {
+    let cached = null;
+    if (typeof CacheManager !== 'undefined') cached = CacheManager.get(getCacheKey());
+    if (Array.isArray(cached)) return cached;
+    try {
+      const stored = JSON.parse(localStorage.getItem(getPersistentChatCacheKey()) || 'null');
+      if (stored && Array.isArray(stored.messages) && Date.now() - Number(stored.ts || 0) < 7 * 24 * 60 * 60 * 1000) {
+        return stored.messages;
+      }
+    } catch (e) {}
+    return [];
+  }
+
+  function setChatCache(messages) {
+    const safeMessages = Array.isArray(messages) ? messages.slice(-200) : [];
+    if (typeof CacheManager !== 'undefined') CacheManager.set(getCacheKey(), safeMessages);
+    try {
+      localStorage.setItem(getPersistentChatCacheKey(), JSON.stringify({ ts: Date.now(), messages: safeMessages }));
+    } catch (e) {}
+    return safeMessages;
+  }
+
+  function clearChatCache() {
+    clearChatCache();
+    try { localStorage.removeItem(getPersistentChatCacheKey()); } catch (e) {}
+  }
+
   function getWebSocketUrl() {
     const apiBase = String(KITOB_CONFIG.NEON_API_BASE || '').replace(/\/+$/, '');
     const wsBase = apiBase.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
@@ -638,11 +669,10 @@
       (String(message.sender_id) === String(peerId) && String(message.receiver_id) === String(currentUserId));
     if (!belongsToChat) return;
 
-    const cacheKey = getCacheKey();
-    const cached = (typeof CacheManager !== 'undefined' && CacheManager.get(cacheKey)) || [];
+    const cached = getChatCache();
     if (Array.isArray(cached) && cached.some(item => String(item.id) === String(message.id))) return;
     const next = Array.isArray(cached) ? cached.concat(message) : [message];
-    if (typeof CacheManager !== 'undefined') CacheManager.set(cacheKey, next);
+    setChatCache(next);
     const container = document.getElementById('messages');
     const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
     renderMessages(next, container);
@@ -756,7 +786,7 @@
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!resp.ok) throw new Error('Ошибка удаления');
-      if (CacheManager) CacheManager.invalidateKey(getCacheKey());
+      clearChatCache();
       location.href = 'chats.html';
     } catch (e) {
       showToast('Хатогӣ: ' + e.message);
@@ -777,7 +807,7 @@
       if (!resp.ok) throw new Error('Очистка не удалась');
       const container = document.getElementById('messages');
       container.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
-      if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(getCacheKey());
+      clearChatCache();
       showToast('Чат тоза карда шуд');
     } catch (e) {
       showToast('Хатогӣ: ' + e.message);
@@ -856,10 +886,10 @@
         if (!cachedMsgs || cachedMsgs.length === 0) {
           msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
         }
-        if (CacheManager) CacheManager.set(getCacheKey(), []);
+        setChatCache([]);
         return;
       }
-      if (CacheManager) CacheManager.set(getCacheKey(), msgs);
+      setChatCache(msgs);
       if (msgContainer.querySelector('.sending-dots')) return;
       renderMessages(msgs, msgContainer);
       if (!keepScroll) scrollToBottom();
@@ -870,7 +900,7 @@
       updateWordCounter();
     } catch (e) {
       console.error(e);
-      const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
+      const cached = getChatCache();
       if (!cached || cached.length === 0) {
         msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
       }
@@ -907,10 +937,7 @@
         currentUserId = data.user.id;
       }
 
-      let cachedMsgs = null;
-      if (CacheManager) {
-        cachedMsgs = CacheManager.get(getCacheKey());
-      }
+      const cachedMsgs = getChatCache();
       if (cachedMsgs && cachedMsgs.length > 0) {
         renderMessages(cachedMsgs, msgContainer);
         if (!keepScroll) scrollToBottom();
@@ -927,7 +954,7 @@
 
     } catch (e) {
       console.error(e);
-      const cached = CacheManager ? CacheManager.get(getCacheKey()) : null;
+      const cached = getChatCache();
       if (!cached || cached.length === 0) {
         msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
       }
@@ -1086,13 +1113,10 @@
         pendingCheck.title = 'Доставлено';
         pendingCheck.textContent = '✓✓';
       }
-      if (CacheManager) {
-        const cacheKey = getCacheKey();
-        const cached = CacheManager.get(cacheKey) || [];
-        if (Array.isArray(cached)) {
-          cached.push(sentMsg);
-          CacheManager.set(cacheKey, cached);
-        }
+      const cached = getChatCache();
+      if (Array.isArray(cached)) {
+        cached.push(sentMsg);
+        setChatCache(cached);
       }
       updateWordCounter();
     } catch (e) {
