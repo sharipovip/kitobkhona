@@ -1548,6 +1548,17 @@
   window.showAlertDialog = showAlertDialog;
   window.showConfirmDialog = showConfirmDialog;
 
+  window.addEventListener('kitobkhona:profile-updated', function(event) {
+    const detail = event.detail || {};
+    if (!currentProfileUserId || String(detail.user_id) !== String(currentProfileUserId)) return;
+    if (typeof CacheManager !== 'undefined') {
+      CacheManager.invalidateKey('kk_profile_' + currentProfileUserId);
+    }
+    if (!document.hidden) {
+      loadProfile().catch(() => {});
+    }
+  });
+
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();

@@ -589,10 +589,102 @@
   let typingInterval = null;
   let pendingOutgoingCount = 0;
   let typingTimer = null;
+  let typingActiveSent = false;
+  let chatSocket = null;
+  let wsReconnectTimer = null;
+  let wsConnected = false;
   let chatIsOpen = true; // по умолчанию открыт
 
   function getCacheKey() {
     return 'kk_chat_messages_' + peerId;
+  }
+
+  function getWebSocketUrl() {
+    const apiBase = String(KITOB_CONFIG.NEON_API_BASE || '').replace(/\/+$/, '');
+    const wsBase = apiBase.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
+    return wsBase + '/?token=' + encodeURIComponent(localStorage.getItem('kk_token') || '');
+  }
+
+  function closeChatSocket() {
+    if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+    wsReconnectTimer = null;
+    if (chatSocket) {
+      try { chatSocket.close(1000, 'Page hidden'); } catch (e) {}
+    }
+    chatSocket = null;
+    wsConnected = false;
+  }
+
+  function scheduleChatSocketReconnect() {
+    if (wsReconnectTimer || document.hidden || !localStorage.getItem('kk_token')) return;
+    wsReconnectTimer = setTimeout(() => {
+      wsReconnectTimer = null;
+      connectChatSocket();
+    }, 3000);
+  }
+
+  function setTypingIndicator(active) {
+    const indicator = document.getElementById('typingIndicator');
+    const status = document.getElementById('friendStatusLabel');
+    if (!indicator || !status) return;
+    indicator.style.display = active ? 'inline' : 'none';
+    status.style.display = active ? 'none' : 'inline';
+  }
+
+  function handleIncomingMessage(message) {
+    if (!message || !currentUserId || !peerId) return;
+    const belongsToChat =
+      (String(message.sender_id) === String(currentUserId) && String(message.receiver_id) === String(peerId)) ||
+      (String(message.sender_id) === String(peerId) && String(message.receiver_id) === String(currentUserId));
+    if (!belongsToChat) return;
+
+    const cacheKey = getCacheKey();
+    const cached = (typeof CacheManager !== 'undefined' && CacheManager.get(cacheKey)) || [];
+    if (Array.isArray(cached) && cached.some(item => String(item.id) === String(message.id))) return;
+    const next = Array.isArray(cached) ? cached.concat(message) : [message];
+    if (typeof CacheManager !== 'undefined') CacheManager.set(cacheKey, next);
+    const container = document.getElementById('messages');
+    const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    renderMessages(next, container);
+    if (wasAtBottom) scrollToBottom();
+  }
+
+  function connectChatSocket() {
+    if (document.hidden || !localStorage.getItem('kk_token') || chatSocket || !KITOB_CONFIG.NEON_API_BASE) return;
+    try {
+      const socket = new WebSocket(getWebSocketUrl());
+      chatSocket = socket;
+      socket.onopen = () => {
+        if (chatSocket !== socket) return;
+        wsConnected = true;
+        startPolling();
+      };
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'new_message') handleIncomingMessage(data.message);
+          if (data.type === 'typing' && String(data.user_id) === String(peerId)) {
+            setTypingIndicator(!!data.typing);
+          }
+        } catch (e) {}
+      };
+      socket.onerror = () => {
+        try { socket.close(); } catch (e) {}
+      };
+      socket.onclose = () => {
+        if (chatSocket === socket) {
+          chatSocket = null;
+          wsConnected = false;
+          startPolling();
+          scheduleChatSocketReconnect();
+        }
+      };
+    } catch (e) {
+      chatSocket = null;
+      wsConnected = false;
+      startPolling();
+      scheduleChatSocketReconnect();
+    }
   }
 
   const menuBtn = document.getElementById('menuBtn');
@@ -1053,9 +1145,16 @@
     this.style.height = Math.min(this.scrollHeight, 110) + 'px';
     clearTimeout(typingTimer);
     if (this.value.trim()) {
-      sendTypingState(true);
-      typingTimer = setTimeout(() => sendTypingState(false), 1200);
+      if (!typingActiveSent) {
+        typingActiveSent = true;
+        sendTypingState(true);
+      }
+      typingTimer = setTimeout(() => {
+        typingActiveSent = false;
+        sendTypingState(false);
+      }, 1200);
     } else {
+      typingActiveSent = false;
       sendTypingState(false);
     }
   });
@@ -1069,12 +1168,12 @@
     if (pollInterval) clearInterval(pollInterval);
     if (typingInterval) clearInterval(typingInterval);
     pollInterval = setInterval(() => {
-      if (document.hidden) return;
+      if (document.hidden || wsConnected) return;
       loadMessages(true);
-    }, 5000);
+    }, 15000);
     typingInterval = setInterval(() => {
-      if (!document.hidden) refreshTypingIndicator();
-    }, 2500);
+      if (!document.hidden && !wsConnected) refreshTypingIndicator();
+    }, 7000);
   }
 
   async function init() {
@@ -1087,13 +1186,28 @@
     void fetchBlockStatus();
     void loadMessages(false);
     startPolling();
+    connectChatSocket();
   }
+
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) {
+      closeChatSocket();
+      if (typingActiveSent) {
+        typingActiveSent = false;
+        sendTypingState(false);
+      }
+    } else {
+      connectChatSocket();
+      void loadMessages(true);
+    }
+  });
 
   window.addEventListener('beforeunload', () => {
     if (pollInterval) clearInterval(pollInterval);
     if (typingInterval) clearInterval(typingInterval);
     clearTimeout(typingTimer);
-    sendTypingState(false);
+    if (typingActiveSent) sendTypingState(false);
+    closeChatSocket();
   });
 
   function esc(str) {

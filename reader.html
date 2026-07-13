@@ -646,68 +646,155 @@
   }
 
   let sessionInterval = null;
+  let pendingFlushTimer = null;
+  let pendingFlushRunning = false;
   let totalSeconds = 0;
   const SESSION_INTERVAL = 30;
-  const MIN_READ_TIME = 120;
+  const MIN_READ_TIME = 10 * 60;
+  const PENDING_READING_KEY = 'kk_pending_reading_sessions';
   let sessionStarted = false;
 
-  async function sendReadingSession(duration, status, pagesRead = page) {
+  function readPendingSessions() {
+    try {
+      const value = JSON.parse(localStorage.getItem(PENDING_READING_KEY) || '[]');
+      return Array.isArray(value) ? value : [];
+    } catch (e) {
+      return [];
+    }
+  }
+
+  function writePendingSessions(items) {
+    try {
+      localStorage.setItem(PENDING_READING_KEY, JSON.stringify(items.slice(-50)));
+    } catch (e) {}
+  }
+
+  function schedulePendingFlush() {
+    if (pendingFlushTimer) clearTimeout(pendingFlushTimer);
+    const next = readPendingSessions().sort((a, b) => (a.readyAt || 0) - (b.readyAt || 0))[0];
+    if (!next) return;
+    const delay = Math.max(1000, (next.readyAt || Date.now()) - Date.now());
+    pendingFlushTimer = setTimeout(flushPendingSessions, Math.min(delay, 24 * 60 * 60 * 1000));
+  }
+
+  function queuePendingSession(payload) {
+    if (!payload || !payload.book_id || !payload.duration) return;
+    const items = readPendingSessions();
+    const existing = items.find(item => item.book_id === payload.book_id);
+    if (existing) {
+      existing.duration = Math.max(0, Number(existing.duration || 0)) + Math.max(0, Number(payload.duration || 0));
+      existing.pages_read = Math.max(Number(existing.pages_read || 0), Number(payload.pages_read || 0));
+      existing.readyAt = Math.min(Number(existing.readyAt || Date.now()), Number(payload.readyAt || Date.now()));
+      existing.status = payload.status || existing.status || 'completed';
+      existing.book_title = payload.book_title || existing.book_title;
+    } else {
+      items.push(payload);
+    }
+    writePendingSessions(items);
+    schedulePendingFlush();
+  }
+
+  async function sendReadingSession(duration, status, pagesRead = page, meta = {}) {
     const token = localStorage.getItem('kk_token');
-    if (!token) return Promise.resolve();
-    const bookId = getBookId();
-    if (!bookId || bookId === 'undefined' || bookId === 'null') return Promise.resolve();
+    if (!token) return null;
+    const bookId = meta.book_id || getBookId();
+    if (!bookId || bookId === 'undefined' || bookId === 'null') return null;
     const payload = {
       book_id: bookId,
-      book_title: name,
-      duration: duration || 0,
+      book_title: meta.book_title || name,
+      duration: Math.max(0, Math.round(Number(duration) || 0)),
       status: status || 'viewed',
-      pages_read: pagesRead || 0
+      pages_read: Math.max(0, Number(pagesRead) || 0)
     };
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
+        keepalive: true
       });
       if (!r.ok) console.error('[Reader] Session error:', r.status);
       return r;
-    } catch(e) { console.error('[Reader] Session network error:', e); }
+    } catch(e) {
+      console.error('[Reader] Session network error:', e);
+      return null;
+    }
+  }
+
+  async function flushPendingSessions() {
+    if (pendingFlushRunning || !localStorage.getItem('kk_token')) return;
+    pendingFlushRunning = true;
+    try {
+      const now = Date.now();
+      const items = readPendingSessions();
+      const waiting = [];
+      for (const item of items) {
+        if (Number(item.readyAt || 0) > now) {
+          waiting.push(item);
+          continue;
+        }
+        const response = await sendReadingSession(item.duration, item.status || 'completed', item.pages_read || 0, item);
+        if (!response || !response.ok) {
+          waiting.push({ ...item, readyAt: Date.now() + 60 * 1000 });
+        }
+      }
+      writePendingSessions(waiting);
+    } finally {
+      pendingFlushRunning = false;
+      schedulePendingFlush();
+    }
   }
 
   function startReadingSession() {
     if (sessionStarted) return;
     sessionStarted = true;
-    sendReadingSession(0, 'viewed');
+    totalSeconds = 0;
+    flushPendingSessions();
     sessionInterval = setInterval(() => {
       totalSeconds += SESSION_INTERVAL;
-      if (totalSeconds >= MIN_READ_TIME) {
-        sendReadingSession(totalSeconds, 'active');
-      }
     }, SESSION_INTERVAL * 1000);
   }
 
   function stopReadingSession() {
-    if (sessionInterval) {
-      clearInterval(sessionInterval);
-      sessionInterval = null;
-      if (totalSeconds >= MIN_READ_TIME) {
-        sendReadingSession(totalSeconds, 'completed').then(() => {
+    if (!sessionStarted) return;
+    if (sessionInterval) clearInterval(sessionInterval);
+    sessionInterval = null;
+    const duration = totalSeconds;
+    const pagesRead = page;
+    totalSeconds = 0;
+    sessionStarted = false;
+    if (duration <= 0) return;
+
+    const payload = {
+      book_id: getBookId(),
+      book_title: name,
+      duration,
+      pages_read: pagesRead,
+      status: 'completed',
+      readyAt: Date.now() + 10 * 60 * 1000
+    };
+    if (duration >= MIN_READ_TIME) {
+      sendReadingSession(duration, 'completed', pagesRead).then((response) => {
+        if (response?.ok) {
           const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
-          if (uid && typeof CacheManager !== 'undefined') {
-             CacheManager.invalidateKey('kk_cache_sessions');
-          }
-        }).catch(() => {});
-      }
-      totalSeconds = 0;
-      sessionStarted = false;
+          if (uid && typeof CacheManager !== 'undefined') CacheManager.invalidateKey('kk_cache_sessions');
+        } else {
+          queuePendingSession(payload);
+        }
+      }).catch(() => queuePendingSession(payload));
+    } else {
+      queuePendingSession(payload);
     }
   }
 
   window.addEventListener('load', function() {
+    flushPendingSessions();
     setTimeout(startReadingSession, 1000);
     loadReactions();
   });
+  window.addEventListener('online', flushPendingSessions);
   window.addEventListener('beforeunload', stopReadingSession);
+  window.addEventListener('pagehide', stopReadingSession);
   document.addEventListener('visibilitychange', function() {
     if (document.hidden) stopReadingSession();
     else startReadingSession();

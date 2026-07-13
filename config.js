@@ -671,6 +671,7 @@ const AutoLogin = {
             localStorage.setItem('kk_user_id', loginData.userId);
             localStorage.setItem('kk_username', loginData.username);
             this.currentUser = { token: loginData.token, userId: loginData.userId, username: loginData.username };
+            window.KKPresence?.connect();
             return this.currentUser;
           }
           throw new Error(loginData.error || 'Не удалось войти');
@@ -681,6 +682,7 @@ const AutoLogin = {
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       this.currentUser = { token: data.token, userId: data.userId, username: data.username };
+      window.KKPresence?.connect();
       return this.currentUser;
     } catch (e) {
       console.error('[AutoLogin] Ошибка:', e);
@@ -704,6 +706,7 @@ const AutoLogin = {
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       this.currentUser = { token: data.token, userId: data.userId, username: data.username };
+      window.KKPresence?.connect();
       return this.currentUser;
     } catch (e) { console.error('[Login] Ошибка:', e); throw e; }
   },
@@ -714,6 +717,7 @@ const AutoLogin = {
     localStorage.removeItem('kk_device_blocked');
     localStorage.removeItem('kk_guest_password');
     this.currentUser = null;
+    window.KKPresence?.close();
   }
 };
 
@@ -1127,3 +1131,85 @@ if (typeof toast !== 'function') {
     setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 2500);
   };
 }
+
+(function initKitobkhonaPresence() {
+  let socket = null;
+  let reconnectTimer = null;
+
+  const isChatPage = /\/chat\.html$/i.test(location.pathname);
+  const getSocketUrl = () => {
+    const apiBase = String(KITOB_CONFIG.NEON_API_BASE || '').replace(/\/+$/, '');
+    const wsBase = apiBase.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
+    return wsBase + '/?token=' + encodeURIComponent(localStorage.getItem('kk_token') || '');
+  };
+
+  function close() {
+    if (reconnectTimer) clearTimeout(reconnectTimer);
+    reconnectTimer = null;
+    if (socket) {
+      try { socket.close(1000, 'Page hidden'); } catch (e) {}
+    }
+    socket = null;
+  }
+
+  function connect() {
+    if (isChatPage || document.hidden || socket || !localStorage.getItem('kk_token')) return;
+    if (!('WebSocket' in window)) return;
+    try {
+      const current = new WebSocket(getSocketUrl());
+      socket = current;
+      current.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'new_message' && data.message) {
+            const body = String(data.message.text || 'Новое сообщение').slice(0, 120);
+            if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
+              new Notification('Новое сообщение', { body, icon: './icon-192.png' });
+            } else if (typeof toast === 'function') {
+              toast('💬 ' + body);
+            }
+            if (typeof updateNotifBadge === 'function') updateNotifBadge();
+            window.dispatchEvent(new CustomEvent('kitobkhona:new-message', { detail: data.message }));
+          }
+          if (data.type === 'profile_updated') {
+            window.dispatchEvent(new CustomEvent('kitobkhona:profile-updated', { detail: data }));
+          }
+        } catch (e) {}
+      };
+      current.onclose = () => {
+        if (socket !== current) return;
+        socket = null;
+        if (!document.hidden && localStorage.getItem('kk_token')) {
+          reconnectTimer = setTimeout(() => {
+            reconnectTimer = null;
+            connect();
+          }, 5000);
+        }
+      };
+      current.onerror = () => {
+        try { current.close(); } catch (e) {}
+      };
+    } catch (e) {
+      socket = null;
+    }
+  }
+
+  window.KKPresence = {
+    connect,
+    close,
+    isOnline: () => !!socket && socket.readyState === WebSocket.OPEN
+  };
+
+  if (!isChatPage) {
+    window.addEventListener('online', connect);
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) close();
+      else connect();
+    });
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(connect, 500), { once: true });
+    } else {
+      setTimeout(connect, 500);
+    }
+  }
+})();
