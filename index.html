@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="tg"><head>
 <meta charset="UTF-8">
-<meta name="description" content="Китобхона — китобхонаи электронии тоҷикӣ. Китобҳои дарсӣ, адабиёти бадеӣ, шеърҳо, китобҳои таърихӣ ва дигар маводи фарҳангӣ.">
+<meta name="description" content="Китобхона — китобхонаи электронии тоҷикӣ. Китобҳои Пешвои миллат, озмунҳо, китобҳои нав ва серхонтарин.">
 <meta property="og:title" content="Китобхона · Манбаи дониш">
 <meta property="og:description" content="Барномаи китобхонаи рақамӣ — китобҳои тоҷикӣ ва тарҷумавӣ">
 <meta property="og:type" content="website">
@@ -18,11 +18,21 @@
 </head>
 <body>
 <div class="phone-wrapper">
-<header class="top-header" style="display:none!important"><div class="header-logo"><div class="logo-icon"><img src="splash_logo.jpg" onerror="this.replaceWith(document.createTextNode('📚'))" alt="Логотип Китобхона"></div><div><div class="logo-text">Китобхона</div><div class="logo-sub">Манбаи илму дониш</div></div></div><div class="header-actions"><div class="header-btn" id="notifBtn" title="Огоҳӣ">🔔<span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#E53935;color:#fff;border-radius:50%;font-size:10px;padding:2px 5px;min-width:16px;text-align:center;line-height:1;"></span></div><div class="header-btn" id="themeBtn" title="Мавзӯъ">🌙</div></div></header>
+<!-- NEW TOP BAR — как в моих скриншотах -->
+<header class="new-top-bar">
+  <div class="new-logo">
+    <div class="new-logo-icon">📚<span class="crown-mini">👑</span></div>
+    <div class="new-logo-text"><b>КИТОБХОНА</b><span>Китобхонаи миллии рақамӣ</span></div>
+  </div>
+  <div class="new-top-actions">
+    <div class="new-icon-btn" id="searchToggleBtn" title="Ҷустуҷӯ">🔍</div>
+    <div class="new-icon-btn" id="notifBtn" title="Огоҳӣ">🔔<span id="notifBadge" style="display:none;position:absolute;top:-4px;right:-4px;background:#E53935;color:#fff;border-radius:50%;font-size:10px;padding:2px 5px;min-width:16px;text-align:center;line-height:1;"></span></div>
+    <div class="new-icon-btn" id="themeBtn" title="Мавзӯъ">🌙</div>
+  </div>
+</header>
+
 <main class="main-content">
-<section class="hero-section"><div class="hero-kicker" id="heroKicker">Суханҳои Пешвои муаззами миллат дар бораи <b>маориф</b></div><div class="hero-inner"><div class="president-photo-wrap"><div class="president-photo"><img id="heroImg" src="assets/hero/01-president-official.jpg" alt="Пешвои миллат" loading="eager"></div></div><div class="hero-quote-block"><div class="hero-quote-text" id="heroQuote" style="transition: all 0.3s ease;">Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад</div></div></div><div class="hero-flag-stripe"></div><div id="heroTag" style="display:none"></div><div class="hero-dots" id="heroDots"></div></section>
-
-
+<!-- Баннеры -->
 <div id="announcementBanner" style="display:none; background:linear-gradient(135deg,#1A3A5C,#2A5298); padding:12px 16px; border-radius:12px; margin:0 12px 12px; color:#fff; font-size:14px; box-shadow:0 2px 8px rgba(0,0,0,0.3);">
   <div style="display:flex; align-items:center; gap:8px;">
     <span style="font-size:20px;">📢</span>
@@ -30,81 +40,98 @@
     <button onclick="document.getElementById('announcementBanner').style.display='none'" style="background:none;border:none;color:#fff;font-size:18px;cursor:pointer;">✕</button>
   </div>
 </div>
-
-
 <div id="quotesUpdatedBanner" style="display:none; background:#2E7D32; padding:8px 16px; border-radius:10px; margin:0 12px 12px; color:#fff; font-size:13px; text-align:center;">
   ✅ Цитаты были обновлены! (страница обновлена)
 </div>
 
-<div class="section-header-row"><div class="section-title">🏆 <span class="section-title-accent">Озмунҳои</span> ҷумҳуриявӣ</div><form class="search-mini" id="homeSearchForm"><span>🔍</span><input id="homeSearch" type="search" placeholder="Ҷустуҷӯи китоб..."></form></div>
-<div id="homeSearchResults" class="home-search-results" style="display:none"></div>
-<div class="ozmunho-scroll" id="ozmunList"></div>
-<div class="continue-section" id="continueSection" style="display:none"><div class="section-label">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
-<div class="president-books-section" id="pesvoSection" style="display:none"><div class="president-books-header"><div style="min-width:0"><div class="president-books-title">Китобҳои Асосгузори сулҳу ваҳдати миллӣ, Пешвои миллат, Президенти Ҷумҳурии Тоҷикистон муҳтарам Эмомалӣ Раҳмон <button class="pesvo-all-btn" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳама</button></div></div></div><div class="president-books-scroll" id="pesvoBooks"></div></div>
-<div class="categories-section" id="popSection" style="display:none"><div class="section-row"><div class="section-title">🔥 Китобҳои серхонтарин</div><button class="see-all-btn" onclick="location.href='kitobho.html?sort=popular'">Ҳама</button></div><div class="books-scroll" id="popBooks"></div></div>
-<div class="categories-section"><div class="section-row"><div class="section-title">📂 Категорияҳо</div><button class="see-all-btn" onclick="location.href='kitobho.html'">Ҳама</button></div><div class="categories-grid" id="catGrid"><div class="loader"></div></div></div>
+<!-- HERO — Цитата Президента — дизайн как в моем скриншоте, логика твоя сохранена (heroKicker, heroImg, heroQuote, heroDots) -->
+<section class="hero-section-new">
+  <div class="hero-kicker-new" id="heroKicker">Суханҳои Пешвои муаззами миллат дар бораи <b>маориф</b></div>
+  <div class="hero-inner-new">
+    <div class="hero-left-new">
+      <div class="hero-quote-mark">“</div>
+      <div class="hero-quote-text-new" id="heroQuote" style="transition: all 0.3s ease;">Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад</div>
+      <div class="hero-dots-new" id="heroDots"></div>
+    </div>
+    <div class="hero-right-new">
+      <div class="president-photo-wrap-new">
+        <div class="president-photo-new">
+          <img id="heroImg" src="assets/hero/01-president-official.jpg" alt="Пешвои миллат" loading="eager">
+        </div>
+        <div class="president-flag-bg"></div>
+      </div>
+    </div>
+  </div>
+  <div class="hero-tag-new" id="heroTag" style="display:none"></div>
+</section>
+
+<!-- CATEGORIES — ниже ситаты президента, как у меня было, круглые красиво -->
+<section class="categories-section-new" id="categoriesSection">
+  <div class="section-row-new"><div class="section-title-new">📂 <span>Категорияҳо</span></div><button class="see-all-btn-new" onclick="location.href='kitobho.html'">Ҳама</button></div>
+  <div class="categories-scroll-new" id="catGrid"><div class="loader"></div></div>
+</section>
+
+<!-- SEARCH — hidden by default, открывается по клику на лупу в топ-баре -->
+<div class="search-section" id="searchSection" style="display:none;">
+  <form class="search-mini-new" id="homeSearchForm"><span>🔍</span><input id="homeSearch" type="search" placeholder="Ҷустуҷӯи китоб..."><button type="button" onclick="document.getElementById('searchSection').style.display='none'" style="background:none;border:none;color:#A8B8CC;font-size:16px;cursor:pointer">✕</button></form>
+  <div id="homeSearchResults" class="home-search-results-new" style="display:none"></div>
+</div>
+
+<!-- OZMUNHOI JUMHURIAVI — круглые красиво, все файлы готовы -->
+<section class="ozmun-section-new">
+  <div class="section-row-new"><div class="section-title-new">🏆 <span class="section-title-accent">Озмунҳои</span> ҷумҳуриявӣ</div></div>
+  <div class="ozmun-scroll-new" id="ozmunList"></div>
+</section>
+
+<!-- CONTINUE READING -->
+<div class="continue-section" id="continueSection" style="display:none"><div class="section-label-new">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
+
+<!-- KITOBHOI PESVOI MILLAT — как ты сделал китобхои нав, техника готова -->
+<section class="president-books-section-new" id="pesvoSection" style="display:none">
+  <div class="section-row-new"><div class="section-title-new">👑 Китобҳои Пешвои миллат</div><button class="see-all-btn-new" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳама</button></div>
+  <div class="books-scroll-new" id="pesvoBooks"></div>
+</section>
+
+<!-- KITOBHOI NAV — новые книги -->
+<section class="new-books-section-new" id="newSection" style="display:none">
+  <div class="section-row-new"><div class="section-title-new">✨ Китобҳои нав</div><button class="see-all-btn-new" onclick="location.href='kitobho.html?sort=new'">Ҳама</button></div>
+  <div class="books-scroll-new" id="newBooks"></div>
+</section>
+
+<!-- KITOBHOI SERХONTARIN — популярные -->
+<section class="popular-section-new" id="popSection" style="display:none">
+  <div class="section-row-new"><div class="section-title-new">🔥 Китобҳои серхонтарин</div><button class="see-all-btn-new" onclick="location.href='kitobho.html?sort=popular'">Ҳама</button></div>
+  <div class="books-scroll-new" id="popBooks"></div>
+</section>
+
 </main>
 
-
+<!-- BOTTOM NAV — оставляем твой существующий, но стилизовано -->
 <div class="nav-fixed-wrapper">
   <div class="nav-bottom" id="navBottom">
     <div class="kh-nav2">
       <button class="nav-item active" onclick="setActiveNav(this); location.href='index.html'" aria-label="Асосӣ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M3 11l9-8 9 8"></path>
-          <path d="M5 10v10h14V10"></path>
-          <path d="M9 20v-6h6v6"></path>
-        </svg>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"></path><path d="M5 10v10h14V10"></path><path d="M9 20v-6h6v6"></path></svg>
         <span>Асосӣ</span>
       </button>
       <button class="nav-item" onclick="setActiveNav(this); location.href='kitobho.html'" aria-label="Китобхо">
-        <div class="person-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
-          </svg>
-          <div class="book-in-hand"></div>
-        </div>
+        <div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5 20c0-3 3-6 7-6s7 3 7 6" /></svg><div class="book-in-hand"></div></div>
         <span>Китобхо</span>
       </button>
       <button class="nav-item" onclick="setActiveNav(this); location.href='winners.html'" aria-label="Ғолибон">
-        <div class="crown-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
-          </svg>
-          <span class="crown-icon">👑</span>
-        </div>
+        <div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5 20c0-3 3-6 7-6s7 3 7 6" /></svg><span class="crown-icon">👑</span></div>
         <span>Ғолибон</span>
       </button>
       <button class="nav-item" onclick="setActiveNav(this); location.href='Lenta.html'" aria-label="Лента">
-        <div class="person-icon like-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="8" r="4" />
-            <path d="M5 20c0-3 3-6 7-6s7 3 7 6" />
-          </svg>
-          <span class="like-icon heart1">❤️</span>
-          <span class="like-icon heart2">❤️</span>
-          <span class="like-icon heart3">❤️</span>
-        </div>
+        <div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4" /><path d="M5 20c0-3 3-6 7-6s7 3 7 6" /></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div>
         <span>Лента</span>
       </button>
       <button class="nav-item" onclick="setActiveNav(this); location.href='chats.html'" aria-label="Чат">
-        <div class="users-wrap">
-          <div class="person p1"></div>
-          <div class="person p2"></div>
-          <span class="heart-pop">❤️</span>
-        </div>
+        <div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div>
         <span>Чат</span>
       </button>
       <button class="nav-item" onclick="setActiveNav(this); location.href='profile.html'" aria-label="Профил">
-        <div class="profile-wrap">
-          <div class="person-group">
-            <div class="person-small ps1"></div>
-            <div class="person-small ps2"></div>
-            <div class="person-small ps3"></div>
-          </div>
-        </div>
+        <div class="profile-wrap"><div class="person-group"><div class="person-small ps1"></div><div class="person-small ps2"></div><div class="person-small ps3"></div></div></div>
         <span>Профил</span>
       </button>
     </div>
@@ -115,6 +142,17 @@
 <script>
 document.addEventListener('DOMContentLoaded', () => {
   CacheManager.init();
+  // toggle search
+  const searchBtn = document.getElementById('searchToggleBtn');
+  const searchSec = document.getElementById('searchSection');
+  if (searchBtn && searchSec) {
+    searchBtn.addEventListener('click', () => {
+      searchSec.style.display = searchSec.style.display === 'none' ? 'block' : 'none';
+      if (searchSec.style.display === 'block') {
+        setTimeout(() => document.getElementById('homeSearch')?.focus(), 100);
+      }
+    });
+  }
 });
 
 const BOOKS_JSON_URLS = [
@@ -158,7 +196,6 @@ function hydrateBookCardCovers(root = document) {
    const nodes = root.querySelectorAll('img[data-cover-url]');
    nodes.forEach(img => {
      const cover = img.getAttribute('data-cover-url') || '';
-     const bookUrl = img.getAttribute('data-book-url') || '';
      const cached = getCachedCoverDataUrl(cover);
      if (cached && img.getAttribute('src') !== cached) img.setAttribute('src', cached);
      if (cover) ensureCoverDataUrl(cover, img);
@@ -168,65 +205,28 @@ function hydrateBookCardCovers(root = document) {
 function theme(t) {
   document.body.classList.toggle('light-theme', t === 'light');
   localStorage.setItem('kk_theme', t);
-  $('themeBtn').textContent = t === 'light' ? '☀️' : '🌙';
+  const btn = $('themeBtn');
+  if (btn) btn.textContent = t === 'light' ? '☀️' : '🌙';
 }
-$('themeBtn').onclick = () => theme(localStorage.getItem('kk_theme') === 'light' ? 'dark' : 'light');
+const tb = $('themeBtn');
+if (tb) tb.onclick = () => theme(localStorage.getItem('kk_theme') === 'light' ? 'dark' : 'light');
 theme(localStorage.getItem('kk_theme') || 'dark');
 
 let hero = window.QUOTES || [];
 if (!hero.length) {
   hero = [
-    {
-      img:'assets/hero/01-president-official.jpg',
-      topic:'маориф',
-      quote:'Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад.',
-      color:'#ffffff',
-      fontSize:24,
-      displayDuration:12,
-      fontFamily:'Georgia, serif'
-    },
-    {
-      img:'assets/hero/02-istiqlol-flag.jpg',
-      topic:'истиқлолият',
-      quote:'Истиқлолият неъмати бебаҳо ва асоси ҳастии давлатдории миллӣ аст.',
-      color:'#ffffff',
-      fontSize:24,
-      displayDuration:12,
-      fontFamily:'Georgia, serif'
-    },
-    {
-      img:'assets/hero/03-vahdat-diplomacy.jpg',
-      topic:'ваҳдати миллӣ',
-      quote:'Ваҳдати миллӣ пояи сулҳу субот ва рушди ҷомеа мебошад.',
-      color:'#ffffff',
-      fontSize:24,
-      displayDuration:12,
-      fontFamily:'Georgia, serif'
-    },
-    {
-      img:'assets/hero/06-zaboni-millat.jpg',
-      topic:'забон',
-      quote:'Забони миллат ҳастии миллат аст.',
-      color:'#ffffff',
-      fontSize:24,
-      displayDuration:12,
-      fontFamily:'Georgia, serif'
-    },
-    {
-      img:'assets/hero/09-suhanroni.jpg',
-      topic:'китоб',
-      quote:'Китоб сарчашмаи дониш ва роҳнамои инсон аст.',
-      color:'#ffffff',
-      fontSize:24,
-      displayDuration:12,
-      fontFamily:'Georgia, serif'
-    }
+    { img:'assets/hero/01-president-official.jpg', topic:'маориф', quote:'Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад.', color:'#ffffff', fontSize:22, displayDuration:12, fontFamily:'Georgia, serif' },
+    { img:'assets/hero/02-istiqlol-flag.jpg', topic:'истиқлолият', quote:'Истиқлолият неъмати бебаҳо ва асоси ҳастии давлатдории миллӣ аст.', color:'#ffffff', fontSize:22, displayDuration:12, fontFamily:'Georgia, serif' },
+    { img:'assets/hero/03-vahdat-diplomacy.jpg', topic:'ваҳдати миллӣ', quote:'Ваҳдати миллӣ пояи сулҳу субот ва рушди ҷомеа мебошад.', color:'#ffffff', fontSize:22, displayDuration:12, fontFamily:'Georgia, serif' },
+    { img:'assets/hero/06-zaboni-millat.jpg', topic:'забон', quote:'Забони миллат ҳастии миллат аст.', color:'#ffffff', fontSize:22, displayDuration:12, fontFamily:'Georgia, serif' },
+    { img:'assets/hero/09-suhanroni.jpg', topic:'китоб', quote:'Китоб сарчашмаи дониш ва роҳнамои инсон аст.', color:'#ffffff', fontSize:22, displayDuration:12, fontFamily:'Georgia, serif' }
   ];
 }
 let hi = 0, typeTimer = null, heroAuto = null;
 function typeText(text) {
   clearInterval(typeTimer);
   const el = $('heroQuote');
+  if (!el) return;
   el.textContent = '';
   let n = 0;
   typeTimer = setInterval(() => {
@@ -238,16 +238,19 @@ function setHero(i) {
   if (!hero.length) return;
   hi = i % hero.length;
   const h = hero[hi];
-  $('heroImg').src = h.img;
-  $('heroImg').alt = 'Пешвои миллат — ' + h.topic;
-  $('heroKicker').innerHTML = 'Суханҳои Пешвои муаззами миллат дар бораи <b>' + h.topic + '</b>';
+  const imgEl = $('heroImg');
+  if (imgEl) { imgEl.src = h.img; imgEl.alt = 'Пешвои миллат — ' + h.topic; }
+  const kicker = $('heroKicker');
+  if (kicker) kicker.innerHTML = 'Суханҳои Пешвои муаззами миллат дар бораи <b>' + h.topic + '</b>';
   const quoteEl = $('heroQuote');
-  quoteEl.style.color = h.color || '#ffffff';
-  quoteEl.style.fontSize = (h.fontSize || 24) + 'px';
-  quoteEl.style.fontFamily = h.fontFamily || 'Georgia, serif';
+  if (quoteEl) {
+    quoteEl.style.color = h.color || '#ffffff';
+    quoteEl.style.fontSize = (h.fontSize || 22) + 'px';
+    quoteEl.style.fontFamily = h.fontFamily || 'Georgia, serif';
+  }
   typeText(h.quote);
   if ($('heroDots')) {
-    $('heroDots').innerHTML = hero.map((_, j) => `<div class="hero-dot ${j===hi?'active':''}"></div>`).join('');
+    $('heroDots').innerHTML = hero.map((_, j) => `<div class="hero-dot-new ${j===hi?'active':''}"></div>`).join('');
   }
   clearTimeout(heroAuto);
   const duration = (h.displayDuration || 12) * 1000;
@@ -256,8 +259,7 @@ function setHero(i) {
 setHero(Math.floor(Math.random() * hero.length));
 if (window.location.search.includes('quotes_updated')) {
   const banner = document.getElementById('quotesUpdatedBanner');
-  banner.style.display = 'block';
-  setTimeout(() => banner.style.display = 'none', 5000);
+  if (banner) { banner.style.display = 'block'; setTimeout(() => banner.style.display = 'none', 5000); }
 }
 
 async function loadAnnouncementCached() {
@@ -273,14 +275,14 @@ async function loadAnnouncementCached() {
   }
   if (data && data.text) {
     const banner = $('announcementBanner');
-    $('announcementText').textContent = data.text;
-    banner.style.display = 'block';
+    if (banner) { $('announcementText').textContent = data.text; banner.style.display = 'block'; }
   }
 }
 
 async function updateNotifBadge() {
   const token = localStorage.getItem('kk_token');
   const badge = $('notifBadge');
+  if (!badge) return;
   if (!token) { badge.style.display = 'none'; return; }
   try {
     const notifications = await getNotifications();
@@ -319,7 +321,8 @@ function showNotificationsModal(items) {
   document.body.appendChild(modal);
 }
 
-$('notifBtn')?.addEventListener('click', async function() {
+const nb = $('notifBtn');
+if (nb) nb.addEventListener('click', async function() {
   const token = localStorage.getItem('kk_token');
   if (!token) {
     if (typeof toast === 'function') toast('Барои дидани огоҳиҳо ворид шавед');
@@ -347,11 +350,13 @@ const oz = [
   ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'],
   ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо']
 ];
-$('ozmunList').innerHTML = oz.map(o =>
-  `<div class="ozmun-item" onclick="location.href='${o[0]}'"><div class="ozmun-circle"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label">${o[2]}</div></div>`
+const ozEl = $('ozmunList');
+if (ozEl) ozEl.innerHTML = oz.map(o =>
+  `<div class="ozmun-item-new" onclick="location.href='${o[0]}'"><div class="ozmun-circle-new"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label-new">${o[2]}</div></div>`
 ).join('');
 
-$('homeSearchForm').onsubmit = e => { e.preventDefault(); const q = $('homeSearch').value.trim(); if (q) searchHome(q, true); };
+const hsForm = $('homeSearchForm');
+if (hsForm) hsForm.onsubmit = e => { e.preventDefault(); const q = $('homeSearch').value.trim(); if (q) searchHome(q, true); };
 
 async function fetchJsonFast(u, ms = 4500) {
   const ctrl = new AbortController();
@@ -412,8 +417,8 @@ function bookCard(b, folder, badge = '') {
   const state = getBookAccessState(url);
   const coverSrc = getCachedCoverDataUrl(cover) || cover;
   const coverStyle = state.show && state.dim ? 'width:100%;height:100%;object-fit:cover;filter:brightness(0.72);' : 'width:100%;height:100%;object-fit:cover;';
-  return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
-    <div class="book-cover" style="position:relative">
+  return `<div class="book-card-new" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
+    <div class="book-cover-new" style="position:relative">
       <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy"
            data-i="0" data-covers='${esc(coversJson)}' data-cover-url='${esc(cover)}' data-book-url='${esc(url)}'
            onerror="let a=JSON.parse(this.dataset.covers); let i=(+this.dataset.i)+1; this.dataset.i=i; if(a[i]) this.src=a[i]; else { this.style.display='none'; this.parentNode.querySelector('span').style.display='flex'; }"
@@ -421,7 +426,7 @@ function bookCard(b, folder, badge = '') {
       <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span>
       <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
     </div>
-    <div class="book-name">${esc(name)}</div>
+    <div class="book-name-new">${esc(name)}</div>
     ${badge ? `<div style="position:absolute;top:4px;right:4px;font-size:16px;line-height:1;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5))">${badge}</div>` : ''}
   </div>`;
 }
@@ -474,6 +479,7 @@ async function loadManifest(sub) {
 async function searchHome(q, force = false) {
   q = (q || '').trim().toLowerCase();
   const box = $('homeSearchResults');
+  if (!box) return;
   if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
   if (q.length < 2 && !force) return;
   box.style.display = 'block';
@@ -512,22 +518,24 @@ async function searchHome(q, force = false) {
   }
 }
 
-$('homeSearch').addEventListener('input', () => {
+const hsInput = $('homeSearch');
+if (hsInput) hsInput.addEventListener('input', () => {
   clearTimeout(searchTimer);
-  searchTimer = setTimeout(() => searchHome($('homeSearch').value), 350);
+  searchTimer = setTimeout(() => searchHome(hsInput.value), 350);
 });
 
 function renderCategories(cats) {
   const grid = $('catGrid');
+  if (!grid) return;
   if (!cats || !cats.length) {
     grid.innerHTML = '<div class="empty">Категория нест</div>';
     return;
   }
-  grid.innerHTML = cats.slice(0, 6).map(c =>
-    `<div class="category-card" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'" style="--c1:${c.color1||c.c1||'#1A2D44'};--c2:${c.color2||c.c2||'#2A5298'}">
-      <div class="category-icon">${esc(c.emoji||'📚')}</div>
-      <div class="category-name">${esc(c.name)}</div>
-      <div class="category-count">${(c.subs||[]).length} бахш</div>
+  grid.innerHTML = cats.slice(0, 8).map(c =>
+    `<div class="category-card-new" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'" style="--c1:${c.color1||c.c1||'#1A2D44'};--c2:${c.color2||c.c2||'#2A5298'}">
+      <div class="category-icon-new">${esc(c.emoji||'📚')}</div>
+      <div class="category-name-new">${esc(c.name)}</div>
+      <div class="category-count-new">${(c.subs||[]).length} бахш</div>
     </div>`
   ).join('');
 }
@@ -538,48 +546,61 @@ async function loadHome() {
     const categories = d.categories || [];
     CacheManager.set(CacheManager.KEYS.CATEGORIES, categories);
 
-    const homeCategories = categories.filter(c => c.id !== 'peshvoi_millat');
+    const homeCategories = categories; // показываем все, включая пешво для категории
     renderCategories(homeCategories);
 
     const priority = categories.find(c => c.id === 'peshvoi_millat') ||
                      categories.find(c => c.id === 'president') ||
                      categories.find(c => /пешвои|президент|president|peshvoi|эмомали/i.test([c.name, c.id].join(' ')));
 
-    console.log('[loadHome] priority category:', priority);
-
     if (priority) {
       const folders = (priority.subs && priority.subs.length) ? priority.subs : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
-      console.log('[loadHome] folders:', folders);
       let all = [];
       for (const ps of folders) {
         try {
           const folder = ps.folder || ps.folder_raw || ('books/' + (ps.name || ''));
-          console.log('[loadHome] loading manifest for folder:', folder);
           const arr = await loadManifest({ ...ps, folder });
-          console.log('[loadHome] loaded books:', arr.length);
           all.push(...arr.map(b => ({ ...b, _folder: folder })));
-        } catch(e) {
-          console.warn('[loadHome] Error loading manifest for folder:', e);
-        }
+        } catch(e) {}
       }
-      console.log('[loadHome] total books for president:', all.length);
       if (all.length) {
         $('pesvoSection').style.display = 'block';
         $('pesvoBooks').innerHTML = all.slice(0, 12).map(b => bookCard(b, b._folder, '')).join('');
         hydrateBookCardCovers($('pesvoBooks'));
-      } else {
-        console.warn('[loadHome] No books found for president category – hiding section');
-        $('pesvoSection').style.display = 'none';
       }
-    } else {
-      console.warn('[loadHome] President category not found');
-      $('pesvoSection').style.display = 'none';
     }
+
+    // New books - берем из всех категорий последние по manifest, просто первые 12 из случайных папок
+    await loadNewBooks(d);
   } catch (e) {
     console.error('loadHome error', e);
   }
-
   await loadPopularBooksCached();
+}
+
+async function loadNewBooks(data) {
+  try {
+    const categories = data.categories || [];
+    let candidates = [];
+    for (const c of categories.slice(0, 5)) {
+      for (const s of (c.subs||[]).slice(0, 2)) {
+        const arr = await loadManifest(s);
+        candidates.push(...arr.slice(-4).map(b => ({b, folder: s.folder})));
+        if (candidates.length > 30) break;
+      }
+      if (candidates.length > 30) break;
+    }
+    // перемешать и показать 12
+    candidates = candidates.sort(() => 0.5 - Math.random()).slice(0, 12);
+    const html = candidates.map(x => bookCard(x.b, x.folder)).join('');
+    const newSec = $('newSection');
+    const newBooks = $('newBooks');
+    if (newBooks && html) {
+      newBooks.innerHTML = html;
+      if (newSec) newSec.style.display = 'block';
+      hydrateBookCardCovers(newBooks);
+    }
+  } catch(e) { console.warn('loadNewBooks', e); }
 }
 
 async function loadPopularBooksCached() {
@@ -599,14 +620,15 @@ async function loadPopularBooksCached() {
 }
 
 function renderPopularBooks(books) {
+  const popEl = $('popBooks');
+  const popSec = $('popSection');
+  if (!popEl) return;
   if (!books || !books.length) {
-    $('popBooks').innerHTML = '<div class="empty">Ҳоло маълумот нест</div>';
+    popEl.innerHTML = '<div class="empty">Ҳоло маълумот нест</div>';
+    if (popSec) popSec.style.display = 'block';
     return;
   }
-  const colors = ['c1','c2','c3','c4','c5','c6','c7','c8','c9'];
-  const html = books.slice(0, 12).map((b, i) => {
-    const c = colors[i % colors.length];
-    const totalHours = (b.total_minutes / 60).toFixed(1);
+  const html = books.slice(0, 12).map((b) => {
     let folder = b.folder || 'books';
     folder = folder.replace(/^main\//, '');
     if (!folder.startsWith('books/') && folder !== 'books') {
@@ -621,31 +643,21 @@ function renderPopularBooks(books) {
     }
     let file = b.book_id ? b.book_id.split('/').pop() : 'Китоб.pdf';
     const name = b.book_title || file.replace(/\.pdf$/i, '') || 'Китоб';
+    const totalHours = (b.total_minutes / 60).toFixed(1);
     const url = `https://raw.githubusercontent.com/sharipovip/books/main/${enc(folder)}/${encodeURIComponent(file)}`;
     const coverList = coverCandidates(folder, file);
     const cover = b.cover_url || coverList[0] || '';
     const coversJson = JSON.stringify(coverList);
     const coverSrc = getCachedCoverDataUrl(cover) || cover;
-    return `<div class="book-card" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
-      <div class="book-cover ${c}">
-        <img src="${coverSrc}" alt="" loading="lazy"
-             data-cover-url="${esc(cover)}" data-book-url="${esc(url)}"
-             data-i="0" data-covers='${esc(coversJson)}'
-             onerror="let a=JSON.parse(this.dataset.covers);let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}"
-             style="width:100%;height:100%;object-fit:cover">
-        <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span>
-      </div>
-      <div class="book-name">${esc(name)}</div>
-      <div style="font-size:10px;color:var(--muted);padding:0 6px 4px;">⏱ ${totalHours} соат</div>
+    return `<div class="book-card-new" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
+      <div class="book-cover-new"><img src="${coverSrc}" alt="" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" data-i="0" data-covers='${esc(coversJson)}' onerror="let a=JSON.parse(this.dataset.covers);let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="width:100%;height:100%;object-fit:cover"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span></div>
+      <div class="book-name-new">${esc(name)}</div>
+      <div style="font-size:10px;color:var(--muted);padding:0 2px 4px;text-align:center">⏱ ${totalHours} соат</div>
     </div>`;
   }).join('');
-  $('popBooks').innerHTML = html;
-  hydrateBookCardCovers($('popBooks'));
-  $('popBooks').querySelectorAll('img[data-cover-url]').forEach(img => {
-    const c = img.getAttribute('data-cover-url');
-    if (c && CacheManager && typeof CacheManager.preloadCover === 'function') CacheManager.preloadCover(c);
-  });
-  $('popSection').style.display = 'block';
+  popEl.innerHTML = html;
+  hydrateBookCardCovers(popEl);
+  if (popSec) popSec.style.display = 'block';
 }
 
 function loadContinue() {
@@ -658,8 +670,11 @@ function loadContinue() {
     const list = [cache[url]?.cover, p.cover, ...coverListFromPdfUrl(url)].filter(Boolean);
     const cov = list[0] || '';
     const name = p.name || 'Китоб';
-    $('continueSection').style.display = 'block';
-    $('continueCard').innerHTML = `
+    const sec = $('continueSection');
+    const card = $('continueCard');
+    if (!sec || !card) return;
+    sec.style.display = 'block';
+    card.innerHTML = `
       <div class="continue-book-cover" style="background:linear-gradient(160deg,#1A3A5C,#2A5298);overflow:hidden">
         ${cov ? `<img src="${cov}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" onerror="const a=${esc(JSON.stringify(list))};let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.textContent='📗'}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">` : '📗'}
       </div>
@@ -698,7 +713,6 @@ function esc(str) {
   return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
 }
 
-
 loadAnnouncementCached();
 updateNotifBadge();
 loadContinue();
@@ -713,8 +727,7 @@ if ('serviceWorker' in navigator) {
         setTimeout(() => initFirebaseMessaging(), 800);
       }
     })
-    .catch(err => {
-    });
+    .catch(err => {});
 } else if (!isAndroidApp) {
   initFirebaseMessaging();
 }
@@ -735,5 +748,5 @@ document.addEventListener('DOMContentLoaded', function() {
   if (firstItem) firstItem.classList.add('active');
 });
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a1ae6c5c4caff11b',t:'MTc4NDAxMDA0NA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
