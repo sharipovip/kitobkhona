@@ -1547,20 +1547,37 @@ body:before {
 .main-content-v4{flex:1;overflow-y:auto;overflow-x:hidden;padding-bottom:12px}
 
 .hero-v4{
-  margin:0; /* шире по бокам экрана */
+  margin:0;
   background:#0F1E32;
   border-bottom:1px solid rgba(255,255,255,.06);
   position:relative;overflow:hidden;
-  min-height:200px;
+  min-height:132px; /* меньше по вертикали как просили */
+  border-radius:0;
 }
-.hero-v4-inner{display:flex;min-height:200px;position:relative}
-.hero-v4-left{flex:1;padding:16px 14px;display:flex;flex-direction:column;justify-content:center;z-index:3;min-width:0}
-.hero-kicker-v4{font-size:11px;color:#E8C96D;opacity:.9;margin-bottom:8px;font-style:italic}
+.hero-v4-inner{display:flex;min-height:132px;position:relative}
+.hero-v4-left{
+  flex:0 0 52%; /* половина текст */
+  padding:12px 12px;
+  display:flex;flex-direction:column;justify-content:center;
+  z-index:4;min-width:0;
+  background:linear-gradient(90deg, #0F1E32 0%, #0F1E32 58%, rgba(15,30,50,0.88) 72%, rgba(15,30,50,0.45) 88%, transparent 100%);
+  /* полупрозрачное окно где текст, левая половина фото прозрачная */
+  position:relative;
+}
+.hero-kicker-v4{font-size:10px;color:#E8C96D;opacity:.85;margin-bottom:6px;font-style:italic;line-height:1.2}
 .hero-kicker-v4 b{font-weight:800}
-.hero-quote-v4{font-size:14px;line-height:1.45;color:#E8E4D9;font-weight:500;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
-.hero-v4-right{flex:0 0 48%;position:relative;overflow:hidden;background:#0A1222;min-height:200px}
-.hero-v4-right img{width:100%;height:100%;object-fit:cover;object-position:top center;position:relative;z-index:2}
-.hero-flag-v4{position:absolute;right:0;top:0;width:100%;height:100%;z-index:1;background:linear-gradient(180deg,#D01F2F 0 33%,#fff 33% 66%,#1FA463 66% 100%);opacity:.38;mix-blend-mode:overlay}
+.hero-quote-v4{font-size:12.5px;line-height:1.35;color:#E8E4D9;font-weight:500;display:-webkit-box;-webkit-line-clamp:4;-webkit-box-orient:vertical;overflow:hidden}
+.hero-v4-right{
+  flex:0 0 48%; /* половина фото */
+  position:relative;overflow:hidden;background:#0A1222;min-height:132px;
+  margin-left:-28px; /* наложение для полупрозрачного эффекта окна */
+}
+.hero-v4-right img{
+  width:100%;height:100%;object-fit:cover;object-position:top center;
+  position:relative;z-index:2;
+  filter:saturate(1.05) contrast(1.05);
+}
+.hero-flag-v4{position:absolute;right:0;top:0;width:100%;height:100%;z-index:1;background:linear-gradient(180deg,#D01F2F 0 33%,#fff 33% 66%,#1FA463 66% 100%);opacity:.22;mix-blend-mode:overlay}
 
 .sec-head-v4{display:flex;justify-content:space-between;align-items:center;padding:18px 12px 10px}
 .sec-title-v4{font-size:14px;font-weight:800;color:#E8E4D9}

@@ -57,19 +57,20 @@
     <div id="announcementBanner" style="display:none"><span id="announcementText"></span></div>
     <div id="quotesUpdatedBanner" style="display:none"></div>
 
-    <!-- 2 Озмун — красиво -->
+    <!-- 2 Озмун — красиво (высокое качество оригинал) -->
     <section class="ozmun-v4">
       <div class="sec-head-v4"><div class="sec-title-v4">🏆 Озмунҳои ҷумҳуриявӣ</div></div>
       <div class="ozmun-scroll-v4" id="ozmunList"></div>
     </section>
+
+    <!-- Давом додани хондан — сверху категории как ты просил -->
+    <div class="continue-section" id="continueSection" style="display:none"><div class="sec-label-v4">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
 
     <!-- 3 Категории — иконки из папки icons/v3 -->
     <section class="cat-v4">
       <div class="sec-head-v4"><div class="sec-title-v4">Категорияҳо</div><div class="sec-link-v4" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="cat-scroll-v4" id="catGrid"><div class="loader"></div></div>
     </section>
-
-    <div class="continue-section" id="continueSection" style="display:none"><div class="sec-label-v4">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
 
     <!-- 4 Пешво — без НАВ -->
     <section class="books-v4" id="pesvoSection" style="display:none">
@@ -157,18 +158,11 @@ async function updateNotifBadge(){
     else { badge.style.display='none'; }
   }catch(e){ badge.style.display='none'; }
 }
-function showNotifToastBottom(){
-  let old=document.getElementById('notifToastV4'); if(old) old.remove();
-  const toast=document.createElement('div'); toast.id='notifToastV4'; toast.className='notif-toast-v4';
-  toast.innerHTML=`<img src="icons/v3/bell.svg" width="18" height="18" alt="bell"><div style="flex:1"><b style="font-size:12px;color:#E8C96D">Огоҳиҳо хонда шуданд</b><div style="font-size:11px;color:#A8B8CC">✓ Нест карда шуд</div></div><div style="display:flex;gap:6px"><img src="icons/v3/book.svg" width="16" height="16" alt="b"><img src="icons/v3/star.svg" width="14" height="14" alt="s"></div>`;
-  document.body.appendChild(toast);
-  requestAnimationFrame(()=>toast.classList.add('show'));
-  setTimeout(()=>{ toast.classList.remove('show'); setTimeout(()=>toast.remove(),400); }, 3200);
-}
+function showNotifToastBottom(){ /* removed per user request - notifications only top right */ }
 function showNotificationsModal(items){
   let old=document.getElementById('notifModal'); if(old) old.remove();
-  const modal=document.createElement('div'); modal.id='notifModal'; modal.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.6);display:flex;align-items:flex-start;justify-content:center;padding:20px;backdrop-filter:blur(4px)';
-  const box=document.createElement('div'); box.style.cssText='background:#0D1B2A;border:1px solid rgba(201,168,76,.25);border-radius:20px;max-width:420px;width:100%;max-height:80vh;overflow:auto;color:#F0EAD6;box-shadow:0 20px 60px rgba(0,0,0,.5);margin-top:40px';
+  const modal=document.createElement('div'); modal.id='notifModal'; modal.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.35);display:flex;align-items:flex-start;justify-content:flex-end;padding:56px 12px 20px 12px;backdrop-filter:blur(2px)';
+  const box=document.createElement('div'); box.style.cssText='background:#0D1B2A;border:1px solid rgba(201,168,76,.25);border-radius:16px;width:100%;max-width:340px;max-height:70vh;overflow:auto;color:#F0EAD6;box-shadow:0 16px 40px rgba(0,0,0,.5);';
   let listHtml='';
   if(!items){
     listHtml='<div style="padding:30px;text-align:center;color:#A8B8CC"><div class="loader" style="margin:0 auto 12px"></div>Боргирӣ...</div>';
@@ -199,7 +193,7 @@ function showNotificationsModal(items){
     }catch(e){}
     modal.remove();
     updateNotifBadge();
-    showNotifToastBottom();
+    // toast removed per user request
   };
   modal.addEventListener('click', e=>{ if(e.target===modal) close(); });
   const closeBtn=box.querySelector('#closeNotifModal'); if(closeBtn) closeBtn.onclick=close;
