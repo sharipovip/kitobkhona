@@ -89,9 +89,10 @@ kitobkhona/
 ├── 📄 manifest.json           # PWA манифест
 │
 ├── 📁 assets/
-│   ├── 📁 css/index.css       # Основные стили
 │   ├── 📁 fonts/              # Шрифты
 │   └── 📁 hero/               # Изображения hero
+│
+│   # Стили главной встроены в index.html (единый файл)
 │
 ├── 📁 data/
 │   ├── bad_words.json         # Запрещённые слова

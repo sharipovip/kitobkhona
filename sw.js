@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v6';
+const CACHE_NAME = 'kitobkhona-v7';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -10,7 +10,7 @@ const LOCAL_FILES = [
   './winners.html',
   './chats.html',
   './chat.html',
-  './honandagon.html',
+  './Lenta.html',
   './config.js',
   './cache.js',
   './manifest.json',
