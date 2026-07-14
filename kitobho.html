@@ -1181,7 +1181,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div class="bk-actions" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-bookid="${encodeURIComponent(bookId)}">
             <button class="btn btn-close-actions" onclick="event.stopPropagation(); closeActiveActions();">✕</button>
             <button class="btn btn-primary btn-read">📖 Хондан</button>
-            <button class="btn btn-ghost btn-favorite">⭐ Закладка</button>
+            <button class="btn btn-ghost btn-favorite">❤️ Дӯстдошта</button>
             <button class="btn btn-success btn-complete">✅ Хатм</button>
             <button class="btn btn-ghost btn-download">⬇ Скачать</button>
             <button class="btn btn-ghost btn-share">↗ Мубодила</button>
@@ -1253,7 +1253,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + token }
           });
-          if (resp.ok) { btn.textContent = '⭐ Закладка'; toast('Аз закладка хориҷ шуд'); }
+          if (resp.ok) { btn.textContent = '❤️ Дӯстдошта'; toast('Аз дӯстдошта хориҷ шуд'); }
           else toast('Хатогӣ');
         } else {
           const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites', {
@@ -1261,7 +1261,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify({ book_id: bookId || book.file, book_title: name, book_author: book.author || '' })
           });
-          if (resp.ok) { btn.textContent = '⭐ Закладка (✔)'; toast('Ба закладка илова шуд'); }
+          if (resp.ok) { btn.textContent = '❤️ Дӯстдошта (✔)'; toast('Ба дӯстдошта илова шуд'); }
           else toast('Хатогӣ');
         }
         const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;

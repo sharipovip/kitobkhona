@@ -509,24 +509,24 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
 .light-reading{--bg:#E9E3D7;--panel:rgba(245,240,232,.98);--page-bg:#FFFDF6}.light-reading .reader-top-bar,.light-reading .reader-progress-wrap{background:#F5F0E8!important}.light-reading .reader-bottom-bar{background:rgba(245,240,232,.98)!important}.light-reading .reader-main{background:#DDD5C7!important}.light-reading .reader-social-tray summary{color:#657080}.light-reading .reader-nav-item{color:#657080}
 @media(max-width:355px){.reader-nav-item small{font-size:8px}.rating-stars .star{font-size:11px!important}.reaction-group{gap:5px!important}}
 </style>
+
+<style id="reader-final-requested-design">
+.reader-top-bar{gap:4px!important;height:52px!important;padding:calc(5px + var(--safe-top)) 7px 5px!important}.btn-back,.top-btn{width:31px!important;height:31px!important;flex:0 0 31px!important}.top-rating{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:0;overflow:hidden}.top-rating .rating-label{font-size:10px;margin-right:2px}.top-rating .star{font-size:12px;line-height:1;color:#727272;cursor:pointer;padding:1px}.top-rating .star.on{color:#C9A84C}.size-control{height:31px;flex:0 0 67px;border:1px solid rgba(201,168,76,.19);border-radius:99px;display:flex;align-items:center;justify-content:space-around;color:#C9A84C;background:#151515}.size-control button{width:23px;height:29px;border:0;background:transparent;color:#E8E4D9;font-size:16px;cursor:pointer}.size-control span{font-size:9px;color:#88743E}.reader-progress-wrap{top:calc(52px + var(--safe-top))!important;padding-top:7px!important}.page-stage{padding-top:calc(93px + var(--safe-top))!important}.brightness-dial .ico{font-size:10px!important;font-weight:850;letter-spacing:-.5px;touch-action:none;user-select:none}.brightness-dial.center .ico{background:radial-gradient(circle at 35% 30%,#F3DA88,#B3872E)!important}.reader-social-tray .reaction-bar{justify-content:center!important}.reader-social-tray summary span:first-child{font-size:0}.reader-social-tray summary span:first-child:after{content:'Вокунишҳо';font-size:9.5px}
+body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg) contrast(.94)}body:not(.light-reading) .page-slot{background:#121212!important}.light-reading .size-control{background:#E8E0D4}.light-reading .size-control button{color:#28384B}
+@media(max-width:365px){.top-rating .star{font-size:10px}.size-control{flex-basis:61px}.reader-top-bar{gap:2px!important}}
+</style>
 </head>
 <body>
 <div class="reader-wrapper">
   
   <div class="reader-top-bar" id="topBar">
-    <button class="btn-back" onclick="goBack()">←</button>
-    <div class="book-title-block">
-      <div class="reading-book-title" id="bookTitle">Китоб</div>
-      <div class="reading-book-author" id="bookSub">Китобхона</div>
-    </div>
-    <div class="top-actions">
-      <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
-      <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Хатбарак">♡</button>
-      <button class="top-btn" onclick="toggleSettings()" aria-label="Танзимот">⋮</button>
-    </div>
+    <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
+    <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">⭐</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
+    <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
+    <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта">♡</button>
+    <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>
   </div>
 
-  
   <div class="reader-progress-wrap" id="readerProgressWrap">
     <div class="reader-progress-track"><div class="reader-progress-fill-top" id="topProgressFill"></div><div class="reader-progress-knob" id="topProgressKnob"></div></div>
     <div class="reader-progress-numbers"><span id="topPageInfo">— / —</span><span id="topProgressPct">0%</span></div>
@@ -553,9 +553,9 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
     <div class="reader-action-nav">
       <button class="reader-nav-item" type="button" onclick="jumpToPagePrompt()"><span class="ico">☰</span><small>Саҳифа</small></button>
       <button class="reader-nav-item" type="button" onclick="toggleReaderTheme()"><span class="ico" id="readerThemeIcon">☀</span><small>Мавзӯъ</small></button>
-      <button class="reader-nav-item center" type="button" onclick="toggleSettings()"><span class="ico">＋</span><small>Масштаб</small></button>
+      <button class="reader-nav-item center brightness-dial" id="brightnessDial" type="button" aria-label="Дурахшонӣ"><span class="ico" id="brightnessDialValue">100%</span><small>Дурахшонӣ</small></button>
       <button class="reader-nav-item" type="button" onclick="shareCurrent()"><span class="ico">↗</span><small>Мубодила</small></button>
-      <button class="reader-nav-item" type="button" data-reader-favorite onclick="toggleReaderFavorite()"><span class="ico">♡</span><small>Хатбарак</small></button>
+      <button class="reader-nav-item" type="button" onclick="downloadCurrent()"><span class="ico">⇩</span><small>Зеркашӣ</small></button>
     </div>
     <details class="reader-social-tray">
       <summary><span>Баҳодиҳӣ ва вокуниш</span><span id="pageInfo">— / —</span></summary>
@@ -564,9 +564,6 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
           <button class="reaction-btn" data-reaction="like" title="Лайк">👍<span class="cnt" id="likeCount">0</span></button>
           <button class="reaction-btn" data-reaction="love" title="Муҳаббат">❤️<span class="cnt" id="loveCount">0</span></button>
           <button class="reaction-btn" data-reaction="dislike" title="Нописанд">👎<span class="cnt" id="dislikeCount">0</span></button>
-        </div>
-        <div class="rating-stars" id="ratingStars"><span class="rating-label">⭐</span>
-          <span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span>
         </div>
       </div>
     </details>
@@ -649,7 +646,7 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
   name = safeDecode(name);
   cover = safeDecode(cover);
   if (/^data:/i.test(String(cover).trim())) cover = '';
-  $('bookTitle').textContent = name;
+  const titleEl=$('bookTitle');if(titleEl)titleEl.textContent=name;
 
   function getBookId() {
     try {
@@ -1143,7 +1140,7 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
       $('topProgressPct').textContent=pct+'%';
       $('topProgressFill').style.width=pct+'%';
       $('topProgressKnob').style.left=pct+'%';
-      $('bookSub').textContent='PDF · '+pages+' саҳифа';
+      if($('bookSub'))$('bookSub').textContent='PDF · '+pages+' саҳифа';
       saveProgress();
     } catch(e) {
       toast('Хатогӣ: ' + (e.message || e), 3000);
@@ -1225,6 +1222,8 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
   function setBrightness(v) {
     $('pageContainer').style.filter = 'brightness(' + (Number(v) / 100) + ')';
     localStorage.setItem('kk_reader_brightness', v);
+    if ($('brightnessRange')) $('brightnessRange').value = v;
+    if ($('brightnessDialValue')) $('brightnessDialValue').textContent = Math.round(Number(v)) + '%';
   }
   setBrightness(localStorage.getItem('kk_reader_brightness') || 100);
 
@@ -1239,6 +1238,10 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
     setTimeout(() => $('findInput').focus(), 80);
   }
 
+  function adjustZoom(delta){const next=Math.max(70,Math.min(170,Math.round(zoom*100)+delta));setZoom(next);toast('Андоза: '+next+'%')}
+  let brightnessValue=Number(localStorage.getItem('kk_reader_brightness')||100),dialStartX=0,dialStartValue=100,dialDragging=false;
+  function applyDialBrightness(value){brightnessValue=Math.max(45,Math.min(120,Math.round(value)));setBrightness(brightnessValue);if($('brightnessDialValue'))$('brightnessDialValue').textContent=brightnessValue+'%'}
+  function initBrightnessDial(){const dial=$('brightnessDial');if(!dial)return;applyDialBrightness(brightnessValue);dial.addEventListener('pointerdown',e=>{dialDragging=true;dialStartX=e.clientX;dialStartValue=brightnessValue;dial.setPointerCapture?.(e.pointerId)});dial.addEventListener('pointermove',e=>{if(dialDragging)applyDialBrightness(dialStartValue+(e.clientX-dialStartX)/1.5)});const stop=()=>dialDragging=false;dial.addEventListener('pointerup',stop);dial.addEventListener('pointercancel',stop);dial.addEventListener('wheel',e=>{e.preventDefault();applyDialBrightness(brightnessValue+(e.deltaY<0?5:-5))},{passive:false});dial.addEventListener('dblclick',()=>applyDialBrightness(100))}
   function jumpToPagePrompt(){
     if(!pages)return;const value=prompt('Рақами саҳифа (1–'+pages+')',String(page));if(value===null)return;const n=Math.max(1,Math.min(pages,parseInt(value,10)||page));renderPage(n,n>=page?1:-1)
   }
@@ -1249,7 +1252,7 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
   function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}
   function paintReaderFavorite(){document.querySelectorAll('[data-reader-favorite]').forEach(btn=>{btn.classList.toggle('active',readerFavorite);const ico=btn.querySelector('.ico');if(ico)ico.textContent=readerFavorite?'♥':'♡';else btn.textContent=readerFavorite?'♥':'♡'})}
   async function loadReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token)return;try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const id=canonicalFavoriteId();readerFavorite=(await r.json()).some(x=>String(x.book_id).replace(/^books\//i,'')===id);paintReaderFavorite()}catch(e){}}
-  async function toggleReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token){toast('Барои хатбарак ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба хатбарак илова шуд':'Аз хатбарак хориҷ шуд')}catch(e){toast('Хатбарак нигоҳ дошта нашуд')}}
+  async function toggleReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
 
   async function downloadCurrent() {
     await downloadFile(url, name);
@@ -1302,6 +1305,7 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
   function prevFind() { if (findHits.length) goFind(findIndex - 1); }
   function escapeHtml(s) { return String(s??'').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 
+  initBrightnessDial();
   openPdf();
 </script>
 </body>

@@ -1184,7 +1184,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="profile-card">
         <div class="profile-row">
           <div class="avatar-ring"><div class="avatar-inner" id="avatarInner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div>
-          <div class="stats-row"><div class="stat"><b id="ownBooks">0</b><span>китобҳо</span></div><div class="stat-divider"></div><div class="stat"><b id="ownFriends">0</b><span>дӯстон</span></div><div class="stat-divider"></div><div class="stat"><b id="ownMarks">0</b><span>закладка</span></div></div>
+          <div class="stats-row"><div class="stat"><b id="ownBooks">0</b><span>китобҳо</span></div><div class="stat-divider"></div><div class="stat"><b id="ownFriends">0</b><span>дӯстон</span></div><div class="stat-divider"></div><div class="stat"><b id="ownMarks">0</b><span>дӯстдошта</span></div></div>
         </div>
         <div class="profile-meta">
           <h3 id="ownName">Китобхон</h3>
@@ -1199,7 +1199,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </div>
       <div class="tabs" data-group="own">
         <div class="tab-btn active" data-tab="books">📚 Китобҳо</div>
-        <div class="tab-btn" data-tab="marks">⭐ Закладки</div>
+        <div class="tab-btn" data-tab="marks">❤️ Дӯстдошта</div>
         <div class="tab-btn" data-tab="posts">📰 Пост</div>
       </div>
       <div class="tab-panel" data-group="own" data-panel="books" id="panelBooks"><div class="empty-state">Боргирӣ...</div></div>
@@ -1389,7 +1389,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div style="color:var(--gold);font-weight:700;margin-bottom:6px">Имкониятҳои барнома</div>
           <div>• ҷустуҷӯ ва мутолиаи китобҳои тоҷикӣ;</div>
           <div>• PDF-читалка бо нигоҳдории пешрафти хондан;</div>
-          <div>• закладкаҳо ва таърихи китобҳои хондашуда;</div>
+          <div>• дӯстдоштаҳо ва таърихи китобҳои хондашуда;</div>
           <div>• профил, дӯстӣ ва лентаи китобӣ;</div>
           <div>• лайк, шарҳ ва баҳодиҳии китобҳо;</div>
           <div>• огоҳиномаҳо ва кор бо режими offline.</div>
@@ -1410,8 +1410,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div>Ба «Китобҳо» дароед, категорияро интихоб кунед ва рӯйи китоб пахш намоед. Дар читалка саҳифаро иваз кунед, масштабро танзим намоед ва пешрафти хондан нигоҳ дошта мешавад.</div>
         </div>
         <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
-          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">⭐ Закладка ва кэш</div>
-          <div>Дар профили худ аз менюи китоб «Илова ба закладка»-ро интихоб кунед. Кэш барои кушодани зудтар кӯмак мекунад; тоза кардани кэш пешрафти хонданро нест намекунад.</div>
+          <div style="color:var(--gold);font-weight:700;margin-bottom:5px">❤️ Дӯстдошта ва кэш</div>
+          <div>Дар профили худ аз менюи китоб «Илова ба дӯстдошта»-ро интихоб кунед. Кэш барои кушодани зудтар кӯмак мекунад; тоза кардани кэш пешрафти хонданро нест намекунад.</div>
         </div>
         <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
           <div style="color:var(--gold);font-weight:700;margin-bottom:5px">🧾 Профил</div>
@@ -1451,8 +1451,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   
   <div class="popup-menu" id="bookMenu">
     <div class="item" onclick="menuPublish()" id="menuPublish">📢 Интишор кардан дар лента</div>
-    <div class="item" onclick="menuFavorite()">⭐ Илова ба закладка</div>
-    <div class="item" onclick="menuRemoveFavorite()" id="menuRemoveFavorite">❌ Хориҷ аз закладка</div>
+    <div class="item" onclick="menuFavorite()">❤️ Илова ба дӯстдошта</div>
+    <div class="item" onclick="menuRemoveFavorite()" id="menuRemoveFavorite">❌ Хориҷ аз дӯстдошта</div>
   </div>
 
   
@@ -1885,7 +1885,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         .catch(e => console.warn('Не удалось обновить книги', e));
       loadFavoritesCached(profileId)
         .then(() => { if (loadSequence === profileLoadSequence) renderFavorites(); })
-        .catch(e => console.warn('Не удалось обновить закладки', e));
+        .catch(e => console.warn('Не удалось обновить дӯстдошта', e));
       loadPostsCached(profileId)
         .then(() => { if (loadSequence === profileLoadSequence) renderPosts(); })
         .catch(e => console.warn('Не удалось обновить посты', e));
@@ -2256,7 +2256,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
    async function renderFavorites() {
     const container = el('panelMarks');
     if (!favoritesData.length) {
-      container.innerHTML = '<div class="empty-state">Закладка нест</div>';
+      container.innerHTML = '<div class="empty-state">Дӯстдошта нест</div>';
       return;
     }
     const colors = ['c1', 'c2', 'c3', 'c4', 'c5', 'c6', 'c7', 'c8', 'c9'];
@@ -2282,10 +2282,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
                  style="width:100%;height:100%;object-fit:cover;position:absolute;inset:0;border-radius:9px">
             <div class="book-overlay">
               <div class="book-title">${esc(f.book_title)}</div>
-              <div class="book-meta"><span>⭐ Закладка</span></div>
+              <div class="book-meta"><span>❤️ Дӯстдошта</span></div>
             </div>
           </div>
-          ${isOwnProfile ? `<div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз закладка">✕</div>` : ''}
+          ${isOwnProfile ? `<div class="fav-remove-btn" onclick="event.stopPropagation(); removeFavoriteDirect('${f.book_id}')" title="Хориҷ аз дӯстдошта">✕</div>` : ''}
         </div>
       `;
     }
@@ -2481,7 +2481,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   async function removeFavoriteDirect(bookId) {
     if (!bookId) return;
-    if (!await showConfirmDialog('Хориҷ кардани китоб аз закладка?', 'Тасдиқ', 'Хориҷ кунед')) return;
+    if (!await showConfirmDialog('Хориҷ кардани китоб аз дӯстдошта?', 'Тасдиқ', 'Хориҷ кунед')) return;
     try {
       const token = localStorage.getItem('kk_token');
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites/' + encodeURIComponent(bookId), {
@@ -2550,7 +2550,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kk_token'), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
     }).then(r => r.json()).then(() => {
-      showToast('Илова ба закладка!');
+      showToast('Илова ба дӯстдошта!');
       loadFavoritesCached(currentProfileUserId).then(() => renderFavorites());
       el('bookMenu').style.display = 'none';
     }).catch(() => showToast('Хатогӣ'));
@@ -2812,11 +2812,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const title = isRu ? 'Электронная библиотека таджикской литературы' : isEn ? 'Tajik digital library · Source of knowledge' : 'Манбаи дониш · Китобхонаи рақамии тоҷикӣ';
       const intro = isRu ? 'Китобхона создана для удобного чтения, хранения любимых книг и обмена интересом к литературе.' : isEn ? 'Kitobkhona is made for comfortable reading, saving favorite books and sharing interest in literature.' : 'Китобхона барои мутолиаи осон, нигоҳдории китобҳои дӯстдошта ва рушди муҳаббат ба китоб сохта шудааст.';
       const heading = isRu ? 'Возможности приложения' : isEn ? 'App features' : 'Имкониятҳои барнома';
-      const features = isRu ? ['поиск и чтение таджикских книг','PDF-читалка с сохранением прогресса','закладки и история чтения','профиль, друзья и книжная лента','лайки, комментарии и рейтинг книг','уведомления и offline-режим'] : isEn ? ['searching and reading Tajik books','PDF reader with reading progress','bookmarks and reading history','profiles, friends and book feed','likes, comments and book ratings','notifications and offline mode'] : ['ҷустуҷӯ ва мутолиаи китобҳои тоҷикӣ','PDF-читалка бо нигоҳдории пешрафти хондан','хатбаракҳо ва таърихи китобҳои хондашуда','профил, дӯстӣ ва лентаи китобӣ','лайк, шарҳ ва баҳодиҳии китобҳо','огоҳиномаҳо ва режими offline'];
+      const features = isRu ? ['поиск и чтение таджикских книг','PDF-читалка с сохранением прогресса','дӯстдошта и история чтения','профиль, друзья и книжная лента','лайки, комментарии и рейтинг книг','уведомления и offline-режим'] : isEn ? ['searching and reading Tajik books','PDF reader with reading progress','bookmarks and reading history','profiles, friends and book feed','likes, comments and book ratings','notifications and offline mode'] : ['ҷустуҷӯ ва мутолиаи китобҳои тоҷикӣ','PDF-читалка бо нигоҳдории пешрафти хондан','дӯстдошта ва таърихи китобҳои хондашуда','профил, дӯстӣ ва лентаи китобӣ','лайк, шарҳ ва баҳодиҳии китобҳо','огоҳиномаҳо ва режими offline'];
       about.innerHTML = `<div style="text-align:center;font-size:56px;margin:8px 0">📚</div><div style="text-align:center;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:5px">Китобхона</div><div style="text-align:center;font-size:13px;color:var(--muted);margin-bottom:18px">${title}</div><div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;font-size:13px;color:var(--cream-dim);line-height:1.7"><div>📌 ${isRu?'Версия':'Нашр'}: <b style="color:var(--cream)">1.0.0</b></div><div>🌍 ${isRu?'Язык':'Забон'}: <b style="color:var(--cream)">${isRu?'таджикский':'тоҷикӣ'}</b></div><div style="margin-top:12px;color:var(--cream)">${intro}</div></div><div style="margin-top:14px;background:var(--card);border:1px solid var(--line);border-radius:14px;padding:15px;font-size:13px;color:var(--cream-dim);line-height:1.7"><div style="color:var(--gold);font-weight:700;margin-bottom:6px">${heading}</div>${features.map(x=>`<div>• ${x};</div>`).join('')}</div><div style="text-align:center;margin-top:14px;font-size:12px;color:var(--muted)">${isRu?'Знание — свет просвещения.':isEn?'Knowledge is the light of enlightenment.':'Илм фурӯғи маърифат аст.'}</div>`;
     }
     if (help) {
-      const cards = isRu ? [['📚 Как читать книги?','Откройте раздел «Книги», выберите категорию и нажмите на книгу. В читалке можно менять страницы и масштаб, а прогресс сохраняется.'],['⭐ Закладки и кэш','В меню книги выберите «Добавить в закладки». Кэш ускоряет открытие; очистка кэша не удаляет прогресс чтения.'],['🧾 Профиль','Заполните имя, фамилию, год рождения, пол и адрес. Для публикации поста профиль должен быть заполнен.'],['📰 Лента и посты','Опубликованные посты видны всем. Гость и неполный профиль могут читать ленту, но не публиковать.'],['🤝 Друзья и чат','Для переписки сначала отправьте заявку в друзья. Чат откроется после принятия заявки.'],['🔔 Уведомления','Уведомления работают только после вашего разрешения. При проблемах используйте «Связаться с нами».']] : isEn ? [['📚 How to read books?','Open Books, choose a category and tap a book. The reader supports pages, zoom and saved reading progress.'],['⭐ Bookmarks and cache','Use the book menu to add a bookmark. Cache makes opening faster and does not remove reading progress.'],['🧾 Profile','Fill in your first name, surname, birth year, gender and address. A complete profile is required to publish.'],['📰 Feed and posts','Published posts are visible to everyone. Guests and incomplete profiles can read the feed but cannot publish.'],['🤝 Friends and chat','Send a friend request before starting a conversation. Chat becomes available after acceptance.'],['🔔 Notifications','Notifications work after your permission. Contact support if a problem appears.']] : [['📚 Чӣ тавр китоб хондан?','Ба «Китобҳо» дароед, категорияро интихоб кунед ва рӯйи китоб пахш намоед. Пешрафти хондан нигоҳ дошта мешавад.'],['⭐ Хатбарак ва кэш','Аз менюи китоб «Илова ба хатбарак»-ро интихоб кунед. Кэш кушодани китобро тез мекунад.'],['🧾 Профил','Ном, насаб, соли таваллуд, ҷинс ва суроғаро пур кунед. Барои нашри пост профил бояд пурра бошад.'],['📰 Лента ва постҳо','Постҳои нашршуда барои ҳама дастрасанд. Меҳмон метавонад бинад, аммо нашр карда наметавонад.'],['🤝 Дӯстон ва чат','Аввал дархости дӯстӣ фиристед. Пас аз қабул шудани дархост чат дастрас мешавад.'],['🔔 Огоҳиномаҳо','Огоҳиномаҳо танҳо бо иҷозаи шумо фаъол мешаванд. Дар ҳолати мушкил аз «Тамос бо мо» истифода баред.']];
+      const cards = isRu ? [['📚 Как читать книги?','Откройте раздел «Книги», выберите категорию и нажмите на книгу. В читалке можно менять страницы и масштаб, а прогресс сохраняется.'],['❤️ Избранное и кэш','В меню книги выберите «Добавить в избранное». Кэш ускоряет открытие; очистка кэша не удаляет прогресс чтения.'],['🧾 Профиль','Заполните имя, фамилию, год рождения, пол и адрес. Для публикации поста профиль должен быть заполнен.'],['📰 Лента и посты','Опубликованные посты видны всем. Гость и неполный профиль могут читать ленту, но не публиковать.'],['🤝 Друзья и чат','Для переписки сначала отправьте заявку в друзья. Чат откроется после принятия заявки.'],['🔔 Уведомления','Уведомления работают только после вашего разрешения. При проблемах используйте «Связаться с нами».']] : isEn ? [['📚 How to read books?','Open Books, choose a category and tap a book. The reader supports pages, zoom and saved reading progress.'],['❤️ Favorites and cache','Use the book menu to add a book to favorites. Cache makes opening faster and does not remove reading progress.'],['🧾 Profile','Fill in your first name, surname, birth year, gender and address. A complete profile is required to publish.'],['📰 Feed and posts','Published posts are visible to everyone. Guests and incomplete profiles can read the feed but cannot publish.'],['🤝 Friends and chat','Send a friend request before starting a conversation. Chat becomes available after acceptance.'],['🔔 Notifications','Notifications work after your permission. Contact support if a problem appears.']] : [['📚 Чӣ тавр китоб хондан?','Ба «Китобҳо» дароед, категорияро интихоб кунед ва рӯйи китоб пахш намоед. Пешрафти хондан нигоҳ дошта мешавад.'],['❤️ Дӯстдошта ва кэш','Аз менюи китоб «Илова ба дӯстдошта»-ро интихоб кунед. Кэш кушодани китобро тез мекунад.'],['🧾 Профил','Ном, насаб, соли таваллуд, ҷинс ва суроғаро пур кунед. Барои нашри пост профил бояд пурра бошад.'],['📰 Лента ва постҳо','Постҳои нашршуда барои ҳама дастрасанд. Меҳмон метавонад бинад, аммо нашр карда наметавонад.'],['🤝 Дӯстон ва чат','Аввал дархости дӯстӣ фиристед. Пас аз қабул шудани дархост чат дастрас мешавад.'],['🔔 Огоҳиномаҳо','Огоҳиномаҳо танҳо бо иҷозаи шумо фаъол мешаванд. Дар ҳолати мушкил аз «Тамос бо мо» истифода баред.']];
       help.innerHTML = cards.map(c=>`<div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px"><div style="color:var(--gold);font-weight:700;margin-bottom:5px">${c[0]}</div><div>${c[1]}</div></div>`).join('');
     }
   }
