@@ -1017,20 +1017,19 @@ function deleteIndexedDatabaseSafe(name) {
 
 function inspectFirebaseMessagingDatabase() {
   return new Promise(resolve => {
-    if (!('indexedDB' in window)) return resolve(false);
+    if (!('indexedDB' in window)) return resolve(true);
     let request;
     try { request = indexedDB.open('firebase-messaging-database'); }
     catch (e) { return resolve(false); }
     request.onerror = () => resolve(false);
     request.onsuccess = async () => {
       const db = request.result;
-      const invalid = !db.objectStoreNames.contains('firebase-messaging-store');
+      const valid = db.objectStoreNames.contains('firebase-messaging-store');
       db.close();
-      if (invalid) {
-        await deleteIndexedDatabaseSafe('firebase-messaging-database');
-        localStorage.removeItem('kk_fcm_token');
-      }
-      resolve(invalid);
+      if (valid) return resolve(true);
+      const deleted = await deleteIndexedDatabaseSafe('firebase-messaging-database');
+      localStorage.removeItem('kk_fcm_token');
+      resolve(deleted);
     };
   });
 }
@@ -1049,7 +1048,8 @@ async function registerFcmToken(recoveryAttempt = false) {
   }
 
   try {
-    await inspectFirebaseMessagingDatabase();
+    const messagingDbReady = await inspectFirebaseMessagingDatabase();
+    if (!messagingDbReady) return null;
     await loadFirebaseMessagingSdk();
     const registration = await navigator.serviceWorker.register('./sw.js');
     const messaging = firebase.messaging();
@@ -1080,10 +1080,12 @@ async function registerFcmToken(recoveryAttempt = false) {
     localStorage.setItem('kk_fcm_token', currentToken);
     return currentToken;
   } catch (e) {
-    if (!recoveryAttempt && isFirebaseIndexedDbSchemaError(e)) {
-      await deleteIndexedDatabaseSafe('firebase-messaging-database');
+    if (isFirebaseIndexedDbSchemaError(e)) {
+      const deleted = await deleteIndexedDatabaseSafe('firebase-messaging-database');
       localStorage.removeItem('kk_fcm_token');
-      return registerFcmToken(true);
+      if (!recoveryAttempt && deleted) return registerFcmToken(true);
+      // Known Firefox IndexedDB schema problem: push will retry on the next page load.
+      return null;
     }
     console.warn('registerFcmToken error:', e);
     return null;

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v24';
+const CACHE_NAME = 'kitobkhona-v25';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -72,31 +72,29 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (event.request.mode === 'navigate') {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request).then((cached) => cached || caches.match('./offline.html')))
-    );
+    event.respondWith((async () => {
+      const cached = await caches.match(event.request, { ignoreSearch: true });
+      const network = fetch(event.request).then(response => {
+        if (response && response.status === 200) {
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+        }
+        return response;
+      }).catch(() => null);
+      return cached || await network || await caches.match('./offline.html');
+    })());
     return;
   }
   if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
-    event.respondWith(
-      fetch(event.request)
-        .then((response) => {
-          if (response && response.status === 200) {
-            const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
-          }
-          return response;
-        })
-        .catch(() => caches.match(event.request))
-    );
+    event.respondWith((async () => {
+      const cached = await caches.match(event.request, { ignoreSearch: true });
+      const network = fetch(event.request).then(response => {
+        if (response && response.status === 200) {
+          caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+        }
+        return response;
+      }).catch(() => null);
+      return cached || await network;
+    })());
     return;
   }
   event.respondWith(
