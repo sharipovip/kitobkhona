@@ -1629,3 +1629,76 @@ body:before {
 
 .notif-item-v4{padding:14px 16px;border-bottom:1px solid rgba(255,255,255,.06);cursor:default}
 .notif-item-v4:hover{background:rgba(255,255,255,.03)}
+/* V5 FIXES — скроллбар, расстояния, фото полупрозрачно слева, иконки без квадратов */
+html, body{overflow:hidden; overscroll-behavior:none}
+.phone-wrapper{overflow:hidden}
+.main-content, .main-content-v4{
+  scrollbar-width:none; -ms-overflow-style:none;
+}
+.main-content::-webkit-scrollbar, .main-content-v4::-webkit-scrollbar{width:0;height:0;display:none;background:transparent}
+body::-webkit-scrollbar{display:none}
+
+/* Уменьшить расстояния между блоками */
+.sec-head-v4{padding:12px 12px 6px !important}
+.ozmun-v4{margin:2px 0 !important}
+.ozmun-scroll-v4{padding:4px 12px 10px !important}
+.cat-v4{margin:2px 0 !important}
+.cat-scroll-v4{padding:0 12px 8px !important}
+.books-v4{margin:4px 0 !important}
+.books-scroll-v4{padding:0 12px 10px !important}
+.continue-section{margin:8px 12px !important}
+
+/* Герой шире по бокам, полупрозрачное слева как предыдущая версия */
+.hero-v4{
+  margin:8px 8px !important;
+  width:calc(100% - 16px);
+  border-radius:16px;
+}
+.hero-v4-inner{min-height:184px !important}
+.hero-v4-left{
+  background:linear-gradient(90deg, rgba(15,30,50,0.96) 0%, rgba(15,30,50,0.92) 20%, rgba(15,30,50,0.78) 45%, rgba(15,30,50,0.35) 85%, transparent 100%);
+  position:relative;z-index:3;
+}
+.hero-v4-right{flex:0 0 52% !important}
+.hero-v4-right img{filter:saturate(1.05) contrast(1.05)}
+.hero-flag-v4{opacity:.32 !important}
+
+/* Иконки без квадратов — напрямую внутри кнопки */
+.icon-btn-v4, .top-actions-v4 .icon-btn-v4, .new-icon-btn-v3{
+  background:rgba(255,255,255,.06) !important;
+  border:1px solid rgba(255,255,255,.08) !important;
+  display:grid !important;place-items:center !important;
+  padding:0 !important;
+}
+.icon-btn-v4 img, .icon-btn-v4 svg,
+.new-icon-btn-v3 img, .new-icon-btn-v3 svg,
+.cat-icon-v4 img, .cat-icon-v4 svg,
+.bm-v4 img, .bm-v4 svg{
+  width:22px;height:22px;display:block;
+  background:transparent !important;
+  filter:none !important;
+  box-shadow:none !important;
+}
+.cat-icon-v4 img{width:26px;height:26px}
+.bm-v4 img{width:16px;height:16px}
+.bm-v4{cursor:pointer;transition:.15s}
+.bm-v4.active{filter:brightness(1.5) drop-shadow(0 0 4px #E8C96D)}
+.bm-v4:active{transform:scale(.85)}
+
+/* Озмун красивее — еще больше glow */
+.ozmun-circle-v4{
+  box-shadow:0 8px 22px rgba(0,0,0,.45),0 0 0 3px rgba(201,168,76,.22),0 0 20px rgba(201,168,76,.18) !important;
+  transition:transform .2s, box-shadow .2s;
+}
+.ozmun-circle-v4:hover{transform:translateY(-2px) scale(1.03);box-shadow:0 12px 28px rgba(0,0,0,.5),0 0 0 3px rgba(201,168,76,.3),0 0 24px rgba(201,168,76,.22) !important}
+
+/* Уведомления — слева внизу иконки стиль */
+.notif-toast-v4{
+  position:fixed;left:12px;bottom:84px;z-index:90;
+  background:#0F1E32;border:1px solid rgba(201,168,76,.2);border-radius:14px;
+  padding:10px 12px;display:flex;align-items:center;gap:8px;
+  box-shadow:0 8px 24px rgba(0,0,0,.35);
+  transform:translateX(-120%);opacity:0;transition:transform .35s cubic-bezier(.34,1.56,.64,1),opacity .3s;
+  max-width:300px;
+}
+.notif-toast-v4.show{transform:translateX(0);opacity:1}
