@@ -541,6 +541,15 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
 @media(max-width:380px){.top-rating .rating-label{font-size:10px!important}.top-rating .star{font-size:13px!important}.page-entry-box{width:45px}.page-entry input{width:42px!important}}
 @media(max-width:345px){.top-rating .rating-label{display:none}.top-rating .star{font-size:12px!important}}
 </style>
+<style id="reader-paper-colors">
+:root{--reader-paper-bg:#0C0C0C;--reader-paper-tint:transparent;--reader-paper-tint-opacity:0}
+.reader-main,.page-stage,.page-container,.page-slot{background:var(--reader-paper-bg)!important;transition:background-color .28s ease}
+.page-slot::before{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;background:var(--reader-paper-tint);opacity:var(--reader-paper-tint-opacity);mix-blend-mode:color;transition:background-color .28s ease,opacity .28s ease}
+.brightness-dial.center .ico{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px!important;font-size:9px!important;line-height:1!important}
+.paper-color-dot{display:block;width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);box-shadow:0 1px 4px rgba(0,0,0,.38),0 0 0 1px rgba(0,0,0,.18);cursor:pointer;transition:transform .18s,background-color .28s}
+.paper-color-dot:active{transform:scale(.8)}
+.light-reading .page-slot::before{mix-blend-mode:multiply;opacity:calc(var(--reader-paper-tint-opacity) * .42)}
+</style>
 </head>
 <body>
 <div class="reader-wrapper">
@@ -578,7 +587,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     <div class="reader-action-nav">
       <label class="reader-nav-item page-entry"><span class="page-entry-box"><input id="quickPageInput" type="number" inputmode="numeric" min="1" placeholder="1/1" onfocus="prepareQuickPage()" onkeydown="if(event.key==='Enter'){event.preventDefault();quickGoPage();this.blur()}" onblur="quickGoPage()"><span id="quickPagePct">0%</span></span><small>Саҳифа</small></label>
       <button class="reader-nav-item" type="button" onclick="toggleReaderTheme()"><span class="ico" id="readerThemeIcon">☀</span><small>Мавзӯъ</small></button>
-      <button class="reader-nav-item center brightness-dial" id="brightnessDial" type="button" aria-label="Дурахшонӣ"><span class="ico" id="brightnessDialValue">100%</span><small>Дурахшонӣ</small></button>
+      <button class="reader-nav-item center brightness-dial" id="brightnessDial" type="button" aria-label="Дурахшонӣ"><span class="ico"><span id="brightnessDialValue">100%</span><span class="paper-color-dot" id="paperColorDot" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation();cyclePaperColor()" title="Ранги саҳифа"></span></span><small>Дурахшонӣ</small></button>
       <button class="reader-nav-item" type="button" onclick="shareCurrent()"><span class="ico">↗</span><small>Мубодила</small></button>
       <button class="reader-nav-item" type="button" onclick="downloadCurrent()"><span class="ico">⇩</span><small>Зеркашӣ</small></button>
     </div>
@@ -1254,6 +1263,34 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   }
 
   function adjustZoom(delta){const next=Math.max(70,Math.min(170,Math.round(zoom*100)+delta));setZoom(next);toast('Андоза: '+next+'%')}
+  const READER_PAPER_COLORS=[
+    {name:'Сиёҳи классикӣ',bg:'#0C0C0C',tint:'transparent',opacity:0},
+    {name:'Ангиштӣ',bg:'#111318',tint:'#253047',opacity:.18},
+    {name:'Кабуди шаб',bg:'#071526',tint:'#17436A',opacity:.24},
+    {name:'Сабзи ҷангал',bg:'#0B1813',tint:'#245C43',opacity:.22},
+    {name:'Қаҳваранг',bg:'#19110C',tint:'#754624',opacity:.25},
+    {name:'Сепия',bg:'#1B160E',tint:'#8A6A35',opacity:.24},
+    {name:'Олуболу',bg:'#1A0D14',tint:'#713751',opacity:.22},
+    {name:'Бунафш',bg:'#130E1C',tint:'#553B78',opacity:.22},
+    {name:'Хокистарӣ',bg:'#17191B',tint:'#66717A',opacity:.16},
+    {name:'Тиллоии нарм',bg:'#19160D',tint:'#8B742D',opacity:.21},
+    {name:'Фирӯзагӣ',bg:'#08191A',tint:'#237276',opacity:.20},
+    {name:'Гулобии шаб',bg:'#1A1014',tint:'#834C60',opacity:.18}
+  ];
+  let readerPaperColorIndex=Math.max(0,Math.min(READER_PAPER_COLORS.length-1,Number(localStorage.getItem('kk_reader_paper_color')||0)));
+  function applyPaperColor(index,announce=false){
+    readerPaperColorIndex=(Number(index)+READER_PAPER_COLORS.length)%READER_PAPER_COLORS.length;
+    const color=READER_PAPER_COLORS[readerPaperColorIndex];
+    document.documentElement.style.setProperty('--reader-paper-bg',color.bg);
+    document.documentElement.style.setProperty('--reader-paper-tint',color.tint);
+    document.documentElement.style.setProperty('--reader-paper-tint-opacity',String(color.opacity));
+    const dot=$('paperColorDot');if(dot){dot.style.background=color.tint==='transparent'?color.bg:color.tint;dot.title='Ранги саҳифа: '+color.name}
+    localStorage.setItem('kk_reader_paper_color',String(readerPaperColorIndex));
+    if(announce)toast('Ранги саҳифа: '+color.name);
+  }
+  function cyclePaperColor(){applyPaperColor(readerPaperColorIndex+1,true)}
+  function initPaperColor(){applyPaperColor(readerPaperColorIndex,false)}
+
   let brightnessValue=Number(localStorage.getItem('kk_reader_brightness')||100),dialStartX=0,dialStartValue=100,dialDragging=false;
   function applyDialBrightness(value){brightnessValue=Math.max(45,Math.min(120,Math.round(value)));setBrightness(brightnessValue);if($('brightnessDialValue'))$('brightnessDialValue').textContent=brightnessValue+'%'}
   function initBrightnessDial(){const dial=$('brightnessDial');if(!dial)return;applyDialBrightness(brightnessValue);dial.addEventListener('pointerdown',e=>{dialDragging=true;dialStartX=e.clientX;dialStartValue=brightnessValue;dial.setPointerCapture?.(e.pointerId)});dial.addEventListener('pointermove',e=>{if(dialDragging)applyDialBrightness(dialStartValue+(e.clientX-dialStartX)/1.5)});const stop=()=>dialDragging=false;dial.addEventListener('pointerup',stop);dial.addEventListener('pointercancel',stop);dial.addEventListener('wheel',e=>{e.preventDefault();applyDialBrightness(brightnessValue+(e.deltaY<0?5:-5))},{passive:false});dial.addEventListener('dblclick',()=>applyDialBrightness(100))}
@@ -1320,6 +1357,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   function prevFind() { if (findHits.length) goFind(findIndex - 1); }
   function escapeHtml(s) { return String(s??'').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
 
+  initPaperColor();
   initBrightnessDial();
   openPdf();
 </script>
