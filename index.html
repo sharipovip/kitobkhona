@@ -1657,6 +1657,14 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 
 
 
+
+/* ===== REQUESTED TEXT / CATEGORY REFINEMENTS ===== */
+.crown-brand-v3{background:radial-gradient(circle at 50% 35%,rgba(232,201,109,.17),rgba(13,27,42,.8) 68%)!important;border-color:rgba(240,212,119,.42)!important;box-shadow:inset 0 0 14px rgba(232,201,109,.08),0 4px 15px rgba(0,0,0,.28)!important}
+
+.cat-card-v3:first-child::after{display:none!important;content:none!important}
+.hero-kicker-v3{font-size:12px!important;line-height:1.18!important;font-weight:600!important;margin-bottom:5px!important}
+.hero-kicker-v3 b{font-weight:900!important}
+
 /* ===== HOME RHYTHM / HERO / OZMUN 2026-07-14 ===== */
 .main-content{padding-bottom:6px!important}
 .sec-head-v3{padding:8px 12px 4px!important}
@@ -1726,13 +1734,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   <!-- TOP BAR — точь-в-точь как на фото, subtitle изменен на Китоб манбаи дониш -->
   <header class="new-top-bar-v3">
     <div class="new-logo-v3">
-      <div class="new-logo-icon-v3" aria-hidden="true">
-        <svg viewBox="0 0 40 40" width="36" height="36" fill="none">
-          <defs><linearGradient id="logoGold" x1="7" y1="5" x2="34" y2="34" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF0A6"/><stop offset=".48" stop-color="#E8C96D"/><stop offset="1" stop-color="#B98528"/></linearGradient></defs>
-          <path d="M5.5 12.5c5.1-2.2 9.7-1.4 14.5 2.2 4.8-3.6 9.4-4.4 14.5-2.2v18c-5.1-2-9.7-1.1-14.5 2.5-4.8-3.6-9.4-4.5-14.5-2.5z" fill="rgba(232,201,109,.10)" stroke="url(#logoGold)" stroke-width="1.7" stroke-linejoin="round"/>
-          <path d="M20 14.7V33M8.5 16c3.7-1.1 6.5-.3 9.2 1.5M31.5 16c-3.7-1.1-6.5-.3-9.2 1.5" stroke="url(#logoGold)" stroke-width="1.2" stroke-linecap="round"/>
-          <path d="M20 4.7c3.2 3.1 3.3 5.6 0 8.2-3.3-2.6-3.2-5.1 0-8.2Z" fill="url(#logoGold)"/><path d="M15.5 8.2 20 2.8l4.5 5.4" stroke="url(#logoGold)" stroke-width="1.2" stroke-linecap="round"/>
-          <circle cx="13.6" cy="6.6" r="1.1" fill="#E8C96D"/><circle cx="26.4" cy="6.6" r="1.1" fill="#E8C96D"/><circle cx="20" cy="2.8" r="1.2" fill="#FFF0A6"/>
+      <div class="new-logo-icon-v3 crown-brand-v3" aria-hidden="true">
+        <svg viewBox="0 0 44 40" width="38" height="35" fill="none">
+          <defs>
+            <linearGradient id="crownGold" x1="6" y1="5" x2="38" y2="35" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF4B0"/><stop offset=".38" stop-color="#F0D477"/><stop offset=".72" stop-color="#C99735"/><stop offset="1" stop-color="#8D5D16"/></linearGradient>
+            <linearGradient id="crownFace" x1="22" y1="10" x2="22" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#F9E79A"/><stop offset="1" stop-color="#B77D21"/></linearGradient>
+            <filter id="crownGlow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path d="M6.5 12.5 14 20l8-13 8 13 7.5-7.5-3.2 18.1H9.7L6.5 12.5Z" fill="url(#crownFace)" stroke="url(#crownGold)" stroke-width="1.6" stroke-linejoin="round" filter="url(#crownGlow)"/>
+          <path d="M10 26.2h24M10.4 30.5h23.2" stroke="#FFF0A0" stroke-width="1.15" stroke-linecap="round" opacity=".9"/>
+          <path d="M13.3 21.2 17 24l5-9 5 9 3.7-2.8" stroke="#FFF3AB" stroke-width="1" stroke-linejoin="round" opacity=".75"/>
+          <circle cx="6.5" cy="11.5" r="2.1" fill="#D84A47" stroke="#FFE99A" stroke-width=".8"/>
+          <circle cx="14" cy="18.8" r="1.75" fill="#F8F4E8" stroke="#D5AA45" stroke-width=".7"/>
+          <circle cx="22" cy="6" r="2.4" fill="#E9C962" stroke="#FFF4B0" stroke-width=".9"/>
+          <circle cx="30" cy="18.8" r="1.75" fill="#F8F4E8" stroke="#D5AA45" stroke-width=".7"/>
+          <circle cx="37.5" cy="11.5" r="2.1" fill="#3DA66A" stroke="#FFE99A" stroke-width=".8"/>
+          <path d="M16 34h12" stroke="url(#crownGold)" stroke-width="2" stroke-linecap="round"/>
         </svg>
       </div>
       <div class="new-logo-text-v3"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div>
@@ -1786,7 +1803,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     </section>
 
     <!-- Продолжить чтение — теперь сверху категории как просил -->
-    <div class="continue-section" id="continueSection" style="display:none"><div class="section-label-v3">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
+    <div class="continue-section" id="continueSection" style="display:none"><div class="continue-card" id="continueCard"></div></div>
 
     <!-- 3 Категории — как на фото один в один иконки -->
     <section class="cat-v3">
