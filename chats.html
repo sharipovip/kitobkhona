@@ -292,6 +292,23 @@
     background: var(--card);
   }
 
+  .chat-delete-btn {
+    flex: none;
+    width: 34px;
+    height: 34px;
+    border: 1px solid rgba(217,72,70,.35);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--red);
+    cursor: pointer;
+    opacity: .75;
+  }
+  .chat-delete-btn:hover { opacity: 1; background: rgba(217,72,70,.12); }
+
+  .avatar-wrap {
+    position: relative;
+    flex: none;
+  }
   .avatar {
     width: 54px;
     height: 54px;
@@ -1090,6 +1107,7 @@
                 <div class="chat-msg">${esc(preview)}</div>
               </div>
             </div>
+            <button type="button" class="chat-delete-btn" data-delete-chat="${id}" title="Нест кардани чат" aria-label="Нест кардани чат">🗑</button>
           </div>
         `;
       }
@@ -1097,6 +1115,29 @@
     html += `</div>`;
 
     scroll.innerHTML = html;
+
+    scroll.querySelectorAll('[data-delete-chat]').forEach(button => {
+      button.addEventListener('click', async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const peerId = button.dataset.deleteChat;
+        if (!window.confirm('Нест кардани чат ва ҳамаи паёмҳо?')) return;
+        try {
+          const token = localStorage.getItem('kk_token');
+          const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
+            method: 'DELETE',
+            headers: { 'Authorization': 'Bearer ' + token }
+          });
+          const data = await r.json().catch(() => ({}));
+          if (!r.ok) throw new Error(data.error || 'Нест кардани чат муяссар нашуд');
+          if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+          button.closest('.chat-item')?.remove();
+          showToast('Чат нест карда шуд');
+        } catch (e) {
+          showToast('Хатогӣ: ' + e.message);
+        }
+      });
+    });
 
     const searchInput = document.getElementById('searchInput');
     searchInput.removeEventListener('input', handleSearch);
