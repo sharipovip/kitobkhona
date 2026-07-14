@@ -346,19 +346,12 @@
   }
 
   .rating-badge {
-    position: absolute;
-    top: 4px;
-    right: 4px;
-    z-index: 4;
-    background: rgba(0,0,0,0.65);
-    padding: 2px 5px;
-    border-radius: 4px;
-    font-size: 8px;
-    color: var(--gold);
-    font-weight: 700;
-    pointer-events: none;
-    backdrop-filter: blur(2px);
-    line-height: 1;
+    position:absolute;top:5px;right:5px;z-index:4;
+    display:flex;align-items:center;gap:3px;
+    background:rgba(10,18,34,.86);padding:4px 7px;border-radius:999px;
+    border:1px solid rgba(232,201,109,.28);font-size:9px;color:#E8C96D;
+    font-weight:800;pointer-events:none;backdrop-filter:blur(7px);line-height:1;
+    box-shadow:0 3px 10px rgba(0,0,0,.3);
   }
   .size-badge {
     position: absolute;
@@ -1207,20 +1200,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
     const bookCards = Array.from(document.querySelectorAll('.bk'));
     const bookIds = bookCards.map(card => decodeURIComponent(card.dataset.bookid)).filter(Boolean);
-    getBookStatsBatch(bookIds).then(statsMap => {
-      bookCards.forEach(card => {
-        const bookId = decodeURIComponent(card.dataset.bookid);
-        const stats = statsMap[bookId] || statsMap[bookId.replace(/^books\//i, '')];
-        const badge = card.querySelector('.rating-badge');
-        if (!badge) return;
-        if (stats && stats.avg_rating) {
-          const avg = parseFloat(stats.avg_rating);
-          badge.textContent = `⭐ ${avg.toFixed(1)} (${stats.ratings_count || 0})`;
-        } else {
-          badge.textContent = '⭐ —';
-        }
-      });
+    const applyStats = (statsMap) => bookCards.forEach(card => {
+      const bookId=decodeURIComponent(card.dataset.bookid),stats=statsMap[bookId]||statsMap[bookId.replace(/^books\//i,'')],badge=card.querySelector('.rating-badge');
+      if(!badge)return;badge.textContent=stats?.avg_rating?`★ ${parseFloat(stats.avg_rating).toFixed(1)} (${stats.ratings_count||0})`:'★ —';
     });
+    try{const cached=JSON.parse(localStorage.getItem('kk_catalog_rating_cache')||'{}');applyStats(cached)}catch(e){}
+    getBookStatsBatch(bookIds).then(statsMap=>{applyStats(statsMap);try{localStorage.setItem('kk_catalog_rating_cache',JSON.stringify(statsMap))}catch(e){}});
 
     document.querySelectorAll('.bk-actions').forEach(actions => {
       const url = decodeURIComponent(actions.dataset.url);
