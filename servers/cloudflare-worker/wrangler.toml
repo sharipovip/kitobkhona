@@ -1,0 +1,26 @@
+# Cloudflare Worker Configuration
+# kitobkhona-cache Worker
+
+name = "kitobkhona-cache"
+main = "worker.js"
+compatibility_date = "2026-01-01"
+
+# Free tier: 100K requests/day, 10ms CPU time
+
+# Bindings
+[vars]
+AUTH_API_URL = "https://kitobkhona-auth-abc123.a.run.app"
+SOCIAL_API_URL = "https://kitobkhona-social-abc123.a.run.app"
+
+[[kv_namespaces]]
+binding = "KITOBKHONA_CACHE"
+id = "YOUR_KV_NAMESPACE_ID"
+
+[[kv_namespaces]]
+binding = "KITOBKHONA_SESSIONS"
+id = "YOUR_SESSIONS_NAMESPACE_ID"
+
+# Routes (после деплоя Workers)
+# [routes]
+# pattern = "cache.kitobkhona.tj/*"
+# zone_name = "kitobkhona.tj"
