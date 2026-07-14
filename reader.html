@@ -524,6 +524,15 @@ html,body,.reader-wrapper,.reader-main{background:#0B0B0B!important}.reader-top-
 .reader-social-tray{display:none!important}.light-reading .reader-reactions .reaction-btn{background:rgba(245,240,232,.66);color:#536276}.light-reading .page-slot canvas{filter:none!important;outline-color:#E9E3D7!important}.light-reading .page-slot{background:#E9E3D7!important}.light-reading .page-entry input{background:#EEE7DB;color:#6F5417}
 @media(max-width:355px){.top-rating .rating-label{display:none}.reader-reactions{right:5px}.reader-reactions .reaction-btn{width:34px;height:44px}}
 </style>
+
+<style id="reader-round10-edge-fix">
+html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0C0C0C!important}
+.page-stage{padding:calc(91px + var(--safe-top)) 0 0!important;inset:0!important}
+.page-container{width:100%!important;height:100%!important;margin:0!important;padding:0!important}
+.page-slot{inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;box-shadow:none!important;background:#0C0C0C!important}
+.page-slot canvas{max-width:none!important;border-radius:0!important;box-shadow:none!important;outline:3px solid #0C0C0C!important;outline-offset:-2px!important;clip-path:inset(2px)!important}
+.reader-bottom-bar{background:linear-gradient(180deg,rgba(12,12,12,.86),#0C0C0C 22%)!important}
+</style>
 </head>
 <body>
 <div class="reader-wrapper">
@@ -1089,7 +1098,9 @@ html,body,.reader-wrapper,.reader-main{background:#0B0B0B!important}.reader-top-
       const st = $('stage');
       const nat = p.getViewport({ scale: 1 });
       const dpr = Math.min(devicePixelRatio || 1, 2);
-      const fit = Math.min((st.clientWidth - 10) / nat.width, (st.clientHeight - 10) / nat.height) * zoom;
+      // Edge-to-edge cover: fill the reading viewport with no empty strips.
+      // Users can reduce size with the − control when they want wider margins.
+      const fit = Math.max(st.clientWidth / nat.width, st.clientHeight / nat.height) * zoom;
       const vp = p.getViewport({ scale: fit * dpr });
 
       const cv = document.createElement('canvas');
@@ -1137,7 +1148,7 @@ html,body,.reader-wrapper,.reader-main{background:#0B0B0B!important}.reader-top-
 
       page = n;
       const pct=pages?Math.round(page/pages*100):0;
-      $('pageInfo').textContent=page+' / '+pages;
+      if($('pageInfo'))$('pageInfo').textContent=page+' / '+pages;
       $('topPageInfo').textContent=page+' / '+pages;if($('quickPageInput')){$('quickPageInput').max=pages;$('quickPageInput').placeholder=String(page)};
       $('topProgressPct').textContent=pct+'%';
       $('topProgressFill').style.width=pct+'%';
