@@ -744,13 +744,33 @@
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
 </style>
+
+<style id="winners-design-v2">
+:root{--winner-bg:#080F20;--winner-card:#0E1A2E;--winner-gold:#E8C96D}
+html,body{background:#040A14!important}.app{background:var(--winner-bg)!important;max-width:430px!important;box-shadow:0 0 42px rgba(0,0,0,.5)!important}
+.winners-header{height:58px!important;padding:0 12px!important;background:linear-gradient(180deg,#0E1E36,#080F20)!important;border-bottom:1px solid rgba(255,255,255,.06)!important}
+.winners-header h2{flex:1;text-align:center;color:var(--winner-gold)!important;font-size:17px!important;letter-spacing:.4px}.winners-header h2 span{font-size:14px}
+.winner-head-btn{width:36px;height:36px;border-radius:50%;border:1px solid rgba(255,255,255,.08);background:rgba(255,255,255,.055);color:#E8E4D9;font-size:18px;display:grid;place-items:center;cursor:pointer}.winner-head-btn:active{transform:scale(.92);background:rgba(232,201,109,.12)}
+.content-wrapper{padding:12px 12px 0!important;background:radial-gradient(circle at 50% 2%,rgba(201,168,76,.055),transparent 28%),#080F20!important}
+.filters-wrap{margin-bottom:10px!important}.segmented{background:#0E1A2E!important;border-color:rgba(201,168,76,.18)!important;border-radius:14px!important}.segmented button{padding:7px 0!important}.segmented button.active{background:linear-gradient(180deg,#1A2F4E,#12233A)!important;color:#E8C96D!important}
+.chip-row{margin-top:8px!important}.select-chip select{background:#0E1A2E!important;border-color:rgba(201,168,76,.16)!important;padding-top:7px!important;padding-bottom:7px!important}
+.user-card{margin:12px 0 8px;background:linear-gradient(135deg,#11233E,#0E1A2E);border:1px solid rgba(201,168,76,.18);border-radius:18px;padding:14px;position:relative;overflow:hidden;cursor:pointer}.user-card:before{content:'';position:absolute;right:-30px;top:-30px;width:120px;height:120px;background:radial-gradient(circle,rgba(201,168,76,.15),transparent 70%)}
+.top-row{display:flex;gap:11px;align-items:center}.avatar{width:58px;height:58px;border-radius:50%;border:2.5px solid #E8C96D;overflow:hidden;position:relative;flex-shrink:0;background:#16293F;display:flex;align-items:center;justify-content:center}.avatar img{width:100%;height:100%;object-fit:cover}.avatar svg{width:65%;height:65%}.crown-badge{position:absolute;right:-2px;bottom:-2px;width:21px;height:21px;background:#E8C96D;border-radius:50%;display:grid;place-items:center;font-size:11px;border:2px solid #11233E}.info{flex:1;min-width:0}.info b{font-size:14px;display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.info .loc,.info .motto{font-size:10.5px;color:#71849A;margin-top:3px}.level{width:62px;background:linear-gradient(180deg,#1A2F4E,#12233A);border:1px solid rgba(201,168,76,.25);border-radius:13px;padding:7px 5px;text-align:center;z-index:1}.level .star{color:#E8C96D;font-size:17px}.level span{font-size:9px;color:#C9A84C;display:block}.level b{font-size:13px;color:#E8C96D}.stats{margin-top:11px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.04);border-radius:12px;display:flex;padding:9px 4px}.stat{text-align:center;flex:1;border-right:1px solid rgba(255,255,255,.06)}.stat:last-child{border:0}.stat b{font-size:14px;display:block}.stat span{font-size:9px;color:#71849A}
+.section-title{display:flex;align-items:center;justify-content:center;gap:10px;color:#E8C96D;font-weight:750;font-size:13px;margin:15px 0 8px}.section-title:before,.section-title:after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,rgba(232,201,109,.25))}.section-title:after{transform:scaleX(-1)}
+.podium{gap:7px!important;padding:10px 0 4px!important;align-items:flex-end!important}.pav.gold{width:80px!important;height:80px!important;box-shadow:0 0 18px rgba(232,201,109,.28)}.pav.silver,.pav.bronze{width:62px!important;height:62px!important}.podium-crown{font-size:25px!important;margin-bottom:-1px!important;filter:drop-shadow(0 2px 4px #000)}.pname{color:#E8E4D9!important}.pcity{color:#71849A!important}.step{border-radius:14px 14px 5px 5px!important}.step-1{height:68px!important}.step-2{height:50px!important}.step-3{height:42px!important}
+.list-head{padding:16px 2px 6px!important}.rank-list{background:#0E1A2E;border:1px solid rgba(255,255,255,.055);border-radius:14px;overflow:hidden;padding:0!important;margin-bottom:14px}.rank-row{padding:10px 9px!important;border-bottom-color:rgba(255,255,255,.045)!important}.rank-row:active{background:rgba(232,201,109,.06)}.rav{width:36px!important;height:36px!important}.rank-name{color:#E8E4D9!important}.rank-stats .hours{color:#E8C96D!important}
+.loading-screen,.guest-overlay{min-height:230px;display:grid;place-items:center;align-content:center;gap:10px}.spinner{border-top-color:#E8C96D!important}
+@media(max-width:350px){.rank-age,.col-labels .sp-age{display:none}.pstats{font-size:8.5px!important}.content-wrapper{padding-inline:9px!important}}
+</style>
 </head>
 <body>
   <div class="app">
 
     
-    <div class="topbar">
-      <h2>🏆 Ғолибон</h2>
+    <div class="topbar winners-header">
+      <button class="winner-head-btn" type="button" onclick="history.length>1?history.back():location.href='index.html'" aria-label="Бозгашт">←</button>
+      <h2><span>🏆</span> Ғолибон <span>🏆</span></h2>
+      <button class="winner-head-btn" type="button" onclick="shareWinners()" aria-label="Мубодила">↗</button>
       <span class="icon" id="themeToggle" style="display:none">🌙</span>
     </div>
 
@@ -940,6 +960,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       });
     }
 
+    async function shareWinners() {
+      const data={title:'Ғолибони Китобхона',text:'Рейтинги беҳтарин китобхонҳо',url:location.href};
+      try{if(navigator.share)await navigator.share(data);else{await navigator.clipboard.writeText(location.href);toast?.('Пайванд нусха шуд')}}catch(e){}
+    }
+    window.shareWinners=shareWinners;
+
     async function loadWinners(period = 'all') {
       const container = document.getElementById('winnersContent');
       const cacheKey = 'kk_winners_' + period;
@@ -995,6 +1021,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
 
       let html = '';
+      const currentId=localStorage.getItem('kk_user_id');
+      const combined=[...(top3||[]),...(top100||[])];
+      const mine=currentId?combined.find(u=>String(u.id)===String(currentId)):null;
+      if(mine){
+        const mineName=mine.display_name||mine.username||'Китобхон';
+        const mineAvatar=mine.avatar_url?`<img src="${esc(mine.avatar_url)}" alt="">`:getAvatarSvg(mine.gender);
+        const topIndex=(top3||[]).findIndex(u=>String(u.id)===String(currentId));
+        const listIndex=(top100||[]).findIndex(u=>String(u.id)===String(currentId));
+        const myRank=topIndex>=0?topIndex+1:(listIndex>=0?listIndex+4:'—');
+        html+=`<section class="user-card winner-me" onclick="openUserProfile('${mine.id}')"><div class="top-row"><div class="avatar">${mineAvatar}<div class="crown-badge">👑</div></div><div class="info"><b>${esc(mineName)}</b><div class="loc">📍 ${esc(mine.city||mine.region||'Тоҷикистон')}</div><div class="motto">Китобхон · мақоми ${myRank}</div></div><div class="level"><div class="star">★</div><span>Ҷой</span><b>${myRank}</b></div></div><div class="stats"><div class="stat"><b>📚 ${mine.total_books||0}</b><span>Китобҳо</span></div><div class="stat"><b>⏱ ${formatHours(mine.total_hours)}</b><span>Соати хониш</span></div><div class="stat"><b>🏆 ${myRank}</b><span>Мақом</span></div></div></section>`;
+      }
+      html+='<div class="section-title">🏆 Топ 3 ғолибон</div>';
 
       html += `<div class="podium">`;
       const podiumOrder = [1, 0, 2];

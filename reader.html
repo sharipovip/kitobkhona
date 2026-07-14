@@ -7,6 +7,7 @@
 <title>Китобхона — Хондан</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
 <script src="config.js"></script>
+<script src="cache.js"></script>
 <style>
   
   :root {
@@ -495,6 +496,19 @@
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
 </style>
+
+<style id="reader-design-v2">
+:root{--bg:#0C0C0C;--panel:rgba(12,12,12,.97);--page-bg:#F7F1E7;--gold:#C9A84C;--gold2:#E8C96D}
+html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!important;box-shadow:0 0 45px rgba(0,0,0,.65)!important}
+.reader-top-bar{height:58px;padding:calc(7px + var(--safe-top)) 12px 7px!important;background:#0C0C0C!important;border-bottom:1px solid rgba(255,255,255,.055)!important;backdrop-filter:none!important}.btn-back,.top-btn{width:35px!important;height:35px!important;border:0!important;background:transparent!important;font-size:19px!important}.btn-back:active,.top-btn:active{background:rgba(255,255,255,.08)!important}.reading-book-title{font-size:14px!important;font-weight:650!important}.reading-book-author{color:#777!important;font-size:10px!important}.reader-favorite-btn.active,[data-reader-favorite].active{color:#E8C96D!important}
+.reader-progress-wrap{position:absolute;left:0;right:0;top:calc(58px + var(--safe-top));z-index:95;padding:9px 14px 7px;background:#0C0C0C;border-bottom:1px solid rgba(255,255,255,.035)}.reader-progress-track{height:4px;background:#242424;border-radius:99px;position:relative}.reader-progress-fill-top{height:100%;width:0;background:#C9A84C;border-radius:99px;transition:width .25s}.reader-progress-knob{position:absolute;left:0;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#C9A84C;border-radius:50%;box-shadow:0 0 0 3px rgba(201,168,76,.18);transition:left .25s}.reader-progress-numbers{display:flex;justify-content:space-between;margin-top:6px;color:#C9A84C;font-size:10.5px;font-weight:650}
+.reader-main{background:radial-gradient(110% 75% at 50% 0%,#181818,#0C0C0C 62%)!important}.page-stage{padding:calc(101px + var(--safe-top)) 7px calc(93px + var(--safe-bottom))!important}.page-slot{border-radius:2px!important;box-shadow:0 12px 36px rgba(0,0,0,.62)!important}
+.reader-bottom-bar{padding:0 8px calc(7px + var(--safe-bottom))!important;background:rgba(12,12,12,.98)!important;border-top:1px solid rgba(255,255,255,.07)!important}.reader-action-nav{height:66px;display:flex;align-items:center;justify-content:space-around}.reader-nav-item{flex:1;border:0;background:transparent;color:#777;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;cursor:pointer;min-width:0}.reader-nav-item .ico{font-size:19px;height:25px;display:grid;place-items:center}.reader-nav-item small{font-size:9px;white-space:nowrap}.reader-nav-item:active,.reader-nav-item.active{color:#C9A84C}.reader-nav-item.center .ico{width:48px;height:48px;border-radius:50%;background:#C9A84C;color:#0C0C0C;font-size:27px;margin-top:-20px;box-shadow:0 6px 18px rgba(201,168,76,.25)}.reader-nav-item.center small{margin-top:-5px;color:#C9A84C}
+.reader-social-tray{border-top:1px solid rgba(255,255,255,.045)}.reader-social-tray summary{height:20px;display:flex;align-items:center;justify-content:space-between;color:#777;font-size:9.5px;padding:0 6px;cursor:pointer;list-style:none}.reader-social-tray summary::-webkit-details-marker{display:none}.reader-social-tray[open] summary{color:#C9A84C}.reader-social-tray .reaction-bar{padding:8px 5px 5px;justify-content:space-between}.reader-social-tray .reaction-btn{font-size:16px}.reader-social-tray .rating-stars{gap:1px}.reader-social-tray .rating-stars .star{font-size:13px}
+.panel{background:#151515!important;border-color:rgba(201,168,76,.16)!important}.settings-panel,.search-panel{top:calc(104px + var(--safe-top))!important;bottom:calc(88px + var(--safe-bottom))!important}.setting-item{background:#1E1E1E!important}.pill{border-color:rgba(201,168,76,.2)!important}.pill.active{background:#C9A84C!important}
+.light-reading{--bg:#E9E3D7;--panel:rgba(245,240,232,.98);--page-bg:#FFFDF6}.light-reading .reader-top-bar,.light-reading .reader-progress-wrap{background:#F5F0E8!important}.light-reading .reader-bottom-bar{background:rgba(245,240,232,.98)!important}.light-reading .reader-main{background:#DDD5C7!important}.light-reading .reader-social-tray summary{color:#657080}.light-reading .reader-nav-item{color:#657080}
+@media(max-width:355px){.reader-nav-item small{font-size:8px}.rating-stars .star{font-size:11px!important}.reaction-group{gap:5px!important}}
+</style>
 </head>
 <body>
 <div class="reader-wrapper">
@@ -506,13 +520,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="reading-book-author" id="bookSub">Китобхона</div>
     </div>
     <div class="top-actions">
-      <button class="top-btn" onclick="toggleSearch()">🔍</button>
-      <button class="top-btn" onclick="shareCurrent()">↗</button>
-      <button class="top-btn" onclick="toggleSettings()">⚙️</button>
+      <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
+      <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Хатбарак">♡</button>
+      <button class="top-btn" onclick="toggleSettings()" aria-label="Танзимот">⋮</button>
     </div>
   </div>
 
   
+  <div class="reader-progress-wrap" id="readerProgressWrap">
+    <div class="reader-progress-track"><div class="reader-progress-fill-top" id="topProgressFill"></div><div class="reader-progress-knob" id="topProgressKnob"></div></div>
+    <div class="reader-progress-numbers"><span id="topPageInfo">— / —</span><span id="topProgressPct">0%</span></div>
+  </div>
+
   <main class="reader-main" id="readerMain">
     <div class="page-stage" id="stage">
       <div class="page-container" id="pageContainer">
@@ -531,31 +550,28 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   
   <div class="reader-bottom-bar" id="bottomBar">
-    <div class="reading-progress"><div class="reading-progress-fill" id="progressFill"></div></div>
-    <div class="reaction-bar">
-      <div class="reaction-group">
-        <button class="reaction-btn" data-reaction="like" title="Лайк">👍<span class="cnt" id="likeCount">0</span></button>
-        <button class="reaction-btn" data-reaction="love" title="Муҳаббат">❤️<span class="cnt" id="loveCount">0</span></button>
-        <button class="reaction-btn" data-reaction="dislike" title="Нописанд">👎<span class="cnt" id="dislikeCount">0</span></button>
-      </div>
-      <div class="page-info" id="pageInfo">— / —</div>
-      <div class="rating-stars" id="ratingStars">
-        <span class="rating-label">⭐</span>
-        <span class="star" data-rating="1">☆</span>
-        <span class="star" data-rating="2">☆</span>
-        <span class="star" data-rating="3">☆</span>
-        <span class="star" data-rating="4">☆</span>
-        <span class="star" data-rating="5">☆</span>
-        <span class="star" data-rating="6">☆</span>
-        <span class="star" data-rating="7">☆</span>
-        <span class="star" data-rating="8">☆</span>
-        <span class="star" data-rating="9">☆</span>
-        <span class="star" data-rating="10">☆</span>
-      </div>
+    <div class="reader-action-nav">
+      <button class="reader-nav-item" type="button" onclick="jumpToPagePrompt()"><span class="ico">☰</span><small>Саҳифа</small></button>
+      <button class="reader-nav-item" type="button" onclick="toggleReaderTheme()"><span class="ico" id="readerThemeIcon">☀</span><small>Мавзӯъ</small></button>
+      <button class="reader-nav-item center" type="button" onclick="toggleSettings()"><span class="ico">＋</span><small>Масштаб</small></button>
+      <button class="reader-nav-item" type="button" onclick="shareCurrent()"><span class="ico">↗</span><small>Мубодила</small></button>
+      <button class="reader-nav-item" type="button" data-reader-favorite onclick="toggleReaderFavorite()"><span class="ico">♡</span><small>Хатбарак</small></button>
     </div>
+    <details class="reader-social-tray">
+      <summary><span>Баҳодиҳӣ ва вокуниш</span><span id="pageInfo">— / —</span></summary>
+      <div class="reaction-bar">
+        <div class="reaction-group">
+          <button class="reaction-btn" data-reaction="like" title="Лайк">👍<span class="cnt" id="likeCount">0</span></button>
+          <button class="reaction-btn" data-reaction="love" title="Муҳаббат">❤️<span class="cnt" id="loveCount">0</span></button>
+          <button class="reaction-btn" data-reaction="dislike" title="Нописанд">👎<span class="cnt" id="dislikeCount">0</span></button>
+        </div>
+        <div class="rating-stars" id="ratingStars"><span class="rating-label">⭐</span>
+          <span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span>
+        </div>
+      </div>
+    </details>
   </div>
 
-  
   <div class="panel settings-panel" id="settingsPanel">
     <div class="settings-header">
       <div class="panel-title">⚙️ Танзимот</div>
@@ -797,6 +813,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     flushPendingSessions();
     setTimeout(startReadingSession, 1000);
     loadReactions();
+    loadReaderFavorite();
   });
   window.addEventListener('online', flushPendingSessions);
   window.addEventListener('beforeunload', stopReadingSession);
@@ -1120,8 +1137,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       });
 
       page = n;
-      $('pageInfo').textContent = page + ' / ' + pages;
-      $('progressFill').style.width = (pages ? Math.round(page / pages * 100) : 0) + '%';
+      const pct=pages?Math.round(page/pages*100):0;
+      $('pageInfo').textContent=page+' / '+pages;
+      $('topPageInfo').textContent=page+' / '+pages;
+      $('topProgressPct').textContent=pct+'%';
+      $('topProgressFill').style.width=pct+'%';
+      $('topProgressKnob').style.left=pct+'%';
+      $('bookSub').textContent='PDF · '+pages+' саҳифа';
       saveProgress();
     } catch(e) {
       toast('Хатогӣ: ' + (e.message || e), 3000);
@@ -1190,7 +1212,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     localStorage.setItem('kk_reader_theme', t);
     if (pdf) renderPage(page);
   }
-  setTheme(localStorage.getItem('kk_reader_theme') || 'dark');
+  const initialReaderTheme=localStorage.getItem('kk_reader_theme')||'dark';
+  setTheme(initialReaderTheme);
+  if($('readerThemeIcon')) $('readerThemeIcon').textContent=initialReaderTheme==='light'?'🌙':'☀';
 
   function setZoom(v) {
     zoom = Number(v) / 100;
@@ -1214,6 +1238,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     $('settingsPanel').classList.remove('open');
     setTimeout(() => $('findInput').focus(), 80);
   }
+
+  function jumpToPagePrompt(){
+    if(!pages)return;const value=prompt('Рақами саҳифа (1–'+pages+')',String(page));if(value===null)return;const n=Math.max(1,Math.min(pages,parseInt(value,10)||page));renderPage(n,n>=page?1:-1)
+  }
+  function toggleReaderTheme(){
+    const next=document.body.classList.contains('light-reading')?'dark':'light';setTheme(next);const icon=$('readerThemeIcon');if(icon)icon.textContent=next==='light'?'🌙':'☀'
+  }
+  let readerFavorite=false;
+  function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}
+  function paintReaderFavorite(){document.querySelectorAll('[data-reader-favorite]').forEach(btn=>{btn.classList.toggle('active',readerFavorite);const ico=btn.querySelector('.ico');if(ico)ico.textContent=readerFavorite?'♥':'♡';else btn.textContent=readerFavorite?'♥':'♡'})}
+  async function loadReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token)return;try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const id=canonicalFavoriteId();readerFavorite=(await r.json()).some(x=>String(x.book_id).replace(/^books\//i,'')===id);paintReaderFavorite()}catch(e){}}
+  async function toggleReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token){toast('Барои хатбарак ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба хатбарак илова шуд':'Аз хатбарак хориҷ шуд')}catch(e){toast('Хатбарак нигоҳ дошта нашуд')}}
 
   async function downloadCurrent() {
     await downloadFile(url, name);
