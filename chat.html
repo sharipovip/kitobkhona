@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="tg">
 <head>
+  <link rel="icon" href="./favicon.ico" type="image/x-icon">
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0D1B2A">
@@ -529,10 +530,6 @@
         </div>
         <button class="menu-btn" id="menuBtn">⋮</button>
         <div class="popup-menu" id="popupMenu">
-          <div class="item" onclick="deleteChat()">
-            <span class="icon">🗑</span>
-            <span>Удалить чат</span>
-          </div>
           <div class="item" onclick="clearChatLocal()">
             <span class="icon">🧹</span>
             <span>Очистить чат</span>
@@ -773,24 +770,6 @@
       overlay.querySelector('#cOk').onclick = () => { overlay.remove(); resolve(true); };
       overlay.querySelector('#cCancel').onclick = () => { overlay.remove(); resolve(false); };
     });
-  }
-
-  async function deleteChat() {
-    popupMenu.classList.remove('open');
-    if (!currentUserId || !peerId) return;
-    if (!await showConfirm('Оё мехоҳед тамоми таърихи чатро нест кунед?', 'Нест кунед', true)) return;
-    try {
-      const token = localStorage.getItem('kk_token');
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!resp.ok) throw new Error('Ошибка удаления');
-      clearChatCache();
-      location.href = 'chats.html';
-    } catch (e) {
-      showToast('Хатогӣ: ' + e.message);
-    }
   }
 
   async function clearChatLocal() {
@@ -1244,7 +1223,6 @@
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  window.deleteChat = deleteChat;
   window.clearChatLocal = clearChatLocal;
   window.blockUser = blockUser;
   window.reportUser = reportUser;
