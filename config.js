@@ -1000,7 +1000,47 @@ function loadFirebaseMessagingSdk() {
   return firebaseSdkPromise;
 }
 
-async function registerFcmToken() {
+function deleteIndexedDatabaseSafe(name) {
+  return new Promise(resolve => {
+    if (!('indexedDB' in window)) return resolve(false);
+    let settled = false;
+    const finish = value => { if (!settled) { settled = true; resolve(value); } };
+    try {
+      const request = indexedDB.deleteDatabase(name);
+      request.onsuccess = () => finish(true);
+      request.onerror = () => finish(false);
+      request.onblocked = () => setTimeout(() => finish(false), 900);
+      setTimeout(() => finish(false), 1800);
+    } catch (e) { finish(false); }
+  });
+}
+
+function inspectFirebaseMessagingDatabase() {
+  return new Promise(resolve => {
+    if (!('indexedDB' in window)) return resolve(false);
+    let request;
+    try { request = indexedDB.open('firebase-messaging-database'); }
+    catch (e) { return resolve(false); }
+    request.onerror = () => resolve(false);
+    request.onsuccess = async () => {
+      const db = request.result;
+      const invalid = !db.objectStoreNames.contains('firebase-messaging-store');
+      db.close();
+      if (invalid) {
+        await deleteIndexedDatabaseSafe('firebase-messaging-database');
+        localStorage.removeItem('kk_fcm_token');
+      }
+      resolve(invalid);
+    };
+  });
+}
+
+function isFirebaseIndexedDbSchemaError(error) {
+  const message = String(error?.message || error || '');
+  return /firebase-messaging-store|not a known object store|IDBDatabase\.transaction/i.test(message);
+}
+
+async function registerFcmToken(recoveryAttempt = false) {
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return null;
   const token = localStorage.getItem('kk_token');
   if (!token) return null;
@@ -1009,6 +1049,7 @@ async function registerFcmToken() {
   }
 
   try {
+    await inspectFirebaseMessagingDatabase();
     await loadFirebaseMessagingSdk();
     const registration = await navigator.serviceWorker.register('./sw.js');
     const messaging = firebase.messaging();
@@ -1039,6 +1080,11 @@ async function registerFcmToken() {
     localStorage.setItem('kk_fcm_token', currentToken);
     return currentToken;
   } catch (e) {
+    if (!recoveryAttempt && isFirebaseIndexedDbSchemaError(e)) {
+      await deleteIndexedDatabaseSafe('firebase-messaging-database');
+      localStorage.removeItem('kk_fcm_token');
+      return registerFcmToken(true);
+    }
     console.warn('registerFcmToken error:', e);
     return null;
   }
