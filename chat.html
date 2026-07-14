@@ -2148,10 +2148,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         </div>
         <button class="menu-btn" id="menuBtn">⋮</button>
         <div class="popup-menu" id="popupMenu">
-          <div class="item" onclick="deleteChat()">
-            <span class="icon">🗑</span>
-            <span>Удалить чат</span>
-          </div>
           <div class="item" onclick="clearChatLocal()">
             <span class="icon">🧹</span>
             <span>Очистить чат</span>
@@ -2214,12 +2210,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   let wsConnected = false;
   let chatIsOpen = true; // по умолчанию открыт
 
+  function getChatCacheScope() {
+    const ownerId = String(currentUserId || localStorage.getItem('kk_user_id') || 'guest');
+    return [ownerId, String(peerId || '')].sort().join('_');
+  }
+
   function getCacheKey() {
-    return 'kk_chat_messages_' + peerId;
+    return 'kk_chat_messages_' + getChatCacheScope();
   }
 
   function getPersistentChatCacheKey() {
-    return 'kk_chat_messages_persist_' + peerId;
+    return 'kk_chat_messages_persist_' + getChatCacheScope();
   }
 
   function getChatCache() {
@@ -2245,8 +2246,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   function clearChatCache() {
-    clearChatCache();
-    try { localStorage.removeItem(getPersistentChatCacheKey()); } catch (e) {}
+    if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(getCacheKey());
+    try {
+      localStorage.removeItem(getPersistentChatCacheKey());
+      // Remove legacy unscoped entries created by older versions.
+      localStorage.removeItem('kk_chat_messages_persist_' + peerId);
+      localStorage.removeItem('kk_cm_kk_chat_messages_' + peerId);
+    } catch (e) {}
   }
 
   function getWebSocketUrl() {
@@ -2394,24 +2400,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     });
   }
 
-  async function deleteChat() {
-    popupMenu.classList.remove('open');
-    if (!currentUserId || !peerId) return;
-    if (!await showConfirm('Оё мехоҳед тамоми таърихи чатро нест кунед?', 'Нест кунед', true)) return;
-    try {
-      const token = localStorage.getItem('kk_token');
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
-        method: 'DELETE',
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!resp.ok) throw new Error('Ошибка удаления');
-      clearChatCache();
-      location.href = 'chats.html';
-    } catch (e) {
-      showToast('Хатогӣ: ' + e.message);
-    }
-  }
-
   async function clearChatLocal() {
     popupMenu.classList.remove('open');
     if (!await showConfirm('Оё мехоҳед ҳамаи паёмҳои ин чатро тоза кунед?', 'Тоза кунед', false)) return;
@@ -2501,6 +2489,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (pendingOutgoingCount > 0) return;
     try {
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
+      // Opening the conversation marks incoming messages as read on the server.
+      // Drop the cached summary so chats.html never restores an old unread badge.
+      if (typeof CacheManager !== 'undefined' && currentUserId) {
+        CacheManager.invalidateKey('kk_cache_chat_summary_' + currentUserId);
+      }
       if (!msgs || msgs.length === 0) {
         if (!cachedMsgs || cachedMsgs.length === 0) {
           msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
@@ -2863,7 +2856,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
   }
 
-  window.deleteChat = deleteChat;
   window.clearChatLocal = clearChatLocal;
   window.blockUser = blockUser;
   window.reportUser = reportUser;

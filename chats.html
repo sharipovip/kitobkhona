@@ -909,6 +909,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   let chatSummary = { total_unread: 0, by_peer: {} };
   let unsubscribeFriends = null;
   let unsubscribeRequests = null;
+  let friendsCacheKey = '';
+  let requestsCacheKey = '';
+  let summaryCacheKey = '';
 
   function getInitials(name) {
     if(!name) return 'К';
@@ -950,86 +953,38 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function loadData() {
-    const scroll = document.getElementById('chatsScroll');
-
+    const scroll=document.getElementById('chatsScroll');
     try {
-      let user = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.PROFILE) : null;
-      if (!user) {
-        const { data } = await AUTH.getUser();
-        user = data.user;
-        if (user && typeof CacheManager !== 'undefined') {
-          CacheManager.set(CacheManager.KEYS.PROFILE, user);
-        }
-      }
-      currentUser = user;
-      if(!currentUser) {
-        scroll.innerHTML = `
-          <div class="empty-hint" style="text-align:center;margin-top:30px;">
-            <p>Барои дидани чатҳо ворид шавед</p>
-            <button class="btn btn-primary" style="margin-top:12px;" onclick="location.href='login.html'">Ворид шудан</button>
-          </div>
-        `;
-        return;
-      }
+      const {data}=await AUTH.getUser();
+      currentUser=data.user;
+      if(!currentUser){scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
 
-      let friends = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.FRIENDS) : null;
-      if (!friends) {
-        friends = await ChatAPI.getFriends(currentUser.id);
-        if (typeof CacheManager !== 'undefined') {
-          CacheManager.set(CacheManager.KEYS.FRIENDS, friends);
-        }
-      }
+      friendsCacheKey=CacheManager.KEYS.FRIENDS+'_'+currentUser.id;
+      requestsCacheKey=CacheManager.KEYS.REQUESTS+'_'+currentUser.id;
+      summaryCacheKey='kk_cache_chat_summary_'+currentUser.id;
+      let friends=CacheManager.get(friendsCacheKey),requests=CacheManager.get(requestsCacheKey),summary=CacheManager.get(summaryCacheKey);
+      const hasCached=Array.isArray(friends)&&Array.isArray(requests);
+      friends=Array.isArray(friends)?friends:[];requests=Array.isArray(requests)?requests:[];
+      chatSummary=summary&&summary.by_peer?summary:{total_unread:0,by_peer:{}};
+      if(hasCached)await renderChats(friends,requests,scroll,chatSummary);
 
-      let requests = (typeof CacheManager !== 'undefined') ? CacheManager.get(CacheManager.KEYS.REQUESTS) : null;
-      if (!requests) {
-        requests = await ChatAPI.getFriendRequests(currentUser.id);
-        if (typeof CacheManager !== 'undefined') {
-          CacheManager.set(CacheManager.KEYS.REQUESTS, requests);
-        }
-      }
+      // Always refresh in the background: cache makes opening instant, server keeps it current.
+      const [freshFriends,freshRequests,freshSummary]=await Promise.allSettled([
+        ChatAPI.getFriends(currentUser.id),ChatAPI.getFriendRequests(currentUser.id),ChatAPI.getChatSummary()
+      ]);
+      if(freshFriends.status==='fulfilled'&&Array.isArray(freshFriends.value)){friends=freshFriends.value;CacheManager.set(friendsCacheKey,friends)}
+      if(freshRequests.status==='fulfilled'&&Array.isArray(freshRequests.value)){requests=freshRequests.value;CacheManager.set(requestsCacheKey,requests)}
+      if(freshSummary.status==='fulfilled'&&freshSummary.value){chatSummary=freshSummary.value;CacheManager.set(summaryCacheKey,chatSummary)}
+      if(!hasCached&&freshFriends.status==='rejected'&&freshRequests.status==='rejected')throw(freshFriends.reason||freshRequests.reason||new Error('Маълумот бор нашуд'));
+      await renderChats(friends,requests,scroll,chatSummary);
 
-      try {
-        chatSummary = await ChatAPI.getChatSummary();
-      } catch (summaryError) {
-        chatSummary = { total_unread: 0, by_peer: {} };
-        console.warn('[Chats] Chat summary unavailable:', summaryError);
-      }
-
-      if (typeof CacheManager !== 'undefined') {
-        if (unsubscribeFriends) unsubscribeFriends();
-        unsubscribeFriends = CacheManager.subscribe(CacheManager.KEYS.FRIENDS, (newFriends) => {
-          if (newFriends) {
-            friends = newFriends;
-            renderChats(friends, requests, scroll);
-          } else {
-            ChatAPI.getFriends(currentUser.id).then(f => {
-              CacheManager.set(CacheManager.KEYS.FRIENDS, f);
-              friends = f;
-              renderChats(friends, requests, scroll);
-            }).catch(console.warn);
-          }
-        });
-
-        if (unsubscribeRequests) unsubscribeRequests();
-        unsubscribeRequests = CacheManager.subscribe(CacheManager.KEYS.REQUESTS, (newRequests) => {
-          if (newRequests) {
-            requests = newRequests;
-            renderChats(friends, requests, scroll);
-          } else {
-            ChatAPI.getFriendRequests(currentUser.id).then(r => {
-              CacheManager.set(CacheManager.KEYS.REQUESTS, r);
-              requests = r;
-              renderChats(friends, requests, scroll);
-            }).catch(console.warn);
-          }
-        });
-      }
-
-      renderChats(friends, requests, scroll);
-
+      if(unsubscribeFriends)unsubscribeFriends();
+      if(unsubscribeRequests)unsubscribeRequests();
+      unsubscribeFriends=CacheManager.subscribe(friendsCacheKey,value=>{if(Array.isArray(value))renderChats(value,requests,scroll,chatSummary)});
+      unsubscribeRequests=CacheManager.subscribe(requestsCacheKey,value=>{if(Array.isArray(value))renderChats(friends,value,scroll,chatSummary)});
     } catch(e) {
       console.error(e);
-      scroll.innerHTML = `<div class="empty-hint" style="color:var(--red);">Хатогӣ: ${esc(e.message)}</div>`;
+      if(!scroll.querySelector('.chat-item'))scroll.innerHTML=`<div class="empty-hint" style="color:var(--red)">Хатогӣ: ${esc(e.message)}</div>`;
     }
   }
 
@@ -1135,7 +1090,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           });
           const data = await r.json().catch(() => ({}));
           if (!r.ok) throw new Error(data.error || 'Нест кардани чат муяссар нашуд');
-          if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+          if (typeof CacheManager !== 'undefined' && summaryCacheKey) CacheManager.invalidateKey(summaryCacheKey);
+          clearConversationCache(peerId);
           button.closest('.chat-item')?.remove();
           showToast('Чат нест карда шуд');
         } catch (e) {
@@ -1162,8 +1118,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       await ChatAPI.acceptFriendRequestByUser(fromUserId);
       if (typeof CacheManager !== 'undefined') {
-        CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
-        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
+        if(friendsCacheKey) CacheManager.invalidateKey(friendsCacheKey);
+        if(requestsCacheKey) CacheManager.invalidateKey(requestsCacheKey);
+        if(summaryCacheKey) CacheManager.invalidateKey(summaryCacheKey);
       }
       loadData();
     } catch(e) {
@@ -1175,15 +1132,24 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   async function declineRequest(requestId) {
     try {
       await ChatAPI.declineFriendRequest(requestId);
-      if (typeof CacheManager !== 'undefined') {
-        CacheManager.invalidateKey(CacheManager.KEYS.REQUESTS);
-      }
+      if (typeof CacheManager !== 'undefined' && requestsCacheKey) CacheManager.invalidateKey(requestsCacheKey);
       loadData();
     } catch(e) {
       alert('Хатогӣ: ' + e.message);
     }
   }
   window.declineRequest = declineRequest;
+
+  function clearConversationCache(peerId) {
+    if (!currentUser || !peerId) return;
+    const scope = [String(currentUser.id), String(peerId)].sort().join('_');
+    if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey('kk_chat_messages_' + scope);
+    try {
+      localStorage.removeItem('kk_chat_messages_persist_' + scope);
+      localStorage.removeItem('kk_chat_messages_persist_' + peerId);
+      localStorage.removeItem('kk_cm_kk_chat_messages_' + peerId);
+    } catch (e) {}
+  }
 
   function openChat(userId, name) {
     location.href = `chat.html?to=${encodeURIComponent(userId)}&name=${encodeURIComponent(name)}`;

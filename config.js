@@ -756,7 +756,7 @@ const ChatAPI = {
   getFriends: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
     const data = await r.json();
     return data.map(f => f.id);
@@ -764,7 +764,7 @@ const ChatAPI = {
   getFriendRequests: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
     return await r.json();
   },
@@ -791,7 +791,7 @@ const ChatAPI = {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
     const url = KITOB_CONFIG.NEON_API_BASE + '/api/messages?user1=' + user1 + '&user2=' + user2;
-    const r = await fetchWithTimeout(url, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(url, { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения сообщений: ' + r.status);
     return await r.json();
   },
