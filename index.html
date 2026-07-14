@@ -1655,6 +1655,19 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 /* Уведомления мгновенно - без задержки */
 #notifModal{ backdrop-filter:blur(8px) !important; }
 
+
+/* ===== HOME POLISH 2026-07-14 ===== */
+.hero-v3{height:116px!important;min-height:116px!important;margin:7px 8px!important;border-radius:15px!important}
+.hero-v3-inner{height:116px!important;min-height:116px!important;position:relative!important;display:block!important}
+.hero-v3-left{position:absolute!important;inset:0 auto 0 0!important;width:60%!important;padding:10px 12px!important;z-index:4!important;background:linear-gradient(90deg,#0f1e32 0%,#0f1e32 65%,rgba(15,30,50,.82) 82%,transparent 100%)!important;display:flex!important;justify-content:center!important}
+.hero-kicker-v3{font-size:9px!important;line-height:1.15!important;margin-bottom:5px!important}
+.hero-quote-v3{font-size:11.5px!important;line-height:1.28!important;-webkit-line-clamp:4!important;min-height:0!important}
+.hero-v3-right{position:absolute!important;inset:0 0 0 auto!important;width:52%!important;height:116px!important;min-height:116px!important;margin:0!important;overflow:hidden!important;background:#0a1222!important}
+.hero-v3-right img#heroImg{position:absolute!important;inset:0!important;width:calc(100% + 1px)!important;height:116px!important;max-width:none!important;object-fit:cover!important;object-position:center top!important;display:block!important;border:0!important}
+.hero-flag-v3{display:none!important}.hero-shadow-v3{position:absolute!important;inset:0!important;background:linear-gradient(90deg,#0f1e32 0%,rgba(15,30,50,.25) 24%,transparent 46%)!important;z-index:3!important}
+.bm-v3,.bm-v3.active{background:transparent!important;border:0!important;box-shadow:none!important;border-radius:0!important;width:24px!important;height:24px!important}
+.bm-v3:active{transform:scale(.88)}
+
 /* ===== INDEX INTEGRATION FIXES 2026-07-14 ===== */
 .phone-wrapper{height:100dvh;min-height:100vh}
 .nav-bottom{height:58px!important;flex:0 0 58px!important;background:rgba(10,18,34,.96)!important;backdrop-filter:blur(18px)!important}
@@ -1678,6 +1691,11 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 
 </style>
 
+
+<style id="app-scrollbar-policy">
+html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
+</style>
 </head>
 <body>
 <div class="phone-wrapper">
@@ -1852,19 +1870,20 @@ function notificationTarget(n){
   return link.replace(/^\/+/, '');
 }
 function formatNotifTime(value){try{return new Intl.DateTimeFormat('tg-TJ',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(e){return ''}}
-function showNotificationsModal(items){
+function showNotificationsModal(items,loading=false){
   document.getElementById('notifModal')?.remove();
   const unread=unreadNotifications(items), modal=document.createElement('div'); modal.id='notifModal';modal.className='notif-modal';
   const box=document.createElement('section');box.className='notif-panel';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Огоҳиҳо');
-  box.innerHTML=`<header class="notif-head"><div class="notif-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M9 20h6"/></svg></div><div class="notif-head-copy"><b>Огоҳиҳо</b><span>${unread.length?unread.length+' огоҳии нав':'Ҳама огоҳиҳо дида шуданд'}</span></div><button class="notif-close" type="button" aria-label="Пӯшидан">×</button></header><div class="notif-list"></div>`;
+  box.innerHTML=`<header class="notif-head"><div class="notif-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M9 20h6"/></svg></div><div class="notif-head-copy"><b>Огоҳиҳо</b><span>${loading?'Интизор шавед…':(unread.length?unread.length+' огоҳии нав':'Ҳама огоҳиҳо дида шуданд')}</span></div><button class="notif-close" type="button" aria-label="Пӯшидан">×</button></header><div class="notif-list"></div>`;
   const list=box.querySelector('.notif-list');
-  if(!unread.length){list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Огоҳии нав нест</b><span>Огоҳиҳои нав дар ҳамин ҷо пайдо мешаванд.</span></div>'}
-  else unread.forEach(n=>{const btn=document.createElement('button');btn.type='button';btn.className='notif-item';btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><span><span class="notif-title">${esc(n.title||'Китобхона')}</span><span class="notif-body">${esc(n.body||'')}</span><span class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</span></span><span class="notif-arrow">›</span>`;btn.addEventListener('click',async()=>{await markNotificationRead(n.id);const target=notificationTarget(n);modal.remove();if(target)location.href=target});list.appendChild(btn)});
+  if(loading){list.innerHTML='<div class="notif-empty"><div class="loader"></div><b>Огоҳиҳо бор мешаванд…</b></div>'}else if(!unread.length){list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Огоҳии нав нест</b><span>Огоҳиҳои нав дар ҳамин ҷо пайдо мешаванд.</span></div>'}
+  else unread.forEach(n=>{const btn=document.createElement('button');btn.type='button';btn.className='notif-item';btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><span><span class="notif-title">${esc(n.title||'Китобхона')}</span><span class="notif-body">${esc(n.body||'')}</span><span class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</span></span><span class="notif-arrow">›</span>`;btn.addEventListener('click',()=>{markNotificationRead(n.id);const target=notificationTarget(n);modal.remove();if(target)location.href=target});list.appendChild(btn)});
   const close=()=>modal.remove();box.querySelector('.notif-close').onclick=close;modal.onclick=e=>{if(e.target===modal)close()};document.addEventListener('keydown',function onKey(e){if(e.key==='Escape'){close();document.removeEventListener('keydown',onKey)}},{once:true});modal.appendChild(box);document.body.appendChild(modal);box.querySelector('.notif-close').focus();
   // A notification is one-time: after it has been presented, persist "read" in the database.
-  Promise.allSettled(unread.map(n=>markNotificationRead(n.id))).then(()=>{if($('notifBadge'))$('notifBadge').style.display='none'});
+  if(!loading)Promise.allSettled(unread.map(n=>markNotificationRead(n.id))).then(()=>{if($('notifBadge'))$('notifBadge').style.display='none'});
+  return modal;
 }
-const nb=$('notifBtn');if(nb)nb.addEventListener('click',async()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',500);return}try{showNotificationsModal(await getNotifications())}catch(e){toast('Огоҳиҳо бор нашуданд',true)}});
+const nb=$('notifBtn');if(nb)nb.addEventListener('click',async()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',500);return}const opened=showNotificationsModal([],true);try{const items=await getNotifications();if(document.body.contains(opened))showNotificationsModal(items)}catch(e){if(document.body.contains(opened))showNotificationsModal([]);toast('Огоҳиҳо бор нашуданд',true)}});
 
 const oz=[ ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'] ];
 const ozEl=$('ozmunList'); if(ozEl) ozEl.innerHTML=oz.map(o=>`<div class="ozmun-item-v3" onclick="location.href='${o[0]}'"><div class="ozmun-circle-v3"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label-v3">${o[2]}</div></div>`).join('');
@@ -1890,24 +1909,25 @@ async function loadManifest(sub){ const key=sub?.folder; if(!key) return []; if(
 async function searchHome(q,force=false){ q=(q||'').trim().toLowerCase(); const box=$('homeSearchResults'); if(!box) return; if(!q){ box.style.display='none'; box.innerHTML=''; return; } if(q.length<2&&!force) return; box.style.display='block'; box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⌕</div><div><div class="search-result-name">Ҷустуҷӯ...</div><div class="search-result-sub">Ҷустуҷӯ идома дорад</div></div></div>'; try{ if(!DATA) await loadBooksJson(); const results=[]; for(const c of (DATA.categories||[])){ for(const s of (c.subs||[])){ const arr=await loadManifest(s); for(const b of arr){ const name=b.name||String(b.file||'').replace(/\.pdf$/i,''); if(name.toLowerCase().includes(q)){ results.push({b,sub:s,cat:c,name}); if(results.length>=20) break; } } if(results.length>=20) break; } if(results.length>=20) break; } if(!results.length){ box.innerHTML='<div class="search-result-item"><div class="search-result-icon">📭</div><div><div class="search-result-name">Ёфт нашуд</div><div class="search-result-sub">Калимаи дигар нависед</div></div></div>'; return; } box.innerHTML=results.map(r=>{ const file=r.b.file||r.name+'.pdf'; const url=rawUrl(r.sub.folder,file); return `<div class="search-result-item" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(r.name)}')"><div class="search-result-icon">📖</div><div><div class="search-result-name">${esc(r.name)}</div><div class="search-result-sub">${esc(r.cat.name)} · ${esc(r.sub.name||r.sub.folder)}</div></div></div>`; }).join(''); }catch(e){ box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⚠️</div><div><div class="search-result-name">Пайвастшавӣ</div><div class="search-result-sub">'+esc(e.message||e)+'</div></div></div>'; } }
 const hsInput=$('homeSearch'); if(hsInput) hsInput.addEventListener('input',()=>{ clearTimeout(searchTimer); searchTimer=setTimeout(()=>searchHome(hsInput.value),350); });
 function renderCategories(cats){
-  const grid=$('catGrid'); if(!grid) return; if(!cats||!cats.length){ grid.innerHTML='<div class="empty">Категория нест</div>'; return; }
-  // Иконки точь-в-точь как на фото
-  const iconMap={
-    'Адабиёт':'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#E8C96D" stroke-width="1.6"><path d="M4 5.5C4 5.5 7 4 11 6C11 6 12 4.5 12 4.5M12 4.5C12 4.5 13 6 17 4C21 2 20 5.5 20 5.5V17C20 17 17 15.5 12 17.5M12 4.5V17.5M4 5.5V17C4 17 7 15.5 12 17.5V4.5C8 2.5 4 5.5 4 5.5Z"/></svg>',
-    'Илм ва таълим':'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#E8C96D" stroke-width="1.6"><path d="M3 9L12 3L21 9L12 15L3 9Z"/><path d="M6 11V15L12 18L18 15V11"/><path d="M12 15V18"/></svg>',
-    'Таърих':'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#E8C96D" stroke-width="1.6"><rect x="4" y="3" width="16" height="2"/><rect x="6" y="5" width="2" height="12"/><rect x="11" y="5" width="2" height="12"/><rect x="16" y="5" width="2" height="12"/><rect x="3" y="17" width="18" height="2"/></svg>',
-    'Фалсафа ва ҳуқуқ':'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#E8C96D" stroke-width="1.6"><circle cx="9" cy="8" r="2.5"/><circle cx="15" cy="8" r="2.5"/><path d="M3 19C3 16 5 13 9 13C11 13 11 13 9 13M15 13C19 13 21 16 21 19M9 13C9 13 13 13 15 13"/><circle cx="12" cy="6" r="1.2" fill="#E8C96D"/></svg>',
-    'Илмҳои табиӣ':'<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#E8C96D" stroke-width="1.6"><path d="M12 3C12 3 6 8 6 13C6 18 12 21 12 21C12 21 18 18 18 13C18 8 12 3 12 3Z"/><path d="M12 8V16M9 10C9 10 11 12 9 14M15 10C15 10 13 12 15 14"/></svg>'
+  const grid=$('catGrid');if(!grid)return;if(!cats||!cats.length){grid.innerHTML='<div class="empty">Категория нест</div>';return}
+  const svg=(body)=>`<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  const icons={
+    adabiyoti_klassiki:svg('<path d="M4 5.5c3-1.5 5.5-.8 8 1.2 2.5-2 5-2.7 8-1.2v13c-3-1.4-5.5-.8-8 1.1-2.5-1.9-5-2.5-8-1.1z"/><path d="M12 6.7v12.9"/>'),
+    adabiyoti_jahon:svg('<circle cx="12" cy="12" r="8.5"/><path d="M3.8 12h16.4M12 3.5c2.5 2.3 3.7 5.1 3.7 8.5S14.5 18.2 12 20.5C9.5 18.2 8.3 15.4 8.3 12S9.5 5.8 12 3.5z"/>'),
+    adabiyoti_muosir:svg('<path d="m5 18 1.2-4.5L16.8 3l4.2 4.2-10.5 10.6z"/><path d="m13.8 6 4.2 4.2M5 18l4.5-1.2L7 14.5z"/>'),
+    chiston:svg('<path d="M9.2 9a3 3 0 1 1 4.3 2.7c-1 .5-1.5 1.2-1.5 2.3"/><circle cx="12" cy="18" r=".8" fill="currentColor"/><circle cx="12" cy="12" r="9"/>'),
+    farhang:svg('<path d="M4 20h16M6 17h12M7 7v10m5-10v10m5-10v10M4 7h16L12 3z"/>'),
+    zindaginoma:svg('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3.2-6.5 7-6.5s6.3 2.3 7 6.5"/><path d="M4 3h3M17 3h3"/>'),
+    zhurnalistika:svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h4v4H7zM14 9h4M14 12h4M7 16h11"/>'),
+    iqtisod:svg('<path d="M4 19V5M4 19h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/>'),
+    tib:svg('<path d="M9 4h6v5h5v6h-5v5H9v-5H4V9h5z"/>'),
+    kitobhoi_darsi:svg('<path d="m3 9 9-5 9 5-9 5z"/><path d="M6 11.2V16l6 3 6-3v-4.8M21 9v6"/>'),
+    ilmi:svg('<circle cx="12" cy="12" r="2" fill="currentColor"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>'),
+    peshvoi_millat:svg('<path d="m4 9 3 3 5-7 5 7 3-3-2 9H6z"/><path d="M7 21h10"/><circle cx="4" cy="7" r="1" fill="currentColor"/><circle cx="12" cy="3" r="1" fill="currentColor"/><circle cx="20" cy="7" r="1" fill="currentColor"/>'),
+    tarih:svg('<path d="M4 20h16M6 17h12M7 8v9m5-9v9m5-9v9M4 8h16L12 3z"/><path d="M9.5 12h5"/>'),
+    digar:svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>')
   };
-  function getIcon(name){
-    if(/Адабиёт/i.test(name)) return iconMap['Адабиёт'];
-    if(/Илм ва таълим|Илм ва маориф/i.test(name)) return iconMap['Илм ва таълим'];
-    if(/Таърих/i.test(name)) return iconMap['Таърих'];
-    if(/Фалсафа|ҳуқуқ|к/i.test(name)) return iconMap['Фалсафа ва ҳуқуқ'];
-    if(/табиӣ|Табиат/i.test(name)) return iconMap['Илмҳои табиӣ'];
-    return '<div style="font-size:20px;color:#E8C96D">•••</div>';
-  }
-  grid.innerHTML=cats.slice(0,6).map(c=>`<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${getIcon(c.name)}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
+  grid.innerHTML=cats.slice(0,6).map(c=>`<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${icons[c.id]||icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
 }
 async function loadHome(){
   try{

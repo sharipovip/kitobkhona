@@ -794,6 +794,11 @@
   .light-theme .subcategory-chip { background: var(--card); color: var(--text); }
   .light-theme .subcategory-chip.active { background: var(--gold); color: #1b1202; }
 </style>
+
+<style id="app-scrollbar-policy">
+html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
+</style>
 </head>
 <body>
 
@@ -1357,12 +1362,19 @@
 
   function renderCategories(cats) {
     const row = document.getElementById('shelfRow');
+    const categoryIcons = {
+      adabiyoti_klassiki:'📜', adabiyoti_jahon:'🌍', adabiyoti_muosir:'✒️',
+      chiston:'❓', farhang:'🏛️', zindaginoma:'👤', zhurnalistika:'📰',
+      iqtisod:'📈', tib:'⚕️', kitobhoi_darsi:'🎓', ilmi:'⚛️',
+      peshvoi_millat:'👑', tarih:'⏳', digar:'◈'
+    };
     row.innerHTML = cats.map((c, i) => {
       const active = i === 0 ? 'active' : '';
       const subsCount = (c.subs || []).length;
       const label = esc(c.name);
+      const categoryIcon = c.emoji || categoryIcons[c.id] || '◈';
       return `<button class="spine ${active}" data-cat-id="${c.id}" style="background:linear-gradient(180deg, ${c.color1 || '#1E3350'}, ${c.color2 || '#142236'});">
-        <div class="icon">${c.emoji || '📚'}</div>
+        <div class="icon" aria-hidden="true">${categoryIcon}</div>
         <div class="label-wrap"><span class="label">${label}</span></div>
         <div class="count">${subsCount}</div>
       </button>`;
