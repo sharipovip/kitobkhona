@@ -656,7 +656,7 @@ const AutoLogin = {
         if (response.status === 409) {
           const loginResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ username, password })
+            body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
           }, 8000);
           const loginData = await loginResp.json().catch(() => ({}));
           if (loginResp.ok && loginData.token) {
@@ -692,7 +692,7 @@ const AutoLogin = {
     try {
       const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ username, password })
+        body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
       }, 8000);
       const data = await r.json().catch(() => ({}));
       if (!r.ok) {
@@ -884,14 +884,16 @@ const NEON_API = {
   checkResetEligibility: async function(identifier) {
     const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/check-reset-eligibility', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier })
+      body: JSON.stringify({ identifier, device_fp: getDeviceFingerprint() })
     }, 8000);
-    return await r.json();
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || ('Ошибка восстановления: ' + r.status));
+    return data;
   },
   resetPassword: async function(identifier, code, newPassword) {
     const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/reset-password', {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ identifier, code, newPassword })
+      body: JSON.stringify({ identifier, code, newPassword, device_fp: getDeviceFingerprint() })
     }, 8000);
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || ('Ошибка сброса: ' + r.status));

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v26';
+const CACHE_NAME = 'kitobkhona-v28';
 const LOCAL_FILES = [
   './',
   './index.html',
