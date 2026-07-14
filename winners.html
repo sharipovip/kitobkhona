@@ -739,6 +739,12 @@
     .nav-item.active .person-small::before,
     .nav-item.active .person-small::after { background: #D9B23C; }
   </style>
+
+<style id="winners-old-safe-polish">
+html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important}
+.topbar h2{color:var(--gold2)!important}.content-wrapper{background:radial-gradient(circle at 50% 0,rgba(201,168,76,.045),transparent 28%),var(--bg)}
+.segmented,.select-chip select{box-shadow:0 6px 18px rgba(0,0,0,.08)}.rank-row:active{background:rgba(201,168,76,.055)}
+</style>
 </head>
 <body>
   <div class="app">
@@ -936,49 +942,28 @@
     }
 
     async function loadWinners(period = 'all') {
-      const container = document.getElementById('winnersContent');
-      const cacheKey = 'kk_winners_' + period;
-
-      let data = CacheManager ? CacheManager.get(cacheKey) : null;
-      if (data) {
-        allData = data;
-        allData.top3 = allData.top3.map(u => ({ ...u, age: getAge(u.birth_year) }));
-        allData.top100 = allData.top100.map(u => ({ ...u, age: getAge(u.birth_year) }));
+      const container=document.getElementById('winnersContent');
+      const cacheKey='kk_winners_'+period;
+      let cached=(typeof CacheManager!=='undefined')?CacheManager.get(cacheKey):null;
+      if(cached){
+        allData=cached;
+        allData.top3=(allData.top3||[]).map(u=>({...u,age:getAge(u.birth_year)}));
+        allData.top100=(allData.top100||[]).map(u=>({...u,age:getAge(u.birth_year)}));
         applyFilters();
-        return;
+      }else{
+        container.innerHTML='<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
       }
-
-      container.innerHTML = '<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
-      try {
-        const result = await AutoLogin.autoLogin(false);
-        if (!result) {
-          container.innerHTML = `
-            <div class="guest-overlay">
-              <div style="font-size:48px;">🏆</div>
-              <h3>Барои дидани рейтинг ворид шавед</h3>
-              <p style="color:var(--muted);font-size:13px;">Танҳо корбарони сабтиномшуда метавонанд дар рейтинг ширкат кунанд.</p>
-              <button class="btn btn-primary" onclick="location.href='login.html'">Ворид шудан</button>
-            </div>
-          `;
-          return;
-        }
-
-        const token = localStorage.getItem('kk_token');
-        const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/winners?period=' + period, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (!resp.ok) throw new Error('Хатогӣ дар боргирӣ');
-        data = await resp.json();
-        allData = data;
-        allData.top3 = allData.top3.map(u => ({ ...u, age: getAge(u.birth_year) }));
-        allData.top100 = allData.top100.map(u => ({ ...u, age: getAge(u.birth_year) }));
-
-        if (CacheManager) CacheManager.set(cacheKey, data);
-
+      try{
+        const token=localStorage.getItem('kk_token');
+        const resp=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/winners?period='+period,{headers:token?{'Authorization':'Bearer '+token}:{},cache:'no-store'});
+        if(!resp.ok)throw new Error('Хатогӣ дар боргирӣ');
+        const data=await resp.json();
+        if(typeof CacheManager!=='undefined')CacheManager.set(cacheKey,data);
+        allData={top3:(data.top3||[]).map(u=>({...u,age:getAge(u.birth_year)})),top100:(data.top100||[]).map(u=>({...u,age:getAge(u.birth_year)}))};
         applyFilters();
-      } catch (e) {
-        console.error('Error loading winners:', e);
-        container.innerHTML = `<div class="empty-msg" style="color:var(--red);">Хатогӣ: ${e.message}</div>`;
+      }catch(e){
+        console.error('Error loading winners:',e);
+        if(!cached)container.innerHTML=`<div class="empty-msg" style="color:var(--red)">Хатогӣ: ${esc(e.message)}</div>`;
       }
     }
 
