@@ -13,6 +13,35 @@
 <script src="config.js"></script>
 <script src="cache.js"></script>
 <script src="quotes-data.js"></script>
+
+<style>
+/* FINAL FIX V9 - еще меньше по вертикали, фото без пустого места справа */
+.hero-v4{ min-height:110px !important; margin:6px 8px !important; }
+.hero-v4-inner{ min-height:110px !important; }
+.hero-v4-left{ flex:0 0 56% !important; padding:10px 12px !important; }
+.hero-v4-right{ flex:0 0 44% !important; margin-left:0 !important; min-height:110px !important; position:relative; overflow:hidden; }
+.hero-v4-right img#heroImg{ width:100% !important; height:110px !important; object-fit:cover !important; object-position:center top !important; display:block; }
+.hero-quote-v4{ font-size:11.5px !important; line-height:1.3 !important; -webkit-line-clamp:3 !important; }
+.hero-kicker-v4{ font-size:9px !important; margin-bottom:4px !important; }
+
+/* Иконки более красивые - золотистый glow */
+.cat-icon-v4 img, .cat-icon-v4 svg{ filter:drop-shadow(0 1px 4px rgba(232,201,109,.35)) brightness(1.1); }
+.icon-btn-v4{ box-shadow:0 0 0 1px rgba(201,168,76,.18), 0 2px 10px rgba(0,0,0,.25); }
+.icon-btn-v4:active{ transform:scale(.92); box-shadow:0 0 0 2px rgba(201,168,76,.3); }
+
+/* Закладка - красивая и рабочая */
+.bm-v4{ width:28px !important; height:28px !important; background:rgba(255,255,255,.06) !important; border-radius:8px !important; display:grid !important; place-items:center !important; border:1px solid rgba(255,255,255,.06) !important; }
+.bm-v4.active{ background:rgba(232,201,109,.18) !important; border-color:rgba(232,201,109,.35) !important; box-shadow:0 0 10px rgba(232,201,109,.25) !important; }
+.bm-v4 img{ width:16px !important; height:16px !important; }
+
+/* Нижняя навигация оригинал - чуть крупнее и четче */
+.nav-bottom{ height:56px !important; }
+.kh-nav2 .nav-item svg{ width:22px !important; height:22px !important; }
+
+/* Уведомления мгновенно - без задержки */
+#notifModal{ backdrop-filter:blur(8px) !important; }
+</style>
+
 </head>
 <body>
 <div class="phone-wrapper">
@@ -245,8 +274,82 @@ async function loadPopularBooksCached(){ let books=CacheManager.get('kk_cache_po
 function renderPopularBooks(books){
   const popEl=$('popBooks'); const popSec=$('popSection'); if(!popEl) return; if(!books||!books.length){ popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>'; if(popSec) popSec.style.display='block'; return; }
   const html=books.slice(0,12).map((b)=>{ let folder=b.folder||'books'; folder=folder.replace(/^main\//,''); if(!folder.startsWith('books/')&&folder!=='books'){ if(b.book_id&&b.book_id.includes('/')){ const parts=b.book_id.split('/'); const file=parts.pop(); folder=parts.join('/').replace(/^main\//,''); if(!folder.startsWith('books/')) folder='books/'+folder; } else { folder='books/'+folder; } } let file=b.book_id?b.book_id.split('/').pop():'Китоб.pdf'; const name=b.book_title||file.replace(/\.pdf$/i,'')||'Китоб'; const totalHours=(b.total_minutes/60).toFixed(1); const url=`https://raw.githubusercontent.com/sharipovip/books/main/${enc(folder)}/${encodeURIComponent(file)}`; const coverList=coverCandidates(folder,file); const cover=b.cover_url||coverList[0]||''; const coversJson=JSON.stringify(coverList); const coverSrc=getCachedCoverDataUrl(cover)||cover; return `<div class="book-card-v3" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${coverSrc}" alt="" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" data-i="0" data-covers='${esc(coversJson)}' onerror="let a=JSON.parse(this.dataset.covers);let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="width:100%;height:100%;object-fit:cover"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,0.3);border-radius:8px;">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><div class="book-foot-v3"><div class="stars-v3">★ ${totalHours}с</div><div class="bm-v3">🔖</div></div></div></div>`; }).join('');
-  popEl.innerHTML=html; hydrateBookCardCovers(popEl); if(popSec) popSec.style.display='block';
+  popEl.innerHTML=html; hydrateBookCardCovers(popEl); if(popSec) popSec.style.display='block'; setTimeout(fetchAndUpdateRatings, 800);
 }
+
+async function fetchAndUpdateRatings(){
+  try{
+    const allBookEls=document.querySelectorAll('.book-card-v4');
+    const ids=Array.from(allBookEls).map(el=>{
+      // try to get book_id from onclick or data
+      const onclick=el.getAttribute('onclick')||'';
+      // parse url param? url is encoded in onclick
+      // Instead use cover-url data from img
+      const img=el.querySelector('img[data-cover-url]');
+      if(!img) return null;
+      const bookUrl=img.getAttribute('data-book-url')||'';
+      // extract book_id from cover or url? Use book_id from reading_sessions style: we have folder + file
+      // For simplicity, use book title as id? But API expects normalized book_id like "category/book.pdf" without books/ prefix
+      // We'll try to extract from data-covers or just use book_url parsing
+      // book_url is like https://raw.githubusercontent.com/sharipovip/books/main/books/.../file.jpg -> convert to books/.../file.pdf?
+      // For demo, we will collect ids from books.json data already loaded? Instead call batch stats for all visible books using their raw file path
+      const coverUrl=img.getAttribute('data-cover-url')||'';
+      // cover url -> books/.../file.jpg -> book_id should be books/.../file.pdf without domain
+      // Extract path after /books/main/
+      try{
+        const u=new URL(coverUrl);
+        const parts=u.pathname.split('/').filter(Boolean);
+        // parts: sharipovip, books, main, books, cat, file.jpg
+        const idx=parts.indexOf('main');
+        if(idx>=0){
+          const rest=parts.slice(idx+1).join('/').replace('/covers','/books').replace('.jpg','.pdf').replace('books/books','books');
+          // Actually covers/books/... -> books/...
+          let bookId=rest;
+          if(bookId.startsWith('covers/')) bookId=bookId.replace('covers/','').replace('covers/books/','books/');
+          if(!bookId.startsWith('books/')) bookId='books/'+bookId.replace(/^books\//,'');
+          return bookId;
+        }
+      }catch(e){}
+      return null;
+    }).filter(Boolean);
+    if(!ids.length) return;
+    // Use public batch endpoint (no auth needed)
+    const resp=await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats-batch', {
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify({book_ids:ids.slice(0,80)})
+    });
+    if(!resp.ok) throw new Error('stats failed');
+    const stats=await resp.json();
+    // stats is object {book_id: {avg_rating, ratings_count, likes...}}
+    document.querySelectorAll('.book-card-v4').forEach(el=>{
+      const img=el.querySelector('img[data-cover-url]');
+      if(!img) return;
+      const coverUrl=img.getAttribute('data-cover-url')||'';
+      try{
+        const u=new URL(coverUrl);
+        const parts=u.pathname.split('/').filter(Boolean);
+        const idx=parts.indexOf('main');
+        let bookId='';
+        if(idx>=0){
+          const rest=parts.slice(idx+1).join('/').replace('/covers','/books').replace('.jpg','.pdf').replace('books/books','books');
+          bookId=rest;
+          if(bookId.startsWith('covers/')) bookId=bookId.replace('covers/','');
+          if(!bookId.startsWith('books/')) bookId='books/'+bookId.replace(/^books\//,'');
+        }
+        const normalized=bookId.replace(/^books\//,'');
+        const stat=stats[normalized] || stats[bookId] || stats[bookId.replace(/^books\//,'')];
+        if(stat && stat.avg_rating){
+          const starEl=el.querySelector('.stars-v4');
+          if(starEl){
+            starEl.innerHTML=`<img src="icons/v3/star.svg" width="12" height="12" alt="*"> ${stat.avg_rating} <span style="font-size:9px;color:#6B7F9A">(${stat.ratings_count||0})</span>`;
+          }
+        }
+      }catch(e){}
+    });
+  }catch(e){ console.warn('fetch ratings fail', e); }
+}
+
 function loadContinue(){ try{ const all=JSON.parse(localStorage.getItem('kk_reader_progress')||'{}'); const cache=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'); const vals=Object.entries(all).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0)); if(!vals.length) return; const [url,p]=vals[0]; const list=[cache[url]?.cover,p.cover,...coverListFromPdfUrl(url)].filter(Boolean); const cov=list[0]||''; const name=p.name||'Китоб'; const sec=$('continueSection'); const card=$('continueCard'); if(!sec||!card) return; sec.style.display='block'; card.innerHTML=`<div class="continue-book-cover" style="background:linear-gradient(160deg,#1A3A5C,#2A5298);overflow:hidden">${cov?`<img src="${cov}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" onerror="const a=${esc(JSON.stringify(list))};let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.textContent='📗'}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`:'📗'}</div><div class="continue-info"><div class="continue-label-small">Давом додани хондани китоби</div><div class="continue-book-title">${esc(name)}</div><div class="continue-author">Саҳ. ${p.page||1} / ${p.pages||'?'} </div><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${p.pages?Math.round((p.page||1)/p.pages*100):0}%"></div></div></div><button class="continue-btn" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cov)}')">Давом</button>`; }catch(e){} }
 function coverListFromPdfUrl(u){ try{ const x=new URL(u); if(!x.hostname.includes('githubusercontent.com')) return []; const parts=x.pathname.split('/').filter(Boolean); if(parts.length<5) return []; const owner=parts[0],repo=parts[1],branch=parts[2],path=parts.slice(3); const file=decodeURIComponent(path.pop()||'').replace(/\.pdf$/i,'.jpg'); let folder=path.join('/'); let clean=folder.replace(/^books\//,''); const base=`https://raw.githubusercontent.com/${owner}/${repo}/${branch}`; return [`${base}/covers/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,`${base}/covers/books/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,`${base}/covers/${folder.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`]; }catch(e){ return []; } }
 function esc(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
