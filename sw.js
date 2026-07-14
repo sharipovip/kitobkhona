@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v25';
+const CACHE_NAME = 'kitobkhona-v26';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const LOCAL_FILES = [
   './config.js',
   './cache.js',
   './manifest.json',
+  './search-index.json',
   './offline.html',
   './favicon.ico',
   './icon-192.png',
