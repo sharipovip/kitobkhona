@@ -515,15 +515,24 @@ html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!import
 body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg) contrast(.94)}body:not(.light-reading) .page-slot{background:#121212!important}.light-reading .size-control{background:#E8E0D4}.light-reading .size-control button{color:#28384B}
 @media(max-width:365px){.top-rating .star{font-size:10px}.size-control{flex-basis:61px}.reader-top-bar{gap:2px!important}}
 </style>
+
+<style id="reader-round9-polish">
+html,body,.reader-wrapper,.reader-main{background:#0B0B0B!important}.reader-top-bar,.reader-progress-wrap{background:#0B0B0B!important}.top-rating .rating-label{font-size:8.5px!important;color:#C9A84C!important;white-space:nowrap;margin-right:3px!important}.reader-favorite-btn svg{display:block}.reader-favorite-btn.active{color:#E8C96D!important}
+.page-slot{overflow:hidden!important;background:#0B0B0B!important;border:0!important;outline:0!important}.page-slot canvas{border:0!important;outline:2px solid #0B0B0B!important;outline-offset:-1px;clip-path:inset(1px);transform:translateZ(0);backface-visibility:hidden}.page-container{perspective:1300px!important}.page-slot:after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 10px 0 18px rgba(0,0,0,.18),inset -3px 0 7px rgba(255,255,255,.025)}
+.reader-reactions{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:column;gap:9px}.reader-reactions .reaction-btn{width:38px;height:48px;border:1px solid rgba(255,255,255,.075);border-radius:18px;background:rgba(8,8,8,.42);backdrop-filter:blur(7px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(240,234,214,.68);padding:0}.reader-reactions .reaction-symbol{width:23px;height:23px;line-height:1;opacity:.76;display:grid;place-items:center}.reader-reactions .reaction-symbol svg{width:22px;height:22px;display:block}.reader-reactions .heart-reaction svg{width:24px;height:24px}.reader-reactions .dislike-symbol svg{transform:rotate(180deg)}.reader-reactions .cnt{font-size:9px;color:rgba(240,234,214,.58)}.reader-reactions .reaction-btn.active{color:#E8C96D;background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.25)}.reader-reactions .reaction-btn.active .cnt{color:#E8C96D}
+.page-entry{cursor:text!important}.page-entry input{width:34px;height:29px;border:1px solid rgba(201,168,76,.22);border-radius:9px;background:#171717;color:#E8C96D;text-align:center;font-size:11px;outline:0;-moz-appearance:textfield}.page-entry input::-webkit-inner-spin-button,.page-entry input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.page-entry input:focus{border-color:#C9A84C;box-shadow:0 0 0 3px rgba(201,168,76,.09)}
+.reader-social-tray{display:none!important}.light-reading .reader-reactions .reaction-btn{background:rgba(245,240,232,.66);color:#536276}.light-reading .page-slot canvas{filter:none!important;outline-color:#E9E3D7!important}.light-reading .page-slot{background:#E9E3D7!important}.light-reading .page-entry input{background:#EEE7DB;color:#6F5417}
+@media(max-width:355px){.top-rating .rating-label{display:none}.reader-reactions{right:5px}.reader-reactions .reaction-btn{width:34px;height:44px}}
+</style>
 </head>
 <body>
 <div class="reader-wrapper">
   
   <div class="reader-top-bar" id="topBar">
     <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
-    <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">⭐</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
+    <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
     <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
-    <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта">♡</button>
+    <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
     <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>
   </div>
 
@@ -542,31 +551,24 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
     <div class="page-nav-area page-nav-left" onclick="turnPage(-1)"></div>
     <div class="page-nav-area page-nav-right" onclick="turnPage(1)"></div>
     <div class="loading on" id="loading">
-      <div class="progress-ring" id="progressRing" style="--p:0">
-        <span id="loadPct">0%</span>
-      </div>
+      <div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div>
     </div>
+    <aside class="reader-reactions" aria-label="Вокунишҳо">
+      <button class="reaction-btn" data-reaction="like" title="Лайк"><span class="reaction-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="likeCount">0</span></button>
+      <button class="reaction-btn" data-reaction="love" title="Дӯст доштан"><span class="reaction-symbol heart-reaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="cnt" id="loveCount">0</span></button>
+      <button class="reaction-btn" data-reaction="dislike" title="Нописанд"><span class="reaction-symbol dislike-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="dislikeCount">0</span></button>
+    </aside>
   </main>
 
   
   <div class="reader-bottom-bar" id="bottomBar">
     <div class="reader-action-nav">
-      <button class="reader-nav-item" type="button" onclick="jumpToPagePrompt()"><span class="ico">☰</span><small>Саҳифа</small></button>
+      <label class="reader-nav-item page-entry"><input id="quickPageInput" type="number" inputmode="numeric" min="1" placeholder="1" onkeydown="if(event.key==='Enter'){event.preventDefault();quickGoPage()}" onblur="quickGoPage()"><small>Саҳифа</small></label>
       <button class="reader-nav-item" type="button" onclick="toggleReaderTheme()"><span class="ico" id="readerThemeIcon">☀</span><small>Мавзӯъ</small></button>
       <button class="reader-nav-item center brightness-dial" id="brightnessDial" type="button" aria-label="Дурахшонӣ"><span class="ico" id="brightnessDialValue">100%</span><small>Дурахшонӣ</small></button>
       <button class="reader-nav-item" type="button" onclick="shareCurrent()"><span class="ico">↗</span><small>Мубодила</small></button>
       <button class="reader-nav-item" type="button" onclick="downloadCurrent()"><span class="ico">⇩</span><small>Зеркашӣ</small></button>
     </div>
-    <details class="reader-social-tray">
-      <summary><span>Баҳодиҳӣ ва вокуниш</span><span id="pageInfo">— / —</span></summary>
-      <div class="reaction-bar">
-        <div class="reaction-group">
-          <button class="reaction-btn" data-reaction="like" title="Лайк">👍<span class="cnt" id="likeCount">0</span></button>
-          <button class="reaction-btn" data-reaction="love" title="Муҳаббат">❤️<span class="cnt" id="loveCount">0</span></button>
-          <button class="reaction-btn" data-reaction="dislike" title="Нописанд">👎<span class="cnt" id="dislikeCount">0</span></button>
-        </div>
-      </div>
-    </details>
   </div>
 
   <div class="panel settings-panel" id="settingsPanel">
@@ -1110,7 +1112,7 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
         nextSlot.className = 'page-slot next';
         requestAnimationFrame(() => {
           nextSlot.style.transition = 'transform 0.4s cubic-bezier(0.22,0.61,0.36,1), opacity 0.4s ease';
-          nextSlot.style.transform = direction === 1 ? 'translateX(-30%) scale(0.92)' : 'translateX(30%) scale(0.92)';
+          nextSlot.style.transformOrigin=direction===1?'left center':'right center';nextSlot.style.transform=direction===1?'translateX(-12%) rotateY(-22deg) scale(.96)':'translateX(12%) rotateY(22deg) scale(.96)';
           nextSlot.style.opacity = '0.3';
         });
         setTimeout(() => {
@@ -1125,7 +1127,7 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
       currentSlot.appendChild(cv);
       currentSlot.className = 'page-slot current';
       currentSlot.style.transition = 'none';
-      currentSlot.style.transform = direction === 1 ? 'translateX(20%) scale(0.95)' : 'translateX(-20%) scale(0.95)';
+      currentSlot.style.transformOrigin=direction===1?'right center':'left center';currentSlot.style.transform=direction===1?'translateX(8%) rotateY(13deg) scale(.97)':'translateX(-8%) rotateY(-13deg) scale(.97)';
       currentSlot.style.opacity = '0.5';
       requestAnimationFrame(() => {
         currentSlot.style.transition = 'transform 0.4s cubic-bezier(0.22,0.61,0.36,1), opacity 0.4s ease';
@@ -1136,7 +1138,7 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
       page = n;
       const pct=pages?Math.round(page/pages*100):0;
       $('pageInfo').textContent=page+' / '+pages;
-      $('topPageInfo').textContent=page+' / '+pages;
+      $('topPageInfo').textContent=page+' / '+pages;if($('quickPageInput')){$('quickPageInput').max=pages;$('quickPageInput').placeholder=String(page)};
       $('topProgressPct').textContent=pct+'%';
       $('topProgressFill').style.width=pct+'%';
       $('topProgressKnob').style.left=pct+'%';
@@ -1157,7 +1159,7 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
   }
 
   $('readerMain').addEventListener('click', e => {
-    if (e.target.closest('.page-nav-area')) return;
+    if (e.target.closest('.page-nav-area') || e.target.closest('.reader-reactions')) return;
     bars = !bars;
     $('topBar').classList.toggle('hidden', !bars);
     $('bottomBar').classList.toggle('hidden', !bars);
@@ -1182,7 +1184,7 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
       const pct = Math.min(1, Math.abs(dx) / 200);
       const offset = dx < 0 ? -pct * 40 : pct * 40;
       currentSlot.style.transition = 'none';
-      currentSlot.style.transform = `translateX(${offset}px) scale(${1 - pct * 0.05})`;
+      currentSlot.style.transformOrigin=dx<0?'left center':'right center';currentSlot.style.transform=`translateX(${offset*.35}px) rotateY(${dx<0?-pct*16:pct*16}deg) scale(${1-pct*.025})`;
       currentSlot.style.opacity = 1 - pct * 0.3;
     }
   }, { passive: true });
@@ -1242,15 +1244,14 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
   let brightnessValue=Number(localStorage.getItem('kk_reader_brightness')||100),dialStartX=0,dialStartValue=100,dialDragging=false;
   function applyDialBrightness(value){brightnessValue=Math.max(45,Math.min(120,Math.round(value)));setBrightness(brightnessValue);if($('brightnessDialValue'))$('brightnessDialValue').textContent=brightnessValue+'%'}
   function initBrightnessDial(){const dial=$('brightnessDial');if(!dial)return;applyDialBrightness(brightnessValue);dial.addEventListener('pointerdown',e=>{dialDragging=true;dialStartX=e.clientX;dialStartValue=brightnessValue;dial.setPointerCapture?.(e.pointerId)});dial.addEventListener('pointermove',e=>{if(dialDragging)applyDialBrightness(dialStartValue+(e.clientX-dialStartX)/1.5)});const stop=()=>dialDragging=false;dial.addEventListener('pointerup',stop);dial.addEventListener('pointercancel',stop);dial.addEventListener('wheel',e=>{e.preventDefault();applyDialBrightness(brightnessValue+(e.deltaY<0?5:-5))},{passive:false});dial.addEventListener('dblclick',()=>applyDialBrightness(100))}
-  function jumpToPagePrompt(){
-    if(!pages)return;const value=prompt('Рақами саҳифа (1–'+pages+')',String(page));if(value===null)return;const n=Math.max(1,Math.min(pages,parseInt(value,10)||page));renderPage(n,n>=page?1:-1)
-  }
+  function quickGoPage(){const input=$('quickPageInput');if(!input||!pages)return;const raw=input.value.trim();if(!raw)return;const n=Math.max(1,Math.min(pages,parseInt(raw,10)||page));input.value='';renderPage(n,n>=page?1:-1)}
+  function jumpToPagePrompt(){document.getElementById('quickPageInput')?.focus()}
   function toggleReaderTheme(){
     const next=document.body.classList.contains('light-reading')?'dark':'light';setTheme(next);const icon=$('readerThemeIcon');if(icon)icon.textContent=next==='light'?'🌙':'☀'
   }
   let readerFavorite=false;
   function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}
-  function paintReaderFavorite(){document.querySelectorAll('[data-reader-favorite]').forEach(btn=>{btn.classList.toggle('active',readerFavorite);const ico=btn.querySelector('.ico');if(ico)ico.textContent=readerFavorite?'♥':'♡';else btn.textContent=readerFavorite?'♥':'♡'})}
+  function paintReaderFavorite(){const outline='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>',filled=outline.replace('fill="none"','fill="currentColor"');document.querySelectorAll('[data-reader-favorite]').forEach(btn=>{btn.classList.toggle('active',readerFavorite);btn.innerHTML=readerFavorite?filled:outline;btn.setAttribute('aria-label',readerFavorite?'Аз дӯстдошта хориҷ кардан':'Ба дӯстдошта илова кардан')})}
   async function loadReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token)return;try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const id=canonicalFavoriteId();readerFavorite=(await r.json()).some(x=>String(x.book_id).replace(/^books\//i,'')===id);paintReaderFavorite()}catch(e){}}
   async function toggleReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
 
