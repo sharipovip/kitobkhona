@@ -80,14 +80,14 @@
       <div class="ozmun-scroll-v3" id="ozmunList"></div>
     </section>
 
+    <!-- Продолжить чтение — теперь сверху категории как просил -->
+    <div class="continue-section" id="continueSection" style="display:none"><div class="section-label-v3">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
+
     <!-- 3 Категории — как на фото один в один иконки -->
     <section class="cat-v3">
       <div class="sec-head-v3"><div class="sec-title-v3">Категорияҳо</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
     </section>
-
-    <!-- Продолжить чтение -->
-    <div class="continue-section" id="continueSection" style="display:none"><div class="section-label-v3">📖 Давом додани хондан</div><div class="continue-card" id="continueCard"></div></div>
 
     <!-- 4 Китобҳои Пешвои миллат -->
     <section class="books-v3" id="pesvoSection" style="display:none">
@@ -155,7 +155,7 @@ function showAnnouncementTop(text){
   banner.style.display='flex';
   requestAnimationFrame(()=>{ banner.classList.add('show'); });
   // авто скрытие через 6 сек красиво
-  setTimeout(()=>hideAnnouncementTop(), 6000);
+  setTimeout(()=>hideAnnouncementTop(), 20000);
 }
 async function loadAnnouncementCached(){
   let data=CacheManager.get(CacheManager.KEYS.ANNOUNCEMENT);

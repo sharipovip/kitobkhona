@@ -1503,3 +1503,110 @@ body:before {
 .bnav-center{width:54px;height:54px;background:linear-gradient(135deg,#E8C96D,#C9982E);border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 18px rgba(232,201,109,.35);margin-top:-14px;border:3px solid #0A1222;color:#0A1222}
 .bnav-center-ico{font-size:22px}
 
+
+/* FIX V6 - по последним замечаниям: книги не открывались, уведомления по краям, ситат меньше, иконки без фото, скроллбар */
+html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-style:none; }
+.main-content::-webkit-scrollbar, .phone-wrapper::-webkit-scrollbar, body::-webkit-scrollbar{ width:0;height:0;display:none; }
+
+/* Hero — меньше по вертикали, фото оригинал не обрезается, половина текста половина фото с полупрозрачным окном слева */
+.hero-v3{
+  margin:8px 8px !important;
+  min-height:132px !important;
+  border-radius:16px !important;
+  padding:0 !important;
+  overflow:hidden !important;
+}
+.hero-v3-inner{
+  min-height:132px !important;
+  display:flex !important;
+  flex-direction:row !important;
+}
+.hero-v3-left{
+  flex:0 0 52% !important;
+  padding:12px 12px !important;
+  background:linear-gradient(90deg, #0F1E32 0%, #0F1E32 55%, rgba(15,30,50,0.85) 72%, rgba(15,30,50,0.4) 88%, transparent 100%) !important;
+  z-index:3 !important;
+  justify-content:center !important;
+}
+.hero-kicker-v3{font-size:10px !important;margin-bottom:6px !important}
+.hero-quote-v3{font-size:12.5px !important;line-height:1.35 !important;min-height:auto !important;-webkit-line-clamp:4 !important}
+.hero-v3-right{
+  flex:0 0 48% !important;
+  min-height:132px !important;
+  margin-left:-18px !important;
+  position:relative !important;
+  overflow:hidden !important;
+  background:#0A1222 !important;
+}
+.hero-v3-right img#heroImg{
+  width:100% !important;height:100% !important;
+  object-fit:cover !important;object-position:top center !important;
+  border-radius:0 !important;
+}
+.president-photo-wrap-new, .president-photo-wrap, .president-photo{
+  width:100% !important;height:100% !important;
+  border-radius:0 !important;
+  margin:0 !important;
+  border:none !important;
+  box-shadow:none !important;
+}
+.president-photo-wrap::before, .president-photo-wrap::after{
+  display:none !important;
+}
+.hero-flag-v3, .hero-shadow-v3{
+  position:absolute !important;inset:0 !important;
+  background:linear-gradient(90deg, #0F1E32 0%, transparent 50%) !important;
+  z-index:2 !important;
+  opacity:1 !important;
+}
+.hero-dots-v3{display:none !important} /* убран анимация точек */
+.hero-author-v3{display:none !important} /* убраны тире и надпись Эмомали */
+
+/* Расстояния между блоками меньше */
+.sec-head-v3{padding:12px 12px 6px !important}
+.ozmun-v3{margin:4px 0 !important}
+.ozmun-scroll-v3{padding:4px 12px 10px !important}
+.cat-v3{margin:4px 0 !important}
+.cat-scroll-v3{padding:0 12px 8px !important}
+.books-v3{margin:6px 0 !important}
+.books-scroll-v3{padding:0 12px 10px !important}
+
+/* Озмун — качественнее оригинальные фото, круглая с золотым glow */
+.ozmun-circle-v3{
+  width:62px !important;height:62px !important;
+  border:2.5px solid #E8C96D !important;
+  box-shadow:0 6px 18px rgba(0,0,0,.35),0 0 0 4px rgba(201,168,76,.12) !important;
+}
+
+/* Уведомления — модалка как раньше в центре для смартфона, а не по краям */
+#notifModal{
+  position:fixed !important;inset:0 !important;
+  display:flex !important;align-items:center !important;justify-content:center !important;
+  padding:20px !important;
+  background:rgba(0,0,0,.6) !important;
+}
+#notifModal > div{
+  margin-top:0 !important;
+  max-width:360px !important;
+  width:100% !important;
+}
+
+/* Книги открываются — оставляем оригинальный book-card-v3 без изменений, но НАВ только у новых */
+.book-tag-v3{display:none !important}
+#newSection .book-tag-v3{display:flex !important}
+
+/* Иконки без фото — используем предыдущую технику SVG inline, без папки v3 */
+.icon-btn-v4, .new-icon-btn-v3{ background:rgba(255,255,255,.06) !important; border:1px solid rgba(255,255,255,.08) !important; }
+.icon-btn-v4 img, .new-icon-btn-v3 img{display:none !important} /* скрываем если остались img из v3 папки */
+.icon-btn-v4 svg, .new-icon-btn-v3 svg{display:block !important}
+
+/* Объявление вверху где КИТОБХОНА — 20 сек с красивой анимацией */
+.announce-top, .announce-top-v4{
+  position:sticky !important;top:0 !important;z-index:100 !important;
+  display:none; background:linear-gradient(135deg,#1A3A5C,#2A5298) !important;
+  color:#fff !important; padding:10px 14px !important;
+  transform:translateY(-100%); opacity:0;
+  transition:transform .45s cubic-bezier(.34,1.56,.64,1), opacity .35s ease !important;
+}
+.announce-top.show, .announce-top-v4.show{ transform:translateY(0) !important; opacity:1 !important; }
+
