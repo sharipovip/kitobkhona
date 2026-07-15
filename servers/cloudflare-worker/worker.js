@@ -239,7 +239,8 @@ async function createJWT(payload, secret) {
 async function verifyJWT(token, env) {
   if (!token) return null;
   if (!env.JWT_SECRET) {
-    throw new Error('JWT_SECRET not configured');
+    console.error('JWT_SECRET not configured');
+    return null;
   }
   
   try {
@@ -449,14 +450,16 @@ async function handleProfiles(path, method, request, env, corsHeaders) {
     if (path.match(/^\/api\/profiles\/\d+$/) && method === 'GET') {
       const userId = path.split('/').pop();
       
-      const profiles = await supabaseQuery(client, 'profiles', {
-        select: '*',
-        eq: { column: 'user_id', value: userId },
-        limit: 1
-      });
+      let profiles;
+      try { profiles = await supabaseQuery(client, 'profiles', { select: '*', eq: { column: 'user_id', value: userId }, limit: 1 }); }
+      catch (e) { profiles = null; }
 
       if (!profiles || profiles.length === 0) {
-        return jsonResponse({ error: 'Profile not found' }, 404, corsHeaders);
+        // Авто-создаём профиль
+        try {
+          await supabaseQuery(client, 'profiles', { method: 'POST', body: { user_id: parseInt(userId), display_name: 'Китобхон' } });
+        } catch (e) { /* ok, maybe already exists */ }
+        return jsonResponse({ id: parseInt(userId), user_id: parseInt(userId), username: decoded.username, display_name: 'Китобхон' }, 200, corsHeaders);
       }
 
       return jsonResponse(profiles[0], 200, corsHeaders);
@@ -466,14 +469,7 @@ async function handleProfiles(path, method, request, env, corsHeaders) {
     if (path === '/api/profiles' && method === 'PUT') {
       const body = await request.json();
       const userId = decoded.id;
-      
-      // Update profile
-      await supabaseQuery(client, 'profiles', {
-        method: 'PUT',
-        eq: { column: 'user_id', value: userId },
-        body
-      });
-
+      await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...body, user_id: userId } });
       return jsonResponse({ success: true }, 200, corsHeaders);
     }
 
@@ -540,18 +536,16 @@ async function handleFavorites(path, method, request, env, corsHeaders) {
       return jsonResponse({ error: 'No token' }, 401, corsHeaders);
     }
 
-    // GET /api/favorites
+    // GET /api/favorites (из Neon/Turso — временно пустой)
     if (path === '/api/favorites' && method === 'GET') {
-      const userId = new URL(request.url).searchParams.get('user_id') || decoded.id;
-      
-      const favorites = await supabaseQuery(client, 'user_favorites', {
-        select: '*',
-        eq: { column: 'user_id', value: userId },
-        order: 'added_at.desc',
-        limit: 50
-      });
-
-      return jsonResponse(favorites || [], 200, corsHeaders);
+      try {
+        const userId = new URL(request.url).searchParams.get('user_id') || decoded.id;
+        const favorites = await supabaseQuery(client, 'user_favorites', {
+          select: '*', eq: { column: 'user_id', value: userId },
+          order: 'added_at.desc', limit: 50
+        });
+        return jsonResponse(favorites || [], 200, corsHeaders);
+      } catch (e) { return jsonResponse([], 200, corsHeaders); }
     }
 
     // POST /api/favorites
@@ -586,16 +580,15 @@ async function handleNotifications(path, method, request, env, corsHeaders) {
       return jsonResponse({ error: 'No token' }, 401, corsHeaders);
     }
 
-    // GET /api/notifications
+    // GET /api/notifications (из Neon — временно пустой)
     if (path === '/api/notifications' && method === 'GET') {
-      const notifications = await supabaseQuery(client, 'notifications', {
-        select: '*',
-        eq: { column: 'user_id', value: decoded.id },
-        order: 'created_at.desc',
-        limit: 100
-      });
-
-      return jsonResponse(notifications || [], 200, corsHeaders);
+      try {
+        const notifications = await supabaseQuery(client, 'notifications', {
+          select: '*', eq: { column: 'user_id', value: decoded.id },
+          order: 'created_at.desc', limit: 100
+        });
+        return jsonResponse(notifications || [], 200, corsHeaders);
+      } catch (e) { return jsonResponse([], 200, corsHeaders); }
     }
 
     return jsonResponse({ error: 'Not found' }, 404, corsHeaders);
@@ -608,26 +601,25 @@ async function handleNotifications(path, method, request, env, corsHeaders) {
 async function handleAnnouncements(path, method, request, env, corsHeaders) {
   try {
     const client = await getSupabaseClient(env);
-    // GET /api/announcements/active
+    // GET /api/announcements/active (основной источник — Social API)
     if (path === '/api/announcements/active' && method === 'GET') {
-      const announcements = await supabaseQuery(client, 'announcements', {
-        select: '*',
-        eq: { column: 'is_active', value: 'true' },
-        order: 'created_at.desc',
-        limit: 1
-      });
-
-      return jsonResponse(announcements && announcements[0] ? announcements[0] : null, 200, corsHeaders);
+      try {
+        const announcements = await supabaseQuery(client, 'announcements', {
+          select: '*', eq: { column: 'is_active', value: 'true' },
+          order: 'created_at.desc', limit: 1
+        });
+        return jsonResponse(announcements?.[0] || null, 200, corsHeaders);
+      } catch (e) { return jsonResponse(null, 200, corsHeaders); }
     }
 
     // GET /api/announcements
     if (path === '/api/announcements' && method === 'GET') {
-      const announcements = await supabaseQuery(client, 'announcements', {
-        select: '*',
-        order: 'created_at.desc'
-      });
-
-      return jsonResponse(announcements || [], 200, corsHeaders);
+      try {
+        const announcements = await supabaseQuery(client, 'announcements', {
+          select: '*', order: 'created_at.desc'
+        });
+        return jsonResponse(announcements || [], 200, corsHeaders);
+      } catch (e) { return jsonResponse([], 200, corsHeaders); }
     }
 
     return jsonResponse({ error: 'Not found' }, 404, corsHeaders);

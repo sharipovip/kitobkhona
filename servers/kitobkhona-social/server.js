@@ -544,7 +544,7 @@ app.delete('/api/posts/:postId/comments/:commentId', authenticateToken, async (r
 app.get('/api/book-reactions/:bookId', authenticateToken, async (req, res) => {
   const bookId = normalizeBookId(req.params.bookId), userId = req.user.id;
   try {
-    const result = await tursoPosts.execute({ sql: `SELECT reaction, rating FROM book_reactions WHERE user_id = ? AND regexp_replace(book_id, '^books/', '') = $2`, args: [userId, bookId] });
+    const result = await tursoPosts.execute({ sql: `SELECT reaction, rating FROM book_reactions WHERE user_id = ? AND LTRIM(book_id, 'books/') = ?`, args: [userId, bookId] });
     if (result.rows.length === 0) return res.json({ reaction: null, rating: null });
     res.json((result.rows||[])[0]);
   } catch (e) { console.error('Get book reaction error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
@@ -553,7 +553,7 @@ app.get('/api/book-reactions/:bookId', authenticateToken, async (req, res) => {
 app.get('/api/book-stats/:bookId', async (req, res) => {
   const bookId = normalizeBookId(req.params.bookId);
   try {
-    const stats = await tursoPosts.execute({ sql: `SELECT COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE regexp_replace(book_id, '^books/', '') = $1`, args: [bookId] });
+    const stats = await tursoPosts.execute({ sql: `SELECT COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE LTRIM(book_id, 'books/') = ?`, args: [bookId] });
     const row = stats.rows[0];
     res.json({ likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) });
   } catch (e) { console.error('Get book stats error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
@@ -599,11 +599,14 @@ app.post('/api/book-reactions/batch', authenticateToken, async (req, res) => {
   const { book_ids } = req.body, userId = req.user.id;
   if (!book_ids || !Array.isArray(book_ids) || book_ids.length === 0) return res.json({ stats: {}, user_reactions: {} });
   try {
-    const statsResult = await tursoPosts.execute({ sql: `SELECT book_id, COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE book_id = ANY($1) GROUP BY book_id`, args: [book_ids] });
-    const stats = {}; statsResult.rows.forEach(row => { stats[row.book_id] = { likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) }; });
-    const userResult = await tursoPosts.execute({ sql: `SELECT book_id, reaction, rating FROM book_reactions WHERE user_id = $1 AND book_id = ANY($2)`, args: [userId, book_ids] });
+    const bPlaceholders = book_ids.map(() => '?').join(', ');
+    const bStatsResult = await tursoPosts.execute({ sql: `SELECT book_id, COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE book_id IN (${bPlaceholders}) GROUP BY book_id`, args: book_ids });
+    const bstats = {}; bStatsResult.rows.forEach(row => { bstats[row.book_id] = { likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) }; });
+    const uPlaceholders = book_ids.map(() => '?').join(', ');
+    const uArgs = [userId, ...book_ids];
+    const userResult = await tursoPosts.execute({ sql: `SELECT book_id, reaction, rating FROM book_reactions WHERE user_id = ? AND book_id IN (${uPlaceholders})`, args: uArgs });
     const userReactions = {}; userResult.rows.forEach(row => { userReactions[row.book_id] = { reaction: row.reaction, rating: row.rating }; });
-    res.json({ stats, user_reactions: userReactions });
+    res.json({ stats: bstats, user_reactions: userReactions });
   } catch (e) { console.error('Batch reactions error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });
 
