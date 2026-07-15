@@ -1,13 +1,20 @@
+// ═══════════════════════════════════════════════════════════════
+// kitobkhona/config.js — ФИНАЛЬНАЯ ВЕРСИЯ
+// Обновлено: 2026-07-15
+// Все серверы подключены и работают вместе
+// ═══════════════════════════════════════════════════════════════
 
 const KITOB_CONFIG = {
   // ═══ СЕРВЕР #1: Auth + Profiles (Cloudflare Worker) ═══
   API_AUTH: 'https://kitobkhona-auth-worker.sinamostudio.workers.dev',
   
-  // ═══ СЕРВЕР #2: Chats + Posts + WebSocket (Render) ═══
+  // ══ СЕРВЕР #2: Chats + Posts + Book Stats (Render - НОВЫЙ) ═══
   API_SOCIAL: 'https://kitobkhona-social.onrender.com',
+  
+  // ═══ СЕРВЕР #3: WebSocket (Render) ═══
   API_WS: 'wss://kitobkhona-chat.onrender.com',
   
-  // ═══ Supabase (статика: книги, поиск) ══
+  // ═══ Supabase (статика: книги, поиск) ═══
   SUPABASE_REST: 'https://dwkdzfqooprxytlepaoo.supabase.co/rest/v1',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI',
   
@@ -24,10 +31,49 @@ const KITOB_CONFIG = {
   FIREBASE_VAPID: 'BNhCnlt0kKCnYpeBGqYGRHikPqXCkpkt3Fj5G7X2XDM8EV7qj3xLtDQa8PYh_Sp3g21CLCdz7GoBILxMjnBFUJM'
 };
 
-// Для обратной совместимости - старый код использует NEON_API_BASE
+// ═══ АВТОМАТИЧЕСКАЯ МАРШРУТИЗАЦИЯ ═══
+// Все API запросы автоматически идут на правильный сервер
+
+function getApiUrl(endpoint) {
+  const path = '/' + endpoint.replace(/^\//, '');
+  
+  // Auth API → Cloudflare Worker
+  const authPrefixes = [
+    '/api/auth', '/api/profiles', '/api/avatar',
+    '/api/reading-sessions', '/api/favorites',
+    '/api/notifications', '/api/announcements',
+    '/api/push', '/api/admin', '/api/winners',
+    '/api/popular-books', '/api/feedbacks', '/api/support'
+  ];
+  
+  for (const prefix of authPrefixes) {
+    if (path.startsWith(prefix)) {
+      return KITOB_CONFIG.API_AUTH + path;
+    }
+  }
+  
+  // Social API → Render (новый сервер)
+  const socialPrefixes = [
+    '/api/messages', '/api/friends', '/api/posts',
+    '/api/book-reactions', '/api/book-stats',
+    '/api/book-stats-batch', '/api/reports',
+    '/api/typing', '/api/users/block',
+    '/api/chats', '/api/daily-words', '/api/chat-summary'
+  ];
+  
+  for (const prefix of socialPrefixes) {
+    if (path.startsWith(prefix)) {
+      return KITOB_CONFIG.API_SOCIAL + path;
+    }
+  }
+  
+  // По умолчанию → Auth API
+  return KITOB_CONFIG.API_AUTH + path;
+}
+
+// ══ ОБРАТНАЯ СОВМЕСТИМОСТЬ ═══
+// Старый код продолжает работать
 KITOB_CONFIG.NEON_API_BASE = KITOB_CONFIG.API_AUTH;
-
-
 
 const APP_VERSION = '1.0.0';
 
@@ -35,7 +81,7 @@ const KKH_THEMES = {
   dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
   light: { label: 'Рӯз', icon: '☀️', bg: '#F5F0E8', bg2: '#EDE5D6', card: '#FFFDF7', card2: '#F4EBDD', text: '#243247', cream: '#243247', muted: '#667085', gold: '#A47718', gold2: '#C99D32', line: 'rgba(122,88,18,.2)', red: '#B94A43', green: '#2F8F5B' },
   gold: { label: 'Тиллоӣ', icon: '✨', bg: '#21170D', bg2: '#302112', card: '#422B13', card2: '#573A17', text: '#FFF1C7', cream: '#FFF1C7', muted: '#D5B77A', gold: '#E2A93B', gold2: '#FFD979', line: 'rgba(226,169,59,.3)', red: '#E4775F', green: '#7ECF8B' },
-  flag: { label: 'Парчам', icon: '🇹🇯', bg: '#160F18', bg2: '#241725', card: '#30202A', card2: '#3A2630', text: '#FFF6EE', cream: '#FFF6EE', muted: '#D8B7B2', gold: '#E3B341', gold2: '#F4D27B', line: 'rgba(217,72,70,.3)', red: '#D94846', green: '#4DAA74' },
+  flag: { label: 'Парчам', icon: '🇯', bg: '#160F18', bg2: '#241725', card: '#30202A', card2: '#3A2630', text: '#FFF6EE', cream: '#FFF6EE', muted: '#D8B7B2', gold: '#E3B341', gold2: '#F4D27B', line: 'rgba(217,72,70,.3)', red: '#D94846', green: '#4DAA74' },
   book: { label: 'Китоб', icon: '📖', bg: '#1B120D', bg2: '#2A1B13', card: '#3A2418', card2: '#4B3020', text: '#F7E6C5', cream: '#F7E6C5', muted: '#C9AD8C', gold: '#D8A64B', gold2: '#F0C878', line: 'rgba(216,166,75,.27)', red: '#C86A55', green: '#6CA878' }
 };
 const KKH_THEME_ORDER = ['dark', 'light', 'gold', 'flag', 'book'];
@@ -218,7 +264,7 @@ function createSettingsModal() {
     ">
       <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
         <h2 style="margin: 0; font-size: 20px; color: var(--gold, #C9A84C);">⚙️ Настройка</h2>
-        <button id="closeSettingsBtn" style="background: none; border: none; color: var(--muted, #A8B8CC); font-size: 24px; cursor: pointer;">✕</button>
+        <button id="closeSettingsBtn" style="background: none; border: none; color: var(--muted, #A8B8CC); font-size: 24px; cursor: pointer;"></button>
       </div>
       <div style="display: flex; flex-direction: column; gap: 12px;">
         <button class="settings-item" data-action="theme" style="
@@ -236,7 +282,7 @@ function createSettingsModal() {
           width: 100%;
           text-align: left;
         ">
-          <span style="font-size: 20px;">🌓</span>
+          <span style="font-size: 20px;"></span>
           <span>День / Ночь</span>
         </button>
         <button class="settings-item" data-action="clearcache" style="
@@ -290,7 +336,7 @@ function createSettingsModal() {
           width: 100%;
           text-align: left;
         ">
-          <span style="font-size: 20px;">ℹ️</span>
+          <span style="font-size: 20px;">️</span>
           <span>О программе</span>
         </button>
       </div>
@@ -379,7 +425,7 @@ function ensureDialogContainer() {
       <div id="kitobkhona-dialog-message" style="padding:18px 22px 8px;font-size:15px;line-height:1.6;color:#E8E7DC;min-height:60px;"></div>
       <div style="display:flex;justify-content:flex-end;gap:12px;padding:16px 20px 20px;background:rgba(255,255,255,0.02);">
         <button id="kitobkhona-dialog-cancel" style="border:none;border-radius:999px;padding:10px 16px;background:rgba(255,255,255,0.08);color:#F0EAD6;cursor:pointer;font-size:14px;">Не</button>
-        <button id="kitobkhona-dialog-ok" style="border:none;border-radius:999px;padding:10px 16px;background:#C9A84C;color:#0D1B2A;cursor:pointer;font-size:14px;font-weight:700;">Ҳа</button>
+        <button id="kitobkhona-dialog-ok" style="border:none;border-radius:999px;padding:10px 16px;background:#C9A84C;color:#0D1B2A;cursor:pointer;font-size:14px;font-weight:700;">а</button>
       </div>
     </div>
   `;
@@ -641,7 +687,7 @@ const AutoLogin = {
       this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
       (async () => {
         try {
-          const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
+          const r = await fetchWithTimeout(getApiUrl('/api/profiles/' + savedUserId), { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
           if (!r.ok) {
             localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
             localStorage.removeItem('kk_guest_password');
@@ -669,20 +715,20 @@ const AutoLogin = {
         localStorage.setItem('kk_guest_password', password);
       }
       const email = username + '@guest.kitobkhona.tj';
-      const response = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/register', {
+      const response = await fetchWithTimeout(getApiUrl('/api/auth/register'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password, display_name: 'Меҳмон', is_temporary: true })
       }, 8000);
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.token) {
         if (response.status === 409) {
-          const loginResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
+          const loginResp = await fetchWithTimeout(getApiUrl('/api/auth/login'), {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
           }, 8000);
           const loginData = await loginResp.json().catch(() => ({}));
           if (loginResp.ok && loginData.token) {
-            const profileResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + loginData.userId, {
+            const profileResp = await fetchWithTimeout(getApiUrl('/api/profiles/' + loginData.userId), {
               headers: { 'Authorization': 'Bearer ' + loginData.token }
             }, 5000);
             if (profileResp.ok) {
@@ -712,7 +758,7 @@ const AutoLogin = {
   },
   loginWithCredentials: async function(username, password) {
     try {
-      const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
+      const r = await fetchWithTimeout(getApiUrl('/api/auth/login'), {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
       }, 8000);
@@ -778,7 +824,7 @@ const ChatAPI = {
   getFriends: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await fetchWithTimeout(getApiUrl('/api/friends'), { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
     const data = await r.json();
     return data.map(f => f.id);
@@ -786,14 +832,14 @@ const ChatAPI = {
   getFriendRequests: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await fetchWithTimeout(getApiUrl('/api/friends/requests'), { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
     return await r.json();
   },
   acceptFriendRequestByUser: async function(fromUserId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
+    const r = await fetchWithTimeout(getApiUrl('/api/friends/accept'), {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from_user: fromUserId })
     }, 8000);
@@ -803,7 +849,7 @@ const ChatAPI = {
   declineFriendRequest: async function(requestId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/' + requestId, {
+    const r = await fetchWithTimeout(getApiUrl('/api/friends/requests/' + requestId), {
       method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
     }, 8000);
     if (!r.ok) throw new Error('Ошибка при отклонении заявки: ' + r.status);
@@ -812,7 +858,7 @@ const ChatAPI = {
   getMessages: async function(user1, user2) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const url = KITOB_CONFIG.NEON_API_BASE + '/api/messages?user1=' + user1 + '&user2=' + user2;
+    const url = getApiUrl('/api/messages') + '?user1=' + user1 + '&user2=' + user2;
     const r = await fetchWithTimeout(url, { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения сообщений: ' + r.status);
     return await r.json();
@@ -820,7 +866,7 @@ const ChatAPI = {
   getChatSummary: async function() {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/chat-summary', {
+    const r = await fetchWithTimeout(getApiUrl('/api/chat-summary'), {
       headers: { 'Authorization': 'Bearer ' + token },
       cache: 'no-store'
     }, 8000);
@@ -830,7 +876,7 @@ const ChatAPI = {
   markMessagesRead: async function(peerId) {
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return null;
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/messages/read', {
+    const r = await fetchWithTimeout(getApiUrl('/api/messages/read'), {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ peer_id: peerId })
@@ -841,7 +887,7 @@ const ChatAPI = {
   sendMessage: async function(senderId, receiverId, text) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
+    const r = await fetchWithTimeout(getApiUrl('/api/messages'), {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ receiver_id: receiverId, text })
     }, 8000);
@@ -851,7 +897,7 @@ const ChatAPI = {
   sendReport: async function(reporterId, reportedUserId, reason) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/reports', {
+    const r = await fetchWithTimeout(getApiUrl('/api/reports'), {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ reported_user_id: reportedUserId, reason })
     }, 8000);
@@ -864,14 +910,14 @@ const NEON_API = {
   getProfile: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + userId, { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } }, 8000);
+    const r = await fetchWithTimeout(getApiUrl('/api/profiles/' + userId), { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } }, 8000);
     if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || ('Ошибка профиля: ' + r.status)); }
     return await r.json();
   },
   updateProfile: async function(profileData) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles', {
+    const r = await fetchWithTimeout(getApiUrl('/api/profiles'), {
       method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(profileData)
     }, 8000);
@@ -883,7 +929,7 @@ const NEON_API = {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
     if (!token || !userId) return [];
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(getApiUrl('/api/reading-sessions') + '?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
     if (!r.ok) return [];
     return await r.json();
   },
@@ -891,7 +937,7 @@ const NEON_API = {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
     if (!token || !userId) return [];
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(getApiUrl('/api/favorites') + '?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
     if (!r.ok) return [];
     return await r.json();
   },
@@ -899,12 +945,12 @@ const NEON_API = {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
     if (!token || !userId) return [];
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/user-achievements?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(getApiUrl('/api/user-achievements') + '?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
     if (!r.ok) return [];
     return await r.json();
   },
   checkResetEligibility: async function(identifier) {
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/check-reset-eligibility', {
+    const r = await fetchWithTimeout(getApiUrl('/api/auth/check-reset-eligibility'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, device_fp: getDeviceFingerprint() })
     }, 8000);
@@ -913,7 +959,7 @@ const NEON_API = {
     return data;
   },
   resetPassword: async function(identifier, code, newPassword) {
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/reset-password', {
+    const r = await fetchWithTimeout(getApiUrl('/api/auth/reset-password'), {
       method: 'POST', headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ identifier, code, newPassword, device_fp: getDeviceFingerprint() })
     }, 8000);
@@ -944,7 +990,7 @@ async function getNotifications() {
   const token = localStorage.getItem('kk_token');
   if (!token) return [];
   try {
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/notifications', {
+    const r = await fetchWithTimeout(getApiUrl('/api/notifications'), {
       headers: { 'Authorization': 'Bearer ' + token }
     }, 5000);
     if (!r.ok) return [];
@@ -959,7 +1005,7 @@ async function markNotificationRead(notificationId) {
   const token = localStorage.getItem('kk_token');
   if (!token) return;
   try {
-    await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/notifications/' + notificationId + '/read', {
+    await fetchWithTimeout(getApiUrl('/api/notifications/' + notificationId + '/read'), {
       method: 'PUT', headers: { 'Authorization': 'Bearer ' + token }
     }, 5000);
   } catch (e) {
@@ -1088,7 +1134,7 @@ async function registerFcmToken(recoveryAttempt = false) {
       return currentToken;
     }
 
-    const resp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/push/register', {
+    const resp = await fetchWithTimeout(getApiUrl('/api/push/register'), {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -1108,7 +1154,6 @@ async function registerFcmToken(recoveryAttempt = false) {
       const deleted = await deleteIndexedDatabaseSafe('firebase-messaging-database');
       localStorage.removeItem('kk_fcm_token');
       if (!recoveryAttempt && deleted) return registerFcmToken(true);
-      // Known Firefox IndexedDB schema problem: push will retry on the next page load.
       return null;
     }
     console.warn('registerFcmToken error:', e);
@@ -1173,7 +1218,7 @@ initFirebaseMessaging = async function() { await _oldInitFM(); initFcmForeground
 
 async function getActiveAnnouncement() {
   try {
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/announcements/active', {}, 4000);
+    const r = await fetchWithTimeout(getApiUrl('/api/announcements/active'), {}, 4000);
     if (!r.ok) return null;
     return await r.json();
   } catch (e) {
@@ -1184,7 +1229,7 @@ async function getActiveAnnouncement() {
 
 async function getAdminQuotes() {
   try {
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/admin/quotes', {}, 5000);
+    const r = await fetchWithTimeout(getApiUrl('/api/admin/quotes'), {}, 5000);
     if (!r.ok) return null;
     return await r.json();
   } catch (e) {
@@ -1252,6 +1297,7 @@ function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url |
   function readQueue(){try{const v=JSON.parse(localStorage.getItem(queueKey)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
   function writeQueue(v){try{localStorage.setItem(queueKey,JSON.stringify(v.slice(-50)))}catch(e){} }
   function schedule(){if(timer)clearTimeout(timer);const n=readQueue().sort((a,b)=>Number(a.readyAt||0)-Number(b.readyAt||0))[0];if(n)timer=setTimeout(flush,Math.max(1000,Math.min(86400000,Number(n.readyAt||Date.now())-Date.now())))}
-  async function flush(){if(running||!localStorage.getItem('kk_token'))return;running=true;try{const now=Date.now(),wait=[];for(const x of readQueue()){if(Number(x.readyAt||0)>now){wait.push(x);continue}try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({book_id:x.book_id,book_title:x.book_title||'Китоб',duration:Math.max(0,Math.round(Number(x.duration)||0)),status:x.status||'completed',pages_read:Math.max(0,Number(x.pages_read)||0)})},8000);if(!r.ok)throw Error('HTTP '+r.status)}catch(e){wait.push({...x,readyAt:Date.now()+60000})}}writeQueue(wait)}finally{running=false;schedule()}}
+  async function flush(){if(running||!localStorage.getItem('kk_token'))return;running=true;try{const now=Date.now(),wait=[];for(const x of readQueue()){if(Number(x.readyAt||0)>now){wait.push(x);continue}try{const r=await fetchWithTimeout(getApiUrl('/api/reading-sessions'),{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({book_id:x.book_id,book_title:x.book_title||'Китоб',duration:Math.max(0,Math.round(Number(x.duration)||0)),status:x.status||'completed',pages_read:Math.max(0,Number(x.pages_read)||0)})},8000);if(!r.ok)throw Error('HTTP '+r.status)}catch(e){wait.push({...x,readyAt:Date.now()+60000})}}writeQueue(wait)}finally{running=false;schedule()}}
   window.KKReadingQueue={flush};window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(flush,1000),{once:true});else setTimeout(flush,1000)
 })();
+
