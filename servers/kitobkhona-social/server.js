@@ -726,6 +726,7 @@ app.get('/api/winners', async (req, res) => {
     res.json({ top3, top100 });
   } catch (e) { console.error('Winners error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 
+});
 // ══════════ ANNOUNCEMENTS ══════════
 app.get('/api/announcements/active', async (req, res) => {
   try {
