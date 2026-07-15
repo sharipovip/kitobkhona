@@ -143,16 +143,19 @@ export default {
 // ═══ HELPER FUNCTIONS ══
 
 async function getSupabaseClient(env) {
-  if (!env.SUPABASE_URL || !env.SUPABASE_KEY) {
-    throw new Error('Supabase not configured');
+  // Серверные операции (register/login) требуют service_role ключ
+  const key = env.SUPABASE_SERVICE_KEY || env.SUPABASE_KEY;
+  if (!env.SUPABASE_URL || !key) {
+    throw new Error('Supabase not configured (need SUPABASE_URL + SUPABASE_SERVICE_KEY)');
   }
   return {
     url: env.SUPABASE_URL,
-    key: env.SUPABASE_KEY,
+    key: key,
     headers: {
-      'apikey': env.SUPABASE_KEY,
-      'Authorization': `Bearer ${env.SUPABASE_KEY}`,
-      'Content-Type': 'application/json'
+      'apikey': key,
+      'Authorization': `Bearer ${key}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'return=representation'
     }
   };
 }
