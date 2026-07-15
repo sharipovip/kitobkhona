@@ -150,11 +150,11 @@ try {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
   const data = event.notification.data || {};
-  let url = '/kitobkhona/';
+  let url = '/';
   if (data.type === 'chat' || data.chat_id || data.sender_id) {
-    url = '/kitobkhona/chats.html';
+    url = '/chats.html';
   } else if (data.type === 'feed' || data.post_id) {
-    url = '/kitobkhona/Lenta.html';
+    url = '/Lenta.html';
   } else if (data.url) {
     url = data.url;
   }

@@ -2258,7 +2258,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   function getWebSocketUrl() {
-    const wsBase = String(KITOB_CONFIG.API_WS || 'wss://kitobkhona-chat.onrender.com').replace(/\/+$/, '');
+    const wsBase = String(KITOB_CONFIG.API_WS || 'wss://kitobkhona-social.onrender.com').replace(/\/+$/, '');
     return wsBase + '/?token=' + encodeURIComponent(localStorage.getItem('kk_token') || '');
   }
 

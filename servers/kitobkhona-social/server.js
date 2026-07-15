@@ -725,14 +725,8 @@ app.get('/api/winners', async (req, res) => {
     await sendAchievementNotifications(top3, period);
     res.json({ top3, top100 });
   } catch (e) { console.error('Winners error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
-    } catch (e) { console.error('[ACHIEVEMENT] Notification error:', e.message); }
-  }
-}
 
-// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-// ANNOUNCEMENTS (нужен для фронтенда)
-// ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
-
+// ══════════ ANNOUNCEMENTS ══════════
 app.get('/api/announcements/active', async (req, res) => {
   try {
     const result = await tursoChats.execute({ sql: `SELECT id, text, is_active, created_at, expires_at FROM announcements WHERE is_active = TRUE AND (expires_at IS NULL OR expires_at > NOW()) ORDER BY created_at DESC LIMIT 1` });
@@ -769,20 +763,6 @@ app.post('/api/announcements', authenticateToken, async (req, res) => {
 // BOOK STATS BATCH (нужен для ленты)
 // ══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 
-app.post('/api/book-stats-batch', async (req, res) => {
-  const { book_ids } = req.body;
-  if (!Array.isArray(book_ids) || book_ids.length === 0) return res.json({});
-  const ids = book_ids.slice(0, 200).map(normalizeBookId);
-  try {
-    const result = await tursoPosts.execute({
-      sql: `SELECT regexp_replace(book_id, '^books/', '') AS book_id, COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE regexp_replace(book_id, '^books/', '') = ANY($1) GROUP BY regexp_replace(book_id, '^books/', '')`,
-      args: [ids]
-    });
-    const stats = {};
-    result.rows.forEach(row => { stats[row.book_id] = { likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) }; });
-    res.json(stats);
-  } catch (e) { console.error('Batch book stats error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
-});
 
 // ═══════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // HELPER FUNCTIONS

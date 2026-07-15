@@ -474,7 +474,7 @@ document.getElementById('themeToggle').addEventListener('click', function() {
 });
 
 
-const API_BASE = 'https://kitobkhona-chat.onrender.com';
+const API_BASE = KITOB_CONFIG ? KITOB_CONFIG.API_SOCIAL : 'https://kitobkhona-social.onrender.com';
 
 
 (function checkAdminAuth() {

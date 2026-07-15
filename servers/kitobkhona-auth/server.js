@@ -82,6 +82,7 @@ if (!JWT_SECRET || JWT_SECRET.length < 32) {
 // ════════════════════════════════════════════════════
 
 const ALLOWED_ORIGINS = [
+  'https://kitobkhona.tojik.workers.dev',
   'https://kitobkhona.pages.dev',
   'https://kitobkhona.tj',
   'https://www.kitobkhona.tj',
