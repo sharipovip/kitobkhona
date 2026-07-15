@@ -280,10 +280,10 @@ app.get('/api/chat-summary', authenticateToken, async (req, res) => {
     const result = await tursoChats.execute({
       sql: `WITH ranked AS (
          SELECT
-           CASE WHEN cm.sender_id = ? THEN cm.receiver_id ELSE cm.sender_id END::text AS peer_id,
+           CASE WHEN cm.sender_id = ? THEN cm.receiver_id ELSE cm.sender_id END AS peer_id,
            cm.id,
-           cm.sender_id::text AS sender_id,
-           cm.receiver_id::text AS receiver_id,
+           cm.sender_id AS sender_id,
+           cm.receiver_id AS receiver_id,
            cm.text,
            cm.status,
            cm.created_at,
@@ -334,7 +334,7 @@ app.get('/api/friends', authenticateToken, async (req, res) => {
             JOIN users u ON (u.id = f.user1_id OR u.id = f.user2_id) AND u.id != ?
             LEFT JOIN profiles p ON u.id = p.user_id
             WHERE (f.user1_id = ? OR f.user2_id = ?) AND f.status = 'accepted'
-            AND NOT EXISTS (SELECT 1 FROM hidden_chats hc WHERE hc.user_id = ?::text AND hc.peer_id = u.id::text)`,
+            AND NOT EXISTS (SELECT 1 FROM hidden_chats hc WHERE hc.user_id = ? AND hc.peer_id = u.id)`,
       args: [req.user.id, req.user.id, req.user.id, req.user.id]
     });
     res.json(result.rows);
@@ -564,7 +564,7 @@ app.post('/api/book-stats-batch', async (req, res) => {
   if (!Array.isArray(book_ids) || book_ids.length === 0) return res.json({});
   const ids = book_ids.slice(0, 200).map(normalizeBookId);
   try {
-    const result = await tursoPosts.execute({ sql: `SELECT regexp_replace(book_id, '^books/', '') AS book_id, COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE regexp_replace(book_id, '^books/', '') = ANY($1) GROUP BY regexp_replace(book_id, '^books/', '')`, args: [ids] });
+    const result = await tursoPosts.execute({ sql: `SELECT LTRIM(book_id, 'books/') AS book_id, COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE LTRIM(book_id, 'books/') IN (SELECT value FROM json_each(?)) GROUP BY LTRIM(book_id, 'books/')`, args: [ids] });
     const stats = {};
     (result.rows||[]).forEach(row => { stats[row.book_id] = { likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) }; });
     res.json(stats);

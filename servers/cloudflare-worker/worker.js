@@ -429,6 +429,16 @@ async function handleAuth(path, method, request, env, corsHeaders) {
       return jsonResponse({ success: true }, 200, corsHeaders);
     }
 
+    // DELETE /api/auth/delete-account
+    if (path === '/api/auth/delete-account' && method === 'DELETE') {
+      const token = getToken(request);
+      const decoded = await verifyJWT(token, env);
+      if (!decoded) return jsonResponse({ error: 'No token' }, 401, corsHeaders);
+      try { await supabaseQuery(client, 'users', { method: 'DELETE', eq: { column: 'id', value: String(decoded.id) } }); } catch (e) {}
+      try { await supabaseQuery(client, 'profiles', { method: 'DELETE', eq: { column: 'user_id', value: String(decoded.id) } }); } catch (e) {}
+      return jsonResponse({ success: true }, 200, corsHeaders);
+    }
+
     return jsonResponse({ error: 'Not found' }, 404, corsHeaders);
   } catch (e) {
     console.error('Auth error:', e);
@@ -457,19 +467,21 @@ async function handleProfiles(path, method, request, env, corsHeaders) {
       if (!profiles || profiles.length === 0) {
         // Авто-создаём профиль
         try {
-          await supabaseQuery(client, 'profiles', { method: 'POST', body: { user_id: parseInt(userId), display_name: 'Китобхон' } });
+          await supabaseQuery(client, 'profiles', { method: 'POST', body: { user_id: parseInt(userId), display_name: 'Меҳмон' } });
         } catch (e) { /* ok, maybe already exists */ }
-        return jsonResponse({ id: parseInt(userId), user_id: parseInt(userId), username: decoded.username, display_name: 'Китобхон' }, 200, corsHeaders);
+        return jsonResponse({ id: parseInt(userId), user_id: parseInt(userId), username: decoded.username, display_name: 'Меҳмон' }, 200, corsHeaders);
       }
 
       return jsonResponse(profiles[0], 200, corsHeaders);
     }
 
-    // PUT /api/profiles
+    // PUT /api/profiles (upsert через POST с ON CONFLICT)
     if (path === '/api/profiles' && method === 'PUT') {
       const body = await request.json();
       const userId = decoded.id;
-      await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...body, user_id: userId } });
+      // Пробуем PATCH сначала
+      try { await supabaseQuery(client, 'profiles', { method: 'PATCH', eq: { column: 'user_id', value: String(userId) }, body }); }
+      catch (e) { await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...body, user_id: userId } }); }
       return jsonResponse({ success: true }, 200, corsHeaders);
     }
 
@@ -493,15 +505,13 @@ async function handleReadingSessions(path, method, request, env, corsHeaders) {
     // GET /api/reading-sessions
     if (path === '/api/reading-sessions' && method === 'GET') {
       const userId = new URL(request.url).searchParams.get('user_id') || decoded.id;
-      
-      const sessions = await supabaseQuery(client, 'reading_sessions', {
-        select: '*',
-        eq: { column: 'user_id', value: userId },
-        order: 'created_at.desc',
-        limit: 50
-      });
-
-      return jsonResponse(sessions || [], 200, corsHeaders);
+      try {
+        const sessions = await supabaseQuery(client, 'reading_sessions', {
+          select: '*', eq: { column: 'user_id', value: userId },
+          order: 'created_at.desc', limit: 50
+        });
+        return jsonResponse(sessions || [], 200, corsHeaders);
+      } catch (e) { return jsonResponse([], 200, corsHeaders); }
     }
 
     // POST /api/reading-sessions
