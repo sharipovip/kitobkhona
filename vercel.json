@@ -1,6 +1,5 @@
 {
-  "buildCommand": "",
-  "outputDirectory": "kitobkhona",
-  "cleanUrls": false,
-  "trailingSlash": false
+  "buildCommand": null,
+  "outputDirectory": ".",
+  "installCommand": null
 }
