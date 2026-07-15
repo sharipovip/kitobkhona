@@ -11,8 +11,8 @@ const KITOB_CONFIG = {
   // ══ СЕРВЕР #2: Chats + Posts + Book Stats (Render - НОВЫЙ) ═══
   API_SOCIAL: 'https://kitobkhona-social.onrender.com',
   
-  // ═══ СЕРВЕР #3: WebSocket (Render) ═══
-  API_WS: 'wss://kitobkhona-chat.onrender.com',
+  // ═══ СЕРВЕР #3: WebSocket (Render — встроен в Social API) ═══
+  API_WS: 'wss://kitobkhona-social.onrender.com',
   
   // ═══ Supabase (статика: книги, поиск) ═══
   SUPABASE_REST: 'https://dwkdzfqooprxytlepaoo.supabase.co/rest/v1',
@@ -41,9 +41,9 @@ function getApiUrl(endpoint) {
   const authPrefixes = [
     '/api/auth', '/api/profiles', '/api/avatar',
     '/api/reading-sessions', '/api/favorites',
-    '/api/notifications', '/api/announcements',
-    '/api/push', '/api/admin', '/api/winners',
-    '/api/popular-books', '/api/feedbacks', '/api/support'
+    '/api/notifications',
+    '/api/push', '/api/admin',
+    '/api/feedbacks', '/api/support'
   ];
   
   for (const prefix of authPrefixes) {
@@ -58,7 +58,8 @@ function getApiUrl(endpoint) {
     '/api/book-reactions', '/api/book-stats',
     '/api/book-stats-batch', '/api/reports',
     '/api/typing', '/api/users/block',
-    '/api/chats', '/api/daily-words', '/api/chat-summary'
+    '/api/chats', '/api/daily-words', '/api/chat-summary',
+    '/api/winners', '/api/popular-books', '/api/announcements'
   ];
   
   for (const prefix of socialPrefixes) {
