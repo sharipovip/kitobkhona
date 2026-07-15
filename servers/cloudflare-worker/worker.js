@@ -295,9 +295,8 @@ function jsonResponse(data, status = 200, corsHeaders = {}) {
 // ═══ ROUTE HANDLERS ═══
 
 async function handleAuth(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     // POST /api/auth/register
     if (path === '/api/auth/register' && method === 'POST') {
       const body = await request.json();
@@ -434,9 +433,8 @@ async function handleAuth(path, method, request, env, corsHeaders) {
 }
 
 async function handleProfiles(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -484,9 +482,8 @@ async function handleProfiles(path, method, request, env, corsHeaders) {
 }
 
 async function handleReadingSessions(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -531,9 +528,8 @@ async function handleReadingSessions(path, method, request, env, corsHeaders) {
 }
 
 async function handleFavorites(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -578,9 +574,8 @@ async function handleFavorites(path, method, request, env, corsHeaders) {
 }
 
 async function handleNotifications(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -608,9 +603,8 @@ async function handleNotifications(path, method, request, env, corsHeaders) {
 }
 
 async function handleAnnouncements(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     // GET /api/announcements/active
     if (path === '/api/announcements/active' && method === 'GET') {
       const announcements = await supabaseQuery(client, 'announcements', {
@@ -641,9 +635,8 @@ async function handleAnnouncements(path, method, request, env, corsHeaders) {
 }
 
 async function handlePush(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -687,9 +680,8 @@ async function handlePush(path, method, request, env, corsHeaders) {
 }
 
 async function handleAdmin(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -727,9 +719,8 @@ async function handleAdmin(path, method, request, env, corsHeaders) {
 }
 
 async function handleWinners(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     // GET /api/winners
     if (path === '/api/winners' && method === 'GET') {
       // Simplified - return empty for now
@@ -744,9 +735,8 @@ async function handleWinners(path, method, request, env, corsHeaders) {
 }
 
 async function handlePopularBooks(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     // GET /api/popular-books
     if (path === '/api/popular-books' && method === 'GET') {
       // Simplified - return empty for now
@@ -761,9 +751,8 @@ async function handlePopularBooks(path, method, request, env, corsHeaders) {
 }
 
 async function handleFeedbacks(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     
@@ -794,9 +783,8 @@ async function handleFeedbacks(path, method, request, env, corsHeaders) {
 }
 
 async function handleSupport(path, method, request, env, corsHeaders) {
-  const client = await getSupabaseClient(env);
-  
   try {
+    const client = await getSupabaseClient(env);
     const token = getToken(request);
     const decoded = await verifyJWT(token, env);
     

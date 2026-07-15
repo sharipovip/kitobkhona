@@ -165,7 +165,7 @@ async function getAdminAccountId() {
     const result = await tursoChats.execute({
       sql: `SELECT id FROM users WHERE role = 'admin' ORDER BY created_at ASC LIMIT 1`
     });
-    if (result.rows.length > 0) return result.rows[0].id;
+    if (result.rows.length > 0) return (result.rows||[])[0].id;
   } catch (e) {
     console.error('getAdminAccountId error:', e.message);
   }
@@ -234,7 +234,7 @@ app.post('/api/messages', authenticateToken, async (req, res) => {
     const senderUsername = senderUser.rows[0]?.username || '';
     const shortText = String(text).replace(/\s+/g, ' ').trim().slice(0, 60);
     const realtimeMessage = {
-      ...result.rows[0],
+      ...(result.rows||[])[0],
       sender_name: senderName,
       sender_username: senderUsername
     };
@@ -306,7 +306,7 @@ app.get('/api/chat-summary', authenticateToken, async (req, res) => {
     });
     const byPeer = {};
     let totalUnread = 0;
-    result.rows.forEach(row => {
+    (result.rows||[]).forEach(row => {
       const unreadCount = parseInt(row.unread_count || 0, 10);
       totalUnread += unreadCount;
       byPeer[String(row.peer_id)] = {
@@ -445,7 +445,7 @@ app.get('/api/posts', async (req, res) => {
     if (userId) { query += ` AND p.user_id = $2`; params.push(userId); }
     query += ` ORDER BY p.created_at DESC LIMIT 50`;
     const result = await tursoPosts.execute({ sql: query, args: params });
-    const rows = result.rows.map(p => {
+    const rows = (result.rows||[]).map(p => {
       const urls = getBookUrls(p.book_id);
       return { ...p, cover_url: urls.cover_url, pdf_url: urls.pdf_url };
     });
@@ -467,7 +467,7 @@ app.post('/api/posts', authenticateToken, async (req, res) => {
     if (missing.length) return res.status(403).json({ code: 'PROFILE_INCOMPLETE', missing, error: 'Барои нашри пост профилро пур кунед: ном, насаб, соли таваллуд ва ҷинс.' });
 
     const result = await tursoPosts.execute({ sql: `INSERT INTO posts (user_id, content, book_id, book_title, book_author, visibility) VALUES (?, ?, ?, ?, ?, 'public') RETURNING id, created_at`, args: [req.user.id, content || '', book_id || null, book_title || null, book_author || null] });
-    res.json({ success: true, id: result.rows[0].id, created_at: result.rows[0].created_at });
+    res.json({ success: true, id: (result.rows||[])[0].id, created_at: (result.rows||[])[0].created_at });
   } catch (e) { console.error('Post error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });
 
@@ -521,7 +521,7 @@ app.post('/api/posts/:id/comment', authenticateToken, async (req, res) => {
   try {
     const result = await tursoPosts.execute({ sql: 'INSERT INTO post_comments (post_id, user_id, text) VALUES (?, ?, ?) RETURNING id, text, created_at', args: [postId, userId, text] });
     await tursoPosts.execute({ sql: 'UPDATE posts SET comments_count = comments_count + 1 WHERE id = ?', args: [postId] });
-    const comment = result.rows[0];
+    const comment = (result.rows||[])[0];
     const userData = await tursoPosts.execute({ sql: `SELECT u.username, pr.display_name FROM users u LEFT JOIN profiles pr ON u.id = pr.user_id WHERE u.id = ?`, args: [userId] });
     res.json({ ...comment, user_id: userId, username: userData.rows[0].username, display_name: userData.rows[0].display_name });
   } catch (e) { console.error('Add comment error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
@@ -546,7 +546,7 @@ app.get('/api/book-reactions/:bookId', authenticateToken, async (req, res) => {
   try {
     const result = await tursoPosts.execute({ sql: `SELECT reaction, rating FROM book_reactions WHERE user_id = ? AND regexp_replace(book_id, '^books/', '') = $2`, args: [userId, bookId] });
     if (result.rows.length === 0) return res.json({ reaction: null, rating: null });
-    res.json(result.rows[0]);
+    res.json((result.rows||[])[0]);
   } catch (e) { console.error('Get book reaction error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });
 
@@ -566,7 +566,7 @@ app.post('/api/book-stats-batch', async (req, res) => {
   try {
     const result = await tursoPosts.execute({ sql: `SELECT regexp_replace(book_id, '^books/', '') AS book_id, COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE regexp_replace(book_id, '^books/', '') = ANY($1) GROUP BY regexp_replace(book_id, '^books/', '')`, args: [ids] });
     const stats = {};
-    result.rows.forEach(row => { stats[row.book_id] = { likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) }; });
+    (result.rows||[]).forEach(row => { stats[row.book_id] = { likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) }; });
     res.json(stats);
   } catch (e) { console.error('Batch book stats error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });
@@ -690,7 +690,7 @@ app.get('/api/popular-books', async (req, res) => {
     const result = await tursoChats.execute({
       sql: `SELECT book_id, book_title, book_author, SUM(duration) / 60 AS total_minutes, COUNT(*) AS sessions_count FROM reading_sessions WHERE 1=1 ${dateFilter} GROUP BY book_id, book_title, book_author ORDER BY total_minutes DESC LIMIT 20`
     });
-    const rows = result.rows.map(row => {
+    const rows = (result.rows||[]).map(row => {
       let folder = 'books';
       if (row.book_id && row.book_id.includes('/')) { const parts = row.book_id.split('/'); parts.pop(); if (parts.length > 0) folder = parts.join('/'); }
       const urls = getBookUrls(row.book_id);
@@ -731,7 +731,7 @@ app.get('/api/winners', async (req, res) => {
 app.get('/api/announcements/active', async (req, res) => {
   try {
     const result = await tursoChats.execute({ sql: `SELECT id, text, is_active, created_at, expires_at FROM announcements WHERE is_active = TRUE AND (expires_at IS NULL OR expires_at > datetime('now')) ORDER BY created_at DESC LIMIT 1` });
-    res.json(result.rows[0] || null);
+    res.json((result.rows||[])[0] || null);
   } catch (e) { console.error('Get active announcement error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });
 
@@ -756,7 +756,7 @@ app.post('/api/announcements', authenticateToken, async (req, res) => {
     const usersResult = await tursoChats.execute(`SELECT id FROM users WHERE id != $1`, [req.user?.id || 0]);
     const userIds = usersResult.rows.map(row => row.id);
     if (userIds.length > 0) { await queuePushToUsers(userIds, { title: 'Эълон', body: text, link: '/index.html', data: { type: 'announcement' } }); }
-    res.json(result.rows[0]);
+    res.json((result.rows||[])[0]);
   } catch (e) { console.error('Create announcement error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });
 
@@ -811,7 +811,7 @@ async function sendPushToUsers(userIds, payload) {
   if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, sent: 0 };
   const offlineUserIds = userIds.filter(userId => !isWsUserOnline(userId));
   if (offlineUserIds.length === 0) return { success: true, sent: 0, skipped_online: userIds.length };
-  try { const result = await tursoPosts.execute({ sql: `SELECT token FROM device_tokens WHERE user_id = ANY(?)`, args: [offlineUserIds] }); const tokens = result.rows.map(row => row.token).filter(Boolean); const pushResult = await sendPushMessagesToTokens(tokens, payload); return { ...pushResult, skipped_online: userIds.length - offlineUserIds.length }; } catch (e) { console.warn('[PUSH] Failed to resolve push tokens:', e.message); return { success: false, sent: 0, failed: offlineUserIds.length }; }
+  try { const result = await tursoPosts.execute({ sql: `SELECT token FROM device_tokens WHERE user_id = ANY(?)`, args: [offlineUserIds] }); const tokens = (result.rows||[]).map(row => row.token).filter(Boolean); const pushResult = await sendPushMessagesToTokens(tokens, payload); return { ...pushResult, skipped_online: userIds.length - offlineUserIds.length }; } catch (e) { console.warn('[PUSH] Failed to resolve push tokens:', e.message); return { success: false, sent: 0, failed: offlineUserIds.length }; }
 }
 
 function isWsUserOnline(userId) { const ws = clients.get(String(userId)); return !!ws && ws.readyState === WebSocket.OPEN; }
