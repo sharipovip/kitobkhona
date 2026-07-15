@@ -620,7 +620,7 @@ app.post('/api/reports', authenticateToken, async (req, res) => {
     const count = parseInt(countResult.rows[0].count);
     queuePushToUsers([reported_user_id], { title: 'Шикоят', body: 'Ба шумо шикоят расид. Лутфан қоидаҳоро риоя кунед.', link: '/profile.html', data: { type: 'report' } });
     if (count >= 3) {
-      await tursoPosts.execute({ sql: `UPDATE profiles SET blocked = true, block_reason = 'Автоматическая блокировка: 3 жалобы', updated_at = NOW() WHERE user_id = $1`, args: [reported_user_id] });
+      await tursoPosts.execute({ sql: `UPDATE profiles SET blocked = true, block_reason = 'Автоматическая блокировка: 3 жалобы', updated_at = datetime('now') WHERE user_id = $1`, args: [reported_user_id] });
       console.log(`[AUTO-BLOCK] User ${reported_user_id} blocked due to 3 reports.`);
     }
     res.json({ success: true });
@@ -683,9 +683,9 @@ app.get('/api/popular-books', async (req, res) => {
   const period = req.query.period || 'all';
   try {
     let dateFilter = '';
-    if (period === 'day') dateFilter = "AND created_at > NOW() - INTERVAL '1 day'";
-    else if (period === 'week') dateFilter = "AND created_at > NOW() - INTERVAL '7 days'";
-    else if (period === 'month') dateFilter = "AND created_at > NOW() - INTERVAL '30 days'";
+    if (period === 'day') dateFilter = "AND created_at > datetime('now', '-1 day')";
+    else if (period === 'week') dateFilter = "AND created_at > datetime('now', '-7 days')";
+    else if (period === 'month') dateFilter = "AND created_at > datetime('now', '-30 days')";
 
     const result = await tursoChats.execute({
       sql: `SELECT book_id, book_title, book_author, SUM(duration) / 60 AS total_minutes, COUNT(*) AS sessions_count FROM reading_sessions WHERE 1=1 ${dateFilter} GROUP BY book_id, book_title, book_author ORDER BY total_minutes DESC LIMIT 20`
@@ -707,8 +707,8 @@ app.get('/api/popular-books', async (req, res) => {
 app.get('/api/winners', async (req, res) => {
   const period = req.query.period || 'all';
   let dateFilter = '';
-  if (period === 'week') dateFilter = "AND rs.created_at > NOW() - INTERVAL '7 days'";
-  else if (period === 'month') dateFilter = "AND rs.created_at > NOW() - INTERVAL '30 days'";
+  if (period === 'week') dateFilter = "AND rs.created_at > datetime('now', '-7 days')";
+  else if (period === 'month') dateFilter = "AND rs.created_at > datetime('now', '-30 days')";
 
   try {
     const topQuery = `WITH user_stats AS (
@@ -730,7 +730,7 @@ app.get('/api/winners', async (req, res) => {
 // ══════════ ANNOUNCEMENTS ══════════
 app.get('/api/announcements/active', async (req, res) => {
   try {
-    const result = await tursoChats.execute({ sql: `SELECT id, text, is_active, created_at, expires_at FROM announcements WHERE is_active = TRUE AND (expires_at IS NULL OR expires_at > NOW()) ORDER BY created_at DESC LIMIT 1` });
+    const result = await tursoChats.execute({ sql: `SELECT id, text, is_active, created_at, expires_at FROM announcements WHERE is_active = TRUE AND (expires_at IS NULL OR expires_at > datetime('now')) ORDER BY created_at DESC LIMIT 1` });
     res.json(result.rows[0] || null);
   } catch (e) { console.error('Get active announcement error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
 });

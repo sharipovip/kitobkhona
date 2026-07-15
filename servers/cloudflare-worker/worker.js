@@ -21,6 +21,7 @@ export default {
       return new Response(null, { headers: corsHeaders });
     }
 
+    try {
     // ═══ HEALTH CHECK ══
     if (path === '/health' || path === '/') {
       return new Response(JSON.stringify({
@@ -125,6 +126,17 @@ export default {
       status: 404,
       headers: { ...corsHeaders, 'Content-Type': 'application/json' }
     });
+
+    } catch (e) {
+      console.error('[WORKER] Unhandled error:', e.message, e.stack);
+      return new Response(JSON.stringify({
+        error: 'Internal server error',
+        details: e.message
+      }), {
+        status: 500,
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+      });
+    }
   }
 };
 
