@@ -11,7 +11,7 @@ export default {
     const method = request.method;
 
     // URLs серверов (из переменных окружения или запасные)
-    const AUTH_API = env.AUTH_API_URL || 'https://kitobkhona-auth-worker.sinamostudio.workers.dev';
+    const AUTH_API = env.AUTH_API_URL || 'https://kitobkhona-auth-worker.tojik.workers.dev';
     const SOCIAL_API = env.SOCIAL_API_URL || 'https://kitobkhona-social.onrender.com';
 
     // CORS headers

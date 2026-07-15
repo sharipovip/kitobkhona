@@ -6,7 +6,7 @@
 
 const KITOB_CONFIG = {
   // ═══ СЕРВЕР #1: Auth + Profiles (Cloudflare Worker) ═══
-  API_AUTH: 'https://kitobkhona-auth-worker.sinamostudio.workers.dev',
+  API_AUTH: 'https://kitobkhona-auth-worker.tojik.workers.dev',
   
   // ══ СЕРВЕР #2: Chats + Posts + Book Stats (Render - НОВЫЙ) ═══
   API_SOCIAL: 'https://kitobkhona-social.onrender.com',
