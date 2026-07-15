@@ -1,0 +1,13 @@
+# ═══════════════════════════════════════════════════════
+# Cloudflare Worker — API Gateway
+# Деплоить как отдельный Worker: kitobkhona-api-gateway
+# ИЛИ встроить в основной фронтенд-Worker (kitobkhona.tojik.workers.dev)
+# ═══════════════════════════════════════════════════════
+
+name = "kitobkhona-api-gateway"
+main = "gateway-worker.js"
+compatibility_date = "2026-07-15"
+
+[vars]
+AUTH_API_URL = "https://kitobkhona-auth-worker.sinamostudio.workers.dev"
+SOCIAL_API_URL = "https://kitobkhona-social.onrender.com"

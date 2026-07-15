@@ -1,26 +1,21 @@
-# Cloudflare Worker Configuration
-# kitobkhona-cache Worker
+# ═══════════════════════════════════════════════════════
+# Cloudflare Worker — основной Auth Worker
+# Деплоить как: kitobkhona-auth-worker
+# ═══════════════════════════════════════════════════════
 
-name = "kitobkhona-cache"
+name = "kitobkhona-auth-worker"
 main = "worker.js"
-compatibility_date = "2026-01-01"
+compatibility_date = "2026-07-15"
 
-# Free tier: 100K requests/day, 10ms CPU time
-
-# Bindings
 [vars]
-AUTH_API_URL = "https://kitobkhona-auth-abc123.a.run.app"
-SOCIAL_API_URL = "https://kitobkhona-social-abc123.a.run.app"
-
-[[kv_namespaces]]
-binding = "KITOBKHONA_CACHE"
-id = "YOUR_KV_NAMESPACE_ID"
-
-[[kv_namespaces]]
-binding = "KITOBKHONA_SESSIONS"
-id = "YOUR_SESSIONS_NAMESPACE_ID"
-
-# Routes (после деплоя Workers)
-# [routes]
-# pattern = "cache.kitobkhona.tj/*"
-# zone_name = "kitobkhona.tj"
+SUPABASE_URL = "https://dwkdzfqooprxytlepaoo.supabase.co"
+SUPABASE_KEY = "YOUR_SUPABASE_ANON_KEY"
+NEON_DB_URL = "YOUR_NEON_DATABASE_URL"
+JWT_SECRET = "YOUR_JWT_SECRET_AT_LEAST_32_CHARS"
+RESEND_API_KEY = "YOUR_RESEND_API_KEY"
+TURSO_CHATS_URL = "YOUR_TURSO_CHATS_URL"
+TURSO_CHATS_TOKEN = "YOUR_TURSO_CHATS_TOKEN"
+TURSO_POSTS_URL = "YOUR_TURSO_POSTS_URL"
+TURSO_POSTS_TOKEN = "YOUR_TURSO_POSTS_TOKEN"
+UPSTASH_REDIS_URL = "YOUR_UPSTASH_REDIS_URL"
+UPSTASH_REDIS_TOKEN = "YOUR_UPSTASH_REDIS_TOKEN"
