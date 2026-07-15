@@ -11,7 +11,7 @@ export default {
 
     // CORS headers
     const corsHeaders = {
-      'Access-Control-Allow-Origin': '*',
+      'Access-Control-Allow-Origin': request.headers.get('Origin') || 'https://kitobkhona.tojik.workers.dev',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization, X-Requested-With, Accept',
       'Access-Control-Allow-Credentials': 'true'
@@ -187,6 +187,40 @@ function getToken(request) {
   return auth.startsWith('Bearer ') ? auth.slice(7) : null;
 }
 
+// Base64URL encoding (JWT standard)
+function base64urlEncode(str) {
+  return btoa(str).replace(/\+/g, '-').replace(/\//g, '_').replace(/=/g, '');
+}
+
+function base64urlDecode(str) {
+  str = str.replace(/-/g, '+').replace(/_/g, '/');
+  const pad = str.length % 4;
+  if (pad) str += '='.repeat(4 - pad);
+  return atob(str);
+}
+
+// Create JWT with HMAC-SHA256 (compatible with jsonwebtoken library)
+async function createJWT(payload, secret) {
+  const header = { alg: 'HS256', typ: 'JWT' };
+  const encodedHeader = base64urlEncode(JSON.stringify(header));
+  const encodedPayload = base64urlEncode(JSON.stringify(payload));
+  const signingInput = encodedHeader + '.' + encodedPayload;
+  
+  const encoder = new TextEncoder();
+  const key = await crypto.subtle.importKey(
+    'raw',
+    encoder.encode(secret),
+    { name: 'HMAC', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+  const signature = await crypto.subtle.sign('HMAC', key, encoder.encode(signingInput));
+  const encodedSignature = base64urlEncode(String.fromCharCode(...new Uint8Array(signature)));
+  
+  return signingInput + '.' + encodedSignature;
+}
+
+// Verify JWT with HMAC-SHA256
 async function verifyJWT(token, env) {
   if (!token) return null;
   if (!env.JWT_SECRET) {
@@ -194,11 +228,35 @@ async function verifyJWT(token, env) {
   }
   
   try {
-    // Simple JWT verification using Web Crypto API
     const parts = token.split('.');
     if (parts.length !== 3) return null;
     
-    const payload = JSON.parse(atob(parts[1]));
+    const signingInput = parts[0] + '.' + parts[1];
+    const signature = parts[2];
+    
+    // Verify signature
+    const encoder = new TextEncoder();
+    const key = await crypto.subtle.importKey(
+      'raw',
+      encoder.encode(env.JWT_SECRET),
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['verify']
+    );
+    const signatureBytes = new Uint8Array(
+      atob(signature.replace(/-/g, '+').replace(/_/g, '/') + '==='.slice((signature.length % 4) || 4))
+      .split('').map(c => c.charCodeAt(0))
+    );
+    // Proper base64url decode for signature
+    let sigStr = signature.replace(/-/g, '+').replace(/_/g, '/');
+    const pad = sigStr.length % 4;
+    if (pad) sigStr += '='.repeat(4 - pad);
+    const sigBytes = new Uint8Array(atob(sigStr).split('').map(c => c.charCodeAt(0)));
+    
+    const valid = await crypto.subtle.verify('HMAC', key, sigBytes, encoder.encode(signingInput));
+    if (!valid) return null;
+    
+    const payload = JSON.parse(base64urlDecode(parts[1]));
     
     // Check expiration
     if (payload.exp && Date.now() / 1000 > payload.exp) {
@@ -207,6 +265,7 @@ async function verifyJWT(token, env) {
     
     return payload;
   } catch (e) {
+    console.error('JWT verify error:', e);
     return null;
   }
 }
@@ -286,7 +345,7 @@ async function handleAuth(path, method, request, env, corsHeaders) {
       };
       
       // Simple token creation (in production use proper JWT library)
-      const token = btoa(JSON.stringify(tokenPayload)) + '.' + btoa(env.JWT_SECRET);
+      const token = await createJWT(tokenPayload, env.JWT_SECRET);
 
       return jsonResponse({
         token,
@@ -336,7 +395,7 @@ async function handleAuth(path, method, request, env, corsHeaders) {
         exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60)
       };
       
-      const token = btoa(JSON.stringify(tokenPayload)) + '.' + btoa(env.JWT_SECRET);
+      const token = await createJWT(tokenPayload, env.JWT_SECRET);
 
       return jsonResponse({
         token,
