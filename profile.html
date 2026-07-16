@@ -639,7 +639,9 @@
       padding: 7px 10px;
       background: var(--card-2);
       color: var(--cream);
-      font: 600 11px inherit;
+      font-size: 11px;
+      font-weight: 600;
+      font-family: inherit;
       cursor: pointer;
       white-space: nowrap;
     }
@@ -1675,7 +1677,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const token = localStorage.getItem('kk_token');
       const userId = localStorage.getItem('kk_user_id');
       if (!token || !userId) { await showAlertDialog('Шумо ворид нестед', 'Хатогӣ'); return; }
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/me', {
+      const r = await fetchWithTimeout(getApiUrl('/api/auth/delete-account'), {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });

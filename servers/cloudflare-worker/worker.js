@@ -473,16 +473,45 @@ async function handleProfiles(path, method, request, env, corsHeaders) {
         return jsonResponse({ id: parseInt(userId), user_id: parseInt(userId), username: decoded.username, display_name: 'Меҳмон' }, 200, corsHeaders);
       }
 
-      return jsonResponse(profiles[0], 200, corsHeaders);
+      let users = [];
+      try { users = await supabaseQuery(client, 'users', { select: 'username,email,role,created_at,is_temporary', eq: { column: 'id', value: userId }, limit: 1 }); }
+      catch (e) { users = []; }
+
+      const profile = profiles[0];
+      const user = users[0] || {};
+      return jsonResponse({ ...profile, ...user }, 200, corsHeaders);
     }
 
     // PUT /api/profiles (upsert через POST с ON CONFLICT)
     if (path === '/api/profiles' && method === 'PUT') {
       const body = await request.json();
       const userId = decoded.id;
-      // Пробуем PATCH сначала
-      try { await supabaseQuery(client, 'profiles', { method: 'PATCH', eq: { column: 'user_id', value: String(userId) }, body }); }
-      catch (e) { await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...body, user_id: userId } }); }
+      const profileFields = ['first_name','last_name','birth_year','gender','region','city','jamoat','village','display_name','bio','avatar_url'];
+      const userFields = ['username','email'];
+      const profileUpdate = {};
+      for (const key of profileFields) {
+        if (body[key] !== undefined) profileUpdate[key] = body[key];
+      }
+      if (Object.keys(profileUpdate).length > 0) {
+        try { await supabaseQuery(client, 'profiles', { method: 'PATCH', eq: { column: 'user_id', value: String(userId) }, body: profileUpdate }); }
+        catch (e) { await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...profileUpdate, user_id: userId } }); }
+      }
+      const userUpdate = {};
+      for (const key of userFields) {
+        if (body[key] !== undefined) userUpdate[key] = body[key];
+      }
+      if (body.password) {
+        const encoder = new TextEncoder();
+        const data = encoder.encode(body.password + env.JWT_SECRET);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+        userUpdate.password_hash = passwordHash;
+        userUpdate.is_temporary = false;
+      }
+      if (Object.keys(userUpdate).length > 0) {
+        await supabaseQuery(client, 'users', { method: 'PATCH', eq: { column: 'id', value: String(userId) }, body: userUpdate });
+      }
       return jsonResponse({ success: true }, 200, corsHeaders);
     }
 
