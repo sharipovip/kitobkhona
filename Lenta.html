@@ -1641,7 +1641,7 @@ async function loadPostsFromServer(silent) {
   if (!container) return;
 
   try {
-    const resp = await fetch(getApiUrl('/api/posts');
+    const resp = await fetch(getApiUrl('/api/posts'));
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const posts = await resp.json();
     postsData = orderFeedPosts(Array.isArray(posts) ? posts : (posts.posts || []));
@@ -1984,7 +1984,7 @@ async function handleLike(postId) {
   updateLikeUI(postId, post.liked, post.likes_count);
   try {
     const resp = await fetch(getApiUrl('/api/posts/' + postId + '/like'), {
-      method: wasLiked ? 'DELETE' : 'POST'),
+      method: wasLiked ? 'DELETE' : 'POST',
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
