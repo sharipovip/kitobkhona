@@ -2064,7 +2064,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
-      const r = await fetch(getApiUrl('/api/friends/status/' + encodeURIComponent(otherId), {
+      const r = await fetch(getApiUrl('/api/friends/status/' + encodeURIComponent(otherId)), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!r.ok) { friendStatus = null; return; }
