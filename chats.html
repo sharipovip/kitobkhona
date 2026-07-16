@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=32"></script>
-<script src="cache.js?v=32"></script>
+<script src="config.js?v=33"></script>
+<script src="cache.js?v=33"></script>
 <style>
   
   * {
@@ -962,6 +962,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const {data}=await AUTH.getUser();
       currentUser=data.user;
       if(!currentUser){scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
+      const adult=!!currentUser.birth_year&&Number(currentUser.birth_year)<=new Date().getFullYear()-18;
+      if(!adult){scroll.innerHTML='<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
 
       friendsCacheKey=CacheManager.KEYS.FRIENDS+'_'+currentUser.id;
       requestsCacheKey=CacheManager.KEYS.REQUESTS+'_'+currentUser.id;
@@ -1015,7 +1017,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         const profile = await getProfileCached(fromId);
         const name = profile?.display_name || profile?.username || 'Китобхон';
         const initials = getInitials(name);
-        const cls = getCls(fromId.charCodeAt(0) || 0);
+        const cls = getCls(String(fromId).charCodeAt(0) || 0);
         const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
         html += `
           <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
@@ -1051,7 +1053,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         const profile = await getProfileCached(id);
         const name = profile?.display_name || profile?.username || 'Китобхон';
         const initials = getInitials(name);
-        const cls = getCls(id.charCodeAt(0) || 0);
+        const cls = getCls(String(id).charCodeAt(0) || 0);
         const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
         const lastMessage = summary?.by_peer?.[String(id)] || null;
         const preview = lastMessage

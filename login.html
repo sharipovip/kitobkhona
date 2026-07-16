@@ -6,7 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=32"></script>
+<script src="config.js?v=33"></script>
 <style>
   
   * {
@@ -638,8 +638,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
             <label>Пол</label>
             <select id="regGender">
               <option value="">Интихоб кунед</option>
-              <option value="male">Мужчина</option>
-              <option value="female">Женщина</option>
+              <option value="male">Мард</option>
+              <option value="female">Зан</option>
             </select>
           </div>
           <div class="group-label">Ҷойгиршавӣ</div>
@@ -839,6 +839,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       localStorage.removeItem('kk_device_blocked');
+      try { if (typeof AndroidBridge !== 'undefined') { AndroidBridge.saveUserId(String(data.userId)); AndroidBridge.saveAuthToken(data.token); } } catch (e) {}
 
       await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/profiles', {
         method: 'PUT',
@@ -856,8 +857,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         })
       });
 
-      showMsg('Профиль эҷод шуд!', 'success');
-      setTimeout(function(){ window.location.href = 'index.html'; }, 800);
+      showMsg('Ҳисоб сохта шуд — шумо автоматӣ ворид шудед!', 'success');
+      cta.textContent = 'Ворид шудед ✓';
+      setTimeout(function(){ window.location.replace('index.html?registered=1'); }, 900);
     } catch (e) {
       if (e.message.includes('409') || e.message.includes('exists')) showMsg('Ин логин ё почта аллакай истифода мешавад');
       else showMsg('Хатогӣ: ' + e.message, 'error');

@@ -6,8 +6,8 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=32"></script>
-  <script src="cache.js?v=32"></script>
+  <script src="config.js?v=33"></script>
+  <script src="cache.js?v=33"></script>
   <style>
     
     :root {
@@ -1436,7 +1436,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   </div>
 
   <div class="sheet-overlay" id="editOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>Таҳрири профил</h3><div class="icon-btn" id="closeEdit">✕</div></div><div class="sheet-body">
-    <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner" id="editAvatarPreview"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><div style="flex:1"><button class="btn btn-ghost" id="avatarChangeBtn" type="button" style="width:auto;padding:9px 16px;font-size:12.5px" disabled>📷 Тағйири акс</button><input id="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><div id="avatarEligibilityHint" style="font-size:10.5px;color:var(--muted);line-height:1.35;margin-top:6px">Санҷиши ҳуқуқ...</div></div></div>
+    <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner" id="editAvatarPreview"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><div style="flex:1"><div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn btn-ghost" id="avatarChangeBtn" type="button" style="width:auto;padding:9px 16px;font-size:12.5px" disabled>📷 Тағйири акс</button><button class="btn btn-ghost" id="avatarDeleteBtn" type="button" style="display:none;width:auto;padding:9px 12px;font-size:12px;color:var(--red)">🗑 Нест кардани акс</button></div><input id="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><div id="avatarEligibilityHint" style="font-size:10.5px;color:var(--muted);line-height:1.35;margin-top:6px">Санҷиши ҳуқуқ...</div></div></div>
     <div id="profileEditNotice" style="display:none;background:var(--gold-soft);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:12px;color:var(--cream-dim);font-size:12px;line-height:1.5"></div>
     <div class="field-row"><div class="field"><label>Ном <span style="color:var(--red)">*</span></label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб <span style="color:var(--red)">*</span></label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
     <div class="field"><label>Соли таваллуд <span style="color:var(--red)">*</span></label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2026"></div>
@@ -1478,7 +1478,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           </select>
         </div>
         <div class="field">
-          <label>Сообщение <span style="color:var(--red)">*</span></label>
+          <label>Паёмак <span style="color:var(--red)">*</span></label>
           <textarea id="feedbackText" rows="4" placeholder="Муфассал нависед..." style="width:100%;background:var(--card);border:1px solid var(--line);border-radius:11px;padding:11px 12px;font-size:13.5px;color:var(--cream);font-family:'Noto Sans';resize:vertical;"></textarea>
         </div>
         <div class="sheet-foot" style="border-top:none;padding:0 0 10px;">
@@ -1578,6 +1578,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   window.addEventListener('beforeunload', () => {
     if (friendStatusTimer) clearInterval(friendStatusTimer);
+    if (profileLocationTimer) clearInterval(profileLocationTimer);
   });
 
   function el(id) { return document.getElementById(id); }
@@ -1601,8 +1602,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   let friendStatus = null;
   let currentUserId = null;
   let currentUserProfileComplete = null;
+  let currentUserAdult = false;
   let profileLoadSequence = 0;
   let friendStatusTimer = null;
+  let profileLocationTimer = null;
+  let profileLocationIndex = 0;
 
   function profileCacheKey(type, userId) {
     return 'kk_cache_' + type + '_' + encodeURIComponent(String(userId));
@@ -1727,6 +1731,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       el('chatBtn').onclick = goToChats;
     }
 
+    const socialAllowed = currentUserAdult && isAdultProfile(loadedProfile);
+    if (!socialAllowed) {
+      el('friendBtn').style.display = 'none';
+      el('chatBtn').style.display = 'none';
+      if (el('chatTopBtn')) el('chatTopBtn').style.display = 'none';
+      return;
+    }
+    el('chatBtn').style.display = 'flex';
+    if (el('chatTopBtn')) el('chatTopBtn').style.display = 'flex';
     if (isOwnProfile) {
       el('friendBtn').style.display = 'none';
       return;
@@ -1763,6 +1776,29 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
+  function rotateProfileLocation(profile) {
+    const target = el('ownLoc'); if (!target) return;
+    if (profileLocationTimer) clearInterval(profileLocationTimer);
+    profileLocationIndex = 0;
+    const rows = [
+      profile.region ? `Вилоят: ${profile.region}` : '',
+      profile.city ? `Шаҳр/ноҳия: ${profile.city}` : '',
+      profile.jamoat ? `Ҷамоат: ${profile.jamoat}` : '',
+      profile.village ? `Деҳа: ${profile.village}` : ''
+    ].filter(Boolean);
+    const paint = () => {
+      target.style.opacity = '0'; target.style.transform = 'translateY(3px)';
+      setTimeout(() => {
+        target.textContent = rows.length ? rows[profileLocationIndex % rows.length] : 'Ҷойгиршавӣ илова нашудааст';
+        target.style.opacity = '1'; target.style.transform = 'translateY(0)';
+        profileLocationIndex++;
+      }, 180);
+    };
+    target.style.transition = 'opacity .22s ease,transform .22s ease';
+    paint();
+    if (rows.length > 1) profileLocationTimer = setInterval(paint, 4500);
+  }
+
   function applyProfileHeader(profile) {
     const displayName = profile.display_name || profile.username || 'Китобхон';
     el('ownName').textContent = displayName;
@@ -1773,13 +1809,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     el('ownGender').textContent = genderLabel;
     el('ownGender').style.display = genderLabel ? 'inline-flex' : 'none';
     updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
-    const locationRows = [
-      profile.region ? `Вилоят: ${esc(profile.region)}` : '',
-      profile.city ? `Шаҳр/ноҳия: ${esc(profile.city)}` : '',
-      profile.jamoat ? `Ҷамоат: ${esc(profile.jamoat)}` : '',
-      profile.village ? `Деҳа: ${esc(profile.village)}` : ''
-    ].filter(Boolean);
-    el('ownLoc').innerHTML = locationRows.length ? locationRows.map(row => `<div>${row}</div>`).join('') : 'Ҷойгиршавӣ илова нашудааст';
+    rotateProfileLocation(profile);
     el('ownBooks').textContent = profile.books_count_real ?? profile.books_count ?? 0;
     el('ownFriends').textContent = profile.friends_count ?? profile.followers_count ?? 0;
     el('ownMarks').textContent = profile.favorites_count ?? 0;
@@ -1858,8 +1888,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       try {
         const actorProfile = isOwnProfile ? profile : await NEON_API.getProfile(currentUserId);
         currentUserProfileComplete = isCompleteProfile(actorProfile);
+        currentUserAdult = isAdultProfile(actorProfile);
       } catch (e) {
         currentUserProfileComplete = false;
+        currentUserAdult = false;
       }
       updateFriendButtonUI();
 
@@ -2083,6 +2115,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
+  function isAdultProfile(profile) {
+    return !!profile?.birth_year && Number(profile.birth_year) <= new Date().getFullYear() - 18;
+  }
   function isCompleteProfile(profile) {
     return !!(profile
       && String(profile.first_name || '').trim()
@@ -2511,7 +2546,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
-      if (!r.ok) throw new Error('Ошибка сервера');
+      if (!r.ok) throw new Error('Хатои сервер');
       favoritesData = favoritesData.filter(f => f.book_id !== bookId);
       el('ownMarks').textContent = favoritesData.length;
       renderFavorites();
@@ -2609,7 +2644,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!button || !isOwnProfile) return;
     const cached = readAvatarEligibilityCache();
     if (cached) avatarEligibility = cached.data;
-    const available = profileDataEditAvailable(profile) || !!avatarEligibility?.can_upload;
+    const available = profileDataEditAvailable(profile) || !!avatarEligibility?.can_upload || !!profile?.avatar_url;
     button.style.display = available ? 'flex' : 'none';
   }
   function paintAvatarEligibility(data) {
@@ -2696,6 +2731,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if (loadedProfile) loadedProfile.avatar_url = data.avatar_url;
       updateAvatar(loadedProfile?.gender, data.avatar_url, false);
       const preview = el('editAvatarPreview'); if (preview) preview.innerHTML = `<img class="avatar-photo" src="${esc(data.avatar_url)}" alt="Аватар">`;
+      if (el('avatarDeleteBtn')) el('avatarDeleteBtn').style.display = 'inline-flex';
       if (typeof CacheManager !== 'undefined') {
         CacheManager.invalidateKey('kk_profile_' + currentProfileUserId);
         CacheManager.invalidateKey(profileCacheKey('posts', currentProfileUserId));
@@ -2713,7 +2749,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
+  async function deleteProfileAvatar() {
+    if (!loadedProfile?.avatar_url) return;
+    if (!await showConfirmDialog('Акс нест карда шавад? Акси нав танҳо баъд аз як моҳ дастрас мешавад.', 'Тасдиқ', 'Нест кардан')) return;
+    const button = el('avatarDeleteBtn'); if (button) button.disabled = true;
+    try {
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar', { method:'DELETE',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token')} });
+      const data = await r.json().catch(() => ({})); if (!r.ok) throw new Error(data.error || 'Акс нест карда нашуд');
+      loadedProfile.avatar_url = null; updateAvatar(loadedProfile.gender,null,loadedProfile.is_temporary===true);
+      const preview=el('editAvatarPreview');if(preview)preview.innerHTML='<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6"/></svg>';
+      if(button)button.style.display='none';
+      avatarEligibility={...(avatarEligibility||{}),eligible:true,can_upload:false,next_upload_at:data.next_upload_at};saveAvatarEligibilityCache(avatarEligibility);paintAvatarEligibility(avatarEligibility);
+      if(typeof CacheManager!=='undefined')CacheManager.invalidateKey('kk_profile_'+currentProfileUserId);
+      showToast('Акс нест карда шуд');
+    } catch(e) { showToast('Хатогӣ: '+e.message); if(button)button.disabled=false; }
+  }
   el('avatarChangeBtn')?.addEventListener('click', () => el('avatarFileInput')?.click());
+  el('avatarDeleteBtn')?.addEventListener('click', deleteProfileAvatar);
   el('avatarFileInput')?.addEventListener('change', function() { const file = this.files?.[0]; this.value = ''; if (file) uploadProfileAvatar(file); });
 
   const overlay = el('editOverlay');
@@ -2734,6 +2786,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   function fillEditForm(profile) {
     const avatarPreview = el('editAvatarPreview');
+    if (el('avatarDeleteBtn')) el('avatarDeleteBtn').style.display = profile.avatar_url ? 'inline-flex' : 'none';
     if (avatarPreview) avatarPreview.innerHTML = profile.avatar_url ? `<img class="avatar-photo" src="${esc(profile.avatar_url)}" alt="Аватар">` : '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6"/></svg>';
     el('editName').value = profile.first_name || '';
     el('editSurname').value = profile.last_name || '';
@@ -2918,7 +2971,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           email,
           category,
           message: text,
-          username: localStorage.getItem('kk_username') || 'Пользователь'
+          username: localStorage.getItem('kk_username') || 'Корбар'
         })
       });
       if (!resp.ok) {

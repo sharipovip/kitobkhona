@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
   <link rel="manifest" href="manifest.json">
-  <script src="config.js?v=32"></script>
-  <script src="cache.js?v=32"></script>
+  <script src="config.js?v=33"></script>
+  <script src="cache.js?v=33"></script>
   <style id="shared-page-styles">
 :root {
   --bg: #0D1B2A;
@@ -2150,16 +2150,16 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <div class="popup-menu" id="popupMenu">
           <div class="item" onclick="clearChatLocal()">
             <span class="icon">🧹</span>
-            <span>Очистить чат</span>
+            <span>Тоза кардани чат</span>
           </div>
           <div class="divider"></div>
           <div class="item danger" onclick="blockUser()">
             <span class="icon">🚫</span>
-            <span>Блокировать пользователя</span>
+            <span>Бастани корбар</span>
           </div>
           <div class="item danger" onclick="reportUser()">
             <span class="icon">⚠️</span>
-            <span>Пожаловаться</span>
+            <span>Шикоят кардан</span>
           </div>
         </div>
       </div>
@@ -2424,7 +2424,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   async function blockUser() {
     popupMenu.classList.remove('open');
     if (!currentUserId || !peerId) return;
-    if (!await showConfirm('Корбар дигар ба шумо навишта наметавонад ва дӯстӣ бекор мешавад. Давом диҳем?', 'Блокировать', true)) return;
+    if (!await showConfirm('Корбар дигар ба шумо навишта наметавонад ва дӯстӣ бекор мешавад. Давом диҳем?', 'Бастан', true)) return;
     try {
       const token = localStorage.getItem('kk_token');
       const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/block', {
@@ -2559,7 +2559,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         }
         void updateWordCounter();
       } else {
-        msgContainer.innerHTML = '<div class="loading-msg">Открываем чат…</div>';
+        msgContainer.innerHTML = '<div class="loading-msg">Чат кушода мешавад…</div>';
       }
 
       void refreshMessagesFromServer(keepScroll, cachedMsgs);
@@ -2817,6 +2817,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }, 7000);
   }
 
+  function blockChatForAge() {
+    const input=document.getElementById('msgInput'),send=document.getElementById('sendBtn');
+    if(input){input.disabled=true;input.placeholder='Паёмак танҳо барои 18+'}if(send)send.disabled=true;
+    const label=document.getElementById('friendStatusLabel');if(label)label.textContent='🔒 Танҳо барои 18+';
+  }
   async function loadPeerAvatar() {
     if (!peerId) return;
     try {
@@ -2824,6 +2829,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if (profile?.display_name) document.getElementById('headNameText').textContent = profile.display_name;
       document.getElementById('verifiedBadge').innerHTML = profile?.verified ? verifiedBadgeSvg() : '';
       if (profile?.avatar_url) document.getElementById('chatAvatar').innerHTML = `<img src="${esc(profile.avatar_url)}" alt="">`;
+      if (!profile?.birth_year || Number(profile.birth_year)>new Date().getFullYear()-18) blockChatForAge();
     } catch (e) {}
   }
 
@@ -2834,6 +2840,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       return;
     }
     currentUserId = data.user.id;
+    if (!data.user.birth_year || Number(data.user.birth_year)>new Date().getFullYear()-18) blockChatForAge();
     void loadPeerAvatar();
     void fetchBlockStatus();
     void loadMessages(false);
