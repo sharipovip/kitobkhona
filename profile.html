@@ -639,9 +639,7 @@
       padding: 7px 10px;
       background: var(--card-2);
       color: var(--cream);
-      font-size: 11px;
-      font-weight: 600;
-      font-family: inherit;
+      font: 600 11px inherit;
       cursor: pointer;
       white-space: nowrap;
     }
@@ -1677,7 +1675,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const token = localStorage.getItem('kk_token');
       const userId = localStorage.getItem('kk_user_id');
       if (!token || !userId) { await showAlertDialog('Шумо ворид нестед', 'Хатогӣ'); return; }
-      const r = await fetchWithTimeout(getApiUrl('/api/auth/delete-account'), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/me', {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -2027,7 +2025,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const token = localStorage.getItem('kk_token');
       if (!token) { postsData = []; return; }
       try {
-        const r = await fetch(getApiUrl('/api/posts?user_id=' + userId), {
+        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/posts?user_id=' + userId, {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (!r.ok) { postsData = []; return; }
@@ -2064,7 +2062,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
-      const r = await fetch(getApiUrl('/api/friends/status/' + encodeURIComponent(otherId)), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!r.ok) { friendStatus = null; return; }
@@ -2104,7 +2102,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!token) { showToast('Лутфан ворид шавед'); return; }
     if (!await canUseSocialActions()) return;
     try {
-      const r = await fetch(getApiUrl('/api/friends/request'), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/request', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ to_user: otherId })
@@ -2130,7 +2128,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!token) { showToast('Лутфан ворид шавед'); return; }
     if (!await canUseSocialActions()) return;
     try {
-      const r = await fetch(getApiUrl('/api/friends/accept'), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ from_user: otherId })

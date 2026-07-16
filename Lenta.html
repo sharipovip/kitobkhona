@@ -1116,7 +1116,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 <script>
 'use strict';
 
-const API_BASE = getApiUrl;
+const API_BASE = (typeof KITOB_CONFIG !== 'undefined') ? KITOB_CONFIG.NEON_API_BASE : '';
 const $ = id => document.getElementById(id);
 
 let postsData = [];
@@ -1452,7 +1452,7 @@ async function loadReadingSessions() {
     return;
   }
   try {
-    const resp = await fetch(getApiUrl('/api/reading-sessions'), {
+    const resp = await fetch(API_BASE + '/api/reading-sessions', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);
@@ -1492,7 +1492,7 @@ async function loadBookRatings(bookIds) {
     return;
   }
   try {
-    const resp = await fetch(getApiUrl('/api/book-stats-batch'), {
+    const resp = await fetch(API_BASE + '/api/book-stats-batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ book_ids: bookIds })
@@ -1505,7 +1505,7 @@ async function loadBookRatings(bookIds) {
       bookReactions[id].user = { reaction: null, rating: null };
     });
     if (token) {
-      const userResp = await fetch(getApiUrl('/api/book-reactions/batch'), {
+      const userResp = await fetch(API_BASE + '/api/book-reactions/batch', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_ids: bookIds })
@@ -1641,7 +1641,7 @@ async function loadPostsFromServer(silent) {
   if (!container) return;
 
   try {
-    const resp = await fetch(getApiUrl('/api/posts'));
+    const resp = await fetch(API_BASE + '/api/posts');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const posts = await resp.json();
     postsData = orderFeedPosts(Array.isArray(posts) ? posts : (posts.posts || []));
@@ -1983,7 +1983,7 @@ async function handleLike(postId) {
   post.likes_count = (post.likes_count || 0) + (wasLiked ? -1 : 1);
   updateLikeUI(postId, post.liked, post.likes_count);
   try {
-    const resp = await fetch(getApiUrl('/api/posts/' + postId + '/like'), {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/like', {
       method: wasLiked ? 'DELETE' : 'POST',
       headers: { 'Authorization': 'Bearer ' + token }
     });
@@ -2019,7 +2019,7 @@ async function loadComments(postId) {
   const token = getToken(); if (!token) return;
   const list = $('commentsListInner');
   try {
-    const resp = await fetch(getApiUrl('/api/posts/' + postId + '/comments'), {
+    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comments', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error();
@@ -2051,8 +2051,8 @@ async function deleteComment(cid, postId, el) {
   if (!await showConfirmDialog('Шарҳи худро нест кунед?', 'Нест кардан', 'Нест кунед')) return;
   const token = getToken(); if (!token) return;
   try {
-    const r = await fetch(getApiUrl('/api/posts/' + postId + '/comments/' + cid), {
-      method: 'DELETE'), headers: { 'Authorization': 'Bearer ' + token }
+    const r = await fetch(API_BASE + '/api/posts/' + postId + '/comments/' + cid, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!r.ok) throw new Error();
     el.remove(); showToast('Шарҳ нест карда шуд');
@@ -2064,9 +2064,9 @@ $('commentSend').addEventListener('click', async () => {
   if (!text || !activePostId) return;
   const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
   try {
-    const resp = await fetch(getApiUrl('/api/posts/' + activePostId + '/comment'), {
+    const resp = await fetch(API_BASE + '/api/posts/' + activePostId + '/comment', {
       method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }),
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
     });
     if (!resp.ok) throw new Error();
@@ -2120,7 +2120,7 @@ $('ratingSubmit').addEventListener('click', async () => {
   if (!activeBookId) { showToast('Китоб мавҷуд нест'); return; }
   const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
   try {
-    const resp = await fetch(getApiUrl('/api/book-reactions'), {
+    const resp = await fetch(API_BASE + '/api/book-reactions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ book_id: activeBookId, rating: currentRating })
@@ -2140,8 +2140,8 @@ async function deletePost(postId) {
   const token = getToken();
   if (!token) { showToast('Лутфан ворид шавед'); return; }
   try {
-    const resp = await fetch(getApiUrl('/api/posts/' + postId), {
-      method: 'DELETE'),
+    const resp = await fetch(API_BASE + '/api/posts/' + postId, {
+      method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP ' + resp.status);
@@ -2338,7 +2338,7 @@ async function canPublishPost() {
     return false;
   }
   try {
-    const resp = await fetch(getApiUrl('/api/profiles/' + encodeURIComponent(userId)), {
+    const resp = await fetch(API_BASE + '/api/profiles/' + encodeURIComponent(userId), {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const profile = await resp.json().catch(() => ({}));
@@ -2383,7 +2383,7 @@ async function loadBooksForSelect() {
   const token = getToken();
   if (!token) return;
   try {
-    const resp = await fetch(getApiUrl('/api/reading-sessions'), {
+    const resp = await fetch(API_BASE + '/api/reading-sessions', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);
@@ -2450,7 +2450,7 @@ $('submitPostBtn').addEventListener('click', async function() {
 
   this.disabled = true; this.textContent = '...';
   try {
-    const resp = await fetch(getApiUrl('/api/posts'), {
+    const resp = await fetch(API_BASE + '/api/posts', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

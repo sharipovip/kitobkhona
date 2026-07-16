@@ -28,7 +28,7 @@ export default {
         ok: true,
         service: 'kitobkhona-auth-worker',
         time: new Date().toISOString(),
-        version: '2.3.0'
+        version: '2.0.1'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -329,44 +329,32 @@ async function handleAuth(path, method, request, env, corsHeaders) {
       const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
       // Insert user
-      let newUser;
-      try {
-        newUser = await supabaseQuery(client, 'users', {
-          method: 'POST',
-          body: {
-            email: email || null,
-            username,
-            password_hash: passwordHash,
-            role: 'user',
-            is_temporary: is_temporary || false
-          }
-        });
-      } catch (e) {
-        console.error('[Register] Insert user failed:', e.message);
-        return jsonResponse({ error: 'Failed to create user: ' + e.message }, 500, corsHeaders);
-      }
+      const newUser = await supabaseQuery(client, 'users', {
+        method: 'POST',
+        body: {
+          email: email || null,
+          username,
+          password_hash: passwordHash,
+          role: 'user',
+          is_temporary: is_temporary || false
+        }
+      });
 
       // Insert profile
-      try {
-        await supabaseQuery(client, 'profiles', {
-          method: 'POST',
-          body: {
-            user_id: newUser[0]?.id || newUser.id,
-            display_name: display_name || username,
-            gender: gender || null
-          }
-        });
-      } catch (e) {
-        console.error('[Register] Insert profile failed:', e.message);
-        return jsonResponse({ error: 'Failed to create profile: ' + e.message }, 500, corsHeaders);
-      }
+      await supabaseQuery(client, 'profiles', {
+        method: 'POST',
+        body: {
+          user_id: newUser[0]?.id || newUser.id,
+          display_name: display_name || username,
+          gender: gender || null
+        }
+      });
 
       // Create JWT token
       const userId = newUser[0]?.id || newUser.id;
       const tokenPayload = {
         id: userId,
         username,
-        role: 'user',
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60) // 30 days
       };
@@ -469,60 +457,59 @@ async function handleProfiles(path, method, request, env, corsHeaders) {
     }
 
     // GET /api/profiles/:userId
-    if (path.match(/^\/api\/profiles\/\d+$/) && method === 'GET') {
+    if (path.match(/^\/api\/profiles\/[^/]+$/) && method === 'GET') {
       const userId = path.split('/').pop();
       
-      let profiles;
-      try { profiles = await supabaseQuery(client, 'profiles', { select: '*', eq: { column: 'user_id', value: userId }, limit: 1 }); }
+      // Пробуем найти профиль
+      let profiles = null;
+      try { profiles = await supabaseQuery(client, 'profiles', { select: '*', eq: { column: 'user_id', value: String(userId) }, limit: 1 }); }
       catch (e) { profiles = null; }
 
       if (!profiles || profiles.length === 0) {
-        // Авто-создаём профиль
+        // Авто-создаём профиль с минимумом полей
+        const newProfile = { user_id: String(userId), display_name: 'Меҳмон' };
+        try { await supabaseQuery(client, 'profiles', { method: 'POST', body: newProfile }); } catch (e) {}
+        // Возвращаем базовый профиль
+        const userInfo = { id: decoded.id || userId, username: decoded.username };
         try {
-          await supabaseQuery(client, 'profiles', { method: 'POST', body: { user_id: parseInt(userId), display_name: 'Меҳмон' } });
-        } catch (e) { /* ok, maybe already exists */ }
-        return jsonResponse({ id: parseInt(userId), user_id: parseInt(userId), username: decoded.username, display_name: 'Меҳмон' }, 200, corsHeaders);
+          const u = await supabaseQuery(client, 'users', { select: 'id,username,email,created_at', eq: { column: 'id', value: String(userId) }, limit: 1 });
+          if (u && u.length > 0) Object.assign(userInfo, u[0]);
+        } catch (e) {}
+        return jsonResponse({ ...newProfile, ...userInfo }, 200, corsHeaders);
       }
 
-      let users = [];
-      try { users = await supabaseQuery(client, 'users', { select: 'username,email,role,created_at,is_temporary', eq: { column: 'id', value: userId }, limit: 1 }); }
-      catch (e) { users = []; }
-
+      // Обогащаем профиль данными из users
       const profile = profiles[0];
-      const user = users[0] || {};
-      return jsonResponse({ ...profile, ...user }, 200, corsHeaders);
+      try {
+        const u = await supabaseQuery(client, 'users', { select: 'id,username,email,role,created_at', eq: { column: 'id', value: String(userId) }, limit: 1 });
+        if (u && u.length > 0) Object.assign(profile, u[0]);
+      } catch (e) {}
+      return jsonResponse(profile, 200, corsHeaders);
     }
 
-    // PUT /api/profiles (upsert через POST с ON CONFLICT)
+    // PUT /api/profiles
     if (path === '/api/profiles' && method === 'PUT') {
       const body = await request.json();
-      const userId = decoded.id;
-      const profileFields = ['first_name','last_name','birth_year','gender','region','city','jamoat','village','display_name','bio','avatar_url'];
-      const userFields = ['username','email'];
-      const profileUpdate = {};
-      for (const key of profileFields) {
-        if (body[key] !== undefined) profileUpdate[key] = body[key];
+      const userId = String(decoded.id);
+      const safeBody = {};
+      // Только разрешённые поля
+      const allowed = ['display_name','first_name','last_name','bio','gender','region','city','jamoat','village','birth_year','avatar_url'];
+      for (const k of allowed) { if (body[k] !== undefined) safeBody[k] = body[k]; }
+      
+      // Upsert: пробуем обновить, если нет — создать
+      try {
+        await supabaseQuery(client, 'profiles', { method: 'PATCH', eq: { column: 'user_id', value: userId }, body: safeBody });
+      } catch (e1) {
+        try { await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...safeBody, user_id: userId, display_name: safeBody.display_name || 'Меҳмон' } }); }
+        catch (e2) { return jsonResponse({ error: 'Не удалось сохранить профиль: ' + e2.message }, 500, corsHeaders); }
       }
-      if (Object.keys(profileUpdate).length > 0) {
-        try { await supabaseQuery(client, 'profiles', { method: 'PATCH', eq: { column: 'user_id', value: String(userId) }, body: profileUpdate }); }
-        catch (e) { await supabaseQuery(client, 'profiles', { method: 'POST', body: { ...profileUpdate, user_id: userId } }); }
+      
+      // Обновляем username если передан
+      if (body.username) {
+        try { await supabaseQuery(client, 'users', { method: 'PATCH', eq: { column: 'id', value: userId }, body: { username: body.username } }); }
+        catch (e) {}
       }
-      const userUpdate = {};
-      for (const key of userFields) {
-        if (body[key] !== undefined) userUpdate[key] = body[key];
-      }
-      if (body.password) {
-        const encoder = new TextEncoder();
-        const data = encoder.encode(body.password + env.JWT_SECRET);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', data);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-        userUpdate.password_hash = passwordHash;
-        userUpdate.is_temporary = false;
-      }
-      if (Object.keys(userUpdate).length > 0) {
-        await supabaseQuery(client, 'users', { method: 'PATCH', eq: { column: 'id', value: String(userId) }, body: userUpdate });
-      }
+      
       return jsonResponse({ success: true }, 200, corsHeaders);
     }
 

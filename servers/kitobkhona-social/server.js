@@ -75,6 +75,7 @@ const ALLOWED_ORIGINS = [
   'https://kitobkhona.pages.dev',
   'https://kitobkhona.tj',
   'https://www.kitobkhona.tj',
+  'https://sharipovip.github.io',
   'http://localhost:3000',
   'http://localhost:8080',
   'capacitor://localhost',
@@ -439,9 +440,9 @@ app.get('/api/posts', async (req, res) => {
     try { const decoded = jwt.verify(authHeader.split(' ')[1], JWT_SECRET); currentUserId = decoded.id; } catch (e) {}
   }
   try {
-    let query = `SELECT p.id, p.user_id, p.content, p.book_id, p.book_title, p.book_author, p.likes_count, p.comments_count, p.created_at, u.username, pr.display_name, pr.avatar_url, EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = ?) AS liked FROM posts p JOIN users u ON u.id = p.user_id LEFT JOIN profiles pr ON pr.user_id = p.user_id WHERE p.visibility = 'public'`;
+    let query = `SELECT p.id, p.user_id, p.content, p.book_id, p.book_title, p.book_author, p.likes_count, p.comments_count, p.created_at, u.username, pr.display_name, pr.avatar_url, EXISTS (SELECT 1 FROM post_likes WHERE post_id = p.id AND user_id = $1) AS liked FROM posts p JOIN users u ON u.id = p.user_id LEFT JOIN profiles pr ON pr.user_id = p.user_id WHERE p.visibility = 'public'`;
     const params = [currentUserId || null];
-    if (userId) { query += ` AND p.user_id = ?`; params.push(userId); }
+    if (userId) { query += ` AND p.user_id = $2`; params.push(userId); }
     query += ` ORDER BY p.created_at DESC LIMIT 50`;
     const result = await tursoPosts.execute({ sql: query, args: params });
     const rows = (result.rows||[]).map(p => {
@@ -579,16 +580,16 @@ app.post('/api/book-reactions', authenticateToken, async (req, res) => {
   try {
     const existing = await tursoPosts.execute({ sql: `SELECT id FROM book_reactions WHERE user_id = ? AND book_id = ?`, args: [userId, book_id] });
     if (existing.rows.length > 0) {
-      const updates = [], params = [];
-      if (reaction !== undefined) { updates.push('reaction = ?'); params.push(reaction); }
-      if (rating !== undefined) { updates.push('rating = ?'); params.push(rating); }
+      const updates = [], params = [], pi = 1;
+      if (reaction !== undefined) { updates.push(`reaction = $${pi++}`); params.push(reaction); }
+      if (rating !== undefined) { updates.push(`rating = $${pi++}`); params.push(rating); }
       updates.push(`updated_at = CURRENT_TIMESTAMP`);
       params.push(userId, book_id);
-      await tursoPosts.execute({ sql: `UPDATE book_reactions SET ${updates.join(', ')} WHERE user_id = ? AND book_id = ?`, args: params });
+      await tursoPosts.execute({ sql: `UPDATE book_reactions SET ${updates.join(', ')} WHERE user_id = $${pi} AND book_id = $${pi + 1}`, args: params });
     } else {
       await tursoPosts.execute({ sql: `INSERT INTO book_reactions (user_id, book_id, reaction, rating) VALUES (?, ?, ?, ?)`, args: [userId, book_id, reaction || null, rating || null] });
     }
-    const stats = await tursoPosts.execute({ sql: `SELECT COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE book_id = ?`, args: [book_id] });
+    const stats = await tursoPosts.execute({ sql: `SELECT COUNT(*) FILTER (WHERE reaction = 'like') AS likes, COUNT(*) FILTER (WHERE reaction = 'love') AS loves, COUNT(*) FILTER (WHERE reaction = 'dislike') AS dislikes, AVG(rating) FILTER (WHERE rating > 0) AS avg_rating, COUNT(rating) FILTER (WHERE rating > 0) AS ratings_count FROM book_reactions WHERE book_id = $1`, args: [book_id] });
     const row = stats.rows[0];
     res.json({ likes: parseInt(row.likes || 0), loves: parseInt(row.loves || 0), dislikes: parseInt(row.dislikes || 0), avg_rating: row.avg_rating ? parseFloat(row.avg_rating).toFixed(1) : null, ratings_count: parseInt(row.ratings_count || 0) });
   } catch (e) { console.error('Save book reaction error:', e.message); res.status(500).json({ error: 'Internal server error' }); }
@@ -618,11 +619,11 @@ app.post('/api/reports', authenticateToken, async (req, res) => {
   if (!reported_user_id || !reason) return res.status(400).json({ error: 'reported_user_id and reason required' });
   try {
     await tursoPosts.execute({ sql: 'INSERT INTO reports (reporter_id, reported_user_id, reason) VALUES (?, ?, ?)', args: [req.user.id, reported_user_id, reason] });
-    const countResult = await tursoPosts.execute({ sql: `SELECT COUNT(*) FROM reports WHERE reported_user_id = ? AND resolved = false`, args: [reported_user_id] });
+    const countResult = await tursoPosts.execute({ sql: `SELECT COUNT(*) FROM reports WHERE reported_user_id = $1 AND resolved = false`, args: [reported_user_id] });
     const count = parseInt(countResult.rows[0].count);
     queuePushToUsers([reported_user_id], { title: 'Шикоят', body: 'Ба шумо шикоят расид. Лутфан қоидаҳоро риоя кунед.', link: '/profile.html', data: { type: 'report' } });
     if (count >= 3) {
-      await tursoPosts.execute({ sql: `UPDATE profiles SET blocked = true, block_reason = 'Автоматическая блокировка: 3 жалобы', updated_at = datetime('now') WHERE user_id = ?`, args: [reported_user_id] });
+      await tursoPosts.execute({ sql: `UPDATE profiles SET blocked = true, block_reason = 'Автоматическая блокировка: 3 жалобы', updated_at = datetime('now') WHERE user_id = $1`, args: [reported_user_id] });
       console.log(`[AUTO-BLOCK] User ${reported_user_id} blocked due to 3 reports.`);
     }
     res.json({ success: true });
@@ -755,7 +756,7 @@ app.post('/api/announcements', authenticateToken, async (req, res) => {
   try {
     await tursoChats.execute(`UPDATE announcements SET is_active = FALSE`);
     const result = await tursoChats.execute({ sql: `INSERT INTO announcements (text, is_active, expires_at) VALUES (?, TRUE, ?) RETURNING id, text, is_active, created_at, expires_at`, args: [text, expiresAt] });
-    const usersResult = await tursoChats.execute(`SELECT id FROM users WHERE id != ?`, [req.user?.id || 0]);
+    const usersResult = await tursoChats.execute(`SELECT id FROM users WHERE id != $1`, [req.user?.id || 0]);
     const userIds = usersResult.rows.map(row => row.id);
     if (userIds.length > 0) { await queuePushToUsers(userIds, { title: 'Эълон', body: text, link: '/index.html', data: { type: 'announcement' } }); }
     res.json((result.rows||[])[0]);
@@ -813,26 +814,12 @@ async function sendPushToUsers(userIds, payload) {
   if (!Array.isArray(userIds) || userIds.length === 0) return { success: true, sent: 0 };
   const offlineUserIds = userIds.filter(userId => !isWsUserOnline(userId));
   if (offlineUserIds.length === 0) return { success: true, sent: 0, skipped_online: userIds.length };
-  try { 
-    const uPlaceholders = offlineUserIds.map(() => '?').join(',');
-    const result = await tursoPosts.execute({ sql: `SELECT token FROM device_tokens WHERE user_id IN (${uPlaceholders})`, args: offlineUserIds }); 
-    const tokens = (result.rows||[]).map(row => row.token).filter(Boolean); 
-    const pushResult = await sendPushMessagesToTokens(tokens, payload); 
-    return { ...pushResult, skipped_online: userIds.length - offlineUserIds.length }; 
-  } catch (e) { console.warn('[PUSH] Failed to resolve push tokens:', e.message); return { success: false, sent: 0, failed: offlineUserIds.length }; }
+  try { const result = await tursoPosts.execute({ sql: `SELECT token FROM device_tokens WHERE user_id = ANY(?)`, args: [offlineUserIds] }); const tokens = (result.rows||[]).map(row => row.token).filter(Boolean); const pushResult = await sendPushMessagesToTokens(tokens, payload); return { ...pushResult, skipped_online: userIds.length - offlineUserIds.length }; } catch (e) { console.warn('[PUSH] Failed to resolve push tokens:', e.message); return { success: false, sent: 0, failed: offlineUserIds.length }; }
 }
 
 function isWsUserOnline(userId) { const ws = clients.get(String(userId)); return !!ws && ws.readyState === WebSocket.OPEN; }
 
-async function cleanupStaleTokens(results, tokens) { 
-  if (!results || !Array.isArray(results.responses)) return; 
-  const staleTokens = results.responses.map((resp, index) => ({ resp, token: tokens[index] })).filter(({ resp }) => !resp.success && resp.error && ['messaging/invalid-registration-token', 'messaging/registration-token-not-registered', 'messaging/invalid-argument'].includes(resp.error.code)).map(({ token }) => token); 
-  if (staleTokens.length > 0) { 
-    const tPlaceholders = staleTokens.map(() => '?').join(','); 
-    await tursoPosts.execute(`DELETE FROM device_tokens WHERE token IN (${tPlaceholders})`, staleTokens); 
-    console.log('[FCM] Removed stale tokens:', staleTokens.length); 
-  } 
-}
+async function cleanupStaleTokens(results, tokens) { if (!results || !Array.isArray(results.responses)) return; const staleTokens = results.responses.map((resp, index) => ({ resp, token: tokens[index] })).filter(({ resp }) => !resp.success && resp.error && ['messaging/invalid-registration-token', 'messaging/registration-token-not-registered', 'messaging/invalid-argument'].includes(resp.error.code)).map(({ token }) => token); if (staleTokens.length > 0) { await tursoPosts.execute('DELETE FROM device_tokens WHERE token = ANY(?)', [staleTokens]); console.log('[FCM] Removed stale tokens:', staleTokens.length); } }
 
 // ════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════════
 // WEBSOCKET SETUP

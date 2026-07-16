@@ -52,6 +52,7 @@
   }
 
   function get(key) {
+    return null; // CACHE DISABLED FOR TESTING
     if (!key) return null;
     if (memory.has(key)) {
       const item = memory.get(key);
@@ -64,6 +65,7 @@
   }
 
   function set(key, value) {
+    return value; // CACHE DISABLED FOR TESTING
     if (!key) return value;
     memory.set(key, { value: value, ts: Date.now() });
     writeStored(key, value);

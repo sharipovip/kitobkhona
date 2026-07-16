@@ -2407,7 +2407,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!currentUserId || !peerId) return;
     try {
       const token = localStorage.getItem('kk_token');
-      const resp = await fetch(getApiUrl('/api/messages'), {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/messages', {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ user1: currentUserId, user2: peerId })
@@ -2428,7 +2428,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!await showConfirm('Корбар дигар ба шумо навишта наметавонад ва дӯстӣ бекор мешавад. Давом диҳем?', 'Блокировать', true)) return;
     try {
       const token = localStorage.getItem('kk_token');
-      const resp = await fetch(getApiUrl('/api/users/block'), {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/block', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ user_id: peerId })
@@ -2524,7 +2524,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return false;
     try {
-      const r = await fetch(getApiUrl('/api/users/block-status/' + encodeURIComponent(peerId)), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/users/block-status/' + encodeURIComponent(peerId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       const data = r.ok ? await r.json() : { blocked: false };
@@ -2632,7 +2632,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       if (!token) return;
-      const r = await fetch(getApiUrl('/api/daily-words'), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/daily-words', {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (r.ok) {
@@ -2653,7 +2653,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return;
     try {
-      await fetch(getApiUrl('/api/typing'), {
+      await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/typing', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ receiver_id: peerId, typing })
@@ -2667,7 +2667,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const status = document.getElementById('friendStatusLabel');
     if (!token || !indicator || !status || !peerId) return;
     try {
-      const r = await fetch(getApiUrl('/api/typing/' + encodeURIComponent(peerId)), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/typing/' + encodeURIComponent(peerId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       const data = r.ok ? await r.json() : { typing: false };

@@ -870,7 +870,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     const bookId = getBookId();
     if (!bookId) return;
     try {
-      const resp = await fetch(getApiUrl('/api/book-reactions/' + encodeURIComponent(bookId)), {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!resp.ok) throw new Error('HTTP '+resp.status);
@@ -885,7 +885,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
         currentRating = data.rating;
         updateStarsUI(data.rating);
       }
-      const statsResp = await fetch(getApiUrl('/api/book-stats/' + encodeURIComponent(bookId));
+      const statsResp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
       if (!statsResp.ok) throw new Error('HTTP '+statsResp.status);
       const stats = await statsResp.json();
       $('likeCount').textContent = stats.likes || 0;
@@ -902,7 +902,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     const bookId = getBookId();
     if (!bookId) return;
     try {
-      const resp = await fetch(getApiUrl('/api/book-reactions'), {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_id: bookId, reaction })
@@ -929,7 +929,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     const bookId = getBookId();
     if (!bookId) return;
     try {
-      const resp = await fetch(getApiUrl('/api/book-reactions'), {
+      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_id: bookId, rating })
