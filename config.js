@@ -744,6 +744,7 @@ const AutoLogin = {
           }
           throw new Error(loginData.error || 'Не удалось войти');
         }
+        console.warn('[AutoLogin] Guest register failed:', response.status, data);
         throw new Error(data.error || ('HTTP ' + response.status));
       }
       localStorage.setItem('kk_token', data.token);

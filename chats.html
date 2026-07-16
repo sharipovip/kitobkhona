@@ -1086,7 +1086,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         if (!window.confirm('Нест кардани чат ва ҳамаи паёмҳо?')) return;
         try {
           const token = localStorage.getItem('kk_token');
-          const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
+          const r = await fetch(getApiUrl('/api/chats/' + encodeURIComponent(peerId)), {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + token }
           });

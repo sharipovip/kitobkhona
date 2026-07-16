@@ -329,26 +329,37 @@ async function handleAuth(path, method, request, env, corsHeaders) {
       const passwordHash = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
 
       // Insert user
-      const newUser = await supabaseQuery(client, 'users', {
-        method: 'POST',
-        body: {
-          email: email || null,
-          username,
-          password_hash: passwordHash,
-          role: 'user',
-          is_temporary: is_temporary || false
-        }
-      });
+      let newUser;
+      try {
+        newUser = await supabaseQuery(client, 'users', {
+          method: 'POST',
+          body: {
+            email: email || null,
+            username,
+            password_hash: passwordHash,
+            role: 'user',
+            is_temporary: is_temporary || false
+          }
+        });
+      } catch (e) {
+        console.error('[Register] Insert user failed:', e.message);
+        return jsonResponse({ error: 'Failed to create user: ' + e.message }, 500, corsHeaders);
+      }
 
       // Insert profile
-      await supabaseQuery(client, 'profiles', {
-        method: 'POST',
-        body: {
-          user_id: newUser[0]?.id || newUser.id,
-          display_name: display_name || username,
-          gender: gender || null
-        }
-      });
+      try {
+        await supabaseQuery(client, 'profiles', {
+          method: 'POST',
+          body: {
+            user_id: newUser[0]?.id || newUser.id,
+            display_name: display_name || username,
+            gender: gender || null
+          }
+        });
+      } catch (e) {
+        console.error('[Register] Insert profile failed:', e.message);
+        return jsonResponse({ error: 'Failed to create profile: ' + e.message }, 500, corsHeaders);
+      }
 
       // Create JWT token
       const userId = newUser[0]?.id || newUser.id;

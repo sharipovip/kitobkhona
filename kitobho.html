@@ -1112,7 +1112,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId), { headers });
+      const resp = await fetch(getApiUrl('/api/book-stats/' + encodeURIComponent(bookId)), { headers });
       if (!resp.ok) return null;
       return await resp.json();
     } catch(e) { return null; }
@@ -1121,7 +1121,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   async function getBookStatsBatch(bookIds) {
     if (!bookIds.length) return {};
     try {
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats-batch', {
+      const resp = await fetch(getApiUrl('/api/book-stats-batch'), {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_ids: bookIds })
