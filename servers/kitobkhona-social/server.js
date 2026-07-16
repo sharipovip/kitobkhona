@@ -579,12 +579,12 @@ app.post('/api/book-reactions', authenticateToken, async (req, res) => {
   try {
     const existing = await tursoPosts.execute({ sql: `SELECT id FROM book_reactions WHERE user_id = ? AND book_id = ?`, args: [userId, book_id] });
     if (existing.rows.length > 0) {
-      const updates = [], params = [], pi = 1;
-      if (reaction !== undefined) { updates.push(`reaction = $${pi++}`); params.push(reaction); }
-      if (rating !== undefined) { updates.push(`rating = $${pi++}`); params.push(rating); }
+      const updates = [], params = [];
+      if (reaction !== undefined) { updates.push('reaction = ?'); params.push(reaction); }
+      if (rating !== undefined) { updates.push('rating = ?'); params.push(rating); }
       updates.push(`updated_at = CURRENT_TIMESTAMP`);
       params.push(userId, book_id);
-      await tursoPosts.execute({ sql: `UPDATE book_reactions SET ${updates.join(', ')} WHERE user_id = $${pi} AND book_id = $${pi + 1}`, args: params });
+      await tursoPosts.execute({ sql: `UPDATE book_reactions SET ${updates.join(', ')} WHERE user_id = ? AND book_id = ?`, args: params });
     } else {
       await tursoPosts.execute({ sql: `INSERT INTO book_reactions (user_id, book_id, reaction, rating) VALUES (?, ?, ?, ?)`, args: [userId, book_id, reaction || null, rating || null] });
     }
