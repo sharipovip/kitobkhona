@@ -6,8 +6,8 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=27"></script>
-  <script src="cache.js?v=27"></script>
+  <script src="config.js?v=30"></script>
+  <script src="cache.js?v=30"></script>
   <style>
     
     :root {
@@ -1436,7 +1436,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   </div>
 
   <div class="sheet-overlay" id="editOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>Таҳрири профил</h3><div class="icon-btn" id="closeEdit">✕</div></div><div class="sheet-body">
-    <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><button class="btn btn-ghost" style="width:auto;padding:9px 16px;font-size:12.5px;" disabled>Тағйири акс</button></div>
+    <div class="avatar-edit-row"><div class="avatar-ring"><div class="avatar-inner" id="editAvatarPreview"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6" stroke-linecap="round"/></svg></div></div><div style="flex:1"><button class="btn btn-ghost" id="avatarChangeBtn" type="button" style="width:auto;padding:9px 16px;font-size:12.5px" disabled>📷 Тағйири акс</button><input id="avatarFileInput" type="file" accept="image/jpeg,image/png,image/webp" hidden><div id="avatarEligibilityHint" style="font-size:10.5px;color:var(--muted);line-height:1.35;margin-top:6px">Санҷиши ҳуқуқ...</div></div></div>
     <div id="profileEditNotice" style="display:none;background:var(--gold-soft);border:1px solid var(--line);border-radius:11px;padding:10px 12px;margin-bottom:12px;color:var(--cream-dim);font-size:12px;line-height:1.5"></div>
     <div class="field-row"><div class="field"><label>Ном <span style="color:var(--red)">*</span></label><input type="text" id="editName" placeholder="Ном"></div><div class="field"><label>Насаб <span style="color:var(--red)">*</span></label><input type="text" id="editSurname" placeholder="Насаб"></div></div>
     <div class="field"><label>Соли таваллуд <span style="color:var(--red)">*</span></label><input type="number" id="editBirthYear" placeholder="2008" min="1930" max="2026"></div>
@@ -2564,8 +2564,91 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     el('bookMenu').style.display = 'none';
   }
 
+  let avatarEligibility = null;
+  async function loadAvatarEligibility() {
+    const btn = el('avatarChangeBtn'), hint = el('avatarEligibilityHint');
+    if (!btn || !hint || !isOwnProfile) return;
+    btn.disabled = true;
+    hint.textContent = 'Санҷиши ҳуқуқ...';
+    try {
+      const token = localStorage.getItem('kk_token');
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar/eligibility', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || 'Санҷиш дастрас нест');
+      avatarEligibility = data;
+      btn.disabled = !data.can_upload;
+      if (data.can_upload) {
+        const via = data.eligible_by_hours ? `${data.total_hours} соати хониш` : `ТОП-3: ${(data.top_periods || []).join(', ')}`;
+        hint.textContent = '✓ Акс дастрас аст · ' + via;
+        hint.style.color = 'var(--green)';
+      } else if (data.eligible && data.next_upload_at) {
+        hint.textContent = 'Аксро аз ' + new Date(data.next_upload_at).toLocaleDateString('tg-TJ') + ' иваз карда метавонед';
+        hint.style.color = 'var(--gold)';
+      } else {
+        hint.textContent = `🔒 Барои акс 50 соати хониш ё ҷойи 1–3 лозим аст (ҳоло ${data.total_hours || 0} соат)`;
+        hint.style.color = 'var(--muted)';
+      }
+    } catch (e) {
+      hint.textContent = 'Санҷиши акс муваққатан дастрас нест';
+      hint.style.color = 'var(--red)';
+    }
+  }
+
+  async function imageFileToWebp(file) {
+    if (!file || file.size > 8 * 1024 * 1024) throw new Error('Акс аз 8 MB калон аст');
+    let bitmap;
+    try { bitmap = await createImageBitmap(file, { imageOrientation: 'from-image' }); }
+    catch (_) { bitmap = await createImageBitmap(file); }
+    const size = 512, source = Math.min(bitmap.width, bitmap.height);
+    const sx = Math.max(0, (bitmap.width - source) / 2), sy = Math.max(0, (bitmap.height - source) / 2);
+    const canvas = document.createElement('canvas'); canvas.width = size; canvas.height = size;
+    const ctx = canvas.getContext('2d', { alpha: false });
+    ctx.fillStyle = '#0D1B2A'; ctx.fillRect(0, 0, size, size);
+    ctx.drawImage(bitmap, sx, sy, source, source, 0, 0, size, size);
+    bitmap.close?.();
+    let quality = .84, blob = null;
+    for (let i = 0; i < 4; i++) {
+      blob = await new Promise(resolve => canvas.toBlob(resolve, 'image/webp', quality));
+      if (blob && blob.size <= 340 * 1024) break;
+      quality -= .12;
+    }
+    if (!blob || blob.type !== 'image/webp') throw new Error('Браузер WebP-ро дастгирӣ намекунад');
+    if (blob.size > 350 * 1024) throw new Error('Акс баъд аз фишурдан ҳам калон аст');
+    return blob;
+  }
+
+  async function uploadProfileAvatar(file) {
+    const btn = el('avatarChangeBtn'), hint = el('avatarEligibilityHint');
+    btn.disabled = true; hint.textContent = 'Акс омода ва бор шуда истодааст...'; hint.style.color = 'var(--gold)';
+    try {
+      const blob = await imageFileToWebp(file);
+      const form = new FormData(); form.append('avatar', blob, 'avatar.webp');
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar/upload', { method: 'POST', headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kk_token') }, body: form });
+      const data = await r.json().catch(() => ({}));
+      if (!r.ok) throw new Error(data.error || 'Акс бор нашуд');
+      if (loadedProfile) loadedProfile.avatar_url = data.avatar_url;
+      updateAvatar(loadedProfile?.gender, data.avatar_url, false);
+      const preview = el('editAvatarPreview'); if (preview) preview.innerHTML = `<img class="avatar-photo" src="${esc(data.avatar_url)}" alt="Аватар">`;
+      if (typeof CacheManager !== 'undefined') {
+        CacheManager.invalidateKey('kk_profile_' + currentProfileUserId);
+        CacheManager.invalidateKey(profileCacheKey('posts', currentProfileUserId));
+        CacheManager.invalidateKey(CacheManager.KEYS.PROFILE);
+      }
+      try { localStorage.removeItem('kk_profile_cache'); } catch (e) {}
+      hint.textContent = '✓ Акс нигоҳ дошта шуд. Ивазкунии нав баъд аз як моҳ.'; hint.style.color = 'var(--green)';
+      showToast('Акс нигоҳ дошта шуд!');
+      avatarEligibility = { ...(avatarEligibility || {}), can_upload: false, next_upload_at: data.next_upload_at };
+    } catch (e) {
+      hint.textContent = 'Хатогӣ: ' + e.message; hint.style.color = 'var(--red)';
+      btn.disabled = !(avatarEligibility && avatarEligibility.can_upload);
+    }
+  }
+
+  el('avatarChangeBtn')?.addEventListener('click', () => el('avatarFileInput')?.click());
+  el('avatarFileInput')?.addEventListener('change', function() { const file = this.files?.[0]; this.value = ''; if (file) uploadProfileAvatar(file); });
+
   const overlay = el('editOverlay');
-  function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); }
+  function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); loadAvatarEligibility(); }
   function closeEdit() { overlay.classList.remove('open'); }
   el('closeEdit')?.addEventListener('click', closeEdit);
   el('cancelEdit')?.addEventListener('click', closeEdit);
@@ -2581,6 +2664,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   const togglePasswordBtn = el('togglePasswordBtn');
 
   function fillEditForm(profile) {
+    const avatarPreview = el('editAvatarPreview');
+    if (avatarPreview) avatarPreview.innerHTML = profile.avatar_url ? `<img class="avatar-photo" src="${esc(profile.avatar_url)}" alt="Аватар">` : '<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6"/></svg>';
     el('editName').value = profile.first_name || '';
     el('editSurname').value = profile.last_name || '';
     el('editBirthYear').value = profile.birth_year || '';

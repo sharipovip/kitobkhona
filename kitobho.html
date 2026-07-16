@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <link rel="manifest" href="manifest.json">
-<script src="config.js?v=27"></script>
-<script src="cache.js?v=27"></script>
+<script src="config.js?v=30"></script>
+<script src="cache.js?v=30"></script>
 <style>
   
   * {
@@ -1121,7 +1121,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   async function getBookStatsBatch(bookIds) {
     if (!bookIds.length) return {};
     try {
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats-batch', {
+      const resp = await edgeApiFetch('/api/book-stats-batch', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_ids: bookIds })

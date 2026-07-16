@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
   <link rel="manifest" href="manifest.json">
-  <script src="config.js?v=27"></script>
-  <script src="cache.js?v=27"></script>
+  <script src="config.js?v=30"></script>
+  <script src="cache.js?v=30"></script>
   <style id="shared-page-styles">
 :root {
   --bg: #0D1B2A;
@@ -1714,6 +1714,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
       color: #fff;
       box-shadow: 0 2px 6px rgba(0,0,0,0.3);
     }
+    .head-avatar img{width:100%;height:100%;object-fit:cover;display:block}
     .head-info { flex: 1; min-width: 0; }
     .head-name {
       font-size: 15.5px;
@@ -2819,6 +2820,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }, 7000);
   }
 
+  async function loadPeerAvatar() {
+    if (!peerId) return;
+    try {
+      const profile = await NEON_API.getProfile(peerId);
+      if (profile?.display_name) document.getElementById('headName').textContent = profile.display_name;
+      if (profile?.avatar_url) document.getElementById('chatAvatar').innerHTML = `<img src="${esc(profile.avatar_url)}" alt="">`;
+    } catch (e) {}
+  }
+
   async function init() {
     const { data } = await AUTH.getUser();
     if (!data.user) {
@@ -2826,6 +2836,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       return;
     }
     currentUserId = data.user.id;
+    void loadPeerAvatar();
     void fetchBlockStatus();
     void loadMessages(false);
     startPolling();

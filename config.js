@@ -1,5 +1,6 @@
 
 const KITOB_CONFIG = {
+  EDGE_API_BASE: 'https://kitobkhona-edge.tojik.workers.dev',
   NEON_API_BASE: 'https://kitobkhona-chat.onrender.com',
   SUPABASE_REST: 'https://dwkdzfqooprxytlepaoo.supabase.co/rest/v1',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI'
@@ -447,6 +448,17 @@ function fetchWithTimeout(url, options, timeoutMs) {
     new Promise((_, reject) => setTimeout(() => reject(new Error('Сервер не ответил (' + (timeoutMs/1000) + 'с)')), timeoutMs))
   ]);
 }
+
+async function edgeApiFetch(path, options, timeoutMs) {
+  const cleanPath = String(path || '').startsWith('/') ? String(path) : '/' + String(path || '');
+  const opts = options || {};
+  try {
+    const edgeResponse = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + cleanPath, opts, timeoutMs || 7000);
+    if (edgeResponse.ok || edgeResponse.status < 500) return edgeResponse;
+  } catch (e) {}
+  return fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + cleanPath, opts, timeoutMs || 8000);
+}
+window.edgeApiFetch = edgeApiFetch;
 
 function getDeviceFingerprint() {
   let fp = localStorage.getItem('kk_device_fp');
