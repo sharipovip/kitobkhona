@@ -28,7 +28,7 @@ export default {
         ok: true,
         service: 'kitobkhona-auth-worker',
         time: new Date().toISOString(),
-        version: '2.0.1'
+        version: '2.3.0'
       }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
       });
@@ -355,6 +355,7 @@ async function handleAuth(path, method, request, env, corsHeaders) {
       const tokenPayload = {
         id: userId,
         username,
+        role: 'user',
         iat: Math.floor(Date.now() / 1000),
         exp: Math.floor(Date.now() / 1000) + (30 * 24 * 60 * 60) // 30 days
       };
