@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
   <link rel="manifest" href="manifest.json">
-  <script src="config.js?v=31"></script>
-  <script src="cache.js?v=31"></script>
+  <script src="config.js?v=32"></script>
+  <script src="cache.js?v=32"></script>
   <style id="shared-page-styles">
 :root {
   --bg: #0D1B2A;
@@ -2137,10 +2137,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="chat-header">
         <div class="head-avatar" id="chatAvatar">👤</div>
         <div class="head-info">
-          <div class="head-name" id="headName">
-            Чат
-            <span class="verified-badge" id="verifiedBadge">✅</span>
-          </div>
+          <div class="head-name"><span id="headNameText">Чат</span><span id="verifiedBadge"></span></div>
           <div class="head-status" id="headStatus">
             <span class="online-dot"></span>
             <span id="friendStatusLabel">Дӯст</span>
@@ -2200,7 +2197,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   const peerId = qs.get('to') || '';
   const peerName = decodeURIComponent(qs.get('name') || 'Чат');
 
-  document.getElementById('headName').textContent = peerName;
+  document.getElementById('headNameText').textContent = peerName;
 
   let currentUserId = null;
   let pollInterval = null;
@@ -2824,7 +2821,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!peerId) return;
     try {
       const profile = await NEON_API.getProfile(peerId);
-      if (profile?.display_name) document.getElementById('headName').textContent = profile.display_name;
+      if (profile?.display_name) document.getElementById('headNameText').textContent = profile.display_name;
+      document.getElementById('verifiedBadge').innerHTML = profile?.verified ? verifiedBadgeSvg() : '';
       if (profile?.avatar_url) document.getElementById('chatAvatar').innerHTML = `<img src="${esc(profile.avatar_url)}" alt="">`;
     } catch (e) {}
   }

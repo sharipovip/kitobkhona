@@ -80,6 +80,18 @@ window.KKH_LANGUAGES = KKH_LANGUAGES;
 window.setAppLanguage = setAppLanguage;
 window.getAppLanguage = getAppLanguage;
 
+function verifiedBadgeSvg(extraClass = '') {
+  return `<span class="kk-verified-badge ${extraClass}" title="Корбари тасдиқшуда" aria-label="Тасдиқшуда"><svg viewBox="0 0 32 32" aria-hidden="true"><circle cx="16" cy="16" r="15" fill="#2140F3"/><path d="M8.5 16.2l4.7 4.8L23.8 10.7" fill="none" stroke="#fff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/></svg></span>`;
+}
+window.verifiedBadgeSvg = verifiedBadgeSvg;
+function installVerificationBadgeStyles() {
+  if (document.getElementById('kk-verified-styles')) return;
+  const style = document.createElement('style');
+  style.id = 'kk-verified-styles';
+  style.textContent = `.kk-verified-badge{display:inline-flex;vertical-align:middle;align-items:center;justify-content:center;width:17px;height:17px;margin-left:5px;flex:0 0 17px;filter:drop-shadow(0 1px 2px rgba(0,0,0,.24))}.kk-verified-badge svg{display:block;width:100%;height:100%}`;
+  document.head.appendChild(style);
+}
+
 function installThemeStyles() {
   if (document.getElementById('kitobkhona-theme-styles')) return;
   const style = document.createElement('style');
@@ -434,6 +446,7 @@ function initNetworkStatus() {
 }
 
 document.addEventListener('DOMContentLoaded', function() {
+  installVerificationBadgeStyles();
   initNetworkStatus();
   initTheme();
   setAppLanguage(getAppLanguage(), false);

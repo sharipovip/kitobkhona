@@ -6,8 +6,8 @@
   <title>Китобхона — Ғолибон</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=31"></script>
-  <script src="cache.js?v=31"></script>
+  <script src="config.js?v=32"></script>
+  <script src="cache.js?v=32"></script>
   <style>
     
     * {
@@ -928,8 +928,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
     }
 
     function formatHours(hours) {
-      if (hours === undefined || hours === null) return '0с';
-      return Math.round(hours) + 'с';
+      const totalMinutes = Math.max(0, Math.round(Number(hours || 0) * 60));
+      if (totalMinutes < 60) return totalMinutes + ' дақ';
+      const h = Math.floor(totalMinutes / 60), m = totalMinutes % 60;
+      return h + ' соат' + (m ? ' ' + m + ' дақ' : '');
     }
 
     function esc(str) {
@@ -1001,7 +1003,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
                 <div class="pav ${medalClass[i]}"><div class="pav-inner">${avatar}</div></div>
                 <div class="pmedal ${i === 0 ? 'm2' : i === 1 ? 'm1' : 'm3'}">${medalNum[i]}</div>
               </div>
-              <div class="pname">${esc(displayName)}</div>
+              <div class="pname" style="display:flex;align-items:center;justify-content:center">${esc(displayName)}${user.verified ? verifiedBadgeSvg() : ''}</div>
               <div class="pcity">${esc(city)}</div>
               <div class="pstats"><span>⏱ ${hours}</span><span>📚 ${books}</span></div>
               <div class="step ${stepClass[i]}">${medalNum[i]}</div>
@@ -1049,7 +1051,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
             <div class="rank-row" data-age="${user.age !== null ? user.age : ''}" data-region="${user.region || ''}" onclick="openUserProfile('${user.id}')">
               <div class="rank-num-wrap"><span class="rank-num">${rank}</span></div>
               <div class="rav"><div class="rav-inner">${avatar}</div></div>
-              <div class="rank-info"><div class="rank-name">${esc(displayName)}</div><div class="rank-city">${esc(city)}</div></div>
+              <div class="rank-info"><div class="rank-name" style="display:flex;align-items:center">${esc(displayName)}${user.verified ? verifiedBadgeSvg() : ''}</div><div class="rank-city">${esc(city)}</div></div>
               <div class="rank-age">${age}</div>
               <div class="rank-stats"><span class="hours">${hours}</span><span class="books">${books} китоб</span></div>
             </div>

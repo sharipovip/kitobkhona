@@ -449,7 +449,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         </select>
       </div>
       <div class="card"><div class="table-wrap"><table>
-        <thead><tr><th>Книга</th><th>Автор</th><th>Минут прочитано</th><th>Сессий</th></tr></thead>
+        <thead><tr><th>Книга</th><th>Автор</th><th>Время чтения</th><th>Сессий</th></tr></thead>
         <tbody id="booksBody"><tr><td colspan="4" class="empty">Загрузка…</td></tr></tbody>
       </table></div></div>
     </section>
@@ -1115,6 +1115,7 @@ document.getElementById('sendNowBtn').addEventListener('click', async () => {
 });
 
 
+function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' мин';const h=Math.floor(total/60),m=total%60;return h+' ч'+(m?' '+m+' мин':'')}
 async function loadBooks(){
   try {
     const period = document.getElementById('booksPeriod').value;
@@ -1123,7 +1124,7 @@ async function loadBooks(){
     if (!list.length) { body.innerHTML = '<tr><td colspan="4" class="empty">Нет данных</td></tr>'; return; }
     body.innerHTML = list.map(b => `<tr>
       <td>${escapeHtml(b.book_title || b.book_id)}</td><td>${escapeHtml(b.book_author || '—')}</td>
-      <td class="mono">${Math.round(b.total_minutes || 0)}</td><td class="mono">${b.sessions_count}</td>
+      <td class="mono">${formatReadingMinutes(b.total_minutes)}</td><td class="mono">${b.sessions_count}</td>
     </tr>`).join('');
   } catch (e) { toast('Ошибка загрузки книг: ' + e.message, true); }
 }

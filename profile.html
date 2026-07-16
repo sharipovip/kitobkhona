@@ -6,8 +6,8 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=31"></script>
-  <script src="cache.js?v=31"></script>
+  <script src="config.js?v=32"></script>
+  <script src="cache.js?v=32"></script>
   <style>
     
     :root {
@@ -1189,7 +1189,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div class="stats-row"><div class="stat"><b id="ownBooks">0</b><span>китобҳо</span></div><div class="stat-divider"></div><div class="stat"><b id="ownFriends">0</b><span>дӯстон</span></div><div class="stat-divider"></div><div class="stat"><b id="ownMarks">0</b><span>дӯстдошта</span></div></div>
         </div>
         <div class="profile-meta">
-          <h3 id="ownName">Китобхон</h3>
+          <h3 style="display:flex;align-items:center;flex-wrap:wrap"><span id="ownName">Китобхон</span><span id="ownVerified"></span><span id="developerStatus" style="display:none;margin-left:7px;padding:2px 7px;border-radius:999px;background:rgba(33,64,243,.14);color:#6F8BFF;border:1px solid rgba(77,105,255,.3);font-size:9px">Разработчик</span></h3>
           <div class="age-gender-row"><div class="sub-info" id="ownAge"></div><div class="status-chip" id="ownGender" style="display:none"></div></div>
           <div class="meta-loc" id="ownLoc">—</div>
         </div>
@@ -1766,13 +1766,20 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function applyProfileHeader(profile) {
     const displayName = profile.display_name || profile.username || 'Китобхон';
     el('ownName').textContent = displayName;
+    if (el('ownVerified')) el('ownVerified').innerHTML = profile.verified ? verifiedBadgeSvg() : '';
+    if (el('developerStatus')) el('developerStatus').style.display = profile.role === 'admin' ? 'inline-flex' : 'none';
     const genderMap = { male: 'Мард', female: 'Зан' };
     const genderLabel = genderMap[profile.gender] || '';
     el('ownGender').textContent = genderLabel;
     el('ownGender').style.display = genderLabel ? 'inline-flex' : 'none';
     updateAvatar(profile.gender, profile.avatar_url, profile.is_temporary === true);
-    const locParts = [profile.city, profile.region].filter(Boolean);
-    el('ownLoc').textContent = locParts.length ? locParts.join(', ') : 'Ҷойгиршавӣ илова нашудааст';
+    const locationRows = [
+      profile.region ? `Вилоят: ${esc(profile.region)}` : '',
+      profile.city ? `Шаҳр/ноҳия: ${esc(profile.city)}` : '',
+      profile.jamoat ? `Ҷамоат: ${esc(profile.jamoat)}` : '',
+      profile.village ? `Деҳа: ${esc(profile.village)}` : ''
+    ].filter(Boolean);
+    el('ownLoc').innerHTML = locationRows.length ? locationRows.map(row => `<div>${row}</div>`).join('') : 'Ҷойгиршавӣ илова нашудааст';
     el('ownBooks').textContent = profile.books_count_real ?? profile.books_count ?? 0;
     el('ownFriends').textContent = profile.friends_count ?? profile.followers_count ?? 0;
     el('ownMarks').textContent = profile.favorites_count ?? 0;
@@ -2234,7 +2241,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const c = colors[idx % colors.length];
       const coverUrl = book.cover_url || await getCoverForBook(book);
       const views = book.sessions_count || 0;
-      const minutes = Math.round(Number(book.total_duration || 0) / 60);
+      const readTime = formatReadingSeconds(book.total_duration || 0);
       const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '📚');
       const bookData = encodeURIComponent(JSON.stringify(book));
       return `
@@ -2246,7 +2253,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
             <div class="book-title">${esc(book.book_title)}</div>
             <div class="book-meta">
               <span>${statusLabel}</span>
-              <span>⏱ ${minutes} мин</span>
+              <span>⏱ ${readTime}</span>
               <span>📚 ${views}</span>
             </div>
           </div>
@@ -2304,7 +2311,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       return;
     }
     const items = await Promise.all(postsData.map(async (post) => {
-      const timeAgo = timeSince(post.created_at);
+      const timeAgo = formatPostDate(post.created_at);
       let coverHtml = '';
       if (post.book_id) {
         const parts = post.book_id.includes('/') ? post.book_id.split('/') : [];
@@ -2430,12 +2437,24 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     return title.trim().toLowerCase().replace(/\s+/g, ' ');
   }
 
+  function formatReadingSeconds(value) {
+    const totalMinutes = Math.max(0, Math.round(Number(value || 0) / 60));
+    if (totalMinutes < 60) return totalMinutes + ' дақ';
+    const hours = Math.floor(totalMinutes / 60), minutes = totalMinutes % 60;
+    return hours + ' соат' + (minutes ? ' ' + minutes + ' дақ' : '');
+  }
+
   function normalizeBookUrl(url) {
     try { return decodeURIComponent(url); } catch(e) { return url; }
   }
 
   function esc(str) { if (str == null) return ''; return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
   function escHtml(str) { return esc(str); }
+  function formatPostDate(dateStr) {
+    const date = new Date(dateStr);
+    if (Number.isNaN(date.getTime())) return '—';
+    return [String(date.getDate()).padStart(2,'0'),String(date.getMonth()+1).padStart(2,'0'),date.getFullYear()].join('.');
+  }
   function timeSince(dateStr) {
     const now = Date.now();
     const then = new Date(dateStr).getTime();

@@ -6,8 +6,8 @@
 <title>Китобхона — Шортс</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=31"></script>
-<script src="cache.js?v=31"></script>
+<script src="config.js?v=32"></script>
+<script src="cache.js?v=32"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
@@ -1772,7 +1772,7 @@ function buildSlide(post, idx) {
     <div class="slide-bottom-row">
       <div class="slide-bottom-info">
         <div class="info-line" data-userid="${userId}">
-          ${post.avatar_url ? `<img class="feed-user-avatar" src="${escHtml(post.avatar_url)}" alt="">` : ''}<span class="gold">@${escHtml(username)}</span>
+          ${post.avatar_url ? `<img class="feed-user-avatar" src="${escHtml(post.avatar_url)}" alt="">` : ''}<span class="gold" style="display:inline-flex;align-items:center">@${escHtml(username)}${post.verified ? verifiedBadgeSvg() : ''}</span>
           <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
         </div>
         ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}

@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=31"></script>
-<script src="cache.js?v=31"></script>
+<script src="config.js?v=32"></script>
+<script src="cache.js?v=32"></script>
 <style>
   
   * {
@@ -1020,7 +1020,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         html += `
           <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
             <div class="req-avatar ${cls}">${avatarHtml}</div>
-            <div class="req-name">${esc(name)}</div>
+            <div class="req-name" style="display:flex;align-items:center;justify-content:center">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
             <div class="req-actions">
               <button class="btn-mini accept" onclick="acceptRequest('${fromId}')">Қабул</button>
               <button class="btn-mini decline" onclick="declineRequest('${req.id}')">Рад</button>
@@ -1066,7 +1066,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
             </div>
             <div class="chat-mid">
               <div class="chat-top">
-                <div class="chat-name">${esc(name)}</div>
+                <div class="chat-name" style="display:flex;align-items:center">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
                 <div class="chat-time">${lastMessage ? formatTime(lastMessage.created_at) : ''}</div>
               </div>
               <div class="chat-bottom">
