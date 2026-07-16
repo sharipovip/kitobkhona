@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <link rel="manifest" href="manifest.json">
-<script src="config.js?v=30"></script>
-<script src="cache.js?v=30"></script>
+<script src="config.js?v=31"></script>
+<script src="cache.js?v=31"></script>
 <style>
   
   * {
@@ -1231,7 +1231,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       });
       actions.querySelector('.btn-complete').addEventListener('click', function(e) {
         e.stopPropagation();
-        handleComplete(bookId, book, name);
+        handleComplete(bookId, book, name, url);
       });
       actions.querySelector('.btn-download').addEventListener('click', function(e) {
         e.stopPropagation();
@@ -1274,26 +1274,49 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       } catch(e) { toast('Хатогӣ'); }
     })();
   }
-  function handleComplete(bookId, book, name) {
+  function handleComplete(bookId, book, name, url) {
     const token = localStorage.getItem('kk_token');
     if (!token) { toast('Лутфан ворид шавед'); return; }
     (async () => {
       try {
+        const allProgress = JSON.parse(localStorage.getItem('kk_reader_progress') || '{}');
+        const progress = allProgress[url] || Object.values(allProgress).find(p => p && p.name && String(p.name).trim().toLowerCase() === String(name).trim().toLowerCase()) || null;
+        if (!progress || !progress.pages) {
+          toast('Аввал китобро хонед. Пешрафти саҳифа ёфт нашуд.');
+          return;
+        }
         const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
           method: 'POST',
           headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-          body: JSON.stringify({ book_id: bookId || book.file, book_title: name, book_author: book.author || '', duration: 0, status: 'completed', pages_read: 0 })
+          body: JSON.stringify({
+            book_id: bookId || book.file,
+            book_title: name,
+            book_author: book.author || '',
+            duration: 0,
+            status: 'completed',
+            pages_read: Number(progress.page || 0),
+            total_pages: Number(progress.pages || 0)
+          })
         });
-        if (resp.ok) {
-          toast('✅ Китоб ҳамчун хатмшуда сабт шуд');
-          const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
-          if (uid && typeof CacheManager !== 'undefined') {
-            CacheManager.invalidateKey('kk_cache_sessions');
-          }
-        } else { const err = await resp.json(); toast('Хатогӣ: ' + (err.error || '')); }
-      } catch(e) { toast('Хатогӣ'); }
+        const result = await resp.json().catch(() => ({}));
+        if (!resp.ok) throw new Error(result.error || 'Сервер қабул накард');
+        const uid = localStorage.getItem('kk_user_id');
+        if (typeof CacheManager !== 'undefined') {
+          CacheManager.invalidateKey('kk_cache_sessions');
+          if (uid) CacheManager.invalidateKey('kk_cache_sessions_' + encodeURIComponent(uid));
+        }
+        if (result.completed) {
+          toast('✅ Китоб пурра хонда шуд ва ҳамчун хатмшуда сабт шуд');
+          if (uid) localStorage.removeItem('kk_avatar_eligibility_' + uid);
+        } else {
+          const hours = (Number(result.total_reading_seconds || 0) / 3600).toFixed(1);
+          const pct = Math.round(Number(result.progress_percent || 0));
+          toast(`Ҳоло хатм нашуд: ${hours}/1 соат · ${pct}/95%`);
+        }
+      } catch(e) { toast('Хатогӣ: ' + e.message); }
     })();
   }
+
   function handleDownload(url, name) {
     (async () => {
       const cached = isCached(url);

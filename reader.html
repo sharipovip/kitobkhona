@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js?v=30"></script>
-<script src="cache.js?v=30"></script>
+<script src="config.js?v=31"></script>
+<script src="cache.js?v=31"></script>
 <style>
   
   :root {
@@ -739,7 +739,8 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       existing.duration = Math.max(0, Number(existing.duration || 0)) + Math.max(0, Number(payload.duration || 0));
       existing.pages_read = Math.max(Number(existing.pages_read || 0), Number(payload.pages_read || 0));
       existing.readyAt = Math.min(Number(existing.readyAt || Date.now()), Number(payload.readyAt || Date.now()));
-      existing.status = payload.status || existing.status || 'completed';
+      existing.status = payload.status || existing.status || 'paused';
+      existing.total_pages = Math.max(Number(existing.total_pages || 0), Number(payload.total_pages || 0));
       existing.book_title = payload.book_title || existing.book_title;
     } else {
       items.push(payload);
@@ -757,8 +758,9 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       book_id: bookId,
       book_title: meta.book_title || name,
       duration: Math.max(0, Math.round(Number(duration) || 0)),
-      status: status || 'viewed',
-      pages_read: Math.max(0, Number(pagesRead) || 0)
+      status: status || 'paused',
+      pages_read: Math.max(0, Number(pagesRead) || 0),
+      total_pages: Math.max(0, Number(meta.total_pages || pages) || 0)
     };
     try {
       const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions', {
@@ -787,9 +789,13 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
           waiting.push(item);
           continue;
         }
-        const response = await sendReadingSession(item.duration, item.status || 'completed', item.pages_read || 0, item);
+        const response = await sendReadingSession(item.duration, item.status || 'paused', item.pages_read || 0, item);
         if (!response || !response.ok) {
           waiting.push({ ...item, readyAt: Date.now() + 60 * 1000 });
+        } else {
+          const result = await response.json().catch(() => ({}));
+          const uid = localStorage.getItem('kk_user_id');
+          if (result.completed && uid) localStorage.removeItem('kk_avatar_eligibility_' + uid);
         }
       }
       writePendingSessions(waiting);
@@ -824,14 +830,20 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       book_title: name,
       duration,
       pages_read: pagesRead,
-      status: 'completed',
+      status: (pages > 0 && pagesRead / pages >= .95) ? 'completed' : 'paused',
+      total_pages: pages,
       readyAt: Date.now() + 10 * 60 * 1000
     };
     if (duration >= MIN_READ_TIME) {
-      sendReadingSession(duration, 'completed', pagesRead).then((response) => {
+      sendReadingSession(duration, payload.status, pagesRead, payload).then(async (response) => {
         if (response?.ok) {
-          const uid = (typeof AUTH !== 'undefined' && AUTH.getUser) ? AUTH.getUser()?.data?.user?.id : null;
-          if (uid && typeof CacheManager !== 'undefined') CacheManager.invalidateKey('kk_cache_sessions');
+          const result = await response.clone().json().catch(() => ({}));
+          const uid = localStorage.getItem('kk_user_id');
+          if (uid && typeof CacheManager !== 'undefined') {
+            CacheManager.invalidateKey('kk_cache_sessions');
+            CacheManager.invalidateKey('kk_cache_sessions_' + encodeURIComponent(uid));
+          }
+          if (result.completed && uid) localStorage.removeItem('kk_avatar_eligibility_' + uid);
         } else {
           queuePendingSession(payload);
         }

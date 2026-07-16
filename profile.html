@@ -6,8 +6,8 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=30"></script>
-  <script src="cache.js?v=30"></script>
+  <script src="config.js?v=31"></script>
+  <script src="cache.js?v=31"></script>
   <style>
     
     :root {
@@ -1716,7 +1716,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (isOwnProfile) {
       document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'flex');
       document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'flex');
-      el('editBtn').style.display = 'flex';
+      applyEditButtonState();
       el('chatBtn').textContent = 'Чатҳо';
       el('chatBtn').onclick = () => location.href = 'chats.html';
     } else {
@@ -1836,12 +1836,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
 
       applyProfileHeader(profile);
+      updateEditAccess(profile);
       if (loadedFromCache && isOwnProfile) {
         void NEON_API.getProfile(profileId).then(freshProfile => {
           if (loadSequence !== profileLoadSequence || String(currentProfileUserId) !== String(profileId)) return;
           loadedProfile = freshProfile;
           if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, freshProfile);
           applyProfileHeader(freshProfile);
+          updateEditAccess(freshProfile);
           currentUserProfileComplete = isCompleteProfile(freshProfile);
         }).catch(() => {});
       }
@@ -1988,7 +1990,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     booksData = Array.isArray(data) ? data : [];
     if (String(currentProfileUserId) === String(userId)
         && (!loadedProfile || loadedProfile.books_count_real == null)) {
-      el('ownBooks').textContent = booksData.length;
+      el('ownBooks').textContent = booksData.filter(book => book.status === 'completed').length;
     }
   }
 
@@ -2232,7 +2234,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const c = colors[idx % colors.length];
       const coverUrl = book.cover_url || await getCoverForBook(book);
       const views = book.sessions_count || 0;
-      const minutes = Math.round(book.total_duration || 0);
+      const minutes = Math.round(Number(book.total_duration || 0) / 60);
       const statusLabel = book.status === 'completed' ? '✅' : (book.total_duration > 0 ? '📖' : '📚');
       const bookData = encodeURIComponent(JSON.stringify(book));
       return `
@@ -2565,32 +2567,78 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   let avatarEligibility = null;
-  async function loadAvatarEligibility() {
+  function avatarEligibilityKey() { return 'kk_avatar_eligibility_' + String(currentUserId || localStorage.getItem('kk_user_id') || ''); }
+  function profileDataEditAvailable(profile = loadedProfile) {
+    if (!profile) return false;
+    const until = profile.profile_edit_locked_until ? new Date(profile.profile_edit_locked_until) : null;
+    return !until || until <= new Date();
+  }
+  function readAvatarEligibilityCache() {
+    try {
+      const value = JSON.parse(localStorage.getItem(avatarEligibilityKey()) || 'null');
+      return value && value.data && Number(value.next_check_at || 0) > Date.now() ? value : null;
+    } catch (e) { return null; }
+  }
+  function saveAvatarEligibilityCache(data) {
+    let nextCheck = Date.now() + 6 * 60 * 60 * 1000;
+    if (data.can_upload) nextCheck = Date.now() + 24 * 60 * 60 * 1000;
+    else if (data.eligible && data.next_upload_at) nextCheck = Math.max(Date.now() + 60 * 1000, new Date(data.next_upload_at).getTime());
+    try { localStorage.setItem(avatarEligibilityKey(), JSON.stringify({ data, next_check_at: nextCheck })); } catch (e) {}
+  }
+  function applyEditButtonState(profile = loadedProfile) {
+    const button = el('editBtn');
+    if (!button || !isOwnProfile) return;
+    const cached = readAvatarEligibilityCache();
+    if (cached) avatarEligibility = cached.data;
+    const available = profileDataEditAvailable(profile) || !!avatarEligibility?.can_upload;
+    button.style.display = available ? 'flex' : 'none';
+  }
+  function paintAvatarEligibility(data) {
     const btn = el('avatarChangeBtn'), hint = el('avatarEligibilityHint');
-    if (!btn || !hint || !isOwnProfile) return;
-    btn.disabled = true;
-    hint.textContent = 'Санҷиши ҳуқуқ...';
+    if (!btn || !hint) return;
+    btn.disabled = !data.can_upload;
+    if (data.can_upload) {
+      hint.textContent = '✓ Шумо метавонед акси худро гузоред';
+      hint.style.color = 'var(--green)';
+    } else if (data.eligible && data.next_upload_at) {
+      hint.textContent = 'Аксро аз ' + new Date(data.next_upload_at).toLocaleDateString('tg-TJ') + ' иваз карда метавонед';
+      hint.style.color = 'var(--gold)';
+    } else {
+      hint.textContent = `🔒 Барои акс 50 соати хониш ё ҷойи 1–3 лозим аст (ҳоло ${data.total_hours || 0} соат)`;
+      hint.style.color = 'var(--muted)';
+    }
+    applyEditButtonState();
+  }
+  async function loadAvatarEligibility(force = false) {
+    const btn = el('avatarChangeBtn'), hint = el('avatarEligibilityHint');
+    if (!isOwnProfile) return null;
+    const cached = readAvatarEligibilityCache();
+    if (!force && cached) {
+      avatarEligibility = cached.data;
+      paintAvatarEligibility(avatarEligibility);
+      return avatarEligibility;
+    }
+    if (btn) btn.disabled = true;
+    if (hint) hint.textContent = 'Санҷиши ҳуқуқ...';
     try {
       const token = localStorage.getItem('kk_token');
       const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar/eligibility', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' });
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || 'Санҷиш дастрас нест');
       avatarEligibility = data;
-      btn.disabled = !data.can_upload;
-      if (data.can_upload) {
-        const via = data.eligible_by_hours ? `${data.total_hours} соати хониш` : `ТОП-3: ${(data.top_periods || []).join(', ')}`;
-        hint.textContent = '✓ Акс дастрас аст · ' + via;
-        hint.style.color = 'var(--green)';
-      } else if (data.eligible && data.next_upload_at) {
-        hint.textContent = 'Аксро аз ' + new Date(data.next_upload_at).toLocaleDateString('tg-TJ') + ' иваз карда метавонед';
-        hint.style.color = 'var(--gold)';
-      } else {
-        hint.textContent = `🔒 Барои акс 50 соати хониш ё ҷойи 1–3 лозим аст (ҳоло ${data.total_hours || 0} соат)`;
-        hint.style.color = 'var(--muted)';
-      }
+      saveAvatarEligibilityCache(data);
+      paintAvatarEligibility(data);
+      return data;
     } catch (e) {
-      hint.textContent = 'Санҷиши акс муваққатан дастрас нест';
-      hint.style.color = 'var(--red)';
+      if (hint) { hint.textContent = 'Санҷиши акс муваққатан дастрас нест'; hint.style.color = 'var(--red)'; }
+      applyEditButtonState();
+      return null;
+    }
+  }
+  function updateEditAccess(profile = loadedProfile) {
+    applyEditButtonState(profile);
+    if (isOwnProfile && !profileDataEditAvailable(profile) && !readAvatarEligibilityCache()) {
+      void loadAvatarEligibility(false);
     }
   }
 
@@ -2637,7 +2685,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       try { localStorage.removeItem('kk_profile_cache'); } catch (e) {}
       hint.textContent = '✓ Акс нигоҳ дошта шуд. Ивазкунии нав баъд аз як моҳ.'; hint.style.color = 'var(--green)';
       showToast('Акс нигоҳ дошта шуд!');
-      avatarEligibility = { ...(avatarEligibility || {}), can_upload: false, next_upload_at: data.next_upload_at };
+      avatarEligibility = { ...(avatarEligibility || {}), eligible: true, can_upload: false, next_upload_at: data.next_upload_at };
+      saveAvatarEligibilityCache(avatarEligibility);
+      applyEditButtonState();
     } catch (e) {
       hint.textContent = 'Хатогӣ: ' + e.message; hint.style.color = 'var(--red)';
       btn.disabled = !(avatarEligibility && avatarEligibility.can_upload);
@@ -2686,6 +2736,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     isTemporary = profile.is_temporary === true;
     const lockedUntil = profile.profile_edit_locked_until ? new Date(profile.profile_edit_locked_until) : null;
     profileEditLocked = !!(lockedUntil && lockedUntil > new Date());
+    if (saveBtn) saveBtn.style.display = profileEditLocked ? 'none' : '';
     const editableFields = ['editName', 'editSurname', 'editBirthYear', 'editGender', 'editRegion', 'editCity', 'editJamoat', 'editVillage'];
     editableFields.forEach(id => { if (el(id)) el(id).disabled = profileEditLocked; });
     if (profileEditNotice) {

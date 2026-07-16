@@ -6,7 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=30"></script>
+<script src="config.js?v=31"></script>
 <style>
   
   * {
@@ -661,7 +661,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   
   <div class="footer" id="formFooter">
-    <button class="cta" id="ctaBtn">Ворид шудан</button>
+    <button class="cta" id="ctaBtn" type="button" onclick="submitAuthForm(event)">Ворид шудан</button>
   </div>
 
 </div>
@@ -812,6 +812,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     cta.disabled = true; cta.textContent = 'Эҷод кардани профил...';
     try {
       const username = login.toLowerCase().replace(/[^a-z0-9_]/g, '');
+      if (!username || username.length < 3) {
+        showMsg('Логинро бо ҳарфҳои англисӣ, рақам ё _ нависед', 'error');
+        cta.disabled = false; cta.textContent = 'Бақайдгирӣ';
+        return;
+      }
       const userEmail = email || (username + '@kitobkhona.tj');
       const display_name = (name + ' ' + surname).trim();
 
@@ -860,9 +865,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
-  el('ctaBtn').addEventListener('click', function() {
-    if (el('panelLogin').classList.contains('show')) doLogin();
-    else doRegister();
+  let authSubmitRunning = false;
+  async function submitAuthForm(event) {
+    event?.preventDefault();
+    if (authSubmitRunning) return;
+    authSubmitRunning = true;
+    try {
+      if (el('panelLogin').classList.contains('show')) await doLogin();
+      else await doRegister();
+    } catch (e) {
+      showMsg('Хатогӣ: ' + (e.message || e), 'error');
+    } finally {
+      authSubmitRunning = false;
+    }
+  }
+  window.submitAuthForm = submitAuthForm;
+  document.addEventListener('keydown', function(event) {
+    if (event.key === 'Enter' && el('formFooter').classList.contains('show') && !el('resetOverlay').classList.contains('open')) submitAuthForm(event);
   });
 
   function openReset() {
