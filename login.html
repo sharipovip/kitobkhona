@@ -6,7 +6,8 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=34"></script>
+<script src="config.js?v=35"></script>
+<script src="locations.js?v=2" defer></script>
 <style>
   
   * {
@@ -605,7 +606,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <p>Шумо метавонед ҳамчун <b>меҳмон</b> ворид шавед ё <b>ҳисоби шахсӣ</b> созед.</p>
         <div class="btn-group">
           <button class="btn btn-primary" onclick="chooseGuest()">👤 Меҳмон (бе сабти ном)</button>
-          <button class="btn btn-outline" onclick="showLoginForm()">🔐 Создани ҳисоб / Вуруд</button>
+          <button class="btn btn-outline" onclick="showLoginForm()">🔐 Сохтани ҳисоби худ / Ворид шудан</button>
         </div>
         <div class="info-note">
           <b>Меҳмон:</b> маълумоти шумо дар дастгоҳ нигоҳ дошта мешавад. Барои нигоҳ доштани пешрафт ва дастрасӣ аз дастгоҳҳои дигар, ҳисоби шахсӣ созед.
@@ -615,7 +616,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       
       <div class="tabs" id="tabs">
         <div class="tab-thumb"></div>
-        <div class="tab active" id="tabLogin" data-mode="login">Вуруд</div>
+        <div class="tab active" id="tabLogin" data-mode="login">Ворид шудан</div>
         <div class="tab" id="tabReg" data-mode="reg">Бақайдгирӣ</div>
       </div>
 
@@ -696,7 +697,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const result = await AutoLogin.autoLogin(false);
       if (!result) {
         showMsg('Хатогӣ дар эҷоди ҳисоби меҳмон', 'error');
-        el('choiceScreen').innerHTML = '<h2>Ба Китобхона хуш омадед! 📚</h2><p>Шумо метавонед ҳамчун <b>меҳмон</b> ворид шавед ё <b>ҳисоби шахсӣ</b> созед.</p><div class="btn-group"><button class="btn btn-primary" onclick="chooseGuest()">👤 Меҳмон (бе сабти ном)</button><button class="btn btn-outline" onclick="showLoginForm()">🔐 Создани ҳисоб / Вуруд</button></div>';
+        el('choiceScreen').innerHTML = '<h2>Ба Китобхона хуш омадед! 📚</h2><p>Шумо метавонед ҳамчун <b>меҳмон</b> ворид шавед ё <b>ҳисоби шахсӣ</b> созед.</p><div class="btn-group"><button class="btn btn-primary" onclick="chooseGuest()">👤 Меҳмон (бе сабти ном)</button><button class="btn btn-outline" onclick="showLoginForm()">🔐 Сохтани ҳисоби худ / Ворид шудан</button></div>';
         return;
       }
       window.location.href = 'index.html';

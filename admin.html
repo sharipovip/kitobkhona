@@ -9,6 +9,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;0,6..72,600;0,6..72,700;1,6..72,500&family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <style>
 :root{
   --ink:#1F3A34; --ink-dark:#142824; --ink-soft:#2C4D45;
@@ -272,6 +274,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="navitem" data-page="announce"><span class="ic">07</span>Объявление</div>
       <div class="navitem" data-page="schedule"><span class="ic">08</span>Уведомления</div>
       <div class="navitem" data-page="books"><span class="ic">09</span>Книги</div>
+      <div class="navitem" data-page="map"><span class="ic">10</span>Карта чтения</div>
     </nav>
     <div class="sidebar-foot">
       <div class="foot-stamp">Каталог обновлён<br><b id="footDate">—</b></div>
@@ -454,6 +457,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </table></div></div>
     </section>
 
+    <section class="section" data-page="map">
+      <div class="grid grid-2" style="margin-bottom:14px"><div class="card"><h3>Карта активности читателей</h3><p class="helper">Размер точки зависит от времени чтения. Данные группируются по области, городу/району, джамоату и селу.</p></div><div class="card"><div id="mapSummary" class="muted">Загрузка…</div></div></div>
+      <div class="card" style="padding:8px"><div id="tajikistanReadMap" style="height:62vh;min-height:430px;border-radius:8px;overflow:hidden"></div></div>
+    </section>
+
   </main>
 </div>
 
@@ -482,7 +490,7 @@ const API_BASE = 'https://kitobkhona-chat.onrender.com';
   if (!token) { location.href = 'login.html'; return; }
   try {
     const payload = JSON.parse(atob(token.split('.')[1]));
-    if (payload.role !== 'admin') { alert('Дастрасӣ манъ аст'); location.href = 'index.html'; }
+    if (payload.role !== 'admin') { setTimeout(()=>adminNotice('Дастрасӣ манъ аст'),0); setTimeout(()=>location.href='index.html',900); }
   } catch(e) { location.href = 'login.html'; }
 })();
 
@@ -497,6 +505,13 @@ async function api(path, method = 'GET', body = null){
   if (!res.ok) throw new Error((data && data.error) || ('Ошибка ' + res.status));
   return data;
 }
+
+function adminDialog(message,{title='Китобхона',confirmText='Тасдиқ',cancelText='Бекор кардан',input=false}={}){
+  return new Promise(resolve=>{const overlay=document.createElement('div');overlay.style.cssText='position:fixed;inset:0;z-index:99999;background:rgba(0,0,0,.58);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(5px)';overlay.innerHTML=`<div style="width:min(390px,100%);background:var(--card);border:1px solid var(--border);border-radius:16px;padding:18px;box-shadow:0 22px 60px rgba(0,0,0,.35)"><h3 style="margin:0 0 10px">${escapeHtml(title)}</h3><div style="font-size:13px;line-height:1.5;margin-bottom:14px">${escapeHtml(message)}</div>${input?'<input id="adminDialogInput" style="width:100%;padding:10px;border:1px solid var(--border);border-radius:8px;margin-bottom:14px;background:var(--bg);color:var(--text)">':''}<div style="display:flex;justify-content:flex-end;gap:8px"><button id="adminDialogCancel" class="btn btn-outline">${escapeHtml(cancelText)}</button><button id="adminDialogOk" class="btn btn-gold">${escapeHtml(confirmText)}</button></div></div>`;document.body.appendChild(overlay);const close=v=>{overlay.remove();resolve(v)};overlay.querySelector('#adminDialogCancel').onclick=()=>close(input?null:false);overlay.querySelector('#adminDialogOk').onclick=()=>close(input?overlay.querySelector('#adminDialogInput').value:true);overlay.onclick=e=>{if(e.target===overlay)close(input?null:false)};if(input)overlay.querySelector('#adminDialogInput').focus()})
+}
+const adminConfirm=(m,t='Тасдиқ')=>adminDialog(m,{title:t});
+const adminPrompt=(m,t='Маълумот')=>adminDialog(m,{title:t,input:true,confirmText:'Идома'});
+const adminNotice=(m,t='Китобхона')=>adminDialog(m,{title:t,cancelText:'Пӯшидан',confirmText:'Пӯшидан'});
 
 function toast(msg, isErr){
   const t = document.createElement('div');
@@ -525,7 +540,7 @@ loadDashboard();
 const pageTitles = {
   dashboard:'Дэшборд', users:'Пользователи', reports:'Жалобы', blocked:'Заблокированные',
   feedbacks:'Обращения', quotes:'Цитаты президента', announce:'Объявление',
-  schedule:'Уведомления', books:'Книги'
+  schedule:'Уведомления', books:'Книги', map:'Карта чтения'
 };
 document.getElementById('navlist').addEventListener('click', (e) => {
   const item = e.target.closest('.navitem');
@@ -535,7 +550,7 @@ document.getElementById('navlist').addEventListener('click', (e) => {
   document.querySelectorAll('.section').forEach(s => s.classList.toggle('active', s.dataset.page === page));
   document.getElementById('pageTitle').textContent = pageTitles[page] || '';
   const loaders = { dashboard:loadDashboard, users:loadUsers, reports:loadReports, blocked:loadBlocked,
-    feedbacks:loadFeedbacks, quotes:loadQuotesLocal, announce:loadAnnounce, schedule:loadSchedule, books:loadBooks };
+    feedbacks:loadFeedbacks, quotes:loadQuotesLocal, announce:loadAnnounce, schedule:loadSchedule, books:loadBooks, map:loadLocationMap };
   if (loaders[page]) loaders[page]();
 });
 
@@ -672,15 +687,15 @@ document.getElementById('usersBody').addEventListener('click', async (e) => {
   const id = btn.dataset.id, act = btn.dataset.act;
   try {
     if (act === 'block') {
-      if (!confirm('Заблокировать пользователя?')) return;
+      if (!await adminConfirm('Корбар баста шавад?')) return;
       await api(`/api/admin/users/${id}/block`, 'POST');
     } else if (act === 'unblock') {
       await api(`/api/admin/users/${id}/unblock`, 'POST');
     } else if (act === 'delete') {
-      if (!confirm('Удалить пользователя без возможности восстановления?')) return;
+      if (!await adminConfirm('Корбар бе имкони барқарорсозӣ нест карда шавад?')) return;
       await api(`/api/admin/users/${id}`, 'DELETE');
     } else if (act === 'reset') {
-      const pwd = prompt('Новый пароль (минимум 6 символов):');
+      const pwd = await adminPrompt('Пароли нав (ҳадди ақал 6 аломат):');
       if (!pwd) return;
       await api(`/api/admin/users/${id}/reset-password`, 'POST', { newPassword: pwd });
     } else if (act === 'verify') {
@@ -781,17 +796,17 @@ document.getElementById('feedbackList').addEventListener('click', async (e) => {
     if (email) {
       location.href = `mailto:${email}?subject=${subject}&body=${body}`;
     } else {
-      const manualEmail = prompt('У пользователя не указан email. Введите email для ответа:');
+      const manualEmail = await adminPrompt('Почтаи электронӣ нишон дода нашудааст. Почтаро ворид кунед:');
       if (manualEmail && manualEmail.includes('@')) {
         location.href = `mailto:${manualEmail}?subject=${subject}&body=${body}`;
       } else {
-        alert('Email не указан или неверен.');
+        await adminNotice('Почтаи электронӣ нодуруст аст.');
       }
     }
   }
 
   if (btn.dataset.act === 'delete-feedback') {
-    if (!confirm('Удалить это обращение?')) return;
+    if (!await adminConfirm('Ин муроҷиат нест карда шавад?')) return;
     try {
       await api(`/api/feedbacks/${btn.dataset.id}`, 'DELETE');
       toast('Обращение удалено');
@@ -916,11 +931,11 @@ function handleDrop(e) {
   renderQuotesLocal();
 }
 
-document.getElementById('quotesContainer').addEventListener('click', (e) => {
+document.getElementById('quotesContainer').addEventListener('click', async (e) => {
   const btn = e.target.closest('button[data-act="remove"]');
   if (!btn) return;
   const idx = parseInt(btn.dataset.idx);
-  if (!confirm('Удалить эту цитату?')) return;
+  if (!await adminConfirm('Ин иқтибос нест карда шавад?')) return;
   localQuotes.splice(idx, 1);
   renderQuotesLocal();
 });
@@ -940,7 +955,7 @@ document.getElementById('addQuoteLocal').addEventListener('click', () => {
   if (items.length) items[items.length-1].scrollIntoView({ behavior: 'smooth' });
 });
 
-document.getElementById('saveQuotesLocal').addEventListener('click', () => {
+document.getElementById('saveQuotesLocal').addEventListener('click', async () => {
   const items = document.querySelectorAll('.quote-item');
   const newQuotes = [];
   let hasEmpty = false;
@@ -957,7 +972,7 @@ document.getElementById('saveQuotesLocal').addEventListener('click', () => {
   });
   if (!newQuotes.length) { toast('Нет цитат для сохранения', true); return; }
   if (hasEmpty) {
-    if (!confirm('Некоторые цитаты не имеют текста. Продолжить?')) return;
+    if (!await adminConfirm('Баъзе иқтибосҳо матн надоранд. Идома диҳем?')) return;
   }
   const content = `// quotes-data.js\nwindow.QUOTES = ${JSON.stringify(newQuotes, null, 2)};`;
   const blob = new Blob([content], { type: 'application/javascript' });
@@ -1040,7 +1055,7 @@ document.getElementById('annHistory').addEventListener('click', async (e) => {
   const btn = e.target.closest('[data-act="delete-ann"]');
   if (!btn) return;
   const id = btn.dataset.id;
-  if (!confirm('Удалить это объявление безвозвратно?')) return;
+  if (!await adminConfirm('Ин эълон пурра нест карда шавад?')) return;
   try {
     await api(`/api/announcements/${id}`, 'DELETE');
     toast('Объявление удалено');
@@ -1116,6 +1131,20 @@ document.getElementById('sendNowBtn').addEventListener('click', async () => {
 
 
 function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' мин';const h=Math.floor(total/60),m=total%60;return h+' ч'+(m?' '+m+' мин':'')}
+let locationMap=null,locationLayer=null,locationData=null;
+const locationNorm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zа-яёӣӯқғҳҷ0-9]/gi,'');
+async function loadLocationMap(){
+  try{
+    const [rows,locations]=await Promise.all([api('/api/admin/location-stats'),locationData?Promise.resolve(locationData):fetch('data/tajikistan_locations_full.json').then(r=>r.json())]);locationData=locations;
+    if(!locationMap){locationMap=L.map('tajikistanReadMap',{zoomControl:true}).setView([38.55,71.0],6);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:18,attribution:'© OpenStreetMap'}).addTo(locationMap);locationLayer=L.layerGroup().addTo(locationMap)}
+    locationLayer.clearLayers();
+    const settlementMap=new Map();for(const place of locations.settlements||[]){for(const n of [place.name,place.ascii,...(place.alternates||[])]){const k=locationNorm(n);if(k&&!settlementMap.has(k))settlementMap.set(k,place)}}
+    const districtMap=new Map();for(const region of locations.regions||[])for(const d of region.districts||[])for(const n of [d.name,...(d.alternates||[])])if(d.lat!=null)districtMap.set(locationNorm(n),d);
+    let mapped=0,totalHours=0,totalUsers=0;for(const row of rows){const candidates=[row.village,row.jamoat,row.city].filter(Boolean);let point=null;for(const n of candidates){point=settlementMap.get(locationNorm(n))||districtMap.get(locationNorm(n));if(point)break}if(!point)continue;const hours=Number(row.total_hours||0),users=Number(row.users||0);totalHours+=hours;totalUsers+=users;mapped++;const radius=Math.max(5,Math.min(25,5+Math.sqrt(hours)*1.8+Math.sqrt(users)));L.circleMarker([point.lat,point.lon],{radius,color:'#A47718',weight:1,fillColor:'#E8C96D',fillOpacity:.55}).bindPopup(`<b>${escapeHtml(candidates[0]||row.region||'')}</b><br>${escapeHtml(row.region||'')}<br>Читатели: ${users}<br>Время: ${formatReadingMinutes(hours*60)}`).addTo(locationLayer)}
+    document.getElementById('mapSummary').innerHTML=`Точек на карте: <b>${mapped}</b><br>Читателей в группах: <b>${totalUsers}</b><br>Время чтения: <b>${formatReadingMinutes(totalHours*60)}</b>`;setTimeout(()=>locationMap.invalidateSize(),100)
+  }catch(e){toast('Ошибка карты: '+e.message,true);document.getElementById('mapSummary').textContent='Карта недоступна'}
+}
+
 async function loadBooks(){
   try {
     const period = document.getElementById('booksPeriod').value;

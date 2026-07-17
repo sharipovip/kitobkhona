@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=34"></script>
-<script src="cache.js?v=34"></script>
+<script src="config.js?v=35"></script>
+<script src="cache.js?v=35"></script>
 <style>
   
   * {
@@ -1089,7 +1089,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         event.preventDefault();
         event.stopPropagation();
         const peerId = button.dataset.deleteChat;
-        if (!window.confirm('Нест кардани чат ва ҳамаи паёмҳо?')) return;
+        if (!await showConfirmDialog('Нест кардани чат ва ҳамаи паёмҳо?', 'Тасдиқ', 'Нест кардан', 'Бекор кардан')) return;
         try {
           const token = localStorage.getItem('kk_token');
           const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
@@ -1132,7 +1132,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
       loadData();
     } catch(e) {
-      alert('Хатогӣ: ' + e.message);
+      showToast('Хатогӣ: ' + e.message);
     }
   }
   window.acceptRequest = acceptRequest;
@@ -1143,7 +1143,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if (typeof CacheManager !== 'undefined' && requestsCacheKey) CacheManager.invalidateKey(requestsCacheKey);
       loadData();
     } catch(e) {
-      alert('Хатогӣ: ' + e.message);
+      showToast('Хатогӣ: ' + e.message);
     }
   }
   window.declineRequest = declineRequest;
