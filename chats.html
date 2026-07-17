@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=33"></script>
-<script src="cache.js?v=33"></script>
+<script src="config.js?v=34"></script>
+<script src="cache.js?v=34"></script>
 <style>
   
   * {
@@ -965,8 +965,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const adult=!!currentUser.birth_year&&Number(currentUser.birth_year)<=new Date().getFullYear()-18;
       if(!adult){scroll.innerHTML='<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
 
-      friendsCacheKey=CacheManager.KEYS.FRIENDS+'_'+currentUser.id;
-      requestsCacheKey=CacheManager.KEYS.REQUESTS+'_'+currentUser.id;
+      friendsCacheKey=CacheManager.KEYS.FRIENDS+'_v2_'+currentUser.id;
+      requestsCacheKey=CacheManager.KEYS.REQUESTS+'_v2_'+currentUser.id;
       summaryCacheKey='kk_cache_chat_summary_'+currentUser.id;
       let friends=CacheManager.get(friendsCacheKey),requests=CacheManager.get(requestsCacheKey),summary=CacheManager.get(summaryCacheKey);
       const hasCached=Array.isArray(friends)&&Array.isArray(requests);

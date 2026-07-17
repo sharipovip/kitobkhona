@@ -1627,8 +1627,8 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 
 
 </style>
-<script src="config.js?v=33"></script>
-<script src="cache.js?v=33"></script>
+<script src="config.js?v=34"></script>
+<script src="cache.js?v=34"></script>
 <script src="quotes-data.js"></script>
 
 <style>
@@ -2014,9 +2014,24 @@ async function loadNewBooks(data){
 }
 async function loadPopularBooksCached(){ let books=CacheManager.get('kk_cache_popular_books'); if(!books){ try{ const r=await edgeApiFetch('/api/popular-books?period=all',{},8000); if(!r.ok) throw new Error('Failed'); books=await r.json(); CacheManager.set('kk_cache_popular_books',books);}catch(e){ console.warn(e); return;} } renderPopularBooks(books); }
 function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' дақ';const h=Math.floor(total/60),m=total%60;return h+' соат'+(m?' '+m+' дақ':'')}
+let POPULAR_BOOKS=[];
+function normalizeBookTitle(value){return String(value||'').toLowerCase().replace(/\.pdf$/i,'').replace(/[_.-]+/g,' ').replace(/\s+/g,' ').trim()}
+function normalizeRawGithubUrl(value){
+  try{const u=new URL(value);let path=u.pathname;for(let i=0;i<3;i++){try{const next=decodeURIComponent(path);if(next===path)break;path=next}catch(e){break}}u.pathname=path.split('/').map((part,i)=>i===0?'':encodeURIComponent(part)).join('/');return u.toString()}catch(e){return String(value||'')}
+}
+async function openPopularBook(index){
+  const b=POPULAR_BOOKS[index];if(!b)return;const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,'');
+  let url='',cover=b.cover_url||'';
+  try{const search=await getHomeSearchIndex();const wanted=normalizeBookTitle(name);const found=search.find(item=>normalizeBookTitle(item.name||item.file)===wanted);if(found){url=rawUrl(found.folder,found.file||found.name+'.pdf');const covers=coverCandidates(found.folder,found.file||found.name+'.pdf');cover=cover||covers[0]||''}}catch(e){}
+  if(!url&&b.pdf_url)url=normalizeRawGithubUrl(b.pdf_url);
+  if(!url){let id=String(b.book_id||'');for(let i=0;i<3;i++){try{const next=decodeURIComponent(id);if(next===id)break;id=next}catch(e){break}}const parts=id.replace(/^books\//,'').split('/'),file=parts.pop(),folder='books/'+parts.join('/');url=rawUrl(folder==='books/'?'books':folder,file)}
+  location.href=`reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}${cover?'&cover='+encodeURIComponent(cover):''}`;
+}
 function renderPopularBooks(books){
-  const popEl=$('popBooks'),popSec=$('popSection');if(!popEl)return;if(!books||!books.length){popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>';if(popSec)popSec.style.display='block';return}
-  popEl.innerHTML=books.slice(0,12).map(b=>{let folder=b.folder||'books';folder=folder.replace(/^main\//,'');if(!folder.startsWith('books/')&&folder!=='books'){if(b.book_id&&b.book_id.includes('/')){const p=b.book_id.split('/');p.pop();folder=p.join('/').replace(/^main\//,'');if(!folder.startsWith('books/'))folder='books/'+folder}else folder='books/'+folder}const file=b.book_id?b.book_id.split('/').pop():'Китоб.pdf',name=b.book_title||file.replace(/\.pdf$/i,'')||'Китоб',url=`https://raw.githubusercontent.com/sharipovip/books/main/${enc(folder)}/${encodeURIComponent(file)}`,coverList=coverCandidates(folder,file),cover=b.cover_url||coverList[0]||'',bookId=String(b.book_id||normalizeHomeBookId(folder,file)).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="Обложка: ${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');hydrateBookCardCovers(popEl);syncBookmarkButtons(popEl);if(popSec)popSec.style.display='block';fetchAndUpdateRatings()
+  const popEl=$('popBooks'),popSec=$('popSection');if(!popEl)return;POPULAR_BOOKS=Array.isArray(books)?books:[];
+  if(!POPULAR_BOOKS.length){popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>';if(popSec)popSec.style.display='block';return}
+  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,''),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
+  hydrateBookCardCovers(popEl);syncBookmarkButtons(popEl);if(popSec)popSec.style.display='block';fetchAndUpdateRatings();
 }
 
 function ratingDbBookId(id){return String(id||'').replace(/^books\//i,'').split('/').map(part=>{try{return encodeURIComponent(decodeURIComponent(part))}catch(e){return encodeURIComponent(part)}}).join('/')}
