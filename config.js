@@ -37,6 +37,12 @@ Object.assign(KKH_TRANSLATIONS.ru,{
 Object.assign(KKH_TRANSLATIONS.en,{
   'Ворид шудан':'Sign in','Сохтани ҳисоби худ / Ворид шудан':'Create account / Sign in','Нест кардан':'Delete','Тоза кардани чат':'Clear chat','Бастани корбар':'Block user','Шикоят кардан':'Report','Паёмак':'Message','Паёмаки нав':'New message','Дархости нави дӯстӣ':'New friend request','Тағйири акс':'Change photo','Нест кардани акс':'Delete photo','Саҳифа':'Page','Мавзӯъ':'Theme','Дурахшонӣ':'Brightness','Мубодила':'Share','Зеркашӣ':'Download'
 });
+Object.assign(KKH_TRANSLATIONS.ru,{
+  'Ҳамаи дӯстон':'Все друзья','Чатҳо':'Чаты','Дархостҳо':'Запросы','Қабул':'Принять','Рад':'Отклонить','НАВ':'НОВЫЙ','Чати фаъол нест. Аз рӯйхати боло дӯстро интихоб кунед.':'Активных чатов нет. Выберите друга выше.','Ҷустуҷӯи чатҳо...':'Поиск чатов...','Асосӣ':'Главная','Ғолибон':'Победители','Профил':'Профиль','Китобҳо':'Книги','Таҳрири профил':'Редактировать профиль','Китобхон':'Читатель','китобҳо':'книги','дӯстон':'друзья','дӯстдошта':'избранное','Пост':'Публикации','Танзимот':'Настройки','Тарзи шаб':'Ночная тема','Интихоби мавзӯъ':'Выбор темы','Ёрӣ ва истифода':'Помощь','Тамос бо мо':'Связаться с нами','Дар бораи барнома':'О приложении','Сиёсати махфият':'Политика конфиденциальности','Шартҳои истифода':'Условия использования','Баромадан':'Выйти','Нест кардани ҳисоб':'Удалить аккаунт','Нигоҳ доштан':'Сохранить','Бекор кардан':'Отмена','Сохтани ҳисоби худ':'Создать аккаунт','Бақайдгирӣ':'Регистрация','Логин ё почтаи электронӣ':'Логин или электронная почта','Парол':'Пароль','Рамзро фаромӯш кардед?':'Забыли пароль?','Меҳмон (бе сабти ном)':'Гость (без регистрации)','Соли таваллуд':'Год рождения','Вилоят':'Регион','Шаҳр / Ноҳия':'Город / район','Ҷамоат':'Джамоат','Деҳа / Маҳалла':'Село / махалля','Мард':'Мужчина','Зан':'Женщина','Паём нависед...':'Напишите сообщение...','Вокунишҳо':'Реакции','Баҳо диҳед':'Оцените'
+});
+Object.assign(KKH_TRANSLATIONS.en,{
+  'Ҳамаи дӯстон':'All friends','Чатҳо':'Chats','Дархостҳо':'Requests','Қабул':'Accept','Рад':'Decline','НАВ':'NEW','Чати фаъол нест. Аз рӯйхати боло дӯстро интихоб кунед.':'No active chats. Choose a friend above.','Ҷустуҷӯи чатҳо...':'Search chats...','Асосӣ':'Home','Ғолибон':'Winners','Профил':'Profile','Китобҳо':'Books','Таҳрири профил':'Edit profile','Китобхон':'Reader','китобҳо':'books','дӯстон':'friends','дӯстдошта':'favorites','Пост':'Posts','Танзимот':'Settings','Тарзи шаб':'Night theme','Интихоби мавзӯъ':'Theme selection','Ёрӣ ва истифода':'Help','Тамос бо мо':'Contact us','Дар бораи барнома':'About','Сиёсати махфият':'Privacy Policy','Шартҳои истифода':'Terms of Use','Баромадан':'Sign out','Нест кардани ҳисоб':'Delete account','Нигоҳ доштан':'Save','Бекор кардан':'Cancel','Сохтани ҳисоби худ':'Create account','Бақайдгирӣ':'Registration','Логин ё почтаи электронӣ':'Username or email','Парол':'Password','Рамзро фаромӯш кардед?':'Forgot password?','Меҳмон (бе сабти ном)':'Guest (no registration)','Соли таваллуд':'Birth year','Вилоят':'Region','Шаҳр / Ноҳия':'City / district','Ҷамоат':'Jamoat','Деҳа / Маҳалла':'Village / neighborhood','Мард':'Male','Зан':'Female','Паём нависед...':'Write a message...','Вокунишҳо':'Reactions','Баҳо диҳед':'Rate this book'
+});
 let kkhLanguageObserver = null;
 const kkhOriginalText = new WeakMap();
 function translateTextNode(node, lang) {
@@ -791,6 +797,13 @@ const ChatAPI = {
     if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
     const data = await r.json();
     return data.map(f => f.id);
+  },
+  getFriendDetails: async function() {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Токен нест');
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    if (!r.ok) throw new Error('Хатои рӯйхати дӯстон: ' + r.status);
+    return await r.json();
   },
   getFriendRequests: async function(userId) {
     const token = localStorage.getItem('kk_token');

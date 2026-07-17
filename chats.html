@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=36"></script>
-<script src="cache.js?v=36"></script>
+<script src="config.js?v=38"></script>
+<script src="cache.js?v=38"></script>
 <style>
   
   * {
@@ -239,6 +239,11 @@
   }
   .req-avatar,.avatar{overflow:hidden}
   .req-avatar img,.avatar img{width:100%;height:100%;object-fit:cover;display:block}
+  .friend-strip{display:flex;gap:10px;overflow-x:auto;padding:4px 14px 12px}
+  .friend-strip-card{width:82px;flex:0 0 82px;text-align:center;cursor:pointer}
+  .friend-strip-card .req-avatar{margin:0 auto 5px}
+  .friend-strip-card .req-name{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;display:block!important}
+  .friend-new{font-size:8px;color:var(--gold);margin-top:2px}
   .req-name {
     font-size: 13px;
     font-weight: 600;
@@ -916,6 +921,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   let friendsCacheKey = '';
   let requestsCacheKey = '';
   let summaryCacheKey = '';
+  let friendDetailsCacheKey = '';
+  let friendDetails = [];
 
   function getInitials(name) {
     if(!name) return 'К';
@@ -968,19 +975,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       friendsCacheKey=CacheManager.KEYS.FRIENDS+'_v2_'+currentUser.id;
       requestsCacheKey=CacheManager.KEYS.REQUESTS+'_v2_'+currentUser.id;
       summaryCacheKey='kk_cache_chat_summary_'+currentUser.id;
+      friendDetailsCacheKey='kk_cache_friend_details_v1_'+currentUser.id;
       let friends=CacheManager.get(friendsCacheKey),requests=CacheManager.get(requestsCacheKey),summary=CacheManager.get(summaryCacheKey);
+      friendDetails=CacheManager.get(friendDetailsCacheKey)||[];
       const hasCached=Array.isArray(friends)&&Array.isArray(requests);
       friends=Array.isArray(friends)?friends:[];requests=Array.isArray(requests)?requests:[];
       chatSummary=summary&&summary.by_peer?summary:{total_unread:0,by_peer:{}};
       if(hasCached)await renderChats(friends,requests,scroll,chatSummary);
 
       // Always refresh in the background: cache makes opening instant, server keeps it current.
-      const [freshFriends,freshRequests,freshSummary]=await Promise.allSettled([
-        ChatAPI.getFriends(currentUser.id),ChatAPI.getFriendRequests(currentUser.id),ChatAPI.getChatSummary()
+      const [freshFriends,freshRequests,freshSummary,freshDetails]=await Promise.allSettled([
+        ChatAPI.getFriends(currentUser.id),ChatAPI.getFriendRequests(currentUser.id),ChatAPI.getChatSummary(),ChatAPI.getFriendDetails()
       ]);
       if(freshFriends.status==='fulfilled'&&Array.isArray(freshFriends.value)){friends=freshFriends.value;CacheManager.set(friendsCacheKey,friends)}
       if(freshRequests.status==='fulfilled'&&Array.isArray(freshRequests.value)){requests=freshRequests.value;CacheManager.set(requestsCacheKey,requests)}
       if(freshSummary.status==='fulfilled'&&freshSummary.value){chatSummary=freshSummary.value;CacheManager.set(summaryCacheKey,chatSummary)}
+      if(freshDetails.status==='fulfilled'&&Array.isArray(freshDetails.value)){friendDetails=freshDetails.value;CacheManager.set(friendDetailsCacheKey,friendDetails)}
       if(!hasCached&&freshFriends.status==='rejected'&&freshRequests.status==='rejected')throw(freshFriends.reason||freshRequests.reason||new Error('Маълумот бор нашуд'));
       await renderChats(friends,requests,scroll,chatSummary);
 
@@ -1033,9 +1043,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       html += `</div><div class="divider-soft"></div>`;
     }
 
+    if (friends.length) {
+      const detailsMap=new Map((friendDetails||[]).map(item=>[String(item.id),item]));
+      const sortedFriends=[...friends].sort((a,b)=>{const ua=Number(summary?.by_peer?.[String(a)]?.unread_count||0),ub=Number(summary?.by_peer?.[String(b)]?.unread_count||0);if(ub!==ua)return ub-ua;return new Date(detailsMap.get(String(b))?.friendship_created_at||0)-new Date(detailsMap.get(String(a))?.friendship_created_at||0)});
+      html += `<div class="section-label"><div class="t">Ҳамаи дӯстон</div><div class="count">${friends.length}</div></div><div class="friend-strip">`;
+      for(const id of sortedFriends){const detail=detailsMap.get(String(id))||{},profile=detail.display_name||detail.avatar_url?detail:await getProfileCached(id),name=profile.display_name||profile.username||'Китобхон',initials=getInitials(name),cls=getCls(String(id).charCodeAt(0)||0),avatar=profile.avatar_url?`<img src="${esc(profile.avatar_url)}" alt="">`:esc(initials),isNew=Date.now()-new Date(profile.friendship_created_at||0).getTime()<7*86400000;html+=`<div class="friend-strip-card" onclick="openChat('${id}','${esc(name)}')"><div class="req-avatar ${cls}">${avatar}</div><div class="req-name">${esc(name)}${profile.verified?verifiedBadgeSvg():''}</div>${isNew?'<div class="friend-new">НАВ</div>':''}</div>`}
+      html += `</div><div class="divider-soft"></div>`;
+    }
+
     html += `
       <div class="section-label">
-        <div class="t">Дӯстон</div>
+        <div class="t">Чатҳо</div>
         <div class="count" id="friendCount">${friends.length} дӯст</div>
       </div>
       <div class="chat-list" id="chatList">
@@ -1050,6 +1068,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         const tb = new Date(summary?.by_peer?.[String(b)]?.created_at || 0).getTime();
         return tb - ta;
       });
+      if(!friendIds.length) html += `<div class="empty-hint">Чати фаъол нест. Аз рӯйхати боло дӯстро интихоб кунед.</div>`;
       for(const id of friendIds) {
         const profile = await getProfileCached(id);
         const name = profile?.display_name || profile?.username || 'Китобхон';

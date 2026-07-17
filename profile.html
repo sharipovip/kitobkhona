@@ -6,9 +6,9 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=36"></script>
+  <script src="config.js?v=38"></script>
 <script src="locations.js?v=2" defer></script>
-  <script src="cache.js?v=36"></script>
+  <script src="cache.js?v=38"></script>
   <style>
     
     :root {
@@ -1174,7 +1174,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="icon-btn" id="feedTopBtn" title="Лента" onclick="location.href='Lenta.html'">📰</div>
       <div class="icon-btn" id="settingsBtn" title="Настройка" onclick="openSettings()">⚙️</div>
       <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none!important;" onclick="logoutUser()">🚪</div>
-      <div class="icon-btn" id="deleteTopBtn" title="Нест кардани ҳисоб" style="color:var(--red);display:none;" onclick="deleteAccount()">🗑</div>
     </div>
   </div>
 
@@ -1726,13 +1725,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function updateFriendButtonUI() {
     if (isOwnProfile) {
       document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'flex');
-      document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'flex');
       applyEditButtonState();
       el('chatBtn').textContent = 'Чатҳо';
       el('chatBtn').onclick = () => location.href = 'chats.html';
     } else {
       document.querySelectorAll('#logoutTopBtn').forEach(b => b.style.display = 'none');
-      document.querySelectorAll('#deleteTopBtn').forEach(b => b.style.display = 'none');
       el('editBtn').style.display = 'none';
       el('chatBtn').textContent = 'Чат';
       el('chatBtn').onclick = goToChats;
