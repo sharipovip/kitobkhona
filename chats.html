@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=35"></script>
-<script src="cache.js?v=35"></script>
+<script src="config.js?v=36"></script>
+<script src="cache.js?v=36"></script>
 <style>
   
   * {
@@ -1042,9 +1042,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     `;
 
     if(friends.length === 0) {
-      html += `<div class="empty-hint">Барои оғози чат аввал дӯст ҷӯед</div>`;
+      html += `<div class="empty-hint">Чати фаъол нест. Аз профили дӯст паём фиристед</div>`;
     } else {
-      const friendIds = [...friends].sort((a, b) => {
+      const hiddenPeers=new Set((summary?.hidden_peer_ids||[]).map(String));
+      const friendIds = [...friends].filter(id=>!hiddenPeers.has(String(id))).sort((a, b) => {
         const ta = new Date(summary?.by_peer?.[String(a)]?.created_at || 0).getTime();
         const tb = new Date(summary?.by_peer?.[String(b)]?.created_at || 0).getTime();
         return tb - ta;
@@ -1098,10 +1099,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           });
           const data = await r.json().catch(() => ({}));
           if (!r.ok) throw new Error(data.error || 'Нест кардани чат муяссар нашуд');
-          if (typeof CacheManager !== 'undefined' && summaryCacheKey) CacheManager.invalidateKey(summaryCacheKey);
+          if (!data.success) throw new Error('Сервер ҳазфро тасдиқ накард');
+          chatSummary.by_peer=chatSummary.by_peer||{};delete chatSummary.by_peer[String(peerId)];
+          chatSummary.hidden_peer_ids=[...new Set([...(chatSummary.hidden_peer_ids||[]).map(String),String(peerId)])];
+          if (typeof CacheManager !== 'undefined' && summaryCacheKey) CacheManager.set(summaryCacheKey,chatSummary);
           clearConversationCache(peerId);
           button.closest('.chat-item')?.remove();
-          showToast('Чат нест карда шуд');
+          showToast(`Чат ва ${data.deleted_messages||0} паёмак нест карда шуд`);
         } catch (e) {
           showToast('Хатогӣ: ' + e.message);
         }

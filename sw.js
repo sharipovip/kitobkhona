@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v35';
+const CACHE_NAME = 'kitobkhona-v36';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -18,6 +18,9 @@ const LOCAL_FILES = [
   './locations.js',
   './data/tajikistan_locations_full.json',
   './offline.html',
+  './privacy-policy.html',
+  './terms.html',
+  './delete-account.html',
   './favicon.ico',
   './icon-192.png',
   './icon-512.png'
