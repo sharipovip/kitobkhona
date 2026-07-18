@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v41';
+const CACHE_NAME = 'kitobkhona-v42';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -13,6 +13,8 @@ const LOCAL_FILES = [
   './Lenta.html',
   './config.js',
   './cache.js',
+  './quotes-data.js',
+  './splash_logo.jpg',
   './manifest.json',
   './search-index.json',
   './locations.js',
