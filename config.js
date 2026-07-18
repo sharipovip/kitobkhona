@@ -656,7 +656,7 @@ const AutoLogin = {
       this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
       (async () => {
         try {
-          const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken } }, 5000);
+          const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken }, cache: 'no-store' }, 10000);
           if (!r.ok) {
             localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
             localStorage.removeItem('kk_guest_password');
@@ -669,7 +669,7 @@ const AutoLogin = {
             this.currentUser = null;
           }
         } catch (e) {
-          console.warn('[AutoLogin] Background validation failed:', e);
+          // Background validation must never block cached app startup.
         }
       })();
       return this.currentUser;
