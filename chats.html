@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=40"></script>
-<script src="cache.js?v=40"></script>
+<script src="config.js?v=41"></script>
+<script src="cache.js?v=41"></script>
 <style>
   
   * {
@@ -983,7 +983,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       currentUser=data.user;
       if(!currentUser){scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
       const adult=!!currentUser.birth_year&&Number(currentUser.birth_year)<=new Date().getFullYear()-18;
-      if(!adult){const guest=currentUser.is_temporary===true||String(currentUser.username||'').startsWith('guest_');scroll.innerHTML=guest?'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Чат барои меҳмон дастрас нест. Шумо метавонед профили худро пур кунед ва чат ба шумо дастрас мегардад.<br><button class="btn btn-primary guest-profile-pulse" style="margin-top:16px" onclick="location.href=\'profile.html\'">Таҳрири профил</button></div>':'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
+      if(!adult){const guest=currentUser.is_temporary===true||String(currentUser.username||'').startsWith('guest_');scroll.innerHTML=guest?'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Чат барои меҳмон дастрас нест. Шумо метавонед профили худро пур кунед ва чат ба шумо дастрас мегардад.<br><button class="btn btn-primary guest-profile-pulse" style="margin-top:16px" onclick="location.href=\'profile.html?edit=1\'">Таҳрири профил</button></div>':'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
 
       friendsCacheKey=CacheManager.KEYS.FRIENDS+'_v2_'+currentUser.id;
       requestsCacheKey=CacheManager.KEYS.REQUESTS+'_v2_'+currentUser.id;

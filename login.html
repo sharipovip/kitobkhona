@@ -6,7 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=36"></script>
+<script src="config.js?v=41"></script>
 <script src="locations.js?v=2" defer></script>
 <style>
   
@@ -690,24 +690,45 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
   function clearMsg(){ el('msg').className = 'msg'; }
 
+  let guestCreationRunning = false;
   async function chooseGuest() {
+    if (guestCreationRunning) return;
+    guestCreationRunning = true;
+    const box = el('choiceScreen');
+    box.style.display = 'flex';
+    box.innerHTML = `<div style="width:100%;text-align:center;padding:24px 8px"><div class="spinner" style="margin:0 auto 18px"></div><h2 style="font-size:17px">Профили ҳисоби шумо омода шуда истодааст</h2><p style="font-size:12.5px;line-height:1.55;color:var(--muted)">Барои аз тамоми хизматрасониҳои барнома истифода намудан, шумо метавонед баъдан ҳисоби худро бо ҷойгир кардани маълумоти шахсӣ — ном, насаб, соли таваллуд ва суроға — пурра кунед.</p><div style="height:9px;background:var(--card);border-radius:99px;overflow:hidden;margin:20px 8px 8px"><div id="guestProgressBar" style="height:100%;width:1%;background:linear-gradient(90deg,var(--gold),var(--gold2));transition:width .4s"></div></div><div id="guestProgressText" style="color:var(--gold);font-weight:800">1%</div><div id="guestProgressStatus" style="font-size:11px;color:var(--muted);margin-top:6px">Пайвастшавӣ ба сервер...</div></div>`;
+    let percent = 1;
+    const timer = setInterval(() => {
+      percent = Math.min(92, percent + (percent < 55 ? 3 : 1));
+      if (el('guestProgressBar')) el('guestProgressBar').style.width = percent + '%';
+      if (el('guestProgressText')) el('guestProgressText').textContent = percent + '%';
+    }, 420);
     try {
-      el('choiceScreen').style.display = 'none';
-      el('choiceScreen').innerHTML = '<div style="text-align:center;padding:40px;"><div class="spinner"></div><div>Эҷоди ҳисоби меҳмон...</div></div>';
-      const result = await AutoLogin.autoLogin(false);
+      let result = null;
+      for (let attempt = 1; attempt <= 8 && !result; attempt++) {
+        if (el('guestProgressStatus')) el('guestProgressStatus').textContent = attempt === 1 ? 'Пайвастшавӣ ба сервер...' : 'Омодасозии ҳисоб идома дорад...';
+        result = await AutoLogin.autoLogin(false);
+        if (!result) await new Promise(resolve => setTimeout(resolve, Math.min(5000, 900 * attempt)));
+      }
       if (!result) {
-        showMsg('Хатогӣ дар эҷоди ҳисоби меҳмон', 'error');
-        el('choiceScreen').innerHTML = '<h2>Ба Китобхона хуш омадед! 📚</h2><p>Шумо метавонед ҳамчун <b>меҳмон</b> ворид шавед ё <b>ҳисоби шахсӣ</b> созед.</p><div class="btn-group"><button class="btn btn-primary" onclick="chooseGuest()">👤 Меҳмон (бе сабти ном)</button><button class="btn btn-outline" onclick="showLoginForm()">🔐 Сохтани ҳисоби худ / Ворид шудан</button></div>';
+        clearInterval(timer);
+        box.innerHTML = `<h2>Пайвастшавӣ суст аст</h2><p>Омодасозии ҳисоб ба таъхир афтод. Лутфан боз кӯшиш кунед.</p><div class="btn-group"><button class="btn btn-primary" onclick="guestCreationRunning=false;chooseGuest()">Боз кӯшидан</button><button class="btn btn-outline" onclick="guestCreationRunning=false;showLoginForm()">Сохтани ҳисоби худ</button></div>`;
+        guestCreationRunning = false;
         return;
       }
-      window.location.href = 'index.html';
+      clearInterval(timer);
+      if (el('guestProgressBar')) el('guestProgressBar').style.width = '100%';
+      if (el('guestProgressText')) el('guestProgressText').textContent = '100%';
+      if (el('guestProgressStatus')) el('guestProgressStatus').textContent = '✓ Ҳисоб омода шуд';
+      setTimeout(() => location.replace('index.html?guest=ready'), 550);
     } catch(e) {
-      if (e.message.includes('заблокирован')) {
-        localStorage.setItem('kk_device_blocked', 'true');
-        showMsg('❌ Устройство заблокировано. Обратитесь к администратору.', 'error');
-        el('choiceScreen').innerHTML = '<h2>Доступ заблокирован</h2><p>Ваше устройство заблокировано. Если вы администратор, войдите вручную.</p><div class="btn-group"><button class="btn btn-outline" onclick="showLoginForm()">🔐 Войти</button></div>';
+      clearInterval(timer);
+      if (String(e.message||'').includes('заблокирован')) {
+        localStorage.setItem('kk_device_blocked','true');
+        box.innerHTML='<h2>Дастрасӣ баста шудааст</h2><p>Барои кӯмак бо дастгирӣ тамос гиред.</p><button class="btn btn-outline" onclick="guestCreationRunning=false;showLoginForm()">Ворид шудан</button>';
       } else {
-        showMsg('Хатогӣ: ' + e.message, 'error');
+        guestCreationRunning=false;
+        setTimeout(chooseGuest,1200);
       }
     }
   }

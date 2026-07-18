@@ -6,9 +6,9 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=40"></script>
+  <script src="config.js?v=41"></script>
 <script src="locations.js?v=2" defer></script>
-  <script src="cache.js?v=40"></script>
+  <script src="cache.js?v=41"></script>
   <style>
     
     :root {
@@ -1598,6 +1598,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   const qs = new URL(location.href).searchParams;
   const targetUserId = qs.get('user') || null;
+  const openEditRequested = qs.get('edit') === '1';
   let currentProfileUserId = null;
   let isOwnProfile = false;
   let loadedProfile = null;
@@ -1921,6 +1922,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
 
       showScreen('screen-own');
+      if (openEditRequested && isOwnProfile) setTimeout(() => openEdit(), 180);
       renderBooks();
       renderFavorites();
       renderPosts();

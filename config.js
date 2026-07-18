@@ -687,19 +687,19 @@ const AutoLogin = {
       const response = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/register', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, email, password, display_name: 'Меҳмон', is_temporary: true })
-      }, 8000);
+      }, 20000);
       const data = await response.json().catch(() => ({}));
       if (!response.ok || !data.token) {
         if (response.status === 409) {
           const loginResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
             method: 'POST', headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
-          }, 8000);
+          }, 20000);
           const loginData = await loginResp.json().catch(() => ({}));
           if (loginResp.ok && loginData.token) {
             const profileResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + loginData.userId, {
               headers: { 'Authorization': 'Bearer ' + loginData.token }
-            }, 5000);
+            }, 10000);
             if (profileResp.ok) {
               const profile = await profileResp.json();
               if (profile.blocked === true) { localStorage.setItem('kk_device_blocked', 'true'); throw new Error('Ваш аккаунт заблокирован'); }
@@ -730,7 +730,7 @@ const AutoLogin = {
       const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
-      }, 8000);
+      }, 12000);
       const data = await r.json().catch(() => ({}));
       if (!r.ok) {
         if (data.error && data.error.includes('заблокирован')) { localStorage.setItem('kk_device_blocked', 'true'); throw new Error('Ваш аккаунт заблокирован'); }
