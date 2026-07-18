@@ -6,9 +6,9 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=38"></script>
+  <script src="config.js?v=39"></script>
 <script src="locations.js?v=2" defer></script>
-  <script src="cache.js?v=38"></script>
+  <script src="cache.js?v=39"></script>
   <style>
     
     :root {
@@ -1170,10 +1170,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <span>Китобхона</span>
     </div>
     <div class="top-actions">
-      <div class="icon-btn" id="chatTopBtn" title="Чатҳо" onclick="goToChats()">💬</div>
-      <div class="icon-btn" id="feedTopBtn" title="Лента" onclick="location.href='Lenta.html'">📰</div>
-      <div class="icon-btn" id="settingsBtn" title="Настройка" onclick="openSettings()">⚙️</div>
-      <div class="icon-btn" id="logoutTopBtn" title="Баромадан" style="display:none!important;" onclick="logoutUser()">🚪</div>
+      <div class="icon-btn" id="settingsBtn" title="Танзимот" onclick="openSettings()">⚙️</div>
     </div>
   </div>
 
@@ -1691,8 +1688,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       });
       if (r.ok) {
         await showAlertDialog('Профили шумо нест карда шуд.', 'Муваффақият');
+        Object.keys(localStorage).forEach(key=>{if(key.startsWith('kk_'))localStorage.removeItem(key)});
+        if('caches' in window)caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
         AutoLogin.logout();
-        location.href = 'login.html';
+        location.replace('login.html?deleted=1');
       } else {
         const err = await r.json().catch(() => ({}));
         await showAlertDialog('Хатогӣ: ' + (err.error || 'Номаълум'), 'Хатогӣ');
@@ -1854,7 +1853,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const postsKey = profileCacheKey('posts', profileId);
       const profileKey = 'kk_profile_' + profileId;
 
-      const cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
+      let cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
+      if (!cachedProfile && isOwnProfile) { try { const local=JSON.parse(localStorage.getItem('kk_profile_cache')||'null'); if(local&&String(local.id)===String(profileId))cachedProfile=local; } catch(e){} }
       const validCachedProfile = cachedProfile && String(cachedProfile.id) === String(profileId);
       let profile = (isOwnProfile && validCachedProfile) ? cachedProfile : null;
       let loadedFromCache = !!profile;
@@ -1971,118 +1971,30 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
+  function sessionsToProfileBooks(sessions) {
+    const map={};
+    (sessions||[]).forEach(s=>{if(!s.book_id)return;const titleKey=normalizeTitle(s.book_title||'Китоб');if(!titleKey)return;let folder='books',file=s.book_id;if(String(s.book_id).includes('/')){const parts=s.book_id.split('/');file=parts.pop();folder=parts.join('/');if(!folder.startsWith('books/'))folder='books/'+folder}if(map[titleKey]){const e=map[titleKey];e.total_duration+=Number(s.duration||0);e.sessions_count++;if(s.rating)e.rating=s.rating;if(s.status==='completed')e.status='completed';if(s.created_at&&(!e.last_created||new Date(s.created_at)>new Date(e.last_created)))e.last_created=s.created_at}else map[titleKey]={book_id:s.book_id,file,folder,book_title:s.book_title||'Китоб',book_author:s.book_author||'',total_duration:Number(s.duration||0),status:s.status||'paused',rating:s.rating||null,sessions_count:1,last_created:s.created_at,cover_url:s.cover_url||null,pdf_url:s.pdf_url||null}});
+    return Object.values(map).sort((a,b)=>new Date(b.last_created)-new Date(a.last_created));
+  }
   async function loadBooksCached(userId) {
-    const key = profileCacheKey('sessions', userId);
-    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
-    if (!data) {
-      const token = localStorage.getItem('kk_token');
-      if (!token) { booksData = []; return; }
-      try {
-        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/reading-sessions?user_id=' + userId, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (!r.ok) { booksData = []; return; }
-        const sessions = await r.json();
-        const map = {};
-        sessions.forEach(s => {
-          if (!s.book_id) return;
-          const titleKey = normalizeTitle(s.book_title || 'Китоб');
-          if (!titleKey) return;
-          let folder = 'books';
-          let file = s.book_id;
-          if (s.book_id && s.book_id.includes('/')) {
-            const parts = s.book_id.split('/');
-            file = parts.pop();
-            folder = parts.join('/');
-            if (!folder.startsWith('books/')) folder = 'books/' + folder;
-          }
-          if (map[titleKey]) {
-            const entry = map[titleKey];
-            entry.total_duration += s.duration || 0;
-            entry.sessions_count += 1;
-            if (s.rating) entry.rating = s.rating;
-            if (s.status === 'completed') entry.status = 'completed';
-            if (s.created_at && (!entry.last_created || new Date(s.created_at) > new Date(entry.last_created))) {
-              entry.last_created = s.created_at;
-            }
-            return;
-          }
-          map[titleKey] = {
-            book_id: s.book_id,
-            file: file,
-            folder: folder,
-            book_title: s.book_title || 'Китоб',
-            book_author: s.book_author || '',
-            total_duration: s.duration || 0,
-            status: s.status || 'viewed',
-            rating: s.rating || null,
-            sessions_count: 1,
-            last_created: s.created_at,
-            cover_url: s.cover_url || null,
-            pdf_url: s.pdf_url || null
-          };
-        });
-        data = Object.values(map).sort((a, b) => new Date(b.last_created) - new Date(a.last_created));
-        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
-      } catch (e) {
-        console.warn('[Profile] Load books error:', e);
-        booksData = [];
-        return;
-      }
-    }
-    booksData = Array.isArray(data) ? data : [];
-    if (String(currentProfileUserId) === String(userId)
-        && (!loadedProfile || loadedProfile.books_count_real == null)) {
-      el('ownBooks').textContent = booksData.filter(book => book.status === 'completed').length;
-    }
+    const key=profileCacheKey('sessions',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
+    if(Array.isArray(cached)){booksData=cached;renderBooks()}
+    const token=localStorage.getItem('kk_token');if(!token){if(!cached)booksData=[];return}
+    try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);booksData=sessionsToProfileBooks(await r.json());if(typeof CacheManager!=='undefined')CacheManager.set(key,booksData);renderBooks()}catch(e){if(!cached)booksData=[];console.warn('[Profile] books refresh',e)}
+    if(String(currentProfileUserId)===String(userId)&&(!loadedProfile||loadedProfile.books_count_real==null))el('ownBooks').textContent=booksData.filter(b=>b.status==='completed').length;
   }
-
   async function loadFavoritesCached(userId) {
-    const key = profileCacheKey('favorites', userId);
-    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
-    if (!data) {
-      const token = localStorage.getItem('kk_token');
-      if (!token) { favoritesData = []; return; }
-      try {
-        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (!r.ok) { favoritesData = []; return; }
-        data = await r.json();
-        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
-      } catch (e) {
-        console.warn('[Profile] Load favorites error:', e);
-        favoritesData = [];
-        return;
-      }
-    }
-    favoritesData = Array.isArray(data) ? data : [];
-    if (String(currentProfileUserId) === String(userId)
-        && (!loadedProfile || loadedProfile.favorites_count == null)) {
-      el('ownMarks').textContent = favoritesData.length;
-    }
+    const key=profileCacheKey('favorites',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
+    if(Array.isArray(cached)){favoritesData=cached;renderFavorites()}
+    const token=localStorage.getItem('kk_token');if(!token){if(!cached)favoritesData=[];return}
+    try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);favoritesData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,favoritesData);renderFavorites()}catch(e){if(!cached)favoritesData=[];console.warn('[Profile] favorites refresh',e)}
+    if(String(currentProfileUserId)===String(userId)&&(!loadedProfile||loadedProfile.favorites_count==null))el('ownMarks').textContent=favoritesData.length;
   }
-
   async function loadPostsCached(userId) {
-    const key = profileCacheKey('posts', userId);
-    let data = (typeof CacheManager !== 'undefined') ? CacheManager.get(key) : null;
-    if (!data) {
-      const token = localStorage.getItem('kk_token');
-      if (!token) { postsData = []; return; }
-      try {
-        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/posts?user_id=' + userId, {
-          headers: { 'Authorization': 'Bearer ' + token }
-        });
-        if (!r.ok) { postsData = []; return; }
-        data = await r.json();
-        if (typeof CacheManager !== 'undefined') CacheManager.set(key, data);
-      } catch (e) {
-        console.warn('[Profile] Load posts error:', e);
-        postsData = [];
-        return;
-      }
-    }
-    postsData = data;
+    const key=profileCacheKey('posts',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
+    if(Array.isArray(cached)){postsData=cached;renderPosts()}
+    const token=localStorage.getItem('kk_token');if(!token){if(!cached)postsData=[];return}
+    try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/posts?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);postsData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,postsData);renderPosts()}catch(e){if(!cached)postsData=[];console.warn('[Profile] posts refresh',e)}
   }
 
   function initTabs() {

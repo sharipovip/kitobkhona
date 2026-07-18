@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=38"></script>
-<script src="cache.js?v=38"></script>
+<script src="config.js?v=39"></script>
+<script src="cache.js?v=39"></script>
 <style>
   
   * {
@@ -900,6 +900,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();
     }
+    renderCachedChatsFast();
     loadData();
   });
 
@@ -961,6 +962,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
     }
     return profile;
+  }
+
+  function renderCachedChatsFast(){
+    try{
+      const uid=localStorage.getItem('kk_user_id');if(!uid)return;
+      const cachedProfile=CacheManager.get('kk_profile_'+uid)||JSON.parse(localStorage.getItem('kk_profile_cache')||'null')||{id:uid};
+      if(cachedProfile.birth_year&&Number(cachedProfile.birth_year)>new Date().getFullYear()-18)return;
+      currentUser=cachedProfile;friendsCacheKey=CacheManager.KEYS.FRIENDS+'_v2_'+uid;requestsCacheKey=CacheManager.KEYS.REQUESTS+'_v2_'+uid;summaryCacheKey='kk_cache_chat_summary_'+uid;friendDetailsCacheKey='kk_cache_friend_details_v1_'+uid;
+      const friends=CacheManager.get(friendsCacheKey),requests=CacheManager.get(requestsCacheKey),summary=CacheManager.get(summaryCacheKey);friendDetails=CacheManager.get(friendDetailsCacheKey)||[];
+      if(Array.isArray(friends)&&Array.isArray(requests))renderChats(friends,requests,document.getElementById('chatsScroll'),summary&&summary.by_peer?summary:{total_unread:0,by_peer:{}});
+    }catch(e){}
   }
 
   async function loadData() {
