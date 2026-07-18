@@ -7,7 +7,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/7.jpeg",
@@ -16,7 +16,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/36.jpeg",
@@ -25,7 +25,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/31.jpeg",
@@ -34,7 +34,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/15.jpeg",
@@ -43,7 +43,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/24.jpeg",
@@ -52,7 +52,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/22.jpeg",
@@ -61,7 +61,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/21.jpeg",
@@ -70,7 +70,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/13.jpeg",
@@ -79,7 +79,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/19.jpeg",
@@ -88,7 +88,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/40.jpeg",
@@ -97,7 +97,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/12.jpeg",
@@ -106,7 +106,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/3.jpeg",
@@ -115,7 +115,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/9.jpeg",
@@ -124,7 +124,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/29.jpeg",
@@ -133,7 +133,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/18.jpeg",
@@ -142,7 +142,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/41.jpeg",
@@ -151,7 +151,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/35.jpeg",
@@ -160,7 +160,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/1.jpeg",
@@ -169,7 +169,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/5.jpeg",
@@ -178,7 +178,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/17.jpeg",
@@ -187,7 +187,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/30.jpeg",
@@ -196,7 +196,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/14.jpeg",
@@ -205,7 +205,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/39.jpeg",
@@ -214,7 +214,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/2.jpeg",
@@ -223,7 +223,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/10.jpeg",
@@ -232,7 +232,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/27.jpeg",
@@ -241,7 +241,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/33.jpeg",
@@ -250,7 +250,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/42.jpeg",
@@ -259,7 +259,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/38.jpeg",
@@ -268,7 +268,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/32.jpeg",
@@ -277,7 +277,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/28.jpeg",
@@ -286,7 +286,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/20.jpeg",
@@ -295,7 +295,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/37.jpeg",
@@ -304,7 +304,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/25.jpeg",
@@ -313,7 +313,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/11.jpeg",
@@ -322,7 +322,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/34.jpeg",
@@ -331,7 +331,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/6.jpeg",
@@ -340,7 +340,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/16.jpeg",
@@ -349,7 +349,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/23.jpeg",
@@ -358,7 +358,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/26.jpeg",
@@ -367,7 +367,7 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 10,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   },
   {
     "img": "assets/hero/8.jpeg",
@@ -376,6 +376,6 @@ window.QUOTES = [
     "color": "#ffffff",
     "fontSize": 18,
     "displayDuration": 12,
-    "fontFamily": "'Trebuchet MS', sans-serif"
+    "fontFamily": "'Comic Sans MS', cursive"
   }
 ];
