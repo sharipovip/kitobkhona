@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=57"></script>
+  <script src="config.js?v=58"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=43"></script>
   <style>
@@ -2639,6 +2639,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     return blob;
   }
 
+  function syncProfileClientCaches(patch={}){
+    try{
+      const current=JSON.parse(localStorage.getItem('kk_profile_cache')||'null')||loadedProfile||{};
+      const merged={...current,...(loadedProfile||{}),...patch,id:currentProfileUserId||current.id,_ts:Date.now()};
+      localStorage.setItem('kk_profile_cache',JSON.stringify(merged));
+      if(loadedProfile)Object.assign(loadedProfile,patch);
+      if(typeof CacheManager!=='undefined'){
+        CacheManager.invalidateKey('kk_profile_'+currentProfileUserId);
+        CacheManager.invalidateKey(CacheManager.KEYS.PROFILE);
+        CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
+      }
+      for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i)||'';if(/kk_cm_.*(profile_|cache_profile|cache_friends|friend_details)/i.test(key))localStorage.removeItem(key)}
+      document.dispatchEvent(new CustomEvent('kitobkhona-profile-cache-updated',{detail:{user_id:String(currentProfileUserId),patch}}));
+      if(typeof applySocialButtonVisibility==='function')applySocialButtonVisibility();
+    }catch(e){console.warn('Profile cache sync failed',e)}
+  }
+
   async function uploadProfileAvatar(file) {
     const btn = el('avatarChangeBtn'), hint = el('avatarEligibilityHint');
     btn.disabled = true; const actionProgress=beginActionProgress('Акс омода ва бор шуда истодааст...'); hint.textContent = 'Акс омода ва бор шуда истодааст...'; hint.style.color = 'var(--gold)';
@@ -2652,12 +2669,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       updateAvatar(loadedProfile?.gender, data.avatar_url, false);
       const preview = el('editAvatarPreview'); if (preview) preview.innerHTML = `<img class="avatar-photo" src="${esc(data.avatar_url)}" alt="Аватар">`;
       if (el('avatarDeleteBtn')) el('avatarDeleteBtn').style.display = 'inline-flex';
-      if (typeof CacheManager !== 'undefined') {
-        CacheManager.invalidateKey('kk_profile_' + currentProfileUserId);
-        CacheManager.invalidateKey(profileCacheKey('posts', currentProfileUserId));
-        CacheManager.invalidateKey(CacheManager.KEYS.PROFILE);
-      }
-      try { localStorage.removeItem('kk_profile_cache'); } catch (e) {}
+      syncProfileClientCaches({avatar_url:data.avatar_url,avatar_version:data.avatar_version||Date.now()});
+      if(typeof CacheManager!=='undefined')CacheManager.invalidateKey(profileCacheKey('posts',currentProfileUserId));
       hint.textContent = '✓ Акс нигоҳ дошта шуд. Ивазкунии нав баъд аз як моҳ.'; hint.style.color = 'var(--green)';
       actionProgress.done('Акс нигоҳ дошта шуд');
       showToast('Акс нигоҳ дошта шуд!');
@@ -2679,7 +2692,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar', { method:'DELETE',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token')} });
       const data = await r.json().catch(() => ({})); if (!r.ok) throw new Error(data.error || 'Акс нест карда нашуд');
-      loadedProfile.avatar_url = null; updateAvatar(loadedProfile.gender,null,loadedProfile.is_temporary===true);
+      loadedProfile.avatar_url=null;syncProfileClientCaches({avatar_url:null,avatar_version:Date.now()});updateAvatar(loadedProfile.gender,null,loadedProfile.is_temporary===true);
       const preview=el('editAvatarPreview');if(preview)preview.innerHTML='<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8.2" r="3.4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 19c1.2-3.6 4-5.4 7-5.4s5.8 1.8 7 5.4" stroke="var(--gold)" stroke-width="1.6"/></svg>';
       if(button)button.style.display='none';
       avatarEligibility={...(avatarEligibility||{}),eligible:true,can_upload:false,next_upload_at:data.next_upload_at};saveAvatarEligibilityCache(avatarEligibility);paintAvatarEligibility(avatarEligibility);
@@ -2847,11 +2860,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       actionProgress.done('Профил навсозӣ шуд');
       showToast('Профил навсозӣ шуд!');
       closeEdit();
-      if (typeof CacheManager !== 'undefined') {
-        const key = 'kk_profile_' + currentProfileUserId;
-        CacheManager.invalidateKey(key);
-      }
+      syncProfileClientCaches({...updates,is_temporary:false});
       await loadProfile();
+      syncProfileClientCaches(loadedProfile||updates);
     } catch (e) {
       actionProgress.fail(e.message);
       console.error('[Profile] Save error:', e);
