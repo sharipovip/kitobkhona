@@ -1243,11 +1243,11 @@ async function acknowledgeCacheControl(cfg){
   fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control/ack',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({app_version:Number(cfg.app_version)||0,pdf_version:Number(cfg.pdf_version)||0})}).catch(()=>{});
 }
 async function checkRemoteCacheControl(){
-  if(cacheControlBusy)return;cacheControlBusy=true;
+  if(cacheControlBusy)return;const last=Number(sessionStorage.getItem('kk_cache_control_checked_at')||0);if(Date.now()-last<30*60*1000)return;sessionStorage.setItem('kk_cache_control_checked_at',String(Date.now()));cacheControlBusy=true;
   try{
     const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const cfg=await r.json();
     const app=Number(cfg.app_version)||1,pdf=Number(cfg.pdf_version)||1,oldApp=Number(localStorage.getItem('kk_remote_app_cache_version')||1),oldPdf=Number(localStorage.getItem('kk_remote_pdf_cache_version')||1);
-    const refreshApp=app>oldApp,clearPdf=pdf>oldPdf;if(!refreshApp&&!clearPdf){acknowledgeCacheControl(cfg);return}
+    const refreshApp=app>oldApp,clearPdf=pdf>oldPdf;if(!refreshApp&&!clearPdf)return
     const progress=typeof beginActionProgress==='function'?beginActionProgress(cfg.message||'Навсозии барнома...'):null;
     localStorage.setItem('kk_remote_app_cache_version',String(app));localStorage.setItem('kk_remote_pdf_cache_version',String(pdf));
     await clearApplicationCaches({clearApp:refreshApp,clearPdfs:clearPdf});
@@ -1258,5 +1258,4 @@ async function checkRemoteCacheControl(){
 }
 window.checkRemoteCacheControl=checkRemoteCacheControl;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installContentProtection();setTimeout(checkRemoteCacheControl,1200)});else{installContentProtection();setTimeout(checkRemoteCacheControl,1200)}
-setInterval(checkRemoteCacheControl,10*60*1000);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkRemoteCacheControl()});
