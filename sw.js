@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v58-avatar-winners-chat';
+const CACHE_NAME = 'kitobkhona-v59-critical-fixes';
 const LOCAL_FILES = [
   './',
   './index.html',

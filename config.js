@@ -584,6 +584,11 @@ async function downloadFile(url,name,showProgress=true){
   }catch(e){if(toastEl){toastEl.textContent='Хатогӣ: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}console.error('Download error:',e)}
 }
 
+function clearIdentityCaches(){
+  try{for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i)||'';if(key==='kk_profile_cache'||key==='kk_notifications_cache_v2'||/^kk_avatar_eligibility_/.test(key)||/^kk_cm_/.test(key)||/^kk_chat_messages/.test(key)||/^kk_cache_(chat_summary|friend_details|friends|requests|profile)/.test(key)||/^kk_profile_/.test(key))localStorage.removeItem(key)}}catch(e){}
+}
+window.clearIdentityCaches=clearIdentityCaches;
+
 const AutoLogin = {
   currentUser: null,
   autoLogin: async function(showChoice) {
@@ -603,6 +608,8 @@ const AutoLogin = {
             return;
           }
           const profile = await r.json();
+          localStorage.setItem('kk_profile_cache',JSON.stringify({...profile,_ts:Date.now()}));
+          if(typeof applySocialButtonVisibility==='function')applySocialButtonVisibility();
           if (profile.blocked === true) {
             localStorage.setItem('kk_device_blocked', 'true');
             this.currentUser = null;
@@ -653,6 +660,7 @@ const AutoLogin = {
         }
         throw new Error(data.error || ('HTTP ' + response.status));
       }
+      clearIdentityCaches();
       localStorage.setItem('kk_token', data.token);
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
@@ -676,14 +684,17 @@ const AutoLogin = {
         throw new Error(data.error || 'Не удалось войти');
       }
       localStorage.removeItem('kk_device_blocked');
+      clearIdentityCaches();
       localStorage.setItem('kk_token', data.token);
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       this.currentUser = { token: data.token, userId: data.userId, username: data.username };
+      try{const pr=await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE+'/api/profiles/'+data.userId,{headers:{Authorization:'Bearer '+data.token},cache:'no-store'},10000);if(pr.ok){const profile=await pr.json();localStorage.setItem('kk_profile_cache',JSON.stringify({...profile,_ts:Date.now()}))}}catch(e){}
       return this.currentUser;
     } catch (e) { console.error('[Login] Ошибка:', e); throw e; }
   },
   logout: function() {
+    clearIdentityCaches();
     localStorage.removeItem('kk_token');
     localStorage.removeItem('kk_user_id');
     localStorage.removeItem('kk_username');

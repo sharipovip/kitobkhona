@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=58"></script>
+  <script src="config.js?v=59"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=43"></script>
   <style>
@@ -2554,7 +2554,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     } catch (e) { return null; }
   }
   function saveAvatarEligibilityCache(data) {
-    let nextCheck = Date.now() + 6 * 60 * 60 * 1000;
+    let nextCheck = Date.now() + 2 * 60 * 1000;
     if (data.can_upload) nextCheck = Date.now() + 24 * 60 * 60 * 1000;
     else if (data.eligible && data.next_upload_at) nextCheck = Math.max(Date.now() + 60 * 1000, new Date(data.next_upload_at).getTime());
     try { localStorage.setItem(avatarEligibilityKey(), JSON.stringify({ data, next_check_at: nextCheck })); } catch (e) {}
@@ -2719,7 +2719,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   ['directorySearch','directoryRegion','directoryAge'].forEach(id=>el(id)?.addEventListener(id==='directorySearch'?'input':'change',()=>{clearTimeout(directoryTimer);directoryTimer=setTimeout(loadUsersDirectory,280)}));
 
   const overlay = el('editOverlay');
-  function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); loadAvatarEligibility(); }
+  function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); localStorage.removeItem(avatarEligibilityKey()); loadAvatarEligibility(true); }
   function closeEdit() { overlay.classList.remove('open'); }
   el('closeEdit')?.addEventListener('click', closeEdit);
   el('cancelEdit')?.addEventListener('click', closeEdit);

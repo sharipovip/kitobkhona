@@ -6,7 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=58"></script>
+<script src="config.js?v=59"></script>
 <script src="locations.js?v=3" defer></script>
 <style>
   
@@ -857,6 +857,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const data = await r.json().catch(() => ({}));
       if (!r.ok || !data.token) throw new Error(data.error || 'Хатогӣи номаълум');
 
+      if(typeof clearIdentityCaches==='function')clearIdentityCaches();
       localStorage.setItem('kk_token', data.token);
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);

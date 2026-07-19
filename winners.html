@@ -6,7 +6,7 @@
   <title>Китобхона — Ғолибон</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=58"></script>
+  <script src="config.js?v=59"></script>
   <script src="cache.js?v=43"></script>
   <style>
     
@@ -1041,7 +1041,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
         html += `<div class="empty-msg">Бо ин филтрҳо натиҷае ёфт нашуд.</div>`;
       } else {
         top100.forEach((user, index) => {
-          const rank = index + 4;
+          const rank = index + 1;
           const displayName = user.display_name || user.username || 'Китобхон';
           const city = user.city || '—';
           const age = user.age !== null && user.age !== undefined ? user.age : '—';
