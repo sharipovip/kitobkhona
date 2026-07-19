@@ -901,32 +901,9 @@ async function apiGet(table, opts) {
 }
 
 
-async function getNotifications() {
-  const token = localStorage.getItem('kk_token');
-  if (!token) return [];
-  try {
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/notifications', {
-      headers: { 'Authorization': 'Bearer ' + token }
-    }, 5000);
-    if (!r.ok) return [];
-    return await r.json();
-  } catch (e) {
-    console.warn('getNotifications error:', e);
-    return [];
-  }
-}
+async function getNotifications(){return [];}
 
-async function markNotificationRead(notificationId) {
-  const token = localStorage.getItem('kk_token');
-  if (!token) return;
-  try {
-    await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/notifications/' + notificationId + '/read', {
-      method: 'PUT', headers: { 'Authorization': 'Bearer ' + token }
-    }, 5000);
-  } catch (e) {
-    console.warn('markNotificationRead error:', e);
-  }
-}
+async function markNotificationRead(){return true;}
 
 const KKH_FCM = {
   firebaseConfig: {
@@ -1119,8 +1096,7 @@ async function initFcmForeground() {
         const title = payload.notification?.title || 'Китобхона';
         const body = payload.notification?.body || '';
         if (typeof toast === 'function') toast('🔔 ' + title + (body ? ': ' + body : ''));
-        localStorage.removeItem('kk_notifications_cache_v2');
-        if (typeof updateNotifBadge === 'function') updateNotifBadge();
+        
         if (document.hidden && 'Notification' in window && Notification.permission === 'granted') {
           new Notification(title, { body, icon: '/icon-192.png' });
         }

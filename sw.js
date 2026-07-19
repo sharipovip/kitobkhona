@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v52-index-cost';
+const CACHE_NAME = 'kitobkhona-v54-push-only';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -162,6 +162,8 @@ self.addEventListener('notificationclick', function(event) {
     url = '/kitobkhona/chats.html';
   } else if (data.type === 'feed' || data.post_id) {
     url = '/kitobkhona/Lenta.html';
+  } else if (data.link) {
+    url = data.link;
   } else if (data.url) {
     url = data.url;
   }
