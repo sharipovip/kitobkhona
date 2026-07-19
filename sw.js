@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v55-low-neon';
+const CACHE_NAME = 'kitobkhona-v57-chat-lock-modal';
 const LOCAL_FILES = [
   './',
   './index.html',
