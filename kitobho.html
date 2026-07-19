@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <link rel="manifest" href="manifest.json">
-<script src="config.js?v=49"></script>
+<script src="config.js?v=51"></script>
 <script src="cache.js?v=43"></script>
 <style>
   
@@ -1112,7 +1112,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId), { headers });
+      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId), { headers });
       if (!resp.ok) return null;
       return await resp.json();
     } catch(e) { return null; }
@@ -1252,14 +1252,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     (async () => {
       try {
         if (isFaved) {
-          const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites/' + encodeURIComponent(bookId || book.file), {
+          const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites/' + encodeURIComponent(bookId || book.file), {
             method: 'DELETE',
             headers: { 'Authorization': 'Bearer ' + token }
           });
           if (resp.ok) { btn.textContent = '❤️ Дӯстдошта'; toast('Аз дӯстдошта хориҷ шуд'); }
           else toast('Хатогӣ');
         } else {
-          const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites', {
+          const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites', {
             method: 'POST',
             headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
             body: JSON.stringify({ book_id: bookId || book.file, book_title: name, book_author: book.author || '' })

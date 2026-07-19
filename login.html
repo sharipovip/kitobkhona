@@ -6,7 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=49"></script>
+<script src="config.js?v=51"></script>
 <script src="locations.js?v=3" defer></script>
 <style>
   
@@ -863,7 +863,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       localStorage.removeItem('kk_device_blocked');
       try { if (typeof AndroidBridge !== 'undefined') { AndroidBridge.saveUserId(String(data.userId)); AndroidBridge.saveAuthToken(data.token); } } catch (e) {}
 
-      await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/profiles', {
+      await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles', {
         method: 'PUT',
         headers: { 'Authorization': 'Bearer ' + data.token, 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -954,7 +954,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const userId = localStorage.getItem('kk_user_id');
     if (token && userId) {
       try {
-        const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + userId, {
+        const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + userId, {
           headers: { 'Authorization': 'Bearer ' + token }
         });
         if (r.ok) {

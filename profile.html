@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=49"></script>
+  <script src="config.js?v=51"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=43"></script>
   <style>
@@ -1868,7 +1868,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       let cachedProfile = (typeof CacheManager !== 'undefined') ? CacheManager.get(profileKey) : null;
       if (!cachedProfile && isOwnProfile) { try { const local=JSON.parse(localStorage.getItem('kk_profile_cache')||'null'); if(local&&String(local.id)===String(profileId))cachedProfile=local; } catch(e){} }
       const validCachedProfile = cachedProfile && String(cachedProfile.id) === String(profileId);
-      let profile = (isOwnProfile && validCachedProfile) ? cachedProfile : null;
+      let profile = validCachedProfile ? cachedProfile : null;
       let loadedFromCache = !!profile;
       if (!profile) {
         try {
@@ -1890,16 +1890,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
       applyProfileHeader(profile);
       updateEditAccess(profile);
-      if (loadedFromCache && isOwnProfile) {
-        void NEON_API.getProfile(profileId).then(freshProfile => {
-          if (loadSequence !== profileLoadSequence || String(currentProfileUserId) !== String(profileId)) return;
-          loadedProfile = freshProfile;
-          if (typeof CacheManager !== 'undefined') CacheManager.set(profileKey, freshProfile);
-          applyProfileHeader(freshProfile);
-          updateEditAccess(freshProfile);
-          currentUserProfileComplete = isCompleteProfile(freshProfile);
-        }).catch(() => {});
-      }
+
 
       try {
         const actorProfile = isOwnProfile ? profile : await NEON_API.getProfile(currentUserId);
@@ -2000,14 +1991,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const key=profileCacheKey('favorites',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
     if(Array.isArray(cached)){favoritesData=cached;renderFavorites()}
     const token=localStorage.getItem('kk_token');if(!token){if(!cached)favoritesData=[];return}
-    try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);favoritesData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,favoritesData);renderFavorites()}catch(e){if(!cached)favoritesData=[];console.warn('[Profile] favorites refresh',e)}
+    try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);favoritesData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,favoritesData);renderFavorites()}catch(e){if(!cached)favoritesData=[];console.warn('[Profile] favorites refresh',e)}
     if(String(currentProfileUserId)===String(userId)&&(!loadedProfile||loadedProfile.favorites_count==null))el('ownMarks').textContent=favoritesData.length;
   }
   async function loadPostsCached(userId) {
     const key=profileCacheKey('posts',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
     if(Array.isArray(cached)){postsData=cached;renderPosts()}
     const token=localStorage.getItem('kk_token');if(!token){if(!cached)postsData=[];return}
-    try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/posts?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);postsData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,postsData);renderPosts()}catch(e){if(!cached)postsData=[];console.warn('[Profile] posts refresh',e)}
+    try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/posts?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);postsData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,postsData);renderPosts()}catch(e){if(!cached)postsData=[];console.warn('[Profile] posts refresh',e)}
   }
 
   function initTabs() {
@@ -2032,7 +2023,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!r.ok) { friendStatus = null; return; }
@@ -2075,7 +2066,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!token) { showToast('Лутфан ворид шавед'); return; }
     if (!await canUseSocialActions()) return;
     try {
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/request', {
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/request', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ to_user: otherId })
@@ -2101,7 +2092,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!token) { showToast('Лутфан ворид шавед'); return; }
     if (!await canUseSocialActions()) return;
     try {
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/accept', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ from_user: otherId })
@@ -2471,7 +2462,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!await showConfirmDialog('Хориҷ кардани китоб аз дӯстдошта?', 'Тасдиқ', 'Хориҷ кунед')) return;
     try {
       const token = localStorage.getItem('kk_token');
-      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites/' + encodeURIComponent(bookId), {
+      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites/' + encodeURIComponent(bookId), {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -2532,7 +2523,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       bookTitle = 'Китоб';
     }
     const payload = { book_id: fullPath, book_title: bookTitle };
-    fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites', {
+    fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kk_token'), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

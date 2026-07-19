@@ -6,7 +6,7 @@
 <title>Китобхона — Шортс</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=49"></script>
+<script src="config.js?v=51"></script>
 <script src="cache.js?v=43"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1506,7 +1506,7 @@ async function loadBookRatings(bookIds) {
       bookReactions[id].user = { reaction: null, rating: null };
     });
     if (token) {
-      const userResp = await fetch(API_BASE + '/api/book-reactions/batch', {
+      const userResp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions/batch', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_ids: bookIds })
@@ -1642,7 +1642,7 @@ async function loadPostsFromServer(silent) {
   if (!container) return;
 
   try {
-    const resp = await fetch(API_BASE + '/api/posts');
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts');
     if (!resp.ok) throw new Error('HTTP '+resp.status);
     const posts = await resp.json();
     postsData = orderFeedPosts(Array.isArray(posts) ? posts : (posts.posts || []));
@@ -1984,7 +1984,7 @@ async function handleLike(postId) {
   post.likes_count = (post.likes_count || 0) + (wasLiked ? -1 : 1);
   updateLikeUI(postId, post.liked, post.likes_count);
   try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/like', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + postId + '/like', {
       method: wasLiked ? 'DELETE' : 'POST',
       headers: { 'Authorization': 'Bearer ' + token }
     });
@@ -2020,7 +2020,7 @@ async function loadComments(postId) {
   const token = getToken(); if (!token) return;
   const list = $('commentsListInner');
   try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId + '/comments', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + postId + '/comments', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error();
@@ -2052,7 +2052,7 @@ async function deleteComment(cid, postId, el) {
   if (!await showConfirmDialog('Шарҳи худро нест кунед?', 'Нест кардан', 'Нест кунед')) return;
   const token = getToken(); if (!token) return;
   try {
-    const r = await fetch(API_BASE + '/api/posts/' + postId + '/comments/' + cid, {
+    const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + postId + '/comments/' + cid, {
       method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!r.ok) throw new Error();
@@ -2065,7 +2065,7 @@ $('commentSend').addEventListener('click', async () => {
   if (!text || !activePostId) return;
   const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
   try {
-    const resp = await fetch(API_BASE + '/api/posts/' + activePostId + '/comment', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + activePostId + '/comment', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
@@ -2121,7 +2121,7 @@ $('ratingSubmit').addEventListener('click', async () => {
   if (!activeBookId) { showToast('Китоб мавҷуд нест'); return; }
   const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
   try {
-    const resp = await fetch(API_BASE + '/api/book-reactions', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ book_id: activeBookId, rating: currentRating })
@@ -2141,7 +2141,7 @@ async function deletePost(postId) {
   const token = getToken();
   if (!token) { showToast('Лутфан ворид шавед'); return; }
   try {
-    const resp = await fetch(API_BASE + '/api/posts/' + postId, {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + postId, {
       method: 'DELETE',
       headers: { 'Authorization': 'Bearer ' + token }
     });
@@ -2339,7 +2339,7 @@ async function canPublishPost() {
     return false;
   }
   try {
-    const resp = await fetch(API_BASE + '/api/profiles/' + encodeURIComponent(userId), {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + encodeURIComponent(userId), {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     const profile = await resp.json().catch(() => ({}));
@@ -2451,7 +2451,7 @@ $('submitPostBtn').addEventListener('click', async function() {
 
   this.disabled = true; this.textContent = '...';
   try {
-    const resp = await fetch(API_BASE + '/api/posts', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)

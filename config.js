@@ -595,7 +595,7 @@ const AutoLogin = {
       this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
       (async () => {
         try {
-          const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken }, cache: 'no-store' }, 10000);
+          const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken }, cache: 'no-store' }, 10000);
           if (!r.ok) {
             localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
             localStorage.removeItem('kk_guest_password');
@@ -636,7 +636,7 @@ const AutoLogin = {
           }, 20000);
           const loginData = await loginResp.json().catch(() => ({}));
           if (loginResp.ok && loginData.token) {
-            const profileResp = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + loginData.userId, {
+            const profileResp = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + loginData.userId, {
               headers: { 'Authorization': 'Bearer ' + loginData.token }
             }, 10000);
             if (profileResp.ok) {
@@ -732,7 +732,7 @@ const ChatAPI = {
   getFriends: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
     const data = await r.json();
     return data.map(f => f.id);
@@ -740,21 +740,21 @@ const ChatAPI = {
   getFriendDetails: async function() {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Токен нест');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Хатои рӯйхати дӯстон: ' + r.status);
     return await r.json();
   },
   getFriendRequests: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
     return await r.json();
   },
   acceptFriendRequestByUser: async function(fromUserId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/accept', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from_user: fromUserId })
     }, 8000);
@@ -764,7 +764,7 @@ const ChatAPI = {
   declineFriendRequest: async function(requestId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/' + requestId, {
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/requests/' + requestId, {
       method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
     }, 8000);
     if (!r.ok) throw new Error('Ошибка при отклонении заявки: ' + r.status);
@@ -825,14 +825,14 @@ const NEON_API = {
   getProfile: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles/' + userId, { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + userId, { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } }, 8000);
     if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || ('Ошибка профиля: ' + r.status)); }
     return await r.json();
   },
   updateProfile: async function(profileData) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/profiles', {
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles', {
       method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(profileData)
     }, 8000);
@@ -852,7 +852,7 @@ const NEON_API = {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
     if (!token || !userId) return [];
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/favorites?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
     if (!r.ok) return [];
     return await r.json();
   },

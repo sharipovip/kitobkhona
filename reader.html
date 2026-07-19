@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js?v=49"></script>
+<script src="config.js?v=51"></script>
 <script src="cache.js?v=43"></script>
 <style>
   
@@ -738,7 +738,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     const bookId = getBookId();
     if (!bookId) return;
     try {
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
+      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (!resp.ok) throw new Error('HTTP '+resp.status);
@@ -753,7 +753,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
         currentRating = data.rating;
         updateStarsUI(data.rating);
       }
-      const statsResp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
+      const statsResp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
       if (!statsResp.ok) throw new Error('HTTP '+statsResp.status);
       const stats = await statsResp.json();
       $('likeCount').textContent = stats.likes || 0;
@@ -770,7 +770,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     const bookId = getBookId();
     if (!bookId) return;
     try {
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions', {
+      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_id: bookId, reaction })
@@ -797,7 +797,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
     const bookId = getBookId();
     if (!bookId) return;
     try {
-      const resp = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/book-reactions', {
+      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ book_id: bookId, rating })
@@ -1142,8 +1142,8 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   let readerFavorite=false;
   function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}
   function paintReaderFavorite(){const outline='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>',filled=outline.replace('fill="none"','fill="currentColor"');document.querySelectorAll('[data-reader-favorite]').forEach(btn=>{btn.classList.toggle('active',readerFavorite);btn.innerHTML=readerFavorite?filled:outline;btn.setAttribute('aria-label',readerFavorite?'Аз дӯстдошта хориҷ кардан':'Ба дӯстдошта илова кардан')})}
-  async function loadReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token)return;try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const id=canonicalFavoriteId();readerFavorite=(await r.json()).some(x=>String(x.book_id).replace(/^books\//i,'')===id);paintReaderFavorite()}catch(e){}}
-  async function toggleReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
+  async function loadReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token)return;try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const id=canonicalFavoriteId();readerFavorite=(await r.json()).some(x=>String(x.book_id).replace(/^books\//i,'')===id);paintReaderFavorite()}catch(e){}}
+  async function toggleReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
 
   async function downloadCurrent() {
     await downloadFile(url, name);
