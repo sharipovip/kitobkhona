@@ -6,9 +6,9 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=41"></script>
-<script src="locations.js?v=2" defer></script>
-  <script src="cache.js?v=41"></script>
+  <script src="config.js?v=43"></script>
+<script src="locations.js?v=3" defer></script>
+  <script src="cache.js?v=43"></script>
   <style>
     
     :root {
@@ -1153,6 +1153,7 @@
     }
   </style>
 
+<style id="users-directory-style">.directory-user{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--line);cursor:pointer}.directory-user:active{background:var(--gold-soft)}.directory-avatar{width:42px;height:42px;border-radius:50%;background:var(--card-2);display:grid;place-items:center;overflow:hidden;flex:0 0 42px}.directory-avatar img{width:100%;height:100%;object-fit:cover}.directory-main{flex:1;min-width:0}.directory-name{display:flex;align-items:center;font-weight:700;font-size:12.5px}.directory-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>
 <style id="app-scrollbar-policy">
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
@@ -1188,7 +1189,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div class="stats-row"><div class="stat"><b id="ownBooks">0</b><span>китобҳо</span></div><div class="stat-divider"></div><div class="stat"><b id="ownFriends">0</b><span>дӯстон</span></div><div class="stat-divider"></div><div class="stat"><b id="ownMarks">0</b><span>дӯстдошта</span></div></div>
         </div>
         <div class="profile-meta">
-          <h3 style="display:flex;align-items:center;flex-wrap:wrap"><span id="ownName">Китобхон</span><span id="ownVerified"></span><span id="developerStatus" style="display:none;margin-left:7px;padding:2px 7px;border-radius:999px;background:rgba(33,64,243,.14);color:#6F8BFF;border:1px solid rgba(77,105,255,.3);font-size:9px">Разработчик</span></h3>
+          <h3 style="display:flex;align-items:center;flex-wrap:wrap"><span id="ownName">Китобхон</span><span id="ownVerified"></span><span id="developerStatus" style="display:none;margin-left:7px;padding:2px 7px;border-radius:999px;background:rgba(33,64,243,.14);color:#6F8BFF;border:1px solid rgba(77,105,255,.3);font-size:9px">Разработчик</span><button type="button" id="usersDirectoryBtn" onclick="openUsersDirectory()" style="margin-left:auto;border:1px solid var(--line);background:var(--card);color:var(--gold);border-radius:999px;padding:6px 10px;font-size:10px;cursor:pointer">🔎 Корбарон</button></h3>
           <div class="age-gender-row"><div class="sub-info" id="ownAge"></div><div class="status-chip" id="ownGender" style="display:none"></div></div>
           <div class="meta-loc" id="ownLoc">—</div>
         </div>
@@ -1453,6 +1454,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   <div class="sheet-foot"><button class="btn btn-outline" id="cancelEdit">Бекор кардан</button><button class="btn btn-primary" id="saveEdit">Нигоҳ доштан</button></div></div></div>
 
   
+  <div class="sheet-overlay" id="usersDirectoryOverlay"><div class="sheet"><div class="sheet-handle"></div><div class="sheet-head"><h3>🔎 Корбарон</h3><div class="icon-btn" id="closeUsersDirectory">✕</div></div><div class="sheet-body"><div class="field"><input id="directorySearch" placeholder="Ном ё логин..."></div><div class="field-row"><div class="field"><select id="directoryRegion"><option value="">Ҳамаи вилоятҳо</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div><div class="field"><select id="directoryAge"><option value="18-120">Ҳамаи синну сол</option><option value="18-25">18–25</option><option value="26-40">26–40</option><option value="41-120">41+</option></select></div></div><div style="font-size:11px;color:var(--muted);margin:4px 0 10px">Аввал корбарони наздик ба маҳалли шумо нишон дода мешаванд.</div><div id="usersDirectoryResults"><div class="empty-state">Боргирӣ...</div></div></div></div></div>
+
   <div class="popup-menu" id="bookMenu">
     <div class="item" onclick="menuPublish()" id="menuPublish">📢 Интишор кардан дар лента</div>
     <div class="item" onclick="menuFavorite()">❤️ Илова ба дӯстдошта</div>
@@ -1676,12 +1679,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
   async function deleteAccount() {
+    let actionProgress=null;
     if (!await showConfirmDialog('Ҳама маълумоти шумо нест карда мешавад. Давом диҳед?', 'Огоҳӣ')) return;
     if (!await showConfirmDialog('Шумо воқеан мехоҳед профили худро нест кунед?', 'Тасдиқ')) return;
     try {
       const token = localStorage.getItem('kk_token');
       const userId = localStorage.getItem('kk_user_id');
       if (!token || !userId) { await showAlertDialog('Шумо ворид нестед', 'Хатогӣ'); return; }
+      actionProgress=beginActionProgress('Ҳисоб ва маълумоти шумо нест карда мешавад...');
       if (loadedProfile?.avatar_url) {
         try { await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar', { method:'DELETE',headers:{Authorization:'Bearer '+token} }); } catch(e) {}
       }
@@ -1690,6 +1695,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         headers: { 'Authorization': 'Bearer ' + token }
       });
       if (r.ok) {
+        actionProgress?.done('Ҳисоб нест карда шуд');
+        await new Promise(resolve=>setTimeout(resolve,500));
         await showAlertDialog('Профили шумо нест карда шуд.', 'Муваффақият');
         Object.keys(localStorage).forEach(key=>{if(key.startsWith('kk_'))localStorage.removeItem(key)});
         if('caches' in window)caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
@@ -1697,9 +1704,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         location.replace('login.html?deleted=1');
       } else {
         const err = await r.json().catch(() => ({}));
-        await showAlertDialog('Хатогӣ: ' + (err.error || 'Номаълум'), 'Хатогӣ');
+        actionProgress?.fail(err.error||'Ҳисоб нест карда нашуд');
+        await showAlertDialog('Хатогӣ: ' + (err.error || 'Номаълум')+(err.technical?'\n'+err.technical:''), 'Хатогӣ');
       }
     } catch (e) {
+      actionProgress?.fail(e.message);
       await showAlertDialog('Хатогӣ: ' + e.message, 'Хатогӣ');
     }
   }
@@ -2641,7 +2650,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   async function uploadProfileAvatar(file) {
     const btn = el('avatarChangeBtn'), hint = el('avatarEligibilityHint');
-    btn.disabled = true; hint.textContent = 'Акс омода ва бор шуда истодааст...'; hint.style.color = 'var(--gold)';
+    btn.disabled = true; const actionProgress=beginActionProgress('Акс омода ва бор шуда истодааст...'); hint.textContent = 'Акс омода ва бор шуда истодааст...'; hint.style.color = 'var(--gold)';
     try {
       const blob = await imageFileToWebp(file);
       const form = new FormData(); form.append('avatar', blob, 'avatar.webp');
@@ -2659,11 +2668,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
       try { localStorage.removeItem('kk_profile_cache'); } catch (e) {}
       hint.textContent = '✓ Акс нигоҳ дошта шуд. Ивазкунии нав баъд аз як моҳ.'; hint.style.color = 'var(--green)';
+      actionProgress.done('Акс нигоҳ дошта шуд');
       showToast('Акс нигоҳ дошта шуд!');
       avatarEligibility = { ...(avatarEligibility || {}), eligible: true, can_upload: false, next_upload_at: data.next_upload_at };
       saveAvatarEligibilityCache(avatarEligibility);
       applyEditButtonState();
     } catch (e) {
+      actionProgress.fail(e.message);
       hint.textContent = 'Хатогӣ: ' + e.message; hint.style.color = 'var(--red)';
       btn.disabled = !(avatarEligibility && avatarEligibility.can_upload);
     }
@@ -2673,6 +2684,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!loadedProfile?.avatar_url) return;
     if (!await showConfirmDialog('Акс нест карда шавад? Акси нав танҳо баъд аз як моҳ дастрас мешавад.', 'Тасдиқ', 'Нест кардан')) return;
     const button = el('avatarDeleteBtn'); if (button) button.disabled = true;
+    const actionProgress=beginActionProgress('Акс нест карда мешавад...');
     try {
       const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar', { method:'DELETE',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token')} });
       const data = await r.json().catch(() => ({})); if (!r.ok) throw new Error(data.error || 'Акс нест карда нашуд');
@@ -2681,12 +2693,26 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if(button)button.style.display='none';
       avatarEligibility={...(avatarEligibility||{}),eligible:true,can_upload:false,next_upload_at:data.next_upload_at};saveAvatarEligibilityCache(avatarEligibility);paintAvatarEligibility(avatarEligibility);
       if(typeof CacheManager!=='undefined')CacheManager.invalidateKey('kk_profile_'+currentProfileUserId);
+      actionProgress.done('Акс нест карда шуд');
       showToast('Акс нест карда шуд');
-    } catch(e) { showToast('Хатогӣ: '+e.message); if(button)button.disabled=false; }
+    } catch(e) { actionProgress.fail(e.message); showToast('Хатогӣ: '+e.message); if(button)button.disabled=false; }
   }
   el('avatarChangeBtn')?.addEventListener('click', () => el('avatarFileInput')?.click());
   el('avatarDeleteBtn')?.addEventListener('click', deleteProfileAvatar);
   el('avatarFileInput')?.addEventListener('change', function() { const file = this.files?.[0]; this.value = ''; if (file) uploadProfileAvatar(file); });
+
+  let directoryTimer=null;
+  async function loadUsersDirectory(){
+    const box=el('usersDirectoryResults');if(!box)return;const q=el('directorySearch').value.trim(),region=el('directoryRegion').value,[minAge,maxAge]=el('directoryAge').value.split('-');const cacheKey='kk_users_directory_'+encodeURIComponent([q,region,minAge,maxAge].join('|'));
+    try{const cached=JSON.parse(localStorage.getItem(cacheKey)||'null');if(cached&&Date.now()-cached.ts<5*60*1000)renderUsersDirectory(cached.rows)}catch(e){}
+    try{const params=new URLSearchParams({q,region,min_age:minAge,max_age:maxAge,limit:'40'});const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/users/directory?'+params,{headers:{Authorization:'Bearer '+localStorage.getItem('kk_token')},cache:'no-store'});const rows=await r.json();if(!r.ok)throw Error(rows.error||'Хато');localStorage.setItem(cacheKey,JSON.stringify({ts:Date.now(),rows}));renderUsersDirectory(rows)}catch(e){if(!box.querySelector('.directory-user'))box.innerHTML='<div class="empty-state">Рӯйхат дастрас нест</div>'}
+  }
+  function renderUsersDirectory(rows){const box=el('usersDirectoryResults');if(!rows?.length){box.innerHTML='<div class="empty-state">Корбар ёфт нашуд</div>';return}box.innerHTML=rows.map(u=>{const name=u.display_name||u.username,age=u.birth_year?new Date().getFullYear()-u.birth_year:'',address=[u.region,u.city,u.jamoat,u.village].filter(Boolean).join(' · '),avatar=u.avatar_url?`<img src="${esc(u.avatar_url)}" alt="">`:esc(String(name||'?').slice(0,1).toUpperCase());return `<div class="directory-user" onclick="location.href='profile.html?user=${u.id}'"><div class="directory-avatar">${avatar}</div><div class="directory-main"><div class="directory-name">${esc(name)}${u.verified?verifiedBadgeSvg():''}</div><div class="directory-meta">@${esc(u.username)}${age?' · '+age+' сола':''}</div><div class="directory-meta">${esc(address)}</div></div></div>`}).join('')}
+  function openUsersDirectory(){el('usersDirectoryOverlay').classList.add('open');loadUsersDirectory()}
+  window.openUsersDirectory=openUsersDirectory;
+  el('closeUsersDirectory')?.addEventListener('click',()=>el('usersDirectoryOverlay').classList.remove('open'));
+  el('usersDirectoryOverlay')?.addEventListener('click',e=>{if(e.target===el('usersDirectoryOverlay'))el('usersDirectoryOverlay').classList.remove('open')});
+  ['directorySearch','directoryRegion','directoryAge'].forEach(id=>el(id)?.addEventListener(id==='directorySearch'?'input':'change',()=>{clearTimeout(directoryTimer);directoryTimer=setTimeout(loadUsersDirectory,280)}));
 
   const overlay = el('editOverlay');
   function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); loadAvatarEligibility(); }
@@ -2816,16 +2842,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (newEmail) updates.email = newEmail;
     if (newPassword) updates.password = newPassword;
 
+    const actionProgress=beginActionProgress('Маълумоти профил нигоҳ дошта мешавад...');
     try {
       const result = await NEON_API.updateProfile(updates);
       if (!result.success) throw new Error(result.error || 'Сервер қабул накард');
       if (newUsername || newPassword) {
+        actionProgress.done('Профил навсозӣ шуд');
         showToast('Профиль навсозӣ шуд! Лутфан аз нав ворид шавед.');
         AutoLogin.logout();
         location.href = 'login.html';
         return;
       }
-      showToast('Профиль навсозӣ шуд!');
+      actionProgress.done('Профил навсозӣ шуд');
+      showToast('Профил навсозӣ шуд!');
       closeEdit();
       if (typeof CacheManager !== 'undefined') {
         const key = 'kk_profile_' + currentProfileUserId;
@@ -2833,6 +2862,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
       await loadProfile();
     } catch (e) {
+      actionProgress.fail(e.message);
       console.error('[Profile] Save error:', e);
       showToast('Хатогӣ: ' + e.message);
     }

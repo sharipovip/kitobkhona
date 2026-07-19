@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <link rel="manifest" href="manifest.json">
-<script src="config.js?v=36"></script>
-<script src="cache.js?v=36"></script>
+<script src="config.js?v=43"></script>
+<script src="cache.js?v=43"></script>
 <style>
   
   * {
@@ -1142,11 +1142,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function cachedMap() {
     try { return JSON.parse(localStorage.getItem('kk_cached_books') || '{}'); } catch(e) { return {}; }
   }
-  function isCached(url) { return !!cachedMap()[url]; }
+  function isCached(url) { return !!cachedMap()[canonicalBookUrl(url)]; }
   function setCachedMap(o) { try { localStorage.setItem('kk_cached_books', JSON.stringify(o)); } catch(e) {} }
   async function deleteCached(url) {
-    try { if ('caches' in window) { const c = await caches.open('kitobkhona-pdf-cache-v1'); await c.delete(url); } } catch(e) {}
-    const m = cachedMap(); delete m[url]; setCachedMap(m);
+    const canonical=canonicalBookUrl(url);
+    try { if ('caches' in window) { const c = await caches.open('kitobkhona-pdf-cache-v1'); for(const req of await c.keys())if(canonicalBookUrl(req.url)===canonical)await c.delete(req); } } catch(e) {}
+    const m = cachedMap(); for(const key of Object.keys(m))if(canonicalBookUrl(key)===canonical)delete m[key]; setCachedMap(m);
   }
 
   function renderBooks(list) {

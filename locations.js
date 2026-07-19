@@ -1,16 +1,23 @@
-(function(){
-'use strict';
-let dataPromise=null;
+(function(){'use strict';
+let dataPromise=null,activePopup=null;
 const norm=s=>String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-zа-яёӣӯқғҳҷ0-9]/gi,'');
 function load(){if(!dataPromise)dataPromise=fetch('data/tajikistan_locations_full.json',{cache:'force-cache'}).then(r=>{if(!r.ok)throw Error('locations '+r.status);return r.json()});return dataPromise}
-function list(id){let d=document.getElementById(id);if(!d){d=document.createElement('datalist');d.id=id;document.body.appendChild(d)}return d}
-function options(dl,items,limit=900){const seen=new Set();dl.innerHTML='';for(const item of items){const value=String(item||'').trim();const key=value.toLowerCase();if(!value||seen.has(key))continue;seen.add(key);const o=document.createElement('option');o.value=value;dl.appendChild(o);if(seen.size>=limit)break}}
+function installStyle(){if(document.getElementById('kkLocationStyle'))return;const s=document.createElement('style');s.id='kkLocationStyle';s.textContent='.kk-location-pop{position:fixed;z-index:100000;background:#10233b;border:1px solid rgba(201,168,76,.28);border-radius:12px;box-shadow:0 14px 36px rgba(0,0,0,.45);overflow-y:auto;max-height:220px;padding:5px}.kk-location-option{display:block;width:100%;border:0;background:transparent;color:#f0ead6;text-align:left;padding:9px 10px;border-radius:8px;font:12px/1.3 system-ui}.kk-location-option:active,.kk-location-option:hover{background:rgba(201,168,76,.15);color:#e8c96d}.kk-location-empty{padding:10px;color:#8fa0b4;font-size:11px}';document.head.appendChild(s)}
+function close(){activePopup?.remove();activePopup=null}
+function position(pop,input){const rect=input.getBoundingClientRect(),vv=window.visualViewport,h=vv?.height||innerHeight,topOffset=vv?.offsetTop||0,below=h-(rect.bottom-topOffset),desired=Math.min(220,Math.max(110,below-10));pop.style.left=Math.max(6,rect.left)+'px';pop.style.width=Math.min(rect.width,innerWidth-12)+'px';pop.style.maxHeight=desired+'px';if(below>=135)pop.style.top=(rect.bottom+4)+'px';else{pop.style.maxHeight=Math.min(200,Math.max(90,rect.top-topOffset-12))+'px';pop.style.top=Math.max(topOffset+5,rect.top-parseInt(pop.style.maxHeight)-5)+'px'}}
+function autocomplete(input,getItems){input.removeAttribute('list');let timer;
+ const render=()=>{clearTimeout(timer);timer=setTimeout(()=>{close();const q=norm(input.value),all=getItems()||[],items=all.filter(x=>!q||norm(x).includes(q)).slice(0,9);const pop=document.createElement('div');pop.className='kk-location-pop';if(!items.length)pop.innerHTML='<div class="kk-location-empty">Натиҷа ёфт нашуд</div>';for(const value of items){const b=document.createElement('button');b.type='button';b.className='kk-location-option';b.textContent=value;b.onpointerdown=e=>{e.preventDefault();input.value=value;close();input.dispatchEvent(new Event('change',{bubbles:true}))};pop.appendChild(b)}document.body.appendChild(pop);activePopup=pop;position(pop,input)},80)};
+ input.addEventListener('focus',render);input.addEventListener('input',render);input.addEventListener('blur',()=>setTimeout(close,180));window.visualViewport?.addEventListener('resize',()=>{if(activePopup)position(activePopup,input)})}
+function unique(items){return [...new Set(items.filter(Boolean).map(x=>String(x).trim()))]}
 function bindSet(cfg,d){const regionEl=document.getElementById(cfg.region),city=document.getElementById(cfg.city),jamoat=document.getElementById(cfg.jamoat),village=document.getElementById(cfg.village);if(!regionEl||!city||!jamoat||!village)return;
- const cityList=list(cfg.city+'List'),jamList=list(cfg.jamoat+'List'),villageList=list(cfg.village+'List');city.setAttribute('list',cityList.id);jamoat.setAttribute('list',jamList.id);village.setAttribute('list',villageList.id);
- const region=()=>d.regions.find(r=>norm(r.name)===norm(regionEl.value))||d.regions.find(r=>r.name.includes(regionEl.value)||regionEl.value.includes(r.name))||((regionEl.value.includes('тобеи'))?d.regions.find(r=>r.id==='RR'):null);
- function refresh(){const r=region();if(!r){options(cityList,[]);options(jamList,[]);options(villageList,[]);return}const settlements=d.settlements.filter(x=>x.region_id===r.id);const major=settlements.filter(x=>['PPLA','PPLA2','PPLA3','PPLC'].includes(x.type)||x.population>=5000).map(x=>x.name);options(cityList,[...r.districts.map(x=>x.name),...major]);const district=r.districts.find(x=>norm(x.name)===norm(city.value)||x.alternates?.some(a=>norm(a)===norm(city.value)));const jams=district?district.jamoats:r.districts.flatMap(x=>x.jamoats);options(jamList,jams.map(x=>x.name));options(villageList,settlements.map(x=>x.name),1200)}
- regionEl.addEventListener('change',refresh);city.addEventListener('input',()=>setTimeout(refresh,120));refresh();
-}
-async function init(){try{const d=await load();bindSet({region:'regRegion',city:'regCity',jamoat:'regJamoat',village:'regVillage'},d);bindSet({region:'editRegion',city:'editCity',jamoat:'editJamoat',village:'editVillage'},d);window.KKLocations={data:d,norm}}catch(e){console.warn('Locations unavailable',e)}}
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
+ const region=()=>d.regions.find(r=>norm(r.name)===norm(regionEl.value))||((regionEl.value.includes('тобеи'))?d.regions.find(r=>r.id==='RR'):null);
+ const settlements=()=>{const r=region();return r?d.settlements.filter(x=>x.region_id===r.id):[]};
+ const districts=()=>region()?.districts||[];
+ const selectedDistrict=()=>districts().find(x=>norm(x.name)===norm(city.value)||x.alternates?.some(a=>norm(a)===norm(city.value)));
+ autocomplete(city,()=>{const major=settlements().filter(x=>['PPLA','PPLA2','PPLA3','PPLC'].includes(x.type)||x.population>=4000).map(x=>x.name);return unique([...districts().map(x=>x.name),...major])});
+ autocomplete(jamoat,()=>unique((selectedDistrict()?.jamoats||districts().flatMap(x=>x.jamoats||[])).map(x=>x.name)));
+ autocomplete(village,()=>unique(settlements().map(x=>x.name)));
+ regionEl.addEventListener('change',()=>{city.value='';jamoat.value='';village.value='';close()});city.addEventListener('change',()=>{jamoat.value='';village.value=''})}
+async function init(){installStyle();try{const d=await load();bindSet({region:'regRegion',city:'regCity',jamoat:'regJamoat',village:'regVillage'},d);bindSet({region:'editRegion',city:'editCity',jamoat:'editJamoat',village:'editVillage'},d);window.KKLocations={data:d,norm}}catch(e){console.warn('Locations unavailable',e)}}
+document.addEventListener('pointerdown',e=>{if(activePopup&&!activePopup.contains(e.target)&&!e.target.closest('input'))close()});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',init);else init();
 })();

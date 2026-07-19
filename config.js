@@ -165,6 +165,28 @@ function getBookUrl(folder, file) {
 }
 
 
+function canonicalBookUrl(value) {
+  const raw=String(value||'').trim();if(!raw)return raw;
+  try{const u=new URL(raw);let owner='',repo='',branch='',parts=[];
+    if(u.hostname==='raw.githubusercontent.com'){const p=u.pathname.split('/').filter(Boolean);owner=p.shift()||'';repo=p.shift()||'';branch=p.shift()||'main';parts=p}
+    else if(u.hostname==='cdn.jsdelivr.net'){const p=u.pathname.replace(/^\/gh\//,'').split('/').filter(Boolean);const first=p.shift()||'';owner=first;const second=p.shift()||'';const at=second.lastIndexOf('@');repo=at>=0?second.slice(0,at):second;branch=at>=0?second.slice(at+1):'main';parts=p}
+    else return raw;
+    const clean=parts.map(part=>{let x=part;for(let i=0;i<3;i++){try{const y=decodeURIComponent(x);if(y===x)break;x=y}catch(e){break}}return encodeURIComponent(x)}).join('/');
+    return `https://raw.githubusercontent.com/${owner}/${repo}/${branch}/${clean}`;
+  }catch(e){return raw}
+}
+window.canonicalBookUrl=canonicalBookUrl;
+async function getCachedBookResponse(value){
+  if(!('caches' in window))return null;const key=canonicalBookUrl(value),cache=await caches.open('kitobkhona-pdf-cache-v1');let hit=await cache.match(key);if(hit)return hit;
+  for(const req of await cache.keys()){if(canonicalBookUrl(req.url)===key){hit=await cache.match(req);if(hit){try{await cache.put(key,hit.clone())}catch(e){}return hit}}}return null
+}
+window.getCachedBookResponse=getCachedBookResponse;
+
+function beginActionProgress(label='Амалиёт иҷро шуда истодааст...'){
+  let overlay=document.getElementById('kkActionProgress');if(overlay)overlay.remove();overlay=document.createElement('div');overlay.id='kkActionProgress';overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(2,8,18,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)';overlay.innerHTML=`<div style="width:min(340px,100%);background:var(--bg2,#142236);border:1px solid var(--border,rgba(201,168,76,.2));border-radius:18px;padding:22px;color:var(--text,#F0EAD6);text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.45)"><div class="loader" style="margin:0 auto 14px"></div><div id="kkActionLabel" style="font-weight:700">${String(label).replace(/</g,'&lt;')}</div><div style="height:7px;background:rgba(255,255,255,.09);border-radius:99px;overflow:hidden;margin-top:16px"><div id="kkActionBar" style="height:100%;width:4%;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .3s"></div></div><div id="kkActionPct" style="font-size:11px;color:var(--gold2,#E8C96D);margin-top:6px">4%</div></div>`;document.body.appendChild(overlay);let pct=4;const timer=setInterval(()=>{pct=Math.min(92,pct+(pct<55?4:1));overlay.querySelector('#kkActionBar').style.width=pct+'%';overlay.querySelector('#kkActionPct').textContent=pct+'%'},360);return{done(message){clearInterval(timer);const l=overlay.querySelector('#kkActionLabel');if(l)l.textContent=message||'Омода шуд';overlay.querySelector('#kkActionBar').style.width='100%';overlay.querySelector('#kkActionPct').textContent='100%';setTimeout(()=>overlay.remove(),450)},fail(message){clearInterval(timer);overlay.querySelector('#kkActionLabel').textContent=message||'Хатогӣ';overlay.querySelector('#kkActionPct').textContent='!';setTimeout(()=>overlay.remove(),1400)},close(){clearInterval(timer);overlay.remove()}}
+}
+window.beginActionProgress=beginActionProgress;
+
 async function clearBookCache() {
   try {
     if ('caches' in window) {
@@ -515,11 +537,11 @@ function getToastEl() {
 }
 
 async function shareFile(url, name) {
+  url=canonicalBookUrl(url);
   try {
     let blob = null;
     if ('caches' in window) {
-      const cache = await caches.open('kitobkhona-pdf-cache-v1');
-      const hit = await cache.match(url);
+      const hit = await getCachedBookResponse(url);
       if (hit) blob = await hit.blob();
     }
     if (!blob) {
@@ -567,6 +589,7 @@ async function shareFile(url, name) {
 }
 
 async function downloadFile(url, name, showProgress = true) {
+  url=canonicalBookUrl(url);
   try {
     const toastEl = getToastEl();
     if (toastEl && showProgress) {
@@ -576,8 +599,7 @@ async function downloadFile(url, name, showProgress = true) {
     let blob = null;
     let fromCache = false;
     if ('caches' in window) {
-      const cache = await caches.open('kitobkhona-pdf-cache-v1');
-      const hit = await cache.match(url);
+      const hit = await getCachedBookResponse(url);
       if (hit) {
         blob = await hit.blob();
         fromCache = true;

@@ -6,8 +6,8 @@
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=41"></script>
-<script src="cache.js?v=41"></script>
+<script src="config.js?v=43"></script>
+<script src="cache.js?v=43"></script>
 <style>
   
   * {
@@ -1123,6 +1123,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         event.stopPropagation();
         const peerId = button.dataset.deleteChat;
         if (!await showConfirmDialog('Нест кардани чат ва ҳамаи паёмҳо?', 'Тасдиқ', 'Нест кардан', 'Бекор кардан')) return;
+        const actionProgress=beginActionProgress('Чат ва паёмакҳо нест карда мешаванд...');
         try {
           const token = localStorage.getItem('kk_token');
           const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/chats/' + encodeURIComponent(peerId), {
@@ -1137,8 +1138,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           if (typeof CacheManager !== 'undefined' && summaryCacheKey) CacheManager.set(summaryCacheKey,chatSummary);
           clearConversationCache(peerId);
           button.closest('.chat-item')?.remove();
+          actionProgress.done('Чат нест карда шуд');
           showToast(`Чат ва ${data.deleted_messages||0} паёмак нест карда шуд`);
         } catch (e) {
+          actionProgress.fail(e.message);
           showToast('Хатогӣ: ' + e.message);
         }
       });

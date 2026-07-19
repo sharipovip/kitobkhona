@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js?v=36"></script>
-<script src="cache.js?v=36"></script>
+<script src="config.js?v=43"></script>
+<script src="cache.js?v=43"></script>
 <style>
   
   :root {
@@ -677,7 +677,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   let cover = qs.get('cover') || '';
   let pdf = null, page = 1, pages = 0, rendering = false, bars = true, zoom = 1;
 
-  url = safeDecode(url);
+  url = canonicalBookUrl(safeDecode(url));
   name = safeDecode(name);
   cover = safeDecode(cover);
   if (/^data:/i.test(String(cover).trim())) cover = '';
@@ -1026,17 +1026,16 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   function saveCachedMeta(pdfUrl, bytes = 0) {
     try {
       const m = cachedMap();
-      const meta = { url, name, cover, ts: Date.now(), size: bytes };
-      m[url] = meta;
-      m[pdfUrl] = { ...meta, url: pdfUrl };
+      const canonical = canonicalBookUrl(pdfUrl || url);
+      const meta = { url: canonical, name, cover, ts: Date.now(), size: bytes };
+      m[canonical] = meta;
       localStorage.setItem('kk_cached_books', JSON.stringify(m));
     } catch(e) {}
   }
   async function cachedPdfData(pdfUrl) {
     try {
       if (!('caches' in window)) return null;
-      const c = await caches.open('kitobkhona-pdf-cache-v1');
-      let hit = await c.match(pdfUrl) || await c.match(url) || await c.match(cdnPdfUrl(url));
+      const hit = await getCachedBookResponse(pdfUrl) || await getCachedBookResponse(url);
       if (!hit) return null;
       setLoadProgress(100);
       const ab = await hit.arrayBuffer();
@@ -1050,12 +1049,13 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       setTimeout(async () => {
         try {
           const c = await caches.open('kitobkhona-pdf-cache-v1');
-          if (await c.match(pdfUrl)) return;
-          const r = await fetch(pdfUrl, { cache: 'no-store' });
+          const canonical=canonicalBookUrl(pdfUrl);
+          if (await getCachedBookResponse(canonical)) return;
+          const r = await fetch(canonical, { cache: 'no-store' });
           if (r.ok) {
             const clone = r.clone();
-            await c.put(pdfUrl, r.clone());
-            if (pdfUrl !== url) await c.put(url, clone.clone());
+            await c.put(canonical, r.clone());
+            if (canonical !== url) await c.put(url, clone.clone());
             const b = await clone.blob();
             saveCachedMeta(pdfUrl, b.size);
           }
