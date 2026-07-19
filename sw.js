@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v59-critical-fixes';
+const CACHE_NAME = 'kitobkhona-v60-workers-cdn';
 const LOCAL_FILES = [
   './',
   './index.html',

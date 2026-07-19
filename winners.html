@@ -6,7 +6,7 @@
   <title>Китобхона — Ғолибон</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=59"></script>
+  <script src="config.js?v=60"></script>
   <script src="cache.js?v=43"></script>
   <style>
     
@@ -959,8 +959,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
         container.innerHTML='<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
       }
       try{
-        const token=localStorage.getItem('kk_token');
-        const resp=await edgeApiFetch('/api/winners?period='+period,{headers:token?{'Authorization':'Bearer '+token}:{},cache:'no-store'},8000);
+        const resp=await edgeApiFetch('/api/winners?period='+period,{},8000);
         if(!resp.ok)throw new Error('Хатогӣ дар боргирӣ');
         const data=await resp.json();
         if(typeof CacheManager!=='undefined')CacheManager.set(cacheKey,data);
