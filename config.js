@@ -1208,14 +1208,28 @@ function getCoverUrlCandidates(url) {
 function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url || ''); }
 
 
-(function initReadingQueue() {
-  const queueKey='kk_pending_reading_sessions'; let running=false; let timer=null;
-  function readQueue(){try{const v=JSON.parse(localStorage.getItem(queueKey)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
-  function writeQueue(v){try{localStorage.setItem(queueKey,JSON.stringify(v.slice(-50)))}catch(e){} }
-  function schedule(){if(timer)clearTimeout(timer);const n=readQueue().sort((a,b)=>Number(a.readyAt||0)-Number(b.readyAt||0))[0];if(n)timer=setTimeout(flush,Math.max(1000,Math.min(86400000,Number(n.readyAt||Date.now())-Date.now())))}
-  async function flush(){if(running||!localStorage.getItem('kk_token'))return;running=true;try{const now=Date.now(),wait=[];for(const x of readQueue()){if(Number(x.readyAt||0)>now){wait.push(x);continue}try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({book_id:x.book_id,book_title:x.book_title||'Китоб',duration:Math.max(0,Math.round(Number(x.duration)||0)),status:x.status||'completed',pages_read:Math.max(0,Number(x.pages_read)||0)})},8000);if(!r.ok)throw Error('HTTP '+r.status)}catch(e){wait.push({...x,readyAt:Date.now()+60000})}}writeQueue(wait)}finally{running=false;schedule()}}
-  window.KKReadingQueue={flush};window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(flush,1000),{once:true});else setTimeout(flush,1000)
+(function initReadingSyncV2(){
+  const KEY='kk_reading_sync_v2',LEGACY='kk_pending_reading_sessions',ACTIVE='kk_reader_active_until';
+  const TEN_MIN=10*60*1000;let running=false,timer=null;
+  const empty=()=>({version:2,records:{},inflight:null});
+  function read(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return x&&x.version===2&&x.records?x:empty()}catch(e){return empty()}}
+  function write(s){try{const keys=Object.keys(s.records||{});if(keys.length>200)keys.sort((a,b)=>(s.records[a].updatedAt||0)-(s.records[b].updatedAt||0)).slice(0,keys.length-200).forEach(k=>delete s.records[k]);localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+  function id(){try{return crypto.randomUUID().replace(/-/g,'_')}catch(e){return Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)}}
+  function dayKey(ts=Date.now()){const d=new Date(ts);return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function nextEight(ts=Date.now()){const d=new Date(ts),due=new Date(d);due.setHours(20,0,0,0);if(due.getTime()<=ts)due.setDate(due.getDate()+1);return due.getTime()}
+  function add(x){const duration=Math.max(0,Math.round(Number(x?.duration)||0)),book=String(x?.book_id||'').replace(/^books\//i,'');if(!book||!duration)return;const now=Date.now(),day=dayKey(now),key=day+'|'+book,s=read(),r=s.records[key]||{book_id:book,book_title:x.book_title||'Китоб',book_author:x.book_author||'',duration:0,pages_read:0,total_pages:0,status:'paused',read_day:day,anonymousDueAt:nextEight(now),createdAt:now};r.duration+=duration;r.pages_read=Math.max(Number(r.pages_read)||0,Number(x.pages_read)||0);r.total_pages=Math.max(Number(r.total_pages)||0,Number(x.total_pages)||0);r.status=x.status||r.status;r.book_title=x.book_title||r.book_title;r.updatedAt=now;r.readyAt=now+TEN_MIN;s.records[key]=r;write(s);schedule()}
+  function active(){try{localStorage.setItem(ACTIVE,String(Date.now()+90*1000))}catch(e){}}
+  function closed(){try{localStorage.setItem(ACTIVE,'0')}catch(e){}schedule()}
+  function isActive(){return Number(localStorage.getItem(ACTIVE)||0)>Date.now()}
+  function choose(s,now){const personal=[],anonymous=[],keys=[];for(const [key,r] of Object.entries(s.records||{})){const dur=Number(r.duration)||0;if(dur>=600&&Number(r.readyAt||0)<=now){personal.push(r);keys.push(key)}else if(dur>0&&dur<600&&Number(r.anonymousDueAt||0)<=now){anonymous.push(r);keys.push(key)}}return{personal,anonymous,keys}}
+  function makeInflight(s){const picked=choose(s,Date.now());if(!picked.keys.length)return null;const batch={batch_id:'read_'+id(),personal:picked.personal,anonymous:picked.anonymous,keys:picked.keys,retryAt:Date.now()};for(const k of picked.keys)delete s.records[k];s.inflight=batch;write(s);return batch}
+  async function flush(){if(running)return;if(isActive()){if(timer)clearTimeout(timer);timer=setTimeout(flush,60*1000);return}if(!navigator.onLine||!localStorage.getItem('kk_token')){if(timer)clearTimeout(timer);timer=setTimeout(flush,5*60*1000);return}running=true;try{const s=read(),batch=s.inflight||makeInflight(s);if(!batch||Number(batch.retryAt||0)>Date.now())return;const r=await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE+'/api/reading-sync',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({batch_id:batch.batch_id,personal:batch.personal,anonymous:batch.anonymous})},20000);if(!r.ok)throw Error('HTTP '+r.status);const current=read();if(current.inflight?.batch_id===batch.batch_id)current.inflight=null;write(current);const uid=localStorage.getItem('kk_user_id');if(uid){localStorage.removeItem('kk_avatar_eligibility_'+uid);if(typeof CacheManager!=='undefined'){CacheManager.invalidateKey('kk_cache_sessions');CacheManager.invalidateKey('kk_cache_sessions_'+encodeURIComponent(uid))}}}catch(e){const s=read();if(s.inflight)s.inflight.retryAt=Date.now()+60*1000;write(s)}finally{running=false;schedule()}}
+  function nextDue(){const s=read();if(s.inflight)return Number(s.inflight.retryAt||Date.now());let n=Infinity;for(const r of Object.values(s.records||{})){const d=Number(r.duration)||0;n=Math.min(n,d>=600?Number(r.readyAt||Infinity):Number(r.anonymousDueAt||Infinity))}return n}
+  function schedule(){if(timer)clearTimeout(timer);const due=nextDue();if(Number.isFinite(due))timer=setTimeout(flush,Math.max(1000,Math.min(24*60*60*1000,due-Date.now())))}
+  function migrate(){try{const old=JSON.parse(localStorage.getItem(LEGACY)||'[]');if(Array.isArray(old))old.forEach(add);localStorage.removeItem(LEGACY)}catch(e){}}
+  window.KKReadingSyncV2={add,active,closed,flush,state:read};migrate();window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{schedule();setTimeout(flush,1500)},{once:true});else{schedule();setTimeout(flush,1500)}
 })();
+
 
 // ===== Interface protection and administrator-controlled cache refresh =====
 function installContentProtection(){

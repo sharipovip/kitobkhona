@@ -1,385 +1,76 @@
 {
-  "version": 2,
-  "verified_at": "2026-07-18",
-  "count": 42,
+  "version": 1,
+  "size": "400x400 jpg",
   "items": [
     {
-      "quote_id": 1,
-      "image": "4.jpeg",
-      "width": 549,
-      "height": 364,
-      "topic": "қонун",
-      "source": "https://president.tj/event/speeches/node/56235",
-      "verified": true
+      "file": "01-president-official.jpg",
+      "small": "01-president-official-200.jpg",
+      "source": "01.jpeg",
+      "title": "Портрет / суханҳои Пешвои миллат",
+      "description": "Портрет дар Қасри миллат"
     },
     {
-      "quote_id": 2,
-      "image": "7.jpeg",
-      "width": 702,
-      "height": 437,
-      "topic": "қонун",
-      "source": "https://president.tj/event/speeches/node/56235",
-      "verified": true
+      "file": "02-istiqlol-flag.jpg",
+      "small": "02-istiqlol-flag-200.jpg",
+      "source": "02.jpeg",
+      "title": "Истиқлолият ва Парчам",
+      "description": "Портрет бо Парчами Тоҷикистон"
     },
     {
-      "quote_id": 3,
-      "image": "36.jpeg",
-      "width": 330,
-      "height": 309,
-      "topic": "адолат",
-      "source": "https://president.tj/event/speeches/node/56235",
-      "verified": true
+      "file": "03-vahdat-diplomacy.jpg",
+      "small": "03-vahdat-diplomacy-200.jpg",
+      "source": "03.jpeg",
+      "title": "Ваҳдат ва робитаҳо",
+      "description": "Мулоқот / робитаҳои давлатӣ"
     },
     {
-      "quote_id": 4,
-      "image": "31.jpeg",
-      "width": 608,
-      "height": 328,
-      "topic": "фарҳанги ҳуқуқӣ",
-      "source": "https://president.tj/event/speeches/node/56235",
-      "verified": true
+      "file": "04-kishovarzi.jpg",
+      "small": "04-kishovarzi-200.jpg",
+      "source": "04.jpeg",
+      "title": "Кишоварзӣ",
+      "description": "Пешвои миллат дар саҳро"
     },
     {
-      "quote_id": 5,
-      "image": "15.jpeg",
-      "width": 547,
-      "height": 365,
-      "topic": "давлат",
-      "source": "https://president.tj/event/speeches/node/56235",
-      "verified": true
+      "file": "05-president-young.jpg",
+      "small": "05-president-young-200.jpg",
+      "source": "05.jpeg",
+      "title": "Солҳои аввал / роҳбарӣ",
+      "description": "Портрет аз солҳои аввал"
     },
     {
-      "quote_id": 6,
-      "image": "24.jpeg",
-      "width": 638,
-      "height": 480,
-      "topic": "манфиатҳои миллӣ",
-      "source": "https://president.tj/event/speeches/node/56235",
-      "verified": true
+      "file": "06-zaboni-millat.jpg",
+      "small": "06-zaboni-millat-200.jpg",
+      "source": "06.jpeg",
+      "title": "Забон — ҳастии миллат",
+      "description": "Китоби «Забони миллат — ҳастии миллат»"
     },
     {
-      "quote_id": 7,
-      "image": "22.jpeg",
-      "width": 557,
-      "height": 359,
-      "topic": "иқтисод",
-      "source": "https://president.tj/event/speeches/node/56212",
-      "verified": true
+      "file": "07-chehrahoyi-mondagor.jpg",
+      "small": "07-chehrahoyi-mondagor-200.jpg",
+      "source": "07.jpeg",
+      "title": "Чеҳраҳои мондагор",
+      "description": "Китоби «Чеҳраҳои мондагор»"
     },
     {
-      "quote_id": 8,
-      "image": "21.jpeg",
-      "width": 539,
-      "height": 359,
-      "topic": "саноат",
-      "source": "https://president.tj/event/speeches/node/56212",
-      "verified": true
+      "file": "08-davlatdori.jpg",
+      "small": "08-davlatdori-200.jpg",
+      "source": "08.jpeg",
+      "title": "Давлатдорӣ",
+      "description": "Портрет дар мизи корӣ"
     },
     {
-      "quote_id": 9,
-      "image": "13.jpeg",
-      "width": 638,
-      "height": 480,
-      "topic": "ҷавонон",
-      "source": "https://president.tj/event/speeches/node/56005",
-      "verified": true
+      "file": "09-suhanroni.jpg",
+      "small": "09-suhanroni-200.jpg",
+      "source": "09.jpeg",
+      "title": "Суханронӣ",
+      "description": "Суханронӣ дар минбар"
     },
     {
-      "quote_id": 10,
-      "image": "19.jpeg",
-      "width": 738,
-      "height": 414,
-      "topic": "сулҳ",
-      "source": "https://president.tj/event/speeches/node/56005",
-      "verified": true
-    },
-    {
-      "quote_id": 11,
-      "image": "40.jpeg",
-      "width": 678,
-      "height": 452,
-      "topic": "оянда",
-      "source": "https://president.tj/event/speeches/node/56005",
-      "verified": true
-    },
-    {
-      "quote_id": 12,
-      "image": "12.jpeg",
-      "width": 738,
-      "height": 414,
-      "topic": "хиради миллӣ",
-      "source": "https://president.tj/event/speeches/node/56005",
-      "verified": true
-    },
-    {
-      "quote_id": 13,
-      "image": "3.jpeg",
-      "width": 546,
-      "height": 366,
-      "topic": "ваҳдат",
-      "source": "https://president.tj/event/speeches/node/56005",
-      "verified": true
-    },
-    {
-      "quote_id": 14,
-      "image": "9.jpeg",
-      "width": 639,
-      "height": 421,
-      "topic": "ваҳдат",
-      "source": "https://president.tj/event/speeches/node/56005",
-      "verified": true
-    },
-    {
-      "quote_id": 15,
-      "image": "29.jpeg",
-      "width": 650,
-      "height": 367,
-      "topic": "фарҳанг",
-      "source": "https://president.tj/event/speeches/node/56017",
-      "verified": true
-    },
-    {
-      "quote_id": 16,
-      "image": "18.jpeg",
-      "width": 678,
-      "height": 452,
-      "topic": "об",
-      "source": "https://president.tj/event/speeches/node/56017",
-      "verified": true
-    },
-    {
-      "quote_id": 17,
-      "image": "41.jpeg",
-      "width": 499,
-      "height": 400,
-      "topic": "ватан",
-      "source": "https://president.tj/event/speeches/node/56017",
-      "verified": true
-    },
-    {
-      "quote_id": 18,
-      "image": "35.jpeg",
-      "width": 738,
-      "height": 399,
-      "topic": "маърифат",
-      "source": "https://president.tj/event/speeches/node/55730",
-      "verified": true
-    },
-    {
-      "quote_id": 19,
-      "image": "1.jpeg",
-      "width": 530,
-      "height": 377,
-      "topic": "дониш",
-      "source": "https://president.tj/event/speeches/node/55730",
-      "verified": true
-    },
-    {
-      "quote_id": 20,
-      "image": "5.jpeg",
-      "width": 250,
-      "height": 226,
-      "topic": "китоб",
-      "source": "https://president.tj/event/speeches/node/55730",
-      "verified": true
-    },
-    {
-      "quote_id": 21,
-      "image": "17.jpeg",
-      "width": 489,
-      "height": 408,
-      "topic": "илм",
-      "source": "https://president.tj/event/speeches/node/55730",
-      "verified": true
-    },
-    {
-      "quote_id": 22,
-      "image": "30.jpeg",
-      "width": 599,
-      "height": 399,
-      "topic": "ватан",
-      "source": "https://president.tj/event/speeches/node/55730",
-      "verified": true
-    },
-    {
-      "quote_id": 23,
-      "image": "14.jpeg",
-      "width": 678,
-      "height": 452,
-      "topic": "ваҳдат",
-      "source": "https://president.tj/event/speeches/node/55673",
-      "verified": true
-    },
-    {
-      "quote_id": 24,
-      "image": "39.jpeg",
-      "width": 678,
-      "height": 452,
-      "topic": "ҷавонон",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 25,
-      "image": "2.jpeg",
-      "width": 550,
-      "height": 340,
-      "topic": "маориф",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 26,
-      "image": "10.jpeg",
-      "width": 528,
-      "height": 378,
-      "topic": "ҷавонон",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 27,
-      "image": "27.jpeg",
-      "width": 547,
-      "height": 365,
-      "topic": "технология",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 28,
-      "image": "33.jpeg",
-      "width": 334,
-      "height": 236,
-      "topic": "илм",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 29,
-      "image": "42.jpeg",
-      "width": 447,
-      "height": 447,
-      "topic": "забон",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 30,
-      "image": "38.jpeg",
-      "width": 307,
-      "height": 222,
-      "topic": "амният",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 31,
-      "image": "32.jpeg",
-      "width": 447,
-      "height": 447,
-      "topic": "истиқлол",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 32,
-      "image": "28.jpeg",
-      "width": 597,
-      "height": 391,
-      "topic": "таърих",
-      "source": "https://president.tj/event/speeches/node/55650",
-      "verified": true
-    },
-    {
-      "quote_id": 33,
-      "image": "20.jpeg",
-      "width": 738,
-      "height": 414,
-      "topic": "донишгоҳ",
-      "source": "https://president.tj/event/speeches/node/55566",
-      "verified": true
-    },
-    {
-      "quote_id": 34,
-      "image": "37.jpeg",
-      "width": 547,
-      "height": 365,
-      "topic": "забон",
-      "source": "https://president.tj/event/speeches/node/55566",
-      "verified": true
-    },
-    {
-      "quote_id": 35,
-      "image": "25.jpeg",
-      "width": 233,
-      "height": 217,
-      "topic": "ҳамкорӣ",
-      "source": "https://president.tj/event/speeches/node/55566",
-      "verified": true
-    },
-    {
-      "quote_id": 36,
-      "image": "11.jpeg",
-      "width": 736,
-      "height": 416,
-      "topic": "сиёсати хориҷӣ",
-      "source": "https://president.tj/event/speeches/node/55566",
-      "verified": true
-    },
-    {
-      "quote_id": 37,
-      "image": "34.jpeg",
-      "width": 731,
-      "height": 419,
-      "topic": "ҳамкорӣ",
-      "source": "https://president.tj/event/speeches/node/55911",
-      "verified": true
-    },
-    {
-      "quote_id": 38,
-      "image": "6.jpeg",
-      "width": 678,
-      "height": 452,
-      "topic": "мутахассис",
-      "source": "https://president.tj/event/speeches/node/56212",
-      "verified": true
-    },
-    {
-      "quote_id": 39,
-      "image": "16.jpeg",
-      "width": 407,
-      "height": 230,
-      "topic": "маориф",
-      "source": "https://president.tj/event/speeches/node/56212",
-      "verified": true
-    },
-    {
-      "quote_id": 40,
-      "image": "23.jpeg",
-      "width": 678,
-      "height": 452,
-      "topic": "технология",
-      "source": "https://president.tj/event/speeches/node/56212",
-      "verified": true
-    },
-    {
-      "quote_id": 41,
-      "image": "26.jpeg",
-      "width": 407,
-      "height": 230,
-      "topic": "технология",
-      "source": "https://president.tj/event/speeches/node/55911",
-      "verified": true
-    },
-    {
-      "quote_id": 42,
-      "image": "8.jpeg",
-      "width": 738,
-      "height": 414,
-      "topic": "табиат",
-      "source": "https://president.tj/event/speeches/node/55297",
-      "verified": true
+      "file": "10-nishon-tojikiston.jpg",
+      "small": "10-nishon-tojikiston-200.jpg",
+      "source": "Нишон тч.png",
+      "title": "Нишони давлатӣ / Ватан",
+      "description": "Нишони Тоҷикистон"
     }
   ]
 }

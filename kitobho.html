@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <link rel="manifest" href="manifest.json">
-<script src="config.js?v=46"></script>
+<script src="config.js?v=49"></script>
 <script src="cache.js?v=43"></script>
 <style>
   
@@ -984,7 +984,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
   function getBookAccessState(url) {
-    const cached = !!cachedMap()[url];
+    const cached = isCached(url);
     const online = navigator.onLine;
     if (!online) {
         return cached
@@ -1142,7 +1142,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function cachedMap() {
     try { return JSON.parse(localStorage.getItem('kk_cached_books') || '{}'); } catch(e) { return {}; }
   }
-  function isCached(url) { return !!cachedMap()[canonicalBookUrl(url)]; }
+  function isCached(url) { const wanted=canonicalBookUrl(url),map=cachedMap();return Object.keys(map).some(key=>canonicalBookUrl(key)===wanted); }
   function setCachedMap(o) { try { localStorage.setItem('kk_cached_books', JSON.stringify(o)); } catch(e) {} }
   async function deleteCached(url) {
     const canonical=canonicalBookUrl(url);

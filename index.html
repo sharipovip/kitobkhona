@@ -1627,7 +1627,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 
 
 </style>
-<script src="config.js?v=46"></script>
+<script src="config.js?v=49"></script>
 <script src="cache.js?v=43"></script>
 <script src="quotes-data.js?v=44"></script>
 
@@ -1869,7 +1869,7 @@ const ensureCoverDataUrl = async (url, imgEl) => {
   if (cached) { if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached); return cached; }
   try { const r = await fetch(url); if (!r.ok) return ''; const blob = await r.blob(); const dataUrl = await CacheManager?.blobToDataUrl(blob) || ''; if (dataUrl) { setCachedCoverDataUrl(url, dataUrl); if (imgEl) imgEl.setAttribute('src', dataUrl); } return dataUrl; } catch(e){ return ''; }
 };
-function getBookAccessState(url){ const cached=!!JSON.parse(localStorage.getItem('kk_cached_books')||'{}')[url]; const online=navigator.onLine; if(!online){ return cached?{show:false,icon:'',bg:'',dim:false}:{show:true,icon:'🔒',bg:'rgba(220,80,80,0.9)',dim:true}; } return {show:false,icon:'',bg:'',dim:false};}
+function getBookAccessState(url){let cached=false;try{const map=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'),wanted=canonicalBookUrl(url);cached=Object.keys(map).some(k=>canonicalBookUrl(k)===wanted)}catch(e){}const online=navigator.onLine;if(!online)return cached?{show:false,icon:'',bg:'',dim:false}:{show:true,icon:'🔒',bg:'rgba(220,80,80,0.9)',dim:true};return{show:false,icon:'',bg:'',dim:false}}
 function hydrateBookCardCovers(root=document){ if(window.CacheManager&&typeof CacheManager.hydrateBookCardCovers==='function'){ CacheManager.hydrateBookCardCovers(root); return;} const nodes=root.querySelectorAll('img[data-cover-url]'); nodes.forEach(img=>{ const cover=img.getAttribute('data-cover-url')||''; const cached=getCachedCoverDataUrl(cover); if(cached&&img.getAttribute('src')!==cached) img.setAttribute('src',cached); if(cover) ensureCoverDataUrl(cover,img); });}
 function theme(t){ document.body.classList.toggle('light-theme',t==='light'); localStorage.setItem('kk_theme',t); }
 theme(localStorage.getItem('kk_theme')||'dark');

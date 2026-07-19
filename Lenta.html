@@ -6,7 +6,7 @@
 <title>Китобхона — Шортс</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=46"></script>
+<script src="config.js?v=49"></script>
 <script src="cache.js?v=43"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1493,7 +1493,7 @@ async function loadBookRatings(bookIds) {
     return;
   }
   try {
-    const resp = await fetch(API_BASE + '/api/book-stats-batch', {
+    const resp = await edgeApiFetch('/api/book-stats-batch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ book_ids: bookIds })
