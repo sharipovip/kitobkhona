@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js?v=43"></script>
+<script src="config.js?v=45"></script>
 <script src="cache.js?v=43"></script>
 <style>
   
@@ -1032,57 +1032,11 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       localStorage.setItem('kk_cached_books', JSON.stringify(m));
     } catch(e) {}
   }
-  async function cachedPdfData(pdfUrl) {
-    try {
-      if (!('caches' in window)) return null;
-      const hit = await getCachedBookResponse(pdfUrl) || await getCachedBookResponse(url);
-      if (!hit) return null;
-      setLoadProgress(100);
-      const ab = await hit.arrayBuffer();
-      saveCachedMeta(pdfUrl, ab.byteLength);
-      return ab;
-    } catch(e) { return null; }
-  }
-  function cachePdfBackground(pdfUrl) {
-    try {
-      if (!('caches' in window)) return;
-      setTimeout(async () => {
-        try {
-          const c = await caches.open('kitobkhona-pdf-cache-v1');
-          const canonical=canonicalBookUrl(pdfUrl);
-          if (await getCachedBookResponse(canonical)) return;
-          const r = await fetch(canonical, { cache: 'no-store' });
-          if (r.ok) {
-            const clone = r.clone();
-            await c.put(canonical, r.clone());
-            if (canonical !== url) await c.put(url, clone.clone());
-            const b = await clone.blob();
-            saveCachedMeta(pdfUrl, b.size);
-          }
-        } catch(e) {}
-      }, 1200);
-    } catch(e) {}
-  }
-
   async function loadPdfFrom(pdfUrl) {
     setLoadProgress(0);
-    const cached = await cachedPdfData(pdfUrl);
-    if (cached) {
-      setLoadProgress(100);
-      return await pdfjsLib.getDocument({ data: cached }).promise;
-    }
-    const loadingTask = pdfjsLib.getDocument(pdfUrl);
-    loadingTask.onProgress = (progressData) => {
-      if (progressData.total) {
-        setLoadProgress(progressData.loaded / progressData.total * 100);
-      } else {
-        setLoadProgress(30);
-      }
-    };
-    const doc = await loadingTask.promise;
-    setLoadProgress(100);
-    cachePdfBackground(pdfUrl);
-    return doc;
+    const response=await getOrFetchBookResponse(pdfUrl,{onProgress:(loaded,total)=>setLoadProgress(total?loaded/total*100:35)});
+    const data=await response.arrayBuffer();saveCachedMeta(pdfUrl,data.byteLength);setLoadProgress(100);
+    return await pdfjsLib.getDocument({data}).promise;
   }
 
   async function openPdf() {
@@ -1096,7 +1050,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       $('loading').classList.remove('on');
       return;
     }
-    const urls = [cdnPdfUrl(url), url].filter((v, i, a) => v && a.indexOf(v) === i);
+    const urls = [...new Set([cdnPdfUrl(url), url].filter(Boolean).map(canonicalBookUrl))];
     try {
       let lastErr = null;
       for (const u of urls) {

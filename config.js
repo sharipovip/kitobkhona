@@ -176,11 +176,34 @@ function canonicalBookUrl(value) {
   }catch(e){return raw}
 }
 window.canonicalBookUrl=canonicalBookUrl;
+const KITOB_PDF_CACHE = 'kitobkhona-pdf-cache-v1';
+const kitobPdfInflight = new Map();
 async function getCachedBookResponse(value){
-  if(!('caches' in window))return null;const key=canonicalBookUrl(value),cache=await caches.open('kitobkhona-pdf-cache-v1');let hit=await cache.match(key);if(hit)return hit;
-  for(const req of await cache.keys()){if(canonicalBookUrl(req.url)===key){hit=await cache.match(req);if(hit){try{await cache.put(key,hit.clone())}catch(e){}return hit}}}return null
+  if(!('caches' in window))return null;
+  const key=canonicalBookUrl(value),cache=await caches.open(KITOB_PDF_CACHE);let hit=await cache.match(key);
+  if(hit)return hit;
+  for(const req of await cache.keys()){
+    if(canonicalBookUrl(req.url)===key){hit=await cache.match(req);if(hit){try{await cache.put(key,hit.clone())}catch(e){}return hit}}
+  }
+  return null;
 }
 window.getCachedBookResponse=getCachedBookResponse;
+async function getOrFetchBookResponse(value,{onProgress}={}){
+  const key=canonicalBookUrl(value);if(!key)throw new Error('PDF URL required');
+  const cached=await getCachedBookResponse(key);if(cached)return cached.clone();
+  if(kitobPdfInflight.has(key))return (await kitobPdfInflight.get(key)).clone();
+  const task=(async()=>{
+    const response=await fetch(key,{cache:'no-store'});if(!response.ok)throw new Error('HTTP '+response.status);
+    const total=Number(response.headers.get('content-length')||0);let loaded=0,blob;
+    if(response.body&&response.body.getReader){const reader=response.body.getReader(),chunks=[];while(true){const {done,value}=await reader.read();if(done)break;chunks.push(value);loaded+=value.byteLength;if(onProgress)onProgress(loaded,total)}blob=new Blob(chunks,{type:response.headers.get('content-type')||'application/pdf'});}
+    else{blob=await response.blob();loaded=blob.size;if(onProgress)onProgress(loaded,total||loaded)}
+    const stored=new Response(blob,{status:200,headers:{'Content-Type':'application/pdf','Content-Length':String(blob.size),'X-Kitob-Canonical':key}});
+    if('caches' in window){const cache=await caches.open(KITOB_PDF_CACHE);await cache.put(key,stored.clone())}
+    return stored;
+  })();
+  kitobPdfInflight.set(key,task);try{return (await task).clone()}finally{kitobPdfInflight.delete(key)}
+}
+window.getOrFetchBookResponse=getOrFetchBookResponse;
 
 function beginActionProgress(label='Амалиёт иҷро шуда истодааст...'){
   let overlay=document.getElementById('kkActionProgress');if(overlay)overlay.remove();overlay=document.createElement('div');overlay.id='kkActionProgress';overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(2,8,18,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)';overlay.innerHTML=`<div style="width:min(340px,100%);background:var(--bg2,#142236);border:1px solid var(--border,rgba(201,168,76,.2));border-radius:18px;padding:22px;color:var(--text,#F0EAD6);text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.45)"><div class="loader" style="margin:0 auto 14px"></div><div id="kkActionLabel" style="font-weight:700">${String(label).replace(/</g,'&lt;')}</div><div style="height:7px;background:rgba(255,255,255,.09);border-radius:99px;overflow:hidden;margin-top:16px"><div id="kkActionBar" style="height:100%;width:4%;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .3s"></div></div><div id="kkActionPct" style="font-size:11px;color:var(--gold2,#E8C96D);margin-top:6px">4%</div></div>`;document.body.appendChild(overlay);let pct=4;const timer=setInterval(()=>{pct=Math.min(92,pct+(pct<55?4:1));overlay.querySelector('#kkActionBar').style.width=pct+'%';overlay.querySelector('#kkActionPct').textContent=pct+'%'},360);return{done(message){clearInterval(timer);const l=overlay.querySelector('#kkActionLabel');if(l)l.textContent=message||'Омода шуд';overlay.querySelector('#kkActionBar').style.width='100%';overlay.querySelector('#kkActionPct').textContent='100%';setTimeout(()=>overlay.remove(),450)},fail(message){clearInterval(timer);overlay.querySelector('#kkActionLabel').textContent=message||'Хатогӣ';overlay.querySelector('#kkActionPct').textContent='!';setTimeout(()=>overlay.remove(),1400)},close(){clearInterval(timer);overlay.remove()}}
@@ -203,7 +226,7 @@ async function clearBookCache() {
 
 
 function showAbout() {
-  return showAlertDialog(`Китобхона · Манбаи дониш\nНашри аввал · версия ${APP_VERSION}\n\nКитобхонаи рақамии тоҷикӣ барои мутолиа, нигоҳдории китобҳо ва рушди дониш.\nСохта шудааст бо ❤️ барои хонандагон.`, 'Дар бораи барнома');
+  return showAlertDialog(`Китобхона · Манбаи дониш\nНашри аввал · версия ${APP_VERSION}\n\nКитобхонаи рақамии тоҷикӣ барои мутолиа, нигоҳдории китобҳо ва рушди дониш.\nСохта шудааст бо ❤️ барои хонандагон.\n\n© 2026 Sharipov. Ҳуқуқи барнома ва дизайни он ҳифз шудааст. Ҳуқуқи китобҳо ба муаллифон ва соҳибони онҳо тааллуқ дорад.`, 'Дар бораи барнома');
 }
 
 
@@ -536,135 +559,29 @@ function getToastEl() {
   return document.getElementById('toast') || document.querySelector('.toast');
 }
 
-async function shareFile(url, name) {
-  url=canonicalBookUrl(url);
-  try {
-    let blob = null;
-    if ('caches' in window) {
-      const hit = await getCachedBookResponse(url);
-      if (hit) blob = await hit.blob();
-    }
-    if (!blob) {
-      const toastEl = getToastEl();
-      if (toastEl) { toastEl.textContent = 'Омодасозии китоб...'; toastEl.classList.add('show'); }
-      const r = await fetch(url, { cache: 'force-cache' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      blob = await r.blob();
-      try {
-        const cache = await caches.open('kitobkhona-pdf-cache-v1');
-        await cache.put(url, new Response(blob.clone(), { headers: { 'Content-Type': 'application/pdf' } }));
-      } catch(e) {}
-    }
-    const fileName = (name || 'kitob') + '.pdf';
-    if (isAndroid() && typeof AndroidBridge.shareFile === 'function') {
-      const b64 = await blobToBase64(blob);
-      AndroidBridge.shareFile(b64, fileName, 'application/pdf');
-      const toastEl = getToastEl();
-      if (toastEl) { toastEl.classList.remove('show'); }
-      return;
-    }
-    if (navigator.canShare && navigator.share) {
-      const file = new File([blob], fileName, { type: 'application/pdf' });
-      if (navigator.canShare({ files: [file] })) {
-        await navigator.share({ title: name, files: [file] });
-        const toastEl = getToastEl();
-        if (toastEl) { toastEl.classList.remove('show'); }
-        return;
-      }
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 5000);
-    const toastEl = getToastEl();
-    if (toastEl) { toastEl.textContent = 'Файл боргирӣ шуд'; toastEl.classList.add('show'); setTimeout(() => toastEl.classList.remove('show'), 3000); }
-  } catch(e) {
-    if (e.name !== 'AbortError') {
-      const toastEl = getToastEl();
-      if (toastEl) { toastEl.textContent = 'Мубодила нашуд: ' + e.message; toastEl.classList.add('show'); setTimeout(() => toastEl.classList.remove('show'), 3000); }
-    }
-  }
+async function cachedBookBlob(url,onProgress){
+  const response=await getOrFetchBookResponse(url,{onProgress});return await response.blob();
 }
-
-async function downloadFile(url, name, showProgress = true) {
-  url=canonicalBookUrl(url);
+function rememberCachedBook(url,name,blob){try{const m=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'),key=canonicalBookUrl(url);m[key]={url:key,name:name||'Китоб',cover:'',ts:Date.now(),size:blob.size};localStorage.setItem('kk_cached_books',JSON.stringify(m))}catch(e){}}
+async function shareFile(url, name) {
+  url=canonicalBookUrl(url);const toastEl=getToastEl();
   try {
-    const toastEl = getToastEl();
-    if (toastEl && showProgress) {
-      toastEl.textContent = 'Ҳифз шуда истодааст... 0%';
-      toastEl.classList.add('show');
-    }
-    let blob = null;
-    let fromCache = false;
-    if ('caches' in window) {
-      const hit = await getCachedBookResponse(url);
-      if (hit) {
-        blob = await hit.blob();
-        fromCache = true;
-        if (toastEl && showProgress) {
-          toastEl.textContent = '✓ Аз ҳифзшуда гирифта шуд';
-          setTimeout(() => toastEl.classList.remove('show'), 1500);
-        }
-      }
-    }
-    if (!blob) {
-      const r = await fetch(url, { cache: 'no-store' });
-      if (!r.ok) throw new Error('HTTP ' + r.status);
-      const contentLength = r.headers.get('content-length');
-      const total = contentLength ? parseInt(contentLength) : 0;
-      const reader = r.body.getReader();
-      const chunks = [];
-      let loaded = 0;
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        chunks.push(value);
-        loaded += value.length;
-        if (total && toastEl && showProgress) {
-          const pct = Math.round((loaded / total) * 100);
-          toastEl.textContent = `Ҳифз шуда истодааст... ${pct}%`;
-        }
-      }
-      blob = new Blob(chunks, { type: 'application/pdf' });
-      try {
-        const cache = await caches.open('kitobkhona-pdf-cache-v1');
-        await cache.put(url, new Response(blob.clone(), { headers: { 'Content-Type': 'application/pdf' } }));
-      } catch(e) {}
-      const m = JSON.parse(localStorage.getItem('kk_cached_books') || '{}');
-      m[url] = { url, name, cover: '', ts: Date.now(), size: blob.size };
-      localStorage.setItem('kk_cached_books', JSON.stringify(m));
-    }
-    const fileName = (name || 'kitob') + '.pdf';
-    if (isAndroid() && typeof AndroidBridge.saveFile === 'function') {
-      const b64 = await blobToBase64(blob);
-      AndroidBridge.saveFile(b64, fileName, 'application/pdf');
-      if (toastEl) {
-        toastEl.textContent = '✓ Файл барои захира кардан омода';
-        setTimeout(() => toastEl.classList.remove('show'), 2000);
-      }
-      return;
-    }
-    const a = document.createElement('a');
-    a.href = URL.createObjectURL(blob);
-    a.download = fileName;
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => document.body.removeChild(a), 5000);
-    if (toastEl) {
-      toastEl.textContent = '✓ Китоб боргирӣ шуд';
-      setTimeout(() => toastEl.classList.remove('show'), 2000);
-    }
-  } catch(e) {
-    const toastEl = getToastEl();
-    if (toastEl) {
-      toastEl.textContent = 'Хатогӣ: ' + e.message;
-      toastEl.classList.add('show');
-      setTimeout(() => toastEl.classList.remove('show'), 3000);
-    }
-    console.error('Download error:', e);
-  }
+    if(toastEl){toastEl.textContent='Омодасозии китоб...';toastEl.classList.add('show')}
+    const blob=await cachedBookBlob(url);rememberCachedBook(url,name,blob);const fileName=(name||'kitob')+'.pdf';
+    if(isAndroid()&&typeof AndroidBridge.shareFile==='function'){AndroidBridge.shareFile(await blobToBase64(blob),fileName,'application/pdf');if(toastEl)toastEl.classList.remove('show');return}
+    if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:'application/pdf'});if(navigator.canShare({files:[file]})){await navigator.share({title:name,files:[file]});if(toastEl)toastEl.classList.remove('show');return}}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
+    if(toastEl){toastEl.textContent='Файл боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2500)}
+  }catch(e){if(e.name!=='AbortError'&&toastEl){toastEl.textContent='Мубодила нашуд: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}}
+}
+async function downloadFile(url,name,showProgress=true){
+  url=canonicalBookUrl(url);const toastEl=getToastEl();
+  try{
+    const already=await getCachedBookResponse(url);if(toastEl&&showProgress){toastEl.textContent=already?'✓ Аз ҳифзшуда гирифта шуд':'Ҳифз шуда истодааст... 0%';toastEl.classList.add('show')}
+    const blob=await cachedBookBlob(url,(loaded,total)=>{if(toastEl&&showProgress&&total)toastEl.textContent=`Ҳифз шуда истодааст... ${Math.min(100,Math.round(loaded*100/total))}%`});rememberCachedBook(url,name,blob);
+    const fileName=(name||'kitob')+'.pdf';if(isAndroid()&&typeof AndroidBridge.saveFile==='function'){AndroidBridge.saveFile(await blobToBase64(blob),fileName,'application/pdf');if(toastEl){toastEl.textContent='✓ Файл барои захира кардан омода';setTimeout(()=>toastEl.classList.remove('show'),2000)}return}
+    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2000)}
+  }catch(e){if(toastEl){toastEl.textContent='Хатогӣ: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}console.error('Download error:',e)}
 }
 
 const AutoLogin = {
@@ -1299,3 +1216,47 @@ function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url |
   async function flush(){if(running||!localStorage.getItem('kk_token'))return;running=true;try{const now=Date.now(),wait=[];for(const x of readQueue()){if(Number(x.readyAt||0)>now){wait.push(x);continue}try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({book_id:x.book_id,book_title:x.book_title||'Китоб',duration:Math.max(0,Math.round(Number(x.duration)||0)),status:x.status||'completed',pages_read:Math.max(0,Number(x.pages_read)||0)})},8000);if(!r.ok)throw Error('HTTP '+r.status)}catch(e){wait.push({...x,readyAt:Date.now()+60000})}}writeQueue(wait)}finally{running=false;schedule()}}
   window.KKReadingQueue={flush};window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(flush,1000),{once:true});else setTimeout(flush,1000)
 })();
+
+// ===== Interface protection and administrator-controlled cache refresh =====
+function installContentProtection(){
+  if(document.getElementById('kk-content-protection'))return;
+  const style=document.createElement('style');style.id='kk-content-protection';
+  style.textContent=`body,button,a,.card,.book-card,.nav-item,.bottom-nav{-webkit-user-select:none!important;user-select:none!important;-webkit-touch-callout:none!important}input,textarea,select,[contenteditable="true"],.allow-select{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default!important}img{-webkit-user-drag:none;user-drag:none}`;
+  document.head.appendChild(style);
+  document.addEventListener('dragstart',e=>{if(e.target&&e.target.tagName==='IMG')e.preventDefault()},{passive:false});
+}
+async function clearApplicationCaches({clearApp=true,clearPdfs=false}={}){
+  if('caches' in window){
+    const names=await caches.keys(),targets=names.filter(n=>(clearApp&&n!==KITOB_PDF_CACHE)||(clearPdfs&&n===KITOB_PDF_CACHE));
+    await Promise.all(targets.map(n=>caches.delete(n)));
+  }
+  if(clearApp){
+    const stalePatterns=[/^kk_(profile_cache|directory|chat_|cm_|friends|winners|avatar_eligibility|book_stats|booksjson_cache|cache_covers|cover_cache|catalog_rating_cache|home_search_index|manifest_cache)/i,/^kitob_.*cache/i,/books_json/i];
+    for(let i=localStorage.length-1;i>=0;i--){const key=localStorage.key(i)||'';if(stalePatterns.some(r=>r.test(key)))localStorage.removeItem(key)}
+  }
+  if(clearPdfs)localStorage.removeItem('kk_cached_books');
+}
+window.clearApplicationCaches=clearApplicationCaches;
+let cacheControlBusy=false;
+async function acknowledgeCacheControl(cfg){
+  const token=localStorage.getItem('kk_token');if(!token)return;
+  fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control/ack',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({app_version:Number(cfg.app_version)||0,pdf_version:Number(cfg.pdf_version)||0})}).catch(()=>{});
+}
+async function checkRemoteCacheControl(){
+  if(cacheControlBusy)return;cacheControlBusy=true;
+  try{
+    const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const cfg=await r.json();
+    const app=Number(cfg.app_version)||1,pdf=Number(cfg.pdf_version)||1,oldApp=Number(localStorage.getItem('kk_remote_app_cache_version')||1),oldPdf=Number(localStorage.getItem('kk_remote_pdf_cache_version')||1);
+    const refreshApp=app>oldApp,clearPdf=pdf>oldPdf;if(!refreshApp&&!clearPdf){acknowledgeCacheControl(cfg);return}
+    const progress=typeof beginActionProgress==='function'?beginActionProgress(cfg.message||'Навсозии барнома...'):null;
+    localStorage.setItem('kk_remote_app_cache_version',String(app));localStorage.setItem('kk_remote_pdf_cache_version',String(pdf));
+    await clearApplicationCaches({clearApp:refreshApp,clearPdfs:clearPdf});
+    if(navigator.serviceWorker?.getRegistration){const reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update().catch(()=>{})}
+    await acknowledgeCacheControl(cfg);progress?.done(clearPdf?'Кэш ва китобҳои захирашуда нав шуданд':'Барнома нав шуд');
+    if(refreshApp)setTimeout(()=>location.reload(),650);
+  }catch(e){console.warn('[CacheControl]',e.message)}finally{cacheControlBusy=false}
+}
+window.checkRemoteCacheControl=checkRemoteCacheControl;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installContentProtection();setTimeout(checkRemoteCacheControl,1200)});else{installContentProtection();setTimeout(checkRemoteCacheControl,1200)}
+setInterval(checkRemoteCacheControl,10*60*1000);
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkRemoteCacheControl()});

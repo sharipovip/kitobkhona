@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v44';
+const CACHE_NAME = 'kitobkhona-v45';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -46,7 +46,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) => {
       return Promise.all(
-        keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))
+        keys.filter((k) => k !== CACHE_NAME && k !== 'kitobkhona-pdf-cache-v1').map((k) => caches.delete(k))
       );
     })
   );
