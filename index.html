@@ -1627,7 +1627,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 
 
 </style>
-<script src="config.js?v=51"></script>
+<script src="config.js?v=52"></script>
 <script src="cache.js?v=43"></script>
 <script src="quotes-data.js?v=44"></script>
 
@@ -1909,13 +1909,14 @@ async function loadAnnouncementCached(){
 }
 const NOTIF_ICONS={chat_message:'💬',friend_request:'🤝',achievement:'🏆',report:'⚠️',reminder:'📚',system:'🔔',general:'🔔'};
 const NOTIF_CACHE_KEY='kk_notifications_cache_v2';
+const NOTIF_CACHE_TTL=10*60*1000;
 function unreadNotifications(items){return(Array.isArray(items)?items:[]).filter(n=>!n.is_read)}
-function readNotifCache(){try{const x=JSON.parse(localStorage.getItem(NOTIF_CACHE_KEY)||'null');return x&&Array.isArray(x.items)?x:null}catch(e){return null}}
+function readNotifCache(){try{const x=JSON.parse(localStorage.getItem(NOTIF_CACHE_KEY)||'null');return x&&Array.isArray(x.items)&&Date.now()-Number(x.ts||0)<NOTIF_CACHE_TTL?x:null}catch(e){return null}}
 function writeNotifCache(items){try{localStorage.setItem(NOTIF_CACHE_KEY,JSON.stringify({items:Array.isArray(items)?items:[],ts:Date.now()}))}catch(e){}}
 function markNotifCacheSeen(ids){const c=readNotifCache();if(!c)return;const set=new Set(ids.map(String));writeNotifCache(c.items.map(n=>set.has(String(n.id))?{...n,is_read:true}:n))}
 async function refreshNotifCache(){const items=await getNotifications();writeNotifCache(items);return items}
 function paintNotifBadge(items){const badge=$('notifBadge');if(!badge)return;const n=unreadNotifications(items).length;if(n){badge.textContent=n>99?'99+':n;badge.style.display='flex'}else badge.style.display='none'}
-async function updateNotifBadge(){const token=localStorage.getItem('kk_token'),badge=$('notifBadge');if(!badge)return;if(!token){badge.style.display='none';return}const cached=readNotifCache();if(cached)paintNotifBadge(cached.items);refreshNotifCache().then(paintNotifBadge).catch(()=>{})}
+async function updateNotifBadge(){const token=localStorage.getItem('kk_token'),badge=$('notifBadge');if(!badge)return;if(!token){badge.style.display='none';return}const cached=readNotifCache();if(cached){paintNotifBadge(cached.items);return}refreshNotifCache().then(paintNotifBadge).catch(()=>{})}
 function notificationTarget(n){let link=String(n?.link||'').trim();if(!link||link==='#'||link==='/')return n?.type==='chat_message'?'chats.html':'';if(/^https?:\/\//i.test(link))return link;const appRoot=location.pathname.split('/').filter(Boolean)[0]||'';if(link.startsWith('/')&&appRoot&&link.startsWith('/'+appRoot+'/'))return link;return link.replace(/^\/+/, '')}
 function formatNotifTime(value){try{return new Intl.DateTimeFormat('tg-TJ',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(e){return''}}
 function showNotificationsModal(items){
@@ -1927,7 +1928,7 @@ function showNotificationsModal(items){
   const close=()=>modal.remove();box.querySelector('.notif-close').onclick=close;modal.onclick=e=>{if(e.target===modal)close()};modal.appendChild(box);document.body.appendChild(modal);box.querySelector('.notif-close').focus();
   const ids=unread.map(n=>n.id);markNotifCacheSeen(ids);paintNotifBadge([]);Promise.allSettled(ids.map(markNotificationRead));return modal
 }
-const nb=$('notifBtn');if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else setTimeout(()=>refreshNotifCache().then(items=>paintNotifBadge(items)).catch(()=>{}),900)});
+const nb=$('notifBtn');if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
 
 const oz=[ ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'] ];
 const ozEl=$('ozmunList'); if(ozEl) ozEl.innerHTML=oz.map(o=>`<div class="ozmun-item-v3" onclick="location.href='${o[0]}'"><div class="ozmun-circle-v3"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label-v3">${o[2]}</div></div>`).join('');
