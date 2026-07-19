@@ -744,8 +744,8 @@ document.getElementById('usersBody').addEventListener('click', async (e) => {
       loadUsers();
       return;
     } else if (act === 'avatar-access') {
-      await api(`/api/admin/users/${id}/avatar-access`, 'POST');
-      toast('Доступ к фото изменён');
+      const result=await api(`/api/admin/users/${id}/avatar-access`, 'POST');
+      toast(result.avatar_admin_granted?'Доступ к фото выдан, месячное ограничение снято':'Доступ к фото отозван');
       loadUsers();
       return;
     } else if (act === 'unlock-profile') {
