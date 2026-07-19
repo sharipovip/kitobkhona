@@ -6,7 +6,7 @@
 <title>Китобхона — Шортс</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=54"></script>
+<script src="config.js?v=55"></script>
 <script src="cache.js?v=43"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1453,7 +1453,7 @@ async function loadReadingSessions() {
     return;
   }
   try {
-    const resp = await fetch(API_BASE + '/api/reading-sessions', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/reading-sessions', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);
@@ -2384,7 +2384,7 @@ async function loadBooksForSelect() {
   const token = getToken();
   if (!token) return;
   try {
-    const resp = await fetch(API_BASE + '/api/reading-sessions', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/reading-sessions', {
       headers: { 'Authorization': 'Bearer ' + token }
     });
     if (!resp.ok) throw new Error('HTTP '+resp.status);

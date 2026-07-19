@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=54"></script>
+  <script src="config.js?v=55"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=43"></script>
   <style>
@@ -1984,7 +1984,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const key=profileCacheKey('sessions',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
     if(Array.isArray(cached)){booksData=cached;renderBooks()}
     const token=localStorage.getItem('kk_token');if(!token){if(!cached)booksData=[];return}
-    try{const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);booksData=sessionsToProfileBooks(await r.json());if(typeof CacheManager!=='undefined')CacheManager.set(key,booksData);renderBooks()}catch(e){if(!cached)booksData=[];console.warn('[Profile] books refresh',e)}
+    try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/reading-sessions?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);booksData=sessionsToProfileBooks(await r.json());if(typeof CacheManager!=='undefined')CacheManager.set(key,booksData);renderBooks()}catch(e){if(!cached)booksData=[];console.warn('[Profile] books refresh',e)}
     if(String(currentProfileUserId)===String(userId)&&(!loadedProfile||loadedProfile.books_count_real==null))el('ownBooks').textContent=booksData.filter(b=>b.status==='completed').length;
   }
   async function loadFavoritesCached(userId) {

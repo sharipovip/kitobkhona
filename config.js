@@ -1250,3 +1250,7 @@ async function checkRemoteCacheControl(){
 window.checkRemoteCacheControl=checkRemoteCacheControl;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installContentProtection();setTimeout(checkRemoteCacheControl,1200)});else{installContentProtection();setTimeout(checkRemoteCacheControl,1200)}
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkRemoteCacheControl()});
+
+
+function applySocialButtonVisibility(){try{const p=JSON.parse(localStorage.getItem('kk_profile_cache')||'null'),year=Number(p?.birth_year||0),age=year?new Date().getFullYear()-year:0,allowed=!!p&&!p.is_temporary&&age>=18;if(!allowed)document.querySelectorAll('a[href*="chat.html"],a[href*="chats.html"],[onclick*="chat.html"],[onclick*="chats.html"]').forEach(el=>el.style.display='none')}catch(e){}}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',applySocialButtonVisibility);else applySocialButtonVisibility();
