@@ -206,7 +206,7 @@ async function getOrFetchBookResponse(value,{onProgress}={}){
 window.getOrFetchBookResponse=getOrFetchBookResponse;
 
 function beginActionProgress(label='Амалиёт иҷро шуда истодааст...'){
-  let overlay=document.getElementById('kkActionProgress');if(overlay)overlay.remove();overlay=document.createElement('div');overlay.id='kkActionProgress';overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(2,8,18,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)';overlay.innerHTML=`<div style="width:min(340px,100%);background:var(--bg2,#142236);border:1px solid var(--border,rgba(201,168,76,.2));border-radius:18px;padding:22px;color:var(--text,#F0EAD6);text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.45)"><div class="loader" style="margin:0 auto 14px"></div><div id="kkActionLabel" style="font-weight:700">${String(label).replace(/</g,'&lt;')}</div><div style="height:7px;background:rgba(255,255,255,.09);border-radius:99px;overflow:hidden;margin-top:16px"><div id="kkActionBar" style="height:100%;width:4%;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .3s"></div></div><div id="kkActionPct" style="font-size:11px;color:var(--gold2,#E8C96D);margin-top:6px">4%</div></div>`;document.body.appendChild(overlay);let pct=4;const timer=setInterval(()=>{pct=Math.min(92,pct+(pct<55?4:1));overlay.querySelector('#kkActionBar').style.width=pct+'%';overlay.querySelector('#kkActionPct').textContent=pct+'%'},360);return{done(message){clearInterval(timer);const l=overlay.querySelector('#kkActionLabel');if(l)l.textContent=message||'Омода шуд';overlay.querySelector('#kkActionBar').style.width='100%';overlay.querySelector('#kkActionPct').textContent='100%';setTimeout(()=>overlay.remove(),450)},fail(message){clearInterval(timer);overlay.querySelector('#kkActionLabel').textContent=message||'Хатогӣ';overlay.querySelector('#kkActionPct').textContent='!';setTimeout(()=>overlay.remove(),1400)},close(){clearInterval(timer);overlay.remove()}}
+  let overlay=document.getElementById('kkActionProgress');if(overlay)overlay.remove();overlay=document.createElement('div');overlay.id='kkActionProgress';overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(2,8,18,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)';overlay.innerHTML=`<div style="width:min(340px,100%);background:var(--bg2,#142236);border:1px solid var(--border,rgba(201,168,76,.2));border-radius:18px;padding:22px;color:var(--text,#F0EAD6);text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.45)"><div class="loader" style="margin:0 auto 14px"></div><div id="kkActionLabel" style="font-weight:700">${String(label).replace(/</g,'&lt;')}</div><div style="height:7px;background:rgba(255,255,255,.09);border-radius:99px;overflow:hidden;margin-top:16px"><div id="kkActionBar" style="height:100%;width:4%;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .3s"></div></div><div id="kkActionPct" style="font-size:11px;color:var(--gold2,#E8C96D);margin-top:6px">4%</div></div>`;document.body.appendChild(overlay);let pct=4;const timer=setInterval(()=>{pct=Math.min(92,pct+(pct<55?4:1));overlay.querySelector('#kkActionBar').style.width=pct+'%';overlay.querySelector('#kkActionPct').textContent=pct+'%'},360);return{set(value,message){pct=Math.max(pct,Math.min(96,Math.round(Number(value)||pct)));const bar=overlay.querySelector('#kkActionBar'),txt=overlay.querySelector('#kkActionPct'),labelEl=overlay.querySelector('#kkActionLabel');if(bar)bar.style.width=pct+'%';if(txt)txt.textContent=pct+'%';if(message&&labelEl)labelEl.textContent=message},done(message){clearInterval(timer);const l=overlay.querySelector('#kkActionLabel');if(l)l.textContent=message||'Омода шуд';overlay.querySelector('#kkActionBar').style.width='100%';overlay.querySelector('#kkActionPct').textContent='100%';setTimeout(()=>overlay.remove(),450)},fail(message){clearInterval(timer);overlay.querySelector('#kkActionLabel').textContent=message||'Хатогӣ';overlay.querySelector('#kkActionPct').textContent='!';setTimeout(()=>overlay.remove(),1400)},close(){clearInterval(timer);overlay.remove()}}
 }
 window.beginActionProgress=beginActionProgress;
 
@@ -519,6 +519,24 @@ function fetchWithTimeout(url, options, timeoutMs) {
   ]);
 }
 
+async function fetchWithServerRetry(url,options={},settings={}){
+  const attempts=Math.max(1,Number(settings.attempts)||6),timeoutMs=Math.max(8000,Number(settings.timeoutMs)||25000),onProgress=typeof settings.onProgress==='function'?settings.onProgress:()=>{};
+  let lastError=null,lastResponse=null;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    const pct=Math.min(90,8+Math.round((attempt-1)*78/Math.max(1,attempts-1)));
+    onProgress(pct,attempt===1?'Пайвастшавӣ ба сервер...':`Сервер омода мешавад — кӯшиши ${attempt}/${attempts}`);
+    try{
+      const response=await fetchWithTimeout(url,options,timeoutMs);lastResponse=response;
+      if(response.ok||response.status<500)return response;
+      lastError=new Error('HTTP '+response.status);
+    }catch(e){lastError=e}
+    if(attempt<attempts){const delay=Math.min(10000,1200*Math.pow(1.7,attempt-1));onProgress(Math.min(94,pct+7),'Сервер бедор мешавад, интизор шавед...');await new Promise(resolve=>setTimeout(resolve,delay))}
+  }
+  if(lastResponse)return lastResponse;
+  throw lastError||new Error('Сервер дастрас нест');
+}
+window.fetchWithServerRetry=fetchWithServerRetry;
+
 async function edgeApiFetch(path, options, timeoutMs) {
   const cleanPath = String(path || '').startsWith('/') ? String(path) : '/' + String(path || '');
   const opts = options || {};
@@ -672,12 +690,12 @@ const AutoLogin = {
       return null;
     }
   },
-  loginWithCredentials: async function(username, password) {
+  loginWithCredentials: async function(username, password, onProgress) {
     try {
-      const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
+      const r = await fetchWithServerRetry(KITOB_CONFIG.NEON_API_BASE + '/api/auth/login', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ username, password, device_fp: getDeviceFingerprint() })
-      }, 12000);
+      }, {attempts:6,timeoutMs:25000,onProgress});
       const data = await r.json().catch(() => ({}));
       if (!r.ok) {
         if (data.error && data.error.includes('заблокирован')) { localStorage.setItem('kk_device_blocked', 'true'); throw new Error('Ваш аккаунт заблокирован'); }
@@ -840,13 +858,13 @@ const NEON_API = {
     if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || ('Ошибка профиля: ' + r.status)); }
     return await r.json();
   },
-  updateProfile: async function(profileData) {
+  updateProfile: async function(profileData,onProgress) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles', {
+    const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles', {
       method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(profileData)
-    }, 8000);
+    }, {attempts:6,timeoutMs:25000,onProgress});
     const data = await r.json().catch(() => ({}));
     if (!r.ok) throw new Error(data.error || ('Ошибка сохранения: ' + r.status));
     return data;

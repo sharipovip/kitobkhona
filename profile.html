@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=61"></script>
+  <script src="config.js?v=63"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=43"></script>
   <style>
@@ -2848,7 +2848,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
     const actionProgress=beginActionProgress('Маълумоти профил нигоҳ дошта мешавад...');
     try {
-      const result = await NEON_API.updateProfile(updates);
+      const result=await NEON_API.updateProfile(updates,(pct,msg)=>actionProgress.set(pct,msg));
       if (!result.success) throw new Error(result.error || 'Сервер қабул накард');
       if (newUsername || newPassword) {
         actionProgress.done('Профил навсозӣ шуд');

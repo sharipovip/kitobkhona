@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v61-admin-photo-unlock';
+const CACHE_NAME = 'kitobkhona-v63-render-hero-fit';
 const LOCAL_FILES = [
   './',
   './index.html',

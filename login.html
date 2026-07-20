@@ -6,7 +6,7 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=61"></script>
+<script src="config.js?v=63"></script>
 <script src="locations.js?v=3" defer></script>
 <style>
   
@@ -781,9 +781,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!identifier || !password) { showMsg('Логин ва паролро пур кунед'); return; }
     const cta = el('ctaBtn');
     cta.disabled = true; cta.textContent = 'Интизорӣ...';
+    const actionProgress=beginActionProgress('Воридшавӣ — пайвастшавӣ ба сервер...');
     try {
-      const user = await AutoLogin.loginWithCredentials(identifier, password);
+      const user = await AutoLogin.loginWithCredentials(identifier,password,(pct,msg)=>actionProgress.set(pct,msg));
       if (!user) throw new Error('Хатогӣи номаълум');
+      actionProgress.done('Воридшавӣ анҷом ёфт');
       showMsg('Ворид шудед!', 'success');
 
       const token = localStorage.getItem('kk_token');
@@ -801,6 +803,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         }
       }, 600);
     } catch (e) {
+      actionProgress.fail(e.message||'Воридшавӣ иҷро нашуд');
       if (e.message.includes('заблокирован')) {
         localStorage.setItem('kk_device_blocked', 'true');
         showMsg('❌ Аккаунти шумо заблокирован аст. Бо админ тамос гиред.', 'error');
