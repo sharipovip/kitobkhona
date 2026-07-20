@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=64"></script>
+  <script src="config.js?v=65"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=43"></script>
   <style>
@@ -2706,17 +2706,25 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   el('avatarFileInput')?.addEventListener('change', function() { const file = this.files?.[0]; this.value = ''; if (file) uploadProfileAvatar(file); });
 
   let directoryTimer=null;
+  let directorySnapshotPromise=null;
+  async function getDirectorySnapshot(){
+    const key='kk_users_directory_snapshot_v1';
+    try{const c=JSON.parse(localStorage.getItem(key)||'null');if(c&&Array.isArray(c.rows)&&Date.now()-Number(c.ts||0)<10*60*1000)return c.rows}catch(e){}
+    if(directorySnapshotPromise)return directorySnapshotPromise;
+    directorySnapshotPromise=(async()=>{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/users/directory-public',{cache:'default'});const rows=await r.json();if(!r.ok||!Array.isArray(rows))throw Error(rows?.error||'Хато');try{localStorage.setItem(key,JSON.stringify({ts:Date.now(),rows}))}catch(e){}return rows})().finally(()=>directorySnapshotPromise=null);
+    return directorySnapshotPromise;
+  }
+  function directoryNorm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()}
   async function loadUsersDirectory(){
-    const box=el('usersDirectoryResults');if(!box)return;const q=el('directorySearch').value.trim(),region=el('directoryRegion').value,[minAge,maxAge]=el('directoryAge').value.split('-');const cacheKey='kk_users_directory_'+encodeURIComponent([q,region,minAge,maxAge].join('|'));
-    try{const cached=JSON.parse(localStorage.getItem(cacheKey)||'null');if(cached&&Date.now()-cached.ts<5*60*1000)renderUsersDirectory(cached.rows)}catch(e){}
-    try{const params=new URLSearchParams({q,region,min_age:minAge,max_age:maxAge,limit:'40'});const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/users/directory?'+params,{headers:{Authorization:'Bearer '+localStorage.getItem('kk_token')},cache:'no-store'});const rows=await r.json();if(!r.ok)throw Error(rows.error||'Хато');localStorage.setItem(cacheKey,JSON.stringify({ts:Date.now(),rows}));renderUsersDirectory(rows)}catch(e){if(!box.querySelector('.directory-user'))box.innerHTML='<div class="empty-state">Рӯйхат дастрас нест</div>'}
+    const box=el('usersDirectoryResults');if(!box)return;const q=directoryNorm(el('directorySearch').value),region=directoryNorm(el('directoryRegion').value),[minAge,maxAge]=el('directoryAge').value.split('-').map(Number),meId=String(currentUserId||localStorage.getItem('kk_user_id')||''),meRegion=directoryNorm(loadedProfile?.region),meCity=directoryNorm(loadedProfile?.city);
+    try{const all=await getDirectorySnapshot(),year=new Date().getFullYear();const rows=all.filter(u=>{if(String(u.id)===meId)return false;const age=u.birth_year?year-Number(u.birth_year):0,name=directoryNorm([u.username,u.display_name,u.first_name,u.last_name].join(' '));return(!q||name.includes(q))&&(!region||directoryNorm(u.region)===region)&&age>=minAge&&age<=maxAge}).sort((a,b)=>{const ap=directoryNorm(a.city)===meCity&&meCity?0:directoryNorm(a.region)===meRegion&&meRegion?1:2,bp=directoryNorm(b.city)===meCity&&meCity?0:directoryNorm(b.region)===meRegion&&meRegion?1:2;return ap-bp||Number(b.verified)-Number(a.verified)||new Date(b.updated_at||0)-new Date(a.updated_at||0)}).slice(0,40);renderUsersDirectory(rows)}catch(e){if(!box.querySelector('.directory-user'))box.innerHTML='<div class="empty-state">Рӯйхат дастрас нест</div>'}
   }
   function renderUsersDirectory(rows){const box=el('usersDirectoryResults');if(!rows?.length){box.innerHTML='<div class="empty-state">Корбар ёфт нашуд</div>';return}box.innerHTML=rows.map(u=>{const name=u.display_name||u.username,age=u.birth_year?new Date().getFullYear()-u.birth_year:'',address=[u.region,u.city,u.jamoat,u.village].filter(Boolean).join(' · '),avatar=u.avatar_url?`<img src="${esc(u.avatar_url)}" alt="">`:esc(String(name||'?').slice(0,1).toUpperCase());return `<div class="directory-user" onclick="location.href='profile.html?user=${u.id}'"><div class="directory-avatar">${avatar}</div><div class="directory-main"><div class="directory-name">${esc(name)}${u.verified?verifiedBadgeSvg():''}</div><div class="directory-meta">@${esc(u.username)}${age?' · '+age+' сола':''}</div><div class="directory-meta">${esc(address)}</div></div></div>`}).join('')}
   function openUsersDirectory(){el('usersDirectoryOverlay').classList.add('open');loadUsersDirectory()}
   window.openUsersDirectory=openUsersDirectory;
   el('closeUsersDirectory')?.addEventListener('click',()=>el('usersDirectoryOverlay').classList.remove('open'));
   el('usersDirectoryOverlay')?.addEventListener('click',e=>{if(e.target===el('usersDirectoryOverlay'))el('usersDirectoryOverlay').classList.remove('open')});
-  ['directorySearch','directoryRegion','directoryAge'].forEach(id=>el(id)?.addEventListener(id==='directorySearch'?'input':'change',()=>{clearTimeout(directoryTimer);directoryTimer=setTimeout(loadUsersDirectory,280)}));
+  ['directorySearch','directoryRegion','directoryAge'].forEach(id=>el(id)?.addEventListener(id==='directorySearch'?'input':'change',()=>{clearTimeout(directoryTimer);directoryTimer=setTimeout(loadUsersDirectory,120)}));
 
   const overlay = el('editOverlay');
   function openEdit() { overlay.classList.add('open'); if (loadedProfile) fillEditForm(loadedProfile); localStorage.removeItem(avatarEligibilityKey()); loadAvatarEligibility(true); }

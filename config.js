@@ -496,9 +496,12 @@ function initNetworkStatus() {
   banner.textContent = 'Шумо интернет надоред · баъзе имкониятҳо дастрас нестанд';
   banner.style.cssText = 'position:fixed;left:12px;right:12px;bottom:70px;z-index:99999;display:none;padding:10px 14px;border-radius:14px;background:#42202a;color:#ffe9e9;border:1px solid rgba(255,120,120,.45);font:600 13px/1.35 Arial,sans-serif;text-align:center;box-shadow:0 8px 24px rgba(0,0,0,.25)';
   document.body.appendChild(banner);
-  const update = () => { banner.style.display = navigator.onLine ? 'none' : 'block'; };
-  window.addEventListener('offline', update);
-  window.addEventListener('online', update);
+  let hideTimer=null;
+  banner.style.transition='opacity .35s ease,transform .35s ease';
+  const hide=()=>{clearTimeout(hideTimer);banner.style.opacity='0';banner.style.transform='translateY(10px)';setTimeout(()=>{banner.style.display='none'},360)};
+  const update=()=>{clearTimeout(hideTimer);if(navigator.onLine){hide();return}banner.style.display='block';banner.style.opacity='0';banner.style.transform='translateY(10px)';requestAnimationFrame(()=>{banner.style.opacity='1';banner.style.transform='translateY(0)'});hideTimer=setTimeout(hide,10000)};
+  window.addEventListener('offline',update);
+  window.addEventListener('online',update);
   update();
 }
 
@@ -1293,3 +1296,28 @@ function applySocialButtonVisibility(){installChatLockStyles();const state=getCh
 if(!window.__kkChatLockHandler){window.__kkChatLockHandler=true;document.addEventListener('click',e=>{const target=e.target.closest?.('[data-chat-locked="1"]');if(!target)return;e.preventDefault();e.stopPropagation();e.stopImmediatePropagation();showChatAccessModal()},true)}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{applySocialButtonVisibility();setTimeout(applySocialButtonVisibility,1500);setTimeout(applySocialButtonVisibility,4000)});else applySocialButtonVisibility();
 window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialButtonVisibility()});document.addEventListener('kitobkhona-language-change',applySocialButtonVisibility);
+
+// ===== Resilient user actions: duplicate guard + cold-start retry =====
+(function installResilientActions(){
+  if(window.__kkResilientActionsInstalled)return;window.__kkResilientActionsInstalled=true;
+  const nativeFetch=window.fetch.bind(window);let lastButton=null,lastButtonAt=0;
+  const style=document.createElement('style');style.textContent=`.kk-action-busy{position:relative!important;pointer-events:none!important;opacity:.72!important}.kk-action-busy::after{content:'';position:absolute;inset:50% auto auto 50%;width:17px;height:17px;margin:-9px 0 0 -9px;border:2px solid rgba(255,255,255,.32);border-top-color:#e8c96d;border-radius:50%;animation:kkActionSpin .7s linear infinite;z-index:20}.kk-action-busy>*{opacity:.2!important}@keyframes kkActionSpin{to{transform:rotate(360deg)}}.kk-action-cancel{margin-left:6px;border:1px solid rgba(220,90,90,.45);background:rgba(120,25,35,.2);color:#ffb8b8;border-radius:999px;padding:5px 9px;font:700 10px system-ui;z-index:10001}`;document.head.appendChild(style);
+  document.addEventListener('pointerdown',e=>{const b=e.target.closest?.('button,[role="button"],.btn,.icon-btn');if(b){lastButton=b;lastButtonAt=Date.now()}},true);
+  const actionPath=/^\/api\/(favorites|friends(?:\/|$)|posts(?:\/|$)|book-reactions(?:\/|$)|messages$|reports$|support\/send$|feedbacks(?:\/|$)|users\/block(?:\/|$))/;
+  function makeKey(){try{return crypto.randomUUID().replace(/-/g,'_')}catch(e){return Date.now().toString(36)+'_'+Math.random().toString(36).slice(2)+Math.random().toString(36).slice(2)}}
+  function setBusy(button){if(!button)return()=>{};const was=!!button.disabled;button.disabled=true;button.classList.add('kk-action-busy');return()=>{button.classList.remove('kk-action-busy');button.disabled=was}}
+  window.fetch=async function(input,init={}){
+    const method=String(init?.method||(input instanceof Request?input.method:'GET')).toUpperCase();let url;try{url=new URL(typeof input==='string'?input:input.url,location.href)}catch(e){return nativeFetch(input,init)}
+    const isApi=url.hostname==='kitobkhona-chat.onrender.com'||url.hostname==='kitobkhona-edge.tojik.workers.dev';
+    if(!isApi||!['POST','PUT','DELETE'].includes(method)||!actionPath.test(url.pathname)||url.pathname==='/api/messages/read')return nativeFetch(input,init);
+    const button=Date.now()-lastButtonAt<1800?lastButton:null,restore=setBusy(button),deadline=Date.now()+3*60*1000,key=makeKey();let cancelled=false,cancelEl=null,cancelTimer=null,attempt=0,activeController=null;
+    if(button)cancelTimer=setTimeout(()=>{if(cancelled)return;cancelEl=document.createElement('button');cancelEl.type='button';cancelEl.className='kk-action-cancel';cancelEl.textContent='Бекор';cancelEl.onclick=e=>{e.preventDefault();e.stopPropagation();cancelled=true;activeController?.abort()};button.insertAdjacentElement('afterend',cancelEl)},10000);
+    try{
+      while(Date.now()<deadline&&!cancelled){attempt++;const controller=new AbortController();activeController=controller;const timeout=setTimeout(()=>controller.abort(),25000),headers=new Headers(init.headers||{});headers.set('X-Idempotency-Key',key);
+        try{const response=await nativeFetch(input,{...init,headers,signal:controller.signal});clearTimeout(timeout);if(response.status!==425&&response.status<500)return response}catch(e){clearTimeout(timeout);if(cancelled)throw e}
+        if(Date.now()>=deadline||cancelled)break;await new Promise(r=>setTimeout(r,Math.min(8000,1000*Math.pow(1.55,attempt-1))))
+      }
+      if(cancelled)throw new DOMException('Амалиёт бекор шуд','AbortError');throw new Error('Сервер пас аз 3 дақиқа ҷавоб надод');
+    }finally{activeController=null;clearTimeout(cancelTimer);cancelEl?.remove();restore()}
+  };
+})();
