@@ -1029,7 +1029,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
   async function loadBooksJson() {
     try {
-      const cached = localStorage.getItem('kk_booksjson_cache');
+      const cached = localStorage.getItem('kk_booksjson_cache_v2');
       if (cached) {
         const parsed = JSON.parse(cached);
         if (parsed) {
@@ -1041,12 +1041,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     for (const u of BOOKS_JSON_URLS) {
       try {
         DATA = await fetchJsonFast(u);
-        try { localStorage.setItem('kk_booksjson_cache', JSON.stringify(DATA)); } catch(_) {}
+        try { localStorage.setItem('kk_booksjson_cache_v2', JSON.stringify(DATA)); } catch(_) {}
         return DATA;
       } catch(e) {}
     }
     try {
-      DATA = JSON.parse(localStorage.getItem('kk_booksjson_cache') || 'null');
+      DATA = JSON.parse(localStorage.getItem('kk_booksjson_cache_v2') || 'null');
       if (DATA) return DATA;
     } catch(e) {}
     throw new Error('Пайвастшавӣ дастрас нест. Интернетро санҷед.');
@@ -1071,7 +1071,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const key = su.folder;
     if (manifestCache.has(key)) return manifestCache.get(key);
     try {
-      const raw = localStorage.getItem('kk_manifest_cache');
+      const raw = localStorage.getItem('kk_manifest_cache_v2');
       if (raw) {
         const parsed = JSON.parse(raw);
         const cached = parsed[key];
@@ -1099,10 +1099,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
     manifestCache.set(key, list);
     try {
-      const raw = localStorage.getItem('kk_manifest_cache');
+      const raw = localStorage.getItem('kk_manifest_cache_v2');
       const parsed = raw ? JSON.parse(raw) : {};
       parsed[key] = list;
-      localStorage.setItem('kk_manifest_cache', JSON.stringify(parsed));
+      localStorage.setItem('kk_manifest_cache_v2', JSON.stringify(parsed));
     } catch(e) {}
     return list;
   }
@@ -1374,6 +1374,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!e.target.closest('.bk')) closeActiveActions();
   });
 
+  function displayCategoryName(c) {
+    return c.id === 'kitobhoi_darsi' ? 'Китобҳои дарсӣ' : (c.name || c.folder_raw || '');
+  }
+
+  function displaySubcategoryName(s) {
+    const m = String(s.id || s.folder_raw || '').match(/(?:^|_)sinfi_(\d+)$/i);
+    return m ? `Синфи ${m[1]}` : (s.name || s.folder || '');
+  }
+
   function renderCategories(cats) {
     const row = document.getElementById('shelfRow');
     const categoryIcons = {
@@ -1385,7 +1394,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     row.innerHTML = cats.map((c, i) => {
       const active = i === 0 ? 'active' : '';
       const subsCount = (c.subs || []).length;
-      const label = esc(c.name);
+      const label = esc(displayCategoryName(c));
       const categoryIcon = c.emoji || categoryIcons[c.id] || '◈';
       return `<button class="spine ${active}" data-cat-id="${c.id}" style="background:linear-gradient(180deg, ${c.color1 || '#1E3350'}, ${c.color2 || '#142236'});">
         <div class="icon" aria-hidden="true">${categoryIcon}</div>
@@ -1469,25 +1478,29 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     let activeIdx = 0;
     if (!isNaN(savedSubIdx) && savedSubIdx < cat.subs.length) activeIdx = savedSubIdx;
 
-    cat.subs.forEach((s, idx) => {
+    const ordered = cat.subs.map((item, originalIndex) => ({ item, originalIndex })).sort((a, b) => {
+      const number = x => { const m = String(x.item.id || x.item.folder_raw || '').match(/(?:^|_)sinfi_(\d+)$/i); return m ? Number(m[1]) : Infinity; };
+      return number(a) - number(b);
+    });
+    ordered.forEach(({item: s, originalIndex: sourceIndex}, idx) => {
       const chip = document.createElement('span');
       chip.className = 'subcategory-chip' + (idx === activeIdx ? ' active' : '');
-      chip.textContent = s.name || s.folder;
+      chip.textContent = displaySubcategoryName(s);
       chip.dataset.subIndex = idx;
       chip.addEventListener('click', function() {
         container.querySelectorAll('.subcategory-chip').forEach(ch => ch.classList.remove('active'));
         this.classList.add('active');
         const idx = parseInt(this.dataset.subIndex);
         localStorage.setItem('kk_selected_sub_index', idx);
-        sub = cat.subs[idx];
+        sub = ordered[idx].item;
         loadBooksForSubcategory(sub);
       });
       container.appendChild(chip);
     });
     container.appendChild(search);
 
-    if (cat.subs[activeIdx]) {
-      sub = cat.subs[activeIdx];
+    if (ordered[activeIdx]) {
+      sub = ordered[activeIdx].item;
       loadBooksForSubcategory(sub);
     }
   }
@@ -1525,7 +1538,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   async function getGlobalBooksIndex() {
     if (globalBooksIndex) return globalBooksIndex;
     if (globalBooksIndexPromise) return globalBooksIndexPromise;
-    const cacheKey = 'kk_global_books_search_v1';
+    const cacheKey = 'kk_global_books_search_v2';
     try {
       const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
       if (cached && cached.ts && Date.now() - cached.ts < 6 * 60 * 60 * 1000 && Array.isArray(cached.items)) {
