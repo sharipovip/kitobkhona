@@ -273,8 +273,8 @@
     },
     {
       "id": "kitobhoi_darsi",
-      "name": "Kitobhoi darsi",
-      "folder_raw": "Kitobhoi darsi",
+      "name": "Китобҳои дарсӣ",
+      "folder_raw": "Китобҳои дарсӣ",
       "emoji": "📚",
       "color1": "#7c3aed",
       "color2": "#a78bfa",
@@ -282,79 +282,79 @@
       "subs": [
         {
           "id": "kitobhoi_darsi_sinfi_1",
-          "name": "sinfi 1",
+          "name": "Синфи 1",
           "folder_raw": "sinfi_1",
-          "folder": "books/Kitobhoi darsi/sinfi_1",
+          "folder": "books/Китобҳои дарсӣ/sinfi_1",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_10",
-          "name": "sinfi 10",
+          "name": "Синфи 10",
           "folder_raw": "sinfi_10",
-          "folder": "books/Kitobhoi darsi/sinfi_10",
+          "folder": "books/Китобҳои дарсӣ/sinfi_10",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_11",
-          "name": "sinfi 11",
+          "name": "Синфи 11",
           "folder_raw": "sinfi_11",
-          "folder": "books/Kitobhoi darsi/sinfi_11",
+          "folder": "books/Китобҳои дарсӣ/sinfi_11",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_2",
-          "name": "sinfi 2",
+          "name": "Синфи 2",
           "folder_raw": "sinfi_2",
-          "folder": "books/Kitobhoi darsi/sinfi_2",
+          "folder": "books/Китобҳои дарсӣ/sinfi_2",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_3",
-          "name": "sinfi 3",
+          "name": "Синфи 3",
           "folder_raw": "sinfi_3",
-          "folder": "books/Kitobhoi darsi/sinfi_3",
+          "folder": "books/Китобҳои дарсӣ/sinfi_3",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_4",
-          "name": "sinfi 4",
+          "name": "Синфи 4",
           "folder_raw": "sinfi_4",
-          "folder": "books/Kitobhoi darsi/sinfi_4",
+          "folder": "books/Китобҳои дарсӣ/sinfi_4",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_5",
-          "name": "sinfi 5",
+          "name": "Синфи 5",
           "folder_raw": "sinfi_5",
-          "folder": "books/Kitobhoi darsi/sinfi_5",
+          "folder": "books/Китобҳои дарсӣ/sinfi_5",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_6",
-          "name": "sinfi 6",
+          "name": "Синфи 6",
           "folder_raw": "sinfi_6",
-          "folder": "books/Kitobhoi darsi/sinfi_6",
+          "folder": "books/Китобҳои дарсӣ/sinfi_6",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_7",
-          "name": "sinfi 7",
+          "name": "Синфи 7",
           "folder_raw": "sinfi_7",
-          "folder": "books/Kitobhoi darsi/sinfi_7",
+          "folder": "books/Китобҳои дарсӣ/sinfi_7",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_8",
-          "name": "sinfi 8",
+          "name": "Синфи 8",
           "folder_raw": "sinfi_8",
-          "folder": "books/Kitobhoi darsi/sinfi_8",
+          "folder": "books/Китобҳои дарсӣ/sinfi_8",
           "emoji": "📚"
         },
         {
           "id": "kitobhoi_darsi_sinfi_9",
-          "name": "sinfi 9",
+          "name": "Синфи 9",
           "folder_raw": "sinfi_9",
-          "folder": "books/Kitobhoi darsi/sinfi_9",
+          "folder": "books/Китобҳои дарсӣ/sinfi_9",
           "emoji": "📚"
         }
       ]
