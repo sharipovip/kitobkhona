@@ -2208,37 +2208,60 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   // ===== LONG POLLING (без постоянных запросов) =====
   let longPollingActive = false;
   let lastMessageTimestamp = Date.now();
+  let pollGeneration = 0;      // растёт при каждом старте/остановке — гасит "осиротевшие" цепочки
+  let pollAbortController = null; // отменяет реально висящий HTTP-запрос при остановке
+
+  function dedupeMessages(list) {
+    // держим первое появление порядка, но последние данные по каждому id (например статус "read")
+    const map = new Map();
+    for (const m of list) {
+      const key = m && m.id != null ? String(m.id) : null;
+      if (key === null) continue; // без id доверять нечему — пропускаем, чтобы не размножать мусор
+      map.set(key, m);
+    }
+    return Array.from(map.values()).sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  }
 
   function startLongPolling() {
     if (longPollingActive) return;
     longPollingActive = true;
-    pollLoop();
+    const myGeneration = ++pollGeneration;
+    pollLoop(myGeneration);
   }
 
   function stopLongPolling() {
     longPollingActive = false;
+    pollGeneration++; // любая уже летящая цепочка себя узнает как устаревшую и не перезапустится
+    if (pollAbortController) {
+      pollAbortController.abort();
+      pollAbortController = null;
+    }
   }
 
-  async function pollLoop() {
-    if (!longPollingActive) return;
+  async function pollLoop(myGeneration) {
+    if (!longPollingActive || myGeneration !== pollGeneration) return;
     if (document.hidden) {
-      setTimeout(pollLoop, 5000);
+      setTimeout(() => pollLoop(myGeneration), 5000);
       return;
     }
     try {
       const token = localStorage.getItem('kk_token');
       if (!token || !currentUserId || !peerId) {
-        setTimeout(pollLoop, 5000);
+        setTimeout(() => pollLoop(myGeneration), 5000);
         return;
       }
       const url = KITOB_CONFIG.NEON_API_BASE +
                   `/api/messages/new?user1=${currentUserId}&user2=${peerId}&since=${lastMessageTimestamp}`;
+      pollAbortController = new AbortController();
       const resp = await fetchWithTimeout(url, {
         headers: { 'Authorization': 'Bearer ' + token },
-        cache: 'no-store'
+        cache: 'no-store',
+        signal: pollAbortController.signal
       }, 35000);
+      // пока ждали ответ, могла запуститься новая цепочка (или чат закрылся) — эта цепочка больше не актуальна
+      if (myGeneration !== pollGeneration) return;
       if (!resp.ok) {
-        setTimeout(pollLoop, 5000);
+        setTimeout(() => pollLoop(myGeneration), 5000);
         return;
       }
       const newMessages = await resp.json();
@@ -2246,7 +2269,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         const last = newMessages[newMessages.length - 1];
         lastMessageTimestamp = new Date(last.created_at).getTime();
         const cached = getChatCache();
-        const next = cached.concat(newMessages);
+        const next = dedupeMessages(cached.concat(newMessages));
         setChatCache(next);
         const container = document.getElementById('messages');
         const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
@@ -2256,9 +2279,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           ChatAPI.markMessagesRead(peerId).catch(() => {});
         }
       }
-      pollLoop(); // сразу следующий запрос
+      pollLoop(myGeneration); // сразу следующий запрос — только если это ещё актуальная цепочка
     } catch (e) {
-      setTimeout(pollLoop, 5000);
+      if (e && e.name === 'AbortError') return; // это мы сами отменили — новая цепочка уже идёт своим чередом
+      if (myGeneration !== pollGeneration) return;
+      setTimeout(() => pollLoop(myGeneration), 5000);
     }
   }
 
@@ -2695,8 +2720,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
       const cached = getChatCache();
       if (Array.isArray(cached)) {
-        cached.push(sentMsg);
-        setChatCache(cached);
+        setChatCache(dedupeMessages(cached.concat([sentMsg])));
       }
       updateWordCounter();
     } catch (e) {
