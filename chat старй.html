@@ -2200,69 +2200,16 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   document.getElementById('headNameText').textContent = peerName;
 
   let currentUserId = null;
+  let pollInterval = null;
+  let typingInterval = null;
   let pendingOutgoingCount = 0;
   let typingTimer = null;
   let typingActiveSent = false;
-  let chatIsOpen = true;
+  let chatSocket = null;
+  let wsReconnectTimer = null;
+  let wsConnected = false;
+  let chatIsOpen = true; // по умолчанию открыт
 
-  // ===== LONG POLLING (без постоянных запросов) =====
-  let longPollingActive = false;
-  let lastMessageTimestamp = Date.now();
-
-  function startLongPolling() {
-    if (longPollingActive) return;
-    longPollingActive = true;
-    pollLoop();
-  }
-
-  function stopLongPolling() {
-    longPollingActive = false;
-  }
-
-  async function pollLoop() {
-    if (!longPollingActive) return;
-    if (document.hidden) {
-      setTimeout(pollLoop, 5000);
-      return;
-    }
-    try {
-      const token = localStorage.getItem('kk_token');
-      if (!token || !currentUserId || !peerId) {
-        setTimeout(pollLoop, 5000);
-        return;
-      }
-      const url = KITOB_CONFIG.NEON_API_BASE +
-                  `/api/messages/new?user1=${currentUserId}&user2=${peerId}&since=${lastMessageTimestamp}`;
-      const resp = await fetchWithTimeout(url, {
-        headers: { 'Authorization': 'Bearer ' + token },
-        cache: 'no-store'
-      }, 35000);
-      if (!resp.ok) {
-        setTimeout(pollLoop, 5000);
-        return;
-      }
-      const newMessages = await resp.json();
-      if (newMessages.length) {
-        const last = newMessages[newMessages.length - 1];
-        lastMessageTimestamp = new Date(last.created_at).getTime();
-        const cached = getChatCache();
-        const next = cached.concat(newMessages);
-        setChatCache(next);
-        const container = document.getElementById('messages');
-        const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
-        renderMessages(next, container);
-        if (wasAtBottom) scrollToBottom();
-        if (newMessages.some(m => String(m.sender_id) === String(peerId))) {
-          ChatAPI.markMessagesRead(peerId).catch(() => {});
-        }
-      }
-      pollLoop(); // сразу следующий запрос
-    } catch (e) {
-      setTimeout(pollLoop, 5000);
-    }
-  }
-
-  // ----- остальные функции (кэш, рендер, отправка и т.д.) -----
   function getChatCacheScope() {
     const ownerId = String(currentUserId || localStorage.getItem('kk_user_id') || 'guest');
     return [ownerId, String(peerId || '')].sort().join('_');
@@ -2302,9 +2249,34 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(getCacheKey());
     try {
       localStorage.removeItem(getPersistentChatCacheKey());
+      // Remove legacy unscoped entries created by older versions.
       localStorage.removeItem('kk_chat_messages_persist_' + peerId);
       localStorage.removeItem('kk_cm_kk_chat_messages_' + peerId);
     } catch (e) {}
+  }
+
+  function getWebSocketUrl() {
+    const apiBase = String(KITOB_CONFIG.NEON_API_BASE || '').replace(/\/+$/, '');
+    const wsBase = apiBase.replace(/^https:/i, 'wss:').replace(/^http:/i, 'ws:');
+    return wsBase + '/?token=' + encodeURIComponent(localStorage.getItem('kk_token') || '');
+  }
+
+  function closeChatSocket() {
+    if (wsReconnectTimer) clearTimeout(wsReconnectTimer);
+    wsReconnectTimer = null;
+    if (chatSocket) {
+      try { chatSocket.close(1000, 'Page hidden'); } catch (e) {}
+    }
+    chatSocket = null;
+    wsConnected = false;
+  }
+
+  function scheduleChatSocketReconnect() {
+    if (wsReconnectTimer || document.hidden || !localStorage.getItem('kk_token')) return;
+    wsReconnectTimer = setTimeout(() => {
+      wsReconnectTimer = null;
+      connectChatSocket();
+    }, 3000);
   }
 
   function setTypingIndicator(active) {
@@ -2313,6 +2285,64 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!indicator || !status) return;
     indicator.style.display = active ? 'inline' : 'none';
     status.style.display = active ? 'none' : 'inline';
+  }
+
+  function handleIncomingMessage(message) {
+    if (!message || !currentUserId || !peerId) return;
+    const belongsToChat =
+      (String(message.sender_id) === String(currentUserId) && String(message.receiver_id) === String(peerId)) ||
+      (String(message.sender_id) === String(peerId) && String(message.receiver_id) === String(currentUserId));
+    if (!belongsToChat) return;
+
+    const cached = getChatCache();
+    if (Array.isArray(cached) && cached.some(item => String(item.id) === String(message.id))) return;
+    const next = Array.isArray(cached) ? cached.concat(message) : [message];
+    setChatCache(next);
+    const container = document.getElementById('messages');
+    const wasAtBottom = container.scrollHeight - container.scrollTop - container.clientHeight < 80;
+    renderMessages(next, container);
+    if (wasAtBottom) scrollToBottom();
+    if (String(message.sender_id) === String(peerId) && typeof ChatAPI !== 'undefined') {
+      ChatAPI.markMessagesRead(peerId).catch(() => {});
+    }
+  }
+
+  function connectChatSocket() {
+    if (document.hidden || !localStorage.getItem('kk_token') || chatSocket || !KITOB_CONFIG.NEON_API_BASE) return;
+    try {
+      const socket = new WebSocket(getWebSocketUrl());
+      chatSocket = socket;
+      socket.onopen = () => {
+        if (chatSocket !== socket) return;
+        wsConnected = true;
+        startPolling();
+      };
+      socket.onmessage = (event) => {
+        try {
+          const data = JSON.parse(event.data);
+          if (data.type === 'new_message') handleIncomingMessage(data.message);
+          if (data.type === 'typing' && String(data.user_id) === String(peerId)) {
+            setTypingIndicator(!!data.typing);
+          }
+        } catch (e) {}
+      };
+      socket.onerror = () => {
+        try { socket.close(); } catch (e) {}
+      };
+      socket.onclose = () => {
+        if (chatSocket === socket) {
+          chatSocket = null;
+          wsConnected = false;
+          startPolling();
+          scheduleChatSocketReconnect();
+        }
+      };
+    } catch (e) {
+      chatSocket = null;
+      wsConnected = false;
+      startPolling();
+      scheduleChatSocketReconnect();
+    }
   }
 
   const menuBtn = document.getElementById('menuBtn');
@@ -2459,6 +2489,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (pendingOutgoingCount > 0) return;
     try {
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
+      // Opening the conversation marks incoming messages as read on the server.
+      // Drop the cached summary so chats.html never restores an old unread badge.
       if (typeof CacheManager !== 'undefined' && currentUserId) {
         CacheManager.invalidateKey('kk_cache_chat_summary_' + currentUserId);
       }
@@ -2773,12 +2805,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     else location.href = 'chats.html';
   }
 
+  function startPolling() {
+    if (pollInterval) clearInterval(pollInterval);
+    if (typingInterval) clearInterval(typingInterval);
+    pollInterval = setInterval(() => {
+      if (document.hidden || wsConnected) return;
+      loadMessages(true);
+    }, 15000);
+    typingInterval = setInterval(() => {
+      if (!document.hidden && !wsConnected) refreshTypingIndicator();
+    }, 7000);
+  }
+
   function blockChatForAge() {
     const input=document.getElementById('msgInput'),send=document.getElementById('sendBtn');
     if(input){input.disabled=true;input.placeholder='Паёмак танҳо барои 18+'}if(send)send.disabled=true;
     const label=document.getElementById('friendStatusLabel');if(label)label.textContent='🔒 Танҳо барои 18+';
   }
-
   async function loadPeerAvatar() {
     if (!peerId) return;
     try {
@@ -2801,26 +2844,29 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     void loadPeerAvatar();
     void fetchBlockStatus();
     void loadMessages(false);
-    startLongPolling(); // вместо startPolling
+    startPolling();
+    connectChatSocket();
   }
 
   document.addEventListener('visibilitychange', () => {
     if (document.hidden) {
-      stopLongPolling();
+      closeChatSocket();
       if (typingActiveSent) {
         typingActiveSent = false;
         sendTypingState(false);
       }
     } else {
-      startLongPolling();
+      connectChatSocket();
       void loadMessages(true);
     }
   });
 
   window.addEventListener('beforeunload', () => {
-    stopLongPolling();
+    if (pollInterval) clearInterval(pollInterval);
+    if (typingInterval) clearInterval(typingInterval);
     clearTimeout(typingTimer);
     if (typingActiveSent) sendTypingState(false);
+    closeChatSocket();
   });
 
   function esc(str) {
