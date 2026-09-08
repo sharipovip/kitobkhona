@@ -205,8 +205,83 @@ async function getOrFetchBookResponse(value,{onProgress}={}){
 }
 window.getOrFetchBookResponse=getOrFetchBookResponse;
 
+const KK_WAIT_PHRASES = [
+  'Китобхона дарашро мекушояд...',
+  'Китобдор аз хоб бедор мешавад...',
+  'Рафҳои китобро мебинем...',
+  'Чароғҳои толорро равшан мекунем...',
+  'Саҳифаҳоро тартиб медиҳем...',
+  'Боз чанд сония — тамом мешавад...',
+  'Сервери ройгон каме танбал аст, вале боэътимод аст 💛',
+  'Ғуборро аз рафҳо мепоккунем...',
+  'Китобҳои наврасидаро ҷо мекунем...',
+  'Интизор шавед, китобхона наздик аст 📚'
+];
+
+function ensureActionProgressStyles(){
+  if(document.getElementById('kk-action-progress-style'))return;
+  const st=document.createElement('style');
+  st.id='kk-action-progress-style';
+  st.textContent=`
+@keyframes kkBookFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+@keyframes kkBookGlow{0%,100%{opacity:.55;filter:blur(9px)}50%{opacity:.9;filter:blur(13px)}}
+@keyframes kkPhraseIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:translateY(0)}}
+.kk-book-wrap{position:relative;width:56px;height:56px;margin:0 auto 12px;display:flex;align-items:center;justify-content:center}
+.kk-book-glow{position:absolute;inset:6px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.55),transparent 70%);animation:kkBookGlow 1.8s ease-in-out infinite}
+.kk-book-emoji{position:relative;font-size:30px;line-height:1;animation:kkBookFloat 1.8s ease-in-out infinite}
+.kk-phrase{font-size:12px;color:var(--muted,#A8B8CC);margin-top:10px;min-height:16px;animation:kkPhraseIn .35s ease}
+`;
+  document.head.appendChild(st);
+}
+
 function beginActionProgress(label='Амалиёт иҷро шуда истодааст...'){
-  let overlay=document.getElementById('kkActionProgress');if(overlay)overlay.remove();overlay=document.createElement('div');overlay.id='kkActionProgress';overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(2,8,18,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)';overlay.innerHTML=`<div style="width:min(340px,100%);background:var(--bg2,#142236);border:1px solid var(--border,rgba(201,168,76,.2));border-radius:18px;padding:22px;color:var(--text,#F0EAD6);text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.45)"><div class="loader" style="margin:0 auto 14px"></div><div id="kkActionLabel" style="font-weight:700">${String(label).replace(/</g,'&lt;')}</div><div style="height:7px;background:rgba(255,255,255,.09);border-radius:99px;overflow:hidden;margin-top:16px"><div id="kkActionBar" style="height:100%;width:4%;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .3s"></div></div><div id="kkActionPct" style="font-size:11px;color:var(--gold2,#E8C96D);margin-top:6px">4%</div></div>`;document.body.appendChild(overlay);let pct=4;const timer=setInterval(()=>{pct=Math.min(92,pct+(pct<55?4:1));overlay.querySelector('#kkActionBar').style.width=pct+'%';overlay.querySelector('#kkActionPct').textContent=pct+'%'},360);return{set(value,message){pct=Math.max(pct,Math.min(96,Math.round(Number(value)||pct)));const bar=overlay.querySelector('#kkActionBar'),txt=overlay.querySelector('#kkActionPct'),labelEl=overlay.querySelector('#kkActionLabel');if(bar)bar.style.width=pct+'%';if(txt)txt.textContent=pct+'%';if(message&&labelEl)labelEl.textContent=message},done(message){clearInterval(timer);const l=overlay.querySelector('#kkActionLabel');if(l)l.textContent=message||'Омода шуд';overlay.querySelector('#kkActionBar').style.width='100%';overlay.querySelector('#kkActionPct').textContent='100%';setTimeout(()=>overlay.remove(),450)},fail(message){clearInterval(timer);overlay.querySelector('#kkActionLabel').textContent=message||'Хатогӣ';overlay.querySelector('#kkActionPct').textContent='!';setTimeout(()=>overlay.remove(),1400)},close(){clearInterval(timer);overlay.remove()}}
+  ensureActionProgressStyles();
+  let overlay=document.getElementById('kkActionProgress');if(overlay)overlay.remove();
+  overlay=document.createElement('div');overlay.id='kkActionProgress';
+  overlay.style.cssText='position:fixed;inset:0;z-index:100000;background:rgba(2,8,18,.68);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px)';
+  overlay.innerHTML=`<div style="width:min(340px,100%);background:var(--bg2,#142236);border:1px solid var(--border,rgba(201,168,76,.2));border-radius:18px;padding:22px;color:var(--text,#F0EAD6);text-align:center;box-shadow:0 22px 60px rgba(0,0,0,.45)">
+    <div class="kk-book-wrap"><div class="kk-book-glow"></div><div class="kk-book-emoji">📖</div></div>
+    <div id="kkActionLabel" style="font-weight:700">${String(label).replace(/</g,'&lt;')}</div>
+    <div style="height:7px;background:rgba(255,255,255,.09);border-radius:99px;overflow:hidden;margin-top:16px"><div id="kkActionBar" style="height:100%;width:4%;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .3s"></div></div>
+    <div id="kkActionPct" style="font-size:11px;color:var(--gold2,#E8C96D);margin-top:6px">4%</div>
+    <div id="kkActionPhrase" class="kk-phrase"></div>
+  </div>`;
+  document.body.appendChild(overlay);
+  let pct=4;
+  const timer=setInterval(()=>{
+    pct=Math.min(92,pct+(pct<55?4:1));
+    overlay.querySelector('#kkActionBar').style.width=pct+'%';
+    overlay.querySelector('#kkActionPct').textContent=pct+'%';
+  },360);
+  // Весёлые фразы крутятся сами по себе, независимо от реального статуса выше —
+  // просто чтобы ждать было не скучно, особенно пока бесплатный сервер "просыпается".
+  let phraseIdx=Math.floor(Math.random()*KK_WAIT_PHRASES.length);
+  const phraseEl=overlay.querySelector('#kkActionPhrase');
+  const showPhrase=()=>{phraseEl.style.animation='none';void phraseEl.offsetWidth;phraseEl.style.animation='';phraseEl.textContent=KK_WAIT_PHRASES[phraseIdx];phraseIdx=(phraseIdx+1)%KK_WAIT_PHRASES.length;};
+  showPhrase();
+  const phraseTimer=setInterval(showPhrase,2400);
+  return{
+    set(value,message){
+      pct=Math.max(pct,Math.min(96,Math.round(Number(value)||pct)));
+      const bar=overlay.querySelector('#kkActionBar'),txt=overlay.querySelector('#kkActionPct'),labelEl=overlay.querySelector('#kkActionLabel');
+      if(bar)bar.style.width=pct+'%';if(txt)txt.textContent=pct+'%';if(message&&labelEl)labelEl.textContent=message;
+    },
+    done(message){
+      clearInterval(timer);clearInterval(phraseTimer);
+      const l=overlay.querySelector('#kkActionLabel');if(l)l.textContent=message||'Омода шуд';
+      overlay.querySelector('#kkActionBar').style.width='100%';overlay.querySelector('#kkActionPct').textContent='100%';
+      phraseEl.textContent='';
+      setTimeout(()=>overlay.remove(),450);
+    },
+    fail(message){
+      clearInterval(timer);clearInterval(phraseTimer);
+      overlay.querySelector('#kkActionLabel').textContent=message||'Хатогӣ';
+      overlay.querySelector('#kkActionPct').textContent='!';
+      phraseEl.textContent='';
+      setTimeout(()=>overlay.remove(),1400);
+    },
+    close(){clearInterval(timer);clearInterval(phraseTimer);overlay.remove()}
+  }
 }
 window.beginActionProgress=beginActionProgress;
 
