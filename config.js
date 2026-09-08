@@ -1,6 +1,6 @@
 
 const KITOB_CONFIG = {
-  EDGE_API_BASE: 'https://kitobkhona-edge.tojik.workers.dev',
+  EDGE_API_BASE: 'https://kitobkhona-proxy.vercel.app',
   NEON_API_BASE: 'https://kitobkhona-proxy.vercel.app',
   SUPABASE_REST: 'https://dwkdzfqooprxytlepaoo.supabase.co/rest/v1',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI'
