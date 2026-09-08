@@ -1034,6 +1034,7 @@ function isFirebaseIndexedDbSchemaError(error) {
 }
 
 async function registerFcmToken(recoveryAttempt = false) {
+  if (isAndroid()) return null; // в нативном Android-приложении пуш регистрирует MyFirebaseMessagingService.kt — веб-токен тут не нужен и даёт дублирующее уведомление
   if (!('serviceWorker' in navigator) || !('Notification' in window)) return null;
   const token = localStorage.getItem('kk_token');
   if (!token) return null;
