@@ -2023,9 +2023,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
-      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
+      const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
         headers: { 'Authorization': 'Bearer ' + token }
-      });
+      }, {attempts:4,timeoutMs:12000});
       if (!r.ok) { friendStatus = null; return; }
       const data = await r.json();
       friendStatus = data.status || null;
@@ -2597,7 +2597,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (hint) hint.textContent = 'Санҷиши ҳуқуқ...';
     try {
       const token = localStorage.getItem('kk_token');
-      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar/eligibility', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' });
+      const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar/eligibility', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, {attempts:5,timeoutMs:15000});
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || 'Санҷиш дастрас нест');
       avatarEligibility = data;

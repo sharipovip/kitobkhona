@@ -218,6 +218,60 @@ const KK_WAIT_PHRASES = [
   'Интизор шавед, китобхона наздик аст 📚'
 ];
 
+// Мардумӣ — таджикские народные пословицы (не привязаны к конкретному автору,
+// чтобы случайно не приписать точную формулировку не тому поэту).
+const KK_WISDOM_QUOTES = [
+  'Оҳиста рав, ки дер намонӣ.',
+  'Сабр талх аст, лекин меваи он ширин аст.',
+  'Дониш — чароғи роҳи зиндагист.',
+  'Китоб дӯсти беминнати инсон аст.',
+  'Ҳар оғоз душвор аст.',
+  'Об аз сарчашма пок аст.',
+  'Меҳнат — калиди бахт аст.',
+  'Вақт беҳтарин муаллим аст.',
+  'Дӯст дар рӯзи танг шинохта мешавад.',
+  'Аз пурсидан кас гумроҳ намешавад.'
+];
+
+function ensureWisdomLoaderStyles(){
+  if(document.getElementById('kk-wisdom-loader-style'))return;
+  const st=document.createElement('style');
+  st.id='kk-wisdom-loader-style';
+  st.textContent=`
+@keyframes kkWisdomBookFloat{0%,100%{transform:translateY(0) rotate(-3deg)}50%{transform:translateY(-6px) rotate(3deg)}}
+@keyframes kkWisdomGlow{0%,100%{opacity:.5;filter:blur(10px)}50%{opacity:.85;filter:blur(15px)}}
+@keyframes kkWisdomIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:translateY(0)}}
+.kk-wisdom-wrap{text-align:center;padding:34px 18px}
+.kk-wisdom-book{position:relative;width:64px;height:64px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
+.kk-wisdom-glow{position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.55),transparent 70%);animation:kkWisdomGlow 1.8s ease-in-out infinite}
+.kk-wisdom-emoji{position:relative;font-size:34px;animation:kkWisdomBookFloat 1.8s ease-in-out infinite}
+.kk-wisdom-quote{font-size:14px;line-height:1.5;color:var(--text,#F0EAD6);min-height:42px;max-width:280px;margin:0 auto;animation:kkWisdomIn .4s ease;font-family:Georgia,'DejaVu Serif',serif;font-style:italic}
+.kk-wisdom-sub{font-size:11px;color:var(--muted,#A8B8CC);margin-top:14px}
+`;
+  document.head.appendChild(st);
+}
+
+// Показывает вместо "доступно только 18+" честный, приятный экран ожидания —
+// используется, когда мы ещё НЕ смогли выяснить профиль (сервер просыпается),
+// а не когда профиль реально загружен и там действительно нет даты рождения.
+function renderWisdomLoader(container){
+  ensureWisdomLoaderStyles();
+  let idx=Math.floor(Math.random()*KK_WISDOM_QUOTES.length);
+  container.innerHTML=`<div class="kk-wisdom-wrap">
+    <div class="kk-wisdom-book"><div class="kk-wisdom-glow"></div><div class="kk-wisdom-emoji">📖</div></div>
+    <div class="kk-wisdom-quote" id="kkWisdomQuoteText">${KK_WISDOM_QUOTES[idx]}</div>
+    <div class="kk-wisdom-sub">Сервер бедор мешавад — чанд сония сабр кунед...</div>
+  </div>`;
+  const el=container.querySelector('#kkWisdomQuoteText');
+  const timer=setInterval(()=>{
+    idx=(idx+1)%KK_WISDOM_QUOTES.length;
+    if(!el||!el.isConnected){clearInterval(timer);return}
+    el.style.animation='none';void el.offsetWidth;el.style.animation='';el.textContent=KK_WISDOM_QUOTES[idx];
+  },3200);
+  return ()=>clearInterval(timer);
+}
+window.renderWisdomLoader=renderWisdomLoader;
+
 function ensureActionProgressStyles(){
   if(document.getElementById('kk-action-progress-style'))return;
   const st=document.createElement('style');
@@ -825,7 +879,10 @@ const AUTH = {
       localStorage.setItem('kk_profile_cache', JSON.stringify({ ...profile, _ts: Date.now() }));
       return { data: { user: { id: userId, username: username || profile.username || 'user', display_name: profile.display_name || username || 'Китобхон', ...profile } } };
     } catch (e) {
-      return { data: { user: { id: userId, username: username || 'user', display_name: username || 'Китобхон' } } };
+      // profile_unknown: мы НЕ смогли выяснить возраст/данные (сервер не ответил), это не то же
+      // самое, что "профиль загрузился и там правда нет даты рождения" — страницы вроде chats.html
+      // не должны на основании этого ложно показывать "доступно только 18+".
+      return { data: { user: { id: userId, username: username || 'user', display_name: username || 'Китобхон', profile_unknown: true } } };
     }
   },
   getProfileFromRailway: async function(userId) {
@@ -906,6 +963,17 @@ const ChatAPI = {
     if (!r.ok) throw new Error('Ошибка отметки сообщений: ' + r.status);
     return await r.json();
   },
+  deleteMessage: async function(messageId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/messages/' + encodeURIComponent(messageId), {
+      method: 'DELETE',
+      headers: { 'Authorization': 'Bearer ' + token }
+    }, 10000);
+    const data = await r.json().catch(() => ({}));
+    if (!r.ok) throw new Error(data.error || 'Хатогии нест кардани паём');
+    return data;
+  },
   sendMessage: async function(senderId, receiverId, text) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
@@ -929,10 +997,15 @@ const ChatAPI = {
 };
 
 const NEON_API = {
-  getProfile: async function(userId) {
+  getProfile: async function(userId,onProgress) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + userId, { headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' } }, 8000);
+    // Раньше был один запрос с таймаутом 8с — на холодном старте Render этого не хватало,
+    // профиль "не находился", и приложение по ошибке решало, что пользователю нет 18 лет.
+    // Теперь честно ждём пробуждения сервера, как при входе/сохранении профиля.
+    const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + userId, {
+      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
+    }, {attempts:6,timeoutMs:20000,onProgress});
     if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || ('Ошибка профиля: ' + r.status)); }
     return await r.json();
   },

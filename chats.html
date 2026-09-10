@@ -979,9 +979,29 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   async function loadData() {
     const scroll=document.getElementById('chatsScroll');
     try {
-      const {data}=await AUTH.getUser();
+      let {data}=await AUTH.getUser();
       currentUser=data.user;
       if(!currentUser){scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
+      // profile_unknown: сервер ещё не ответил на запрос профиля (скорее всего, "просыпается"
+      // после простою) — это НЕ значит, что пользователю нет 18 лет. Раньше в этом случае
+      // ошибочно показывалась "доступно только 18+". Теперь честно ждём, показывая цитату,
+      // и пробуем ещё несколько раз, прежде чем делать какие-либо выводы о профиле.
+      if(currentUser.profile_unknown){
+        let stopQuoteRotation=typeof renderWisdomLoader==='function'?renderWisdomLoader(scroll):null;
+        let resolved=false;
+        for(let attempt=0;attempt<5&&!resolved;attempt++){
+          await new Promise(r=>setTimeout(r,2500));
+          try{
+            const retryRes=await AUTH.getUser();
+            if(retryRes.data.user&&!retryRes.data.user.profile_unknown){currentUser=retryRes.data.user;data=retryRes.data;resolved=true}
+          }catch(e){}
+        }
+        if(stopQuoteRotation)stopQuoteRotation();
+        if(!resolved){
+          scroll.innerHTML='<div class="empty-hint" style="text-align:center;margin-top:36px">Сервер ҳоло дастрас нест.<br><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Аз нав кӯшиш кунед</button></div>';
+          return;
+        }
+      }
       const adult=!!currentUser.birth_year&&Number(currentUser.birth_year)<=new Date().getFullYear()-18;
       if(!adult){const guest=currentUser.is_temporary===true||String(currentUser.username||'').startsWith('guest_');scroll.innerHTML=guest?'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Чат барои меҳмон дастрас нест. Шумо метавонед профили худро пур кунед ва чат ба шумо дастрас мегардад.<br><button class="btn btn-primary guest-profile-pulse" style="margin-top:16px" onclick="location.href=\'profile.html?edit=1\'">Таҳрири профил</button></div>':'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
 

@@ -536,12 +536,31 @@ const API_BASE = 'https://kitobkhona-proxy.vercel.app';
 async function api(path, method = 'GET', body = null){
   const token = localStorage.getItem('kk_token');
   const headers = { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token };
-  const res = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined });
-  let data = null;
-  try { data = await res.json(); } catch(e) {}
-  if (res.status === 401 || res.status === 403) { location.href = 'login.html'; return; }
-  if (!res.ok) throw new Error((data && data.error) || ('Ошибка ' + res.status));
-  return data;
+  // Бесплатный Render "засыпает" без активности и может просыпаться 30-50 секунд.
+  // Раньше тут был один fetch без таймаута/повтора — если сервер спал, всё сразу падало
+  // с ошибкой (список пользователей пуст, расписание "сохранено только локально" и т.п.).
+  // Теперь честно пробуем несколько раз, ждём пробуждения, и только потом реально сдаёмся.
+  const attempts = 5;
+  let lastErr = null;
+  for (let i = 1; i <= attempts; i++) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 15000);
+    try {
+      if (i > 1) toast('Сервер бедор мешавад, кӯшиши ' + i + '/' + attempts + '...');
+      const res = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: controller.signal });
+      clearTimeout(timer);
+      let data = null;
+      try { data = await res.json(); } catch(e) {}
+      if (res.status === 401 || res.status === 403) { location.href = 'login.html'; return; }
+      if (!res.ok) throw new Error((data && data.error) || ('Ошибка ' + res.status));
+      return data;
+    } catch (e) {
+      clearTimeout(timer);
+      lastErr = e;
+      if (i < attempts) await new Promise(r => setTimeout(r, 1500));
+    }
+  }
+  throw lastErr || new Error('Сервер дастрас нест');
 }
 
 function adminDialog(message,{title='Китобхона',confirmText='Тасдиқ',cancelText='Бекор кардан',input=false}={}){
@@ -1166,7 +1185,7 @@ document.getElementById('saveScheduleBtn').addEventListener('click', async () =>
     toast('Расписание сохранено');
   } catch (err) {
     localStorage.setItem('kk_notif_schedule', JSON.stringify(payload));
-    toast('Сохранено локально (API schedule пока не подключён на сервере)');
+    toast('Сервер дастрас нест — маҳаллӣ захира шуд, аммо дар сервер сабт нашуд. Боз кӯшиш кунед.', true);
   }
 });
 

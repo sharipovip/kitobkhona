@@ -1825,6 +1825,10 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
     }
     .bubble.in { background: var(--wa-bubble-in); }
     .bubble.out { background: var(--wa-bubble-out); border-radius: 9px 9px 2px 9px; }
+    .bubble.pressing { transform: scale(.96); opacity: .75; transition: transform .18s ease, opacity .18s ease; }
+    .bubble.selected { outline: 2px solid var(--gold, #C9A84C); outline-offset: 2px; }
+    .bubble.deleted { opacity: .6; font-style: italic; }
+    .bubble.deleted .bubble-text { color: var(--wa-muted); }
 
     .bubble-body {
       display: block;
@@ -2191,6 +2195,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       CacheManager.init();
     }
     init();
+    initLongPressDelete();
   });
 
   const qs = new URL(location.href).searchParams;
@@ -2584,9 +2589,20 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         html += `<div class="date-sep">${dateLabel}</div>`;
         lastDate = dateLabel;
       }
+      if (m.deleted) {
+        html += `
+        <div class="msg-row ${isMine ? 'out' : 'in'}">
+          <div class="bubble ${isMine ? 'out' : 'in'} deleted" data-msg-id="${m.id}">
+            <div class="bubble-body"><span class="bubble-text">🚫 Паём нест карда шуд</span><span class="bubble-spacer"></span></div>
+            <div class="bubble-meta">${time}</div>
+          </div>
+        </div>
+      `;
+        return;
+      }
       html += `
         <div class="msg-row ${isMine ? 'out' : 'in'}">
-          <div class="bubble ${isMine ? 'out' : 'in'}">
+          <div class="bubble ${isMine ? 'out' : 'in'}" data-msg-id="${m.id}" ${isMine ? 'data-deletable="1"' : ''}>
             <div class="bubble-body"><span class="bubble-text">${esc(m.text)}</span><span class="bubble-spacer"></span></div>
             <div class="bubble-meta">
               ${time}
@@ -2597,6 +2613,78 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       `;
     });
     container.innerHTML = html;
+  }
+
+  // ===== УДАЛЕНИЕ ПО ДОЛГОМУ НАЖАТИЮ (3 сек), как в WhatsApp — только свои сообщения,
+  // удаляется сразу и у себя, и у собеседника =====
+  const LONG_PRESS_MS = 3000;
+  const LONG_PRESS_MOVE_TOLERANCE = 12; // px — если палец/курсор уехал дальше, значит это скролл, а не удержание
+  let longPressTimer = null;
+  let longPressStartX = 0, longPressStartY = 0;
+  let longPressBubble = null;
+
+  function clearLongPress() {
+    if (longPressTimer) { clearTimeout(longPressTimer); longPressTimer = null; }
+    if (longPressBubble) { longPressBubble.classList.remove('pressing'); longPressBubble = null; }
+  }
+
+  async function handleMessageDeleteRequest(bubbleEl) {
+    const messageId = bubbleEl.dataset.msgId;
+    if (!messageId) return;
+    if (navigator.vibrate) { try { navigator.vibrate(40); } catch (e) {} }
+    bubbleEl.classList.add('selected');
+    const ok = await showConfirm('Ин паёмро барои ҳама нест кунам?', 'Нест кардан', true);
+    bubbleEl.classList.remove('selected');
+    if (!ok) return;
+    try {
+      await ChatAPI.deleteMessage(messageId);
+      // Оптимистично обновляем локально — не ждём следующего long-poll цикла
+      const cached = getChatCache();
+      const idx = cached.findIndex(m => String(m.id) === String(messageId));
+      if (idx !== -1) {
+        cached[idx] = { ...cached[idx], deleted: true, text: '' };
+        setChatCache(cached);
+        renderMessages(cached, document.getElementById('messages'));
+      }
+    } catch (e) {
+      showToast('Хатогӣ: ' + e.message);
+    }
+  }
+
+  function initLongPressDelete() {
+    const container = document.getElementById('messages');
+    if (!container) return;
+
+    const onDown = (ev) => {
+      const bubble = ev.target.closest('.bubble[data-deletable="1"]');
+      if (!bubble) return;
+      clearLongPress();
+      longPressBubble = bubble;
+      longPressStartX = ev.clientX; longPressStartY = ev.clientY;
+      bubble.classList.add('pressing');
+      longPressTimer = setTimeout(() => {
+        clearLongPress();
+        handleMessageDeleteRequest(bubble);
+      }, LONG_PRESS_MS);
+    };
+    const onMove = (ev) => {
+      if (!longPressTimer || !longPressBubble) return;
+      const dx = Math.abs(ev.clientX - longPressStartX), dy = Math.abs(ev.clientY - longPressStartY);
+      if (dx > LONG_PRESS_MOVE_TOLERANCE || dy > LONG_PRESS_MOVE_TOLERANCE) clearLongPress();
+    };
+    const onUp = () => clearLongPress();
+
+    container.addEventListener('pointerdown', onDown);
+    container.addEventListener('pointermove', onMove);
+    container.addEventListener('pointerup', onUp);
+    container.addEventListener('pointercancel', onUp);
+    container.addEventListener('pointerleave', onUp);
+    // На некоторых Android WebView скролл может "съесть" pointer-события —
+    // на всякий случай гасим удержание и при обычном touchend/touchcancel тоже.
+    container.addEventListener('touchend', onUp, { passive: true });
+    container.addEventListener('touchcancel', onUp, { passive: true });
+    // Если страница уходит в фон во время удержания (например, пришёл звонок) — не удаляем случайно.
+    document.addEventListener('visibilitychange', () => { if (document.hidden) clearLongPress(); });
   }
 
   function timeLabel(v) {
@@ -2718,6 +2806,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         pendingCheck.title = 'Доставлено';
         pendingCheck.textContent = '✓✓';
       }
+      // Сразу делаем пузырь доступным для удаления долгим нажатием,
+      // не дожидаясь следующего цикла опроса/перерисовки.
+      if (sentMsg && sentMsg.id != null) {
+        bubble.dataset.msgId = sentMsg.id;
+        bubble.dataset.deletable = '1';
+      }
       const cached = getChatCache();
       if (Array.isArray(cached)) {
         setChatCache(dedupeMessages(cached.concat([sentMsg])));
@@ -2815,10 +2909,29 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function init() {
-    const { data } = await AUTH.getUser();
+    let { data } = await AUTH.getUser();
     if (!data.user) {
       document.getElementById('messages').innerHTML = '<div class="loading-msg">Логин шавед</div>';
       return;
+    }
+    if (data.user.profile_unknown) {
+      // сервер ещё не ответил (скорее всего "просыпается") — не решаем ничего про возраст,
+      // пока не выясним по-настоящему, иначе ложно покажем "танҳо барои 18+"
+      const msgsEl = document.getElementById('messages');
+      const stopQuoteRotation = typeof renderWisdomLoader === 'function' ? renderWisdomLoader(msgsEl) : null;
+      let resolved = false;
+      for (let attempt = 0; attempt < 5 && !resolved; attempt++) {
+        await new Promise(r => setTimeout(r, 2500));
+        try {
+          const retryRes = await AUTH.getUser();
+          if (retryRes.data.user && !retryRes.data.user.profile_unknown) { data = retryRes.data; resolved = true; }
+        } catch (e) {}
+      }
+      if (stopQuoteRotation) stopQuoteRotation();
+      if (!resolved) {
+        msgsEl.innerHTML = '<div class="loading-msg">Сервер ҳоло дастрас нест. <a href="javascript:location.reload()" style="color:var(--gold2,#E8C96D)">Аз нав кӯшиш кунед</a></div>';
+        return;
+      }
     }
     currentUserId = data.user.id;
     if (!data.user.birth_year || Number(data.user.birth_year)>new Date().getFullYear()-18) blockChatForAge();
