@@ -74,6 +74,17 @@ function scheduleBooksJsonUpdate() {
   setInterval(updateBooksJson, SYNC_INTERVAL);
 }
 
+function safeCachePut(request, response) {
+  // response.clone() иногда падает с "Response body is already used" — судя по всему,
+  // редкая гонка на уровне WebView/браузера, а не ошибка в этом коде. Раньше это была
+  // необработанная ошибка (спамила консоль), теперь просто тихо пропускаем кэширование
+  // именно этого ответа — страница при этом всё равно показывается нормально.
+  try {
+    const toCache = response.clone();
+    caches.open(CACHE_NAME).then(cache => cache.put(request, toCache)).catch(() => {});
+  } catch (e) {}
+}
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) {
@@ -84,7 +95,7 @@ self.addEventListener('fetch', (event) => {
       const cached = await caches.match(event.request, { ignoreSearch: true });
       const network = fetch(event.request).then(response => {
         if (response && response.status === 200) {
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+          safeCachePut(event.request, response);
         }
         return response;
       }).catch(() => null);
@@ -97,7 +108,7 @@ self.addEventListener('fetch', (event) => {
       const cached = await caches.match(event.request, { ignoreSearch: true });
       const network = fetch(event.request).then(response => {
         if (response && response.status === 200) {
-          caches.open(CACHE_NAME).then(cache => cache.put(event.request, response.clone()));
+          safeCachePut(event.request, response);
         }
         return response;
       }).catch(() => null);
