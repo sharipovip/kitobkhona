@@ -296,9 +296,11 @@
     margin: 4px 0;
     border-radius: 18px;
     cursor: pointer;
+    transition: transform .12s ease, background .15s ease;
   }
   .chat-item:active {
     background: var(--card);
+    transform: scale(.985);
   }
 
   .chat-delete-btn {
@@ -310,7 +312,8 @@
     background: transparent;
     color: var(--red);
     cursor: pointer;
-    opacity: .75;
+    opacity: .55;
+    transition: opacity .15s ease, background .15s ease;
   }
   .chat-delete-btn:hover { opacity: 1; background: rgba(217,72,70,.12); }
 
@@ -328,6 +331,7 @@
     font-weight: 700;
     font-size: 18px;
     color: #1c1404;
+    box-shadow: 0 4px 12px rgba(0,0,0,.22);
   }
   .avatar.ring {
     box-shadow: 0 0 0 2.5px var(--bg), 0 0 0 4px var(--gold);
@@ -364,6 +368,10 @@
     color: var(--dim);
     flex: none;
   }
+  .chat-item.has-unread .chat-time {
+    color: var(--gold2);
+    font-weight: 700;
+  }
 
   .chat-bottom {
     display: flex;
@@ -379,8 +387,27 @@
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  .chat-item.has-unread .chat-msg {
+    color: var(--text);
+    font-weight: 600;
+  }
   .chat-msg .you {
     color: var(--dim);
+  }
+  .chat-unread-badge {
+    flex: none;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, var(--gold), var(--gold2));
+    color: #1c1404;
+    font-size: 11px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 8px rgba(201,168,76,.35);
   }
 
 
@@ -978,16 +1005,20 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   async function loadData() {
     const scroll=document.getElementById('chatsScroll');
+    // Показываем экран ожидания СРАЗУ, а не только если запрос провалится — потому что
+    // чаще всего он просто МЕДЛЕННЫЙ (Edge пробует, потом переключается на Render), а не
+    // проваливается полностью. Раньше в эти секунды человек просто смотрел на пустой спиннер.
+    let stopQuoteRotation=typeof renderWisdomLoader==='function'?renderWisdomLoader(scroll):null;
     try {
       let {data}=await AUTH.getUser();
       currentUser=data.user;
-      if(!currentUser){scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
-      // profile_unknown: сервер ещё не ответил на запрос профиля (скорее всего, "просыпается"
-      // после простою) — это НЕ значит, что пользователю нет 18 лет. Раньше в этом случае
-      // ошибочно показывалась "доступно только 18+". Теперь честно ждём, показывая цитату,
-      // и пробуем ещё несколько раз, прежде чем делать какие-либо выводы о профиле.
+      if(!currentUser){if(stopQuoteRotation)stopQuoteRotation();scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
+      // profile_unknown: сервер ещё не ответил на запрос профиля (совсем не удалось, а не просто
+      // медленно) — это НЕ значит, что пользователю нет 18 лет. Раньше в этом случае
+      // ошибочно показывалась "доступно только 18+". Честно ждём ещё, продолжая показывать
+      // цитату, и пробуем ещё несколько раз, прежде чем делать какие-либо выводы о профиле.
       if(currentUser.profile_unknown){
-        let stopQuoteRotation=typeof renderWisdomLoader==='function'?renderWisdomLoader(scroll):null;
+        if(!stopQuoteRotation)stopQuoteRotation=typeof renderWisdomLoader==='function'?renderWisdomLoader(scroll):null;
         let resolved=false;
         for(let attempt=0;attempt<5&&!resolved;attempt++){
           await new Promise(r=>setTimeout(r,2500));
@@ -1002,6 +1033,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           return;
         }
       }
+      if(stopQuoteRotation)stopQuoteRotation();
       const adult=!!currentUser.birth_year&&Number(currentUser.birth_year)<=new Date().getFullYear()-18;
       if(!adult){const guest=currentUser.is_temporary===true||String(currentUser.username||'').startsWith('guest_');scroll.innerHTML=guest?'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Чат барои меҳмон дастрас нест. Шумо метавонед профили худро пур кунед ва чат ба шумо дастрас мегардад.<br><button class="btn btn-primary guest-profile-pulse" style="margin-top:16px" onclick="location.href=\'profile.html?edit=1\'">Таҳрири профил</button></div>':'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
 
@@ -1109,13 +1141,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         const cls = getCls(String(id).charCodeAt(0) || 0);
         const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
         const lastMessage = summary?.by_peer?.[String(id)] || null;
+        const unreadCount = Number(lastMessage?.unread_count || 0);
         const preview = lastMessage
           ? (String(lastMessage.sender_id) === String(currentUser.id)
               ? 'Шумо: ' + lastMessage.text
               : (lastMessage.sender_name || name) + ': ' + lastMessage.text)
           : 'Паёмҳо баъди навиштан';
         html += `
-          <div class="chat-item" data-chat-user="${id}" onclick="openChat('${id}','${esc(name)}')">
+          <div class="chat-item${unreadCount > 0 ? ' has-unread' : ''}" data-chat-user="${id}" onclick="openChat('${id}','${esc(name)}')">
             <div class="avatar-wrap">
               <div class="avatar ${cls}">${avatarHtml}</div>
             </div>
@@ -1126,6 +1159,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
               </div>
               <div class="chat-bottom">
                 <div class="chat-msg">${esc(preview)}</div>
+                ${unreadCount > 0 ? `<div class="chat-unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
               </div>
             </div>
             <button type="button" class="chat-delete-btn" data-delete-chat="${id}" title="Нест кардани чат" aria-label="Нест кардани чат">🗑</button>

@@ -1805,7 +1805,8 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
     }
     [data-theme="dark"] .date-sep { background: rgba(255,255,255,0.07); }
 
-    .msg-row { display: flex; margin: 3px 0; }
+    .msg-row { display: flex; margin: 3px 0; animation: kkMsgIn .22s ease; }
+    @keyframes kkMsgIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
     .msg-row.in { justify-content: flex-start; }
     .msg-row.out { justify-content: flex-end; }
 
@@ -2909,16 +2910,21 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function init() {
+    const msgsEl = document.getElementById('messages');
+    // Показываем цитаты СРАЗУ, ещё до первого ответа сервера — обычно ждём не потому,
+    // что запрос провалился, а просто потому, что он медленный (Edge пробует, потом
+    // переключается на Render). Раньше в эти секунды был просто пустой спиннер.
+    let stopQuoteRotation = typeof renderWisdomLoader === 'function' ? renderWisdomLoader(msgsEl) : null;
     let { data } = await AUTH.getUser();
     if (!data.user) {
-      document.getElementById('messages').innerHTML = '<div class="loading-msg">Логин шавед</div>';
+      if (stopQuoteRotation) stopQuoteRotation();
+      msgsEl.innerHTML = '<div class="loading-msg">Логин шавед</div>';
       return;
     }
     if (data.user.profile_unknown) {
-      // сервер ещё не ответил (скорее всего "просыпается") — не решаем ничего про возраст,
+      // сервер совсем не ответил (а не просто медленно) — не решаем ничего про возраст,
       // пока не выясним по-настоящему, иначе ложно покажем "танҳо барои 18+"
-      const msgsEl = document.getElementById('messages');
-      const stopQuoteRotation = typeof renderWisdomLoader === 'function' ? renderWisdomLoader(msgsEl) : null;
+      if (!stopQuoteRotation) stopQuoteRotation = typeof renderWisdomLoader === 'function' ? renderWisdomLoader(msgsEl) : null;
       let resolved = false;
       for (let attempt = 0; attempt < 5 && !resolved; attempt++) {
         await new Promise(r => setTimeout(r, 2500));
@@ -2933,6 +2939,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         return;
       }
     }
+    if (stopQuoteRotation) stopQuoteRotation();
     currentUserId = data.user.id;
     if (!data.user.birth_year || Number(data.user.birth_year)>new Date().getFullYear()-18) blockChatForAge();
     void loadPeerAvatar();
