@@ -1,6 +1,6 @@
 
 const KITOB_CONFIG = {
-  EDGE_API_BASE: 'https://kitobkhona-proxy.vercel.app',
+  EDGE_API_BASE: 'https://kitobkhona-edge.tojik.workers.dev',
   NEON_API_BASE: 'https://kitobkhona-proxy.vercel.app',
   SUPABASE_REST: 'https://dwkdzfqooprxytlepaoo.supabase.co/rest/v1',
   SUPABASE_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImR3a2R6ZnFvb3ByeHl0bGVwYW9vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA5MDI5ODIsImV4cCI6MjA5NjQ3ODk4Mn0.4rV_7yN5Urx5WHgb9kAxWo_VmrPWGlbFYN4Ij7DcuyI'
@@ -676,7 +676,9 @@ async function edgeApiFetch(path, options, timeoutMs) {
     const edgeResponse = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + cleanPath, opts, timeoutMs || 7000);
     if (edgeResponse.ok || edgeResponse.status < 500) return edgeResponse;
   } catch (e) {}
-  return fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + cleanPath, opts, timeoutMs || 8000);
+  // Edge (Cloudflare) не ответил вовремя или дал серверную ошибку — переключаемся на Render.
+  // Используем устойчивый повтор, а не одну попытку: Render на бесплатном тарифе тоже может спать.
+  return fetchWithServerRetry(KITOB_CONFIG.NEON_API_BASE + cleanPath, opts, {attempts:5,timeoutMs:Math.max(timeoutMs||8000,12000)});
 }
 window.edgeApiFetch = edgeApiFetch;
 
@@ -750,7 +752,7 @@ const AutoLogin = {
       this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
       (async () => {
         try {
-          const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken }, cache: 'no-store' }, 10000);
+          const r = await edgeApiFetch('/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken }, cache: 'no-store' }, 10000);
           if (!r.ok) {
             localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
             localStorage.removeItem('kk_guest_password');
@@ -793,7 +795,7 @@ const AutoLogin = {
           }, 20000);
           const loginData = await loginResp.json().catch(() => ({}));
           if (loginResp.ok && loginData.token) {
-            const profileResp = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + loginData.userId, {
+            const profileResp = await edgeApiFetch('/api/profiles/' + loginData.userId, {
               headers: { 'Authorization': 'Bearer ' + loginData.token }
             }, 10000);
             if (profileResp.ok) {
@@ -839,7 +841,7 @@ const AutoLogin = {
       localStorage.setItem('kk_user_id', data.userId);
       localStorage.setItem('kk_username', data.username);
       this.currentUser = { token: data.token, userId: data.userId, username: data.username };
-      try{const pr=await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE+'/api/profiles/'+data.userId,{headers:{Authorization:'Bearer '+data.token},cache:'no-store'},10000);if(pr.ok){const profile=await pr.json();localStorage.setItem('kk_profile_cache',JSON.stringify({...profile,_ts:Date.now()}))}}catch(e){}
+      try{const pr=await edgeApiFetch('/api/profiles/'+data.userId,{headers:{Authorization:'Bearer '+data.token},cache:'no-store'},10000);if(pr.ok){const profile=await pr.json();localStorage.setItem('kk_profile_cache',JSON.stringify({...profile,_ts:Date.now()}))}}catch(e){}
       return this.currentUser;
     } catch (e) { console.error('[Login] Ошибка:', e); throw e; }
   },
@@ -896,7 +898,7 @@ const ChatAPI = {
   getFriends: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await edgeApiFetch('/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения друзей: ' + r.status);
     const data = await r.json();
     return data.map(f => f.id);
@@ -904,21 +906,23 @@ const ChatAPI = {
   getFriendDetails: async function() {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Токен нест');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await edgeApiFetch('/api/friends', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Хатои рӯйхати дӯстон: ' + r.status);
     return await r.json();
   },
   getFriendRequests: async function(userId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+    const r = await edgeApiFetch('/api/friends/requests', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
     if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
     return await r.json();
   },
   acceptFriendRequestByUser: async function(fromUserId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/accept', {
+    // Запись — идём сразу на Render напрямую (в обход Edge), чтобы не было риска
+    // задвоения заявки при автоматическом переключении между Edge и Render.
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
       method: 'POST', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ from_user: fromUserId })
     }, 8000);
@@ -928,7 +932,7 @@ const ChatAPI = {
   declineFriendRequest: async function(requestId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/requests/' + requestId, {
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/' + requestId, {
       method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
     }, 8000);
     if (!r.ok) throw new Error('Ошибка при отклонении заявки: ' + r.status);
@@ -1000,19 +1004,19 @@ const NEON_API = {
   getProfile: async function(userId,onProgress) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    // Раньше был один запрос с таймаутом 8с — на холодном старте Render этого не хватало,
-    // профиль "не находился", и приложение по ошибке решало, что пользователю нет 18 лет.
-    // Теперь честно ждём пробуждения сервера, как при входе/сохранении профиля.
-    const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + userId, {
+    // Сначала Edge (Cloudflare, быстрее и с кэшем), при сбое сам переключится на Render
+    // и честно подождёт его пробуждения — так и было задумано изначально.
+    const r = await edgeApiFetch('/api/profiles/' + userId, {
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' }
-    }, {attempts:6,timeoutMs:20000,onProgress});
+    }, 8000);
     if (!r.ok) { const err = await r.json().catch(() => ({})); throw new Error(err.error || ('Ошибка профиля: ' + r.status)); }
     return await r.json();
   },
   updateProfile: async function(profileData,onProgress) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
-    const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles', {
+    // Запись — сразу на Render, в обход Edge (никакого риска задвоения при сохранении профиля).
+    const r = await fetchWithServerRetry(KITOB_CONFIG.NEON_API_BASE + '/api/profiles', {
       method: 'PUT', headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify(profileData)
     }, {attempts:6,timeoutMs:25000,onProgress});
@@ -1032,7 +1036,7 @@ const NEON_API = {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
     if (!token || !userId) return [];
-    const r = await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
+    const r = await edgeApiFetch('/api/favorites?user_id=' + userId, { headers: { 'Authorization': 'Bearer ' + token } }, 8000);
     if (!r.ok) return [];
     return await r.json();
   },
@@ -1457,7 +1461,7 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
   function setBusy(button){if(!button)return()=>{};const was=!!button.disabled;button.disabled=true;button.classList.add('kk-action-busy');return()=>{button.classList.remove('kk-action-busy');button.disabled=was}}
   window.fetch=async function(input,init={}){
     const method=String(init?.method||(input instanceof Request?input.method:'GET')).toUpperCase();let url;try{url=new URL(typeof input==='string'?input:input.url,location.href)}catch(e){return nativeFetch(input,init)}
-    const isApi=url.hostname==='kitobkhona-chat.onrender.com'||url.hostname==='kitobkhona-edge.tojik.workers.dev';
+    const isApi=url.hostname==='kitobkhona-chat.onrender.com'||url.hostname==='kitobkhona-edge.tojik.workers.dev'||url.hostname==='kitobkhona-proxy.vercel.app';
     if(!isApi||!['POST','PUT','DELETE'].includes(method)||!actionPath.test(url.pathname)||url.pathname==='/api/messages/read')return nativeFetch(input,init);
     const button=Date.now()-lastButtonAt<1800?lastButton:null,restore=setBusy(button),deadline=Date.now()+3*60*1000,key=makeKey();let cancelled=false,cancelEl=null,cancelTimer=null,attempt=0,activeController=null;
     if(button)cancelTimer=setTimeout(()=>{if(cancelled)return;cancelEl=document.createElement('button');cancelEl.type='button';cancelEl.className='kk-action-cancel';cancelEl.textContent='Бекор';cancelEl.onclick=e=>{e.preventDefault();e.stopPropagation();cancelled=true;activeController?.abort()};button.insertAdjacentElement('afterend',cancelEl)},10000);
