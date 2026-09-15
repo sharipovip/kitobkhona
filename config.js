@@ -218,19 +218,34 @@ const KK_WAIT_PHRASES = [
   'Интизор шавед, китобхона наздик аст 📚'
 ];
 
-// Мардумӣ — таджикские народные пословицы (не привязаны к конкретному автору,
-// чтобы случайно не приписать точную формулировку не тому поэту).
+// Из книги «Панду ҳикмат» (мураттиб Муллоҷон Фозилов, нашри «Адиб», 2016) —
+// главы «Сабру тоқат» (терпение) и «Илму дониш» (знание). Классики (Румӣ, Саъдӣ,
+// Ҳофиз, Фирдавсӣ ва ғ.) — умерли сотни лет назад, тексти онҳо ба доираи умум тааллуқ
+// дорад; муаллифи ҳар мисраъ дар китоб мустақиман зикр шудааст.
 const KK_WISDOM_QUOTES = [
-  'Оҳиста рав, ки дер намонӣ.',
-  'Сабр талх аст, лекин меваи он ширин аст.',
-  'Дониш — чароғи роҳи зиндагист.',
-  'Китоб дӯсти беминнати инсон аст.',
-  'Ҳар оғоз душвор аст.',
-  'Об аз сарчашма пок аст.',
-  'Меҳнат — калиди бахт аст.',
-  'Вақт беҳтарин муаллим аст.',
-  'Дӯст дар рӯзи танг шинохта мешавад.',
-  'Аз пурсидан кас гумроҳ намешавад.'
+  {text:'Сабр талх омад, валекин оқибат меваи ширин диҳад пурманфиат.', author:'Ҷалолиддини Румӣ'},
+  {text:'Сабр орад орзуро, не шитоб!', author:'Ҷалолиддини Румӣ'},
+  {text:'Ҳаст мар ҳар сабрро охир зафар, ҳаст рӯзе баъди ҳар талхӣ шакар.', author:'Ҷалолиддини Румӣ'},
+  {text:'Пас аз душворӣ осонист ночор, валекин одамиро сабр бояд.', author:'Саъдии Шерозӣ'},
+  {text:'Корҳо ба сабр барояд, мустаъҷил ба сар дарояд.', author:'Саъдии Шерозӣ'},
+  {text:'Кас аз сабр кардан нагардад хиҷил!', author:'Саъдии Шерозӣ'},
+  {text:'Эй дил, сабур бошу махур ғам, ки оқибат ин шом субҳ гардаду ин шаб саҳар шавад.', author:'Ҳофизи Шерозӣ'},
+  {text:'Сабурӣ мояи фирӯзӣ омад.', author:'Абдураҳмони Ҷомӣ'},
+  {text:'Нашавад санг ҷуз аз сабр гуҳар.', author:'Абдураҳмони Ҷомӣ'},
+  {text:'Душвории интизору дурӣ саҳл аст, агар бувад сабурӣ.', author:'Бадриддин Ҳилолӣ'},
+  {text:'Сабр мифтоҳи корҳо бошад.', author:null},
+  {text:'Сабур бош, то ба умеде расӣ.', author:null},
+  {text:'Калиди дари ганҷи мақсуд сабр аст.', author:null},
+  {text:'Як сабр куну ҳазор афсӯс махур!', author:null},
+  {text:'Шуҷоати одамӣ сабр аст.', author:null},
+  {text:'Сабр талх аст, валекин бари ширин дорад.', author:null},
+  {text:'Сабрат ганҷат диҳад, бесабрӣ ранҷат диҳад.', author:null},
+  {text:'Корҳо некӯ шаванд, аммо ба сабр.', author:null},
+  {text:'Дониш андар дил чароғи равшан аст.', author:'Абӯабдуллоҳи Рӯдакӣ'},
+  {text:'Ҳеҷ ганҷе нест аз фарҳанг беҳ.', author:'Абӯабдуллоҳи Рӯдакӣ'},
+  {text:'Ҷаҳонро ба дониш тавон ёфтан.', author:'Абӯшакури Балхӣ'},
+  {text:'Тавоно бувад, ҳар ки доно бувад.', author:'Абулқосими Фирдавсӣ'},
+  {text:'Беҳ аз ганҷи дониш ба гетӣ куҷост?!', author:'Асадии Тӯсӣ'}
 ];
 
 function ensureWisdomLoaderStyles(){
@@ -245,7 +260,8 @@ function ensureWisdomLoaderStyles(){
 .kk-wisdom-book{position:relative;width:64px;height:64px;margin:0 auto 16px;display:flex;align-items:center;justify-content:center}
 .kk-wisdom-glow{position:absolute;inset:4px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.55),transparent 70%);animation:kkWisdomGlow 1.8s ease-in-out infinite}
 .kk-wisdom-emoji{position:relative;font-size:34px;animation:kkWisdomBookFloat 1.8s ease-in-out infinite}
-.kk-wisdom-quote{font-size:14px;line-height:1.5;color:var(--text,#F0EAD6);min-height:42px;max-width:280px;margin:0 auto;animation:kkWisdomIn .4s ease;font-family:Georgia,'DejaVu Serif',serif;font-style:italic}
+.kk-wisdom-quote{font-size:14px;line-height:1.5;color:var(--text,#F0EAD6);min-height:42px;max-width:290px;margin:0 auto;animation:kkWisdomIn .4s ease;font-family:Georgia,'DejaVu Serif',serif;font-style:italic}
+.kk-wisdom-author{font-size:11.5px;color:var(--gold2,#E8C96D);margin-top:6px;font-weight:600;min-height:14px}
 .kk-wisdom-sub{font-size:11px;color:var(--muted,#A8B8CC);margin-top:14px}
 `;
   document.head.appendChild(st);
@@ -259,14 +275,18 @@ function renderWisdomLoader(container){
   let idx=Math.floor(Math.random()*KK_WISDOM_QUOTES.length);
   container.innerHTML=`<div class="kk-wisdom-wrap">
     <div class="kk-wisdom-book"><div class="kk-wisdom-glow"></div><div class="kk-wisdom-emoji">📖</div></div>
-    <div class="kk-wisdom-quote" id="kkWisdomQuoteText">${KK_WISDOM_QUOTES[idx]}</div>
+    <div class="kk-wisdom-quote" id="kkWisdomQuoteText">${KK_WISDOM_QUOTES[idx].text}</div>
+    <div class="kk-wisdom-author" id="kkWisdomAuthorText">${KK_WISDOM_QUOTES[idx].author||''}</div>
     <div class="kk-wisdom-sub">Сервер бедор мешавад — чанд сония сабр кунед...</div>
   </div>`;
   const el=container.querySelector('#kkWisdomQuoteText');
+  const authorEl=container.querySelector('#kkWisdomAuthorText');
   const timer=setInterval(()=>{
     idx=(idx+1)%KK_WISDOM_QUOTES.length;
     if(!el||!el.isConnected){clearInterval(timer);return}
-    el.style.animation='none';void el.offsetWidth;el.style.animation='';el.textContent=KK_WISDOM_QUOTES[idx];
+    el.style.animation='none';void el.offsetWidth;el.style.animation='';
+    el.textContent=KK_WISDOM_QUOTES[idx].text;
+    if(authorEl)authorEl.textContent=KK_WISDOM_QUOTES[idx].author||'';
   },3200);
   return ()=>clearInterval(timer);
 }

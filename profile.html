@@ -733,7 +733,11 @@
       overflow: hidden;
       box-shadow: 0 8px 16px -6px rgba(0,0,0,0.5);
       cursor: pointer;
-      transition: transform .15s ease;
+      transition: transform .15s ease, box-shadow .15s ease;
+    }
+    .book-card:active {
+      transform: scale(.95);
+      box-shadow: 0 4px 10px -4px rgba(0,0,0,0.55);
     }
     .book-card .book-cover {
       width: 100%;
@@ -1984,21 +1988,21 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const key=profileCacheKey('sessions',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
     if(Array.isArray(cached)){booksData=cached;renderBooks()}
     const token=localStorage.getItem('kk_token');if(!token){if(!cached)booksData=[];return}
-    try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/reading-sessions?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);booksData=sessionsToProfileBooks(await r.json());if(typeof CacheManager!=='undefined')CacheManager.set(key,booksData);renderBooks()}catch(e){if(!cached)booksData=[];console.warn('[Profile] books refresh',e)}
+    try{const r=await edgeApiFetch('/api/reading-sessions?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'},8000);if(!r.ok)throw Error('HTTP '+r.status);booksData=sessionsToProfileBooks(await r.json());if(typeof CacheManager!=='undefined')CacheManager.set(key,booksData);renderBooks()}catch(e){if(!cached)booksData=[];console.warn('[Profile] books refresh',e)}
     if(String(currentProfileUserId)===String(userId)&&(!loadedProfile||loadedProfile.books_count_real==null))el('ownBooks').textContent=booksData.filter(b=>b.status==='completed').length;
   }
   async function loadFavoritesCached(userId) {
     const key=profileCacheKey('favorites',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
     if(Array.isArray(cached)){favoritesData=cached;renderFavorites()}
     const token=localStorage.getItem('kk_token');if(!token){if(!cached)favoritesData=[];return}
-    try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);favoritesData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,favoritesData);renderFavorites()}catch(e){if(!cached)favoritesData=[];console.warn('[Profile] favorites refresh',e)}
+    try{const r=await edgeApiFetch('/api/favorites?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'},8000);if(!r.ok)throw Error('HTTP '+r.status);favoritesData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,favoritesData);renderFavorites()}catch(e){if(!cached)favoritesData=[];console.warn('[Profile] favorites refresh',e)}
     if(String(currentProfileUserId)===String(userId)&&(!loadedProfile||loadedProfile.favorites_count==null))el('ownMarks').textContent=favoritesData.length;
   }
   async function loadPostsCached(userId) {
     const key=profileCacheKey('posts',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
     if(Array.isArray(cached)){postsData=cached;renderPosts()}
     const token=localStorage.getItem('kk_token');if(!token){if(!cached)postsData=[];return}
-    try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/posts?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)throw Error('HTTP '+r.status);postsData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,postsData);renderPosts()}catch(e){if(!cached)postsData=[];console.warn('[Profile] posts refresh',e)}
+    try{const r=await edgeApiFetch('/api/posts?user_id='+userId,{headers:{Authorization:'Bearer '+token},cache:'no-store'},8000);if(!r.ok)throw Error('HTTP '+r.status);postsData=await r.json();if(typeof CacheManager!=='undefined')CacheManager.set(key,postsData);renderPosts()}catch(e){if(!cached)postsData=[];console.warn('[Profile] posts refresh',e)}
   }
 
   function initTabs() {
@@ -2023,9 +2027,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       const token = localStorage.getItem('kk_token');
       if (!token || !otherId || String(myId) === String(otherId)) { friendStatus = null; return; }
-      const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/status/' + encodeURIComponent(otherId), {
+      const r = await edgeApiFetch('/api/friends/status/' + encodeURIComponent(otherId), {
         headers: { 'Authorization': 'Bearer ' + token }
-      }, {attempts:4,timeoutMs:12000});
+      }, 8000);
       if (!r.ok) { friendStatus = null; return; }
       const data = await r.json();
       friendStatus = data.status || null;
@@ -2066,7 +2070,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!token) { showToast('Лутфан ворид шавед'); return; }
     if (!await canUseSocialActions()) return;
     try {
-      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/request', {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/request', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ to_user: otherId })
@@ -2092,7 +2096,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!token) { showToast('Лутфан ворид шавед'); return; }
     if (!await canUseSocialActions()) return;
     try {
-      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/friends/accept', {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/friends/accept', {
         method: 'POST',
         headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
         body: JSON.stringify({ from_user: otherId })
@@ -2462,7 +2466,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (!await showConfirmDialog('Хориҷ кардани китоб аз дӯстдошта?', 'Тасдиқ', 'Хориҷ кунед')) return;
     try {
       const token = localStorage.getItem('kk_token');
-      const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites/' + encodeURIComponent(bookId), {
+      const r = await fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites/' + encodeURIComponent(bookId), {
         method: 'DELETE',
         headers: { 'Authorization': 'Bearer ' + token }
       });
@@ -2523,7 +2527,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       bookTitle = 'Китоб';
     }
     const payload = { book_id: fullPath, book_title: bookTitle };
-    fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites', {
+    fetch(KITOB_CONFIG.NEON_API_BASE + '/api/favorites', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + localStorage.getItem('kk_token'), 'Content-Type': 'application/json' },
       body: JSON.stringify(payload)
@@ -2597,7 +2601,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (hint) hint.textContent = 'Санҷиши ҳуқуқ...';
     try {
       const token = localStorage.getItem('kk_token');
-      const r = await fetchWithServerRetry(KITOB_CONFIG.EDGE_API_BASE + '/api/avatar/eligibility', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, {attempts:5,timeoutMs:15000});
+      const r = await edgeApiFetch('/api/avatar/eligibility', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
       const data = await r.json().catch(() => ({}));
       if (!r.ok) throw new Error(data.error || 'Санҷиш дастрас нест');
       avatarEligibility = data;
@@ -2711,7 +2715,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const key='kk_users_directory_snapshot_v1';
     try{const c=JSON.parse(localStorage.getItem(key)||'null');if(c&&Array.isArray(c.rows)&&Date.now()-Number(c.ts||0)<10*60*1000)return c.rows}catch(e){}
     if(directorySnapshotPromise)return directorySnapshotPromise;
-    directorySnapshotPromise=(async()=>{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/users/directory-public',{cache:'default'});const rows=await r.json();if(!r.ok||!Array.isArray(rows))throw Error(rows?.error||'Хато');try{localStorage.setItem(key,JSON.stringify({ts:Date.now(),rows}))}catch(e){}return rows})().finally(()=>directorySnapshotPromise=null);
+    directorySnapshotPromise=(async()=>{const r=await edgeApiFetch('/api/users/directory-public',{cache:'default'},8000);const rows=await r.json();if(!r.ok||!Array.isArray(rows))throw Error(rows?.error||'Хато');try{localStorage.setItem(key,JSON.stringify({ts:Date.now(),rows}))}catch(e){}return rows})().finally(()=>directorySnapshotPromise=null);
     return directorySnapshotPromise;
   }
   function directoryNorm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()}
