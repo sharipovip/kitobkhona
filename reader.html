@@ -521,7 +521,7 @@ body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg)
 <style id="reader-round9-polish">
 html,body,.reader-wrapper,.reader-main{background:#0B0B0B!important}.reader-top-bar,.reader-progress-wrap{background:#0B0B0B!important}.top-rating .rating-label{font-size:8.5px!important;color:#C9A84C!important;white-space:nowrap;margin-right:3px!important}.reader-favorite-btn svg{display:block}.reader-favorite-btn.active{color:#E8C96D!important}
 .page-slot{overflow:hidden!important;background:#0B0B0B!important;border:0!important;outline:0!important}.page-slot canvas{border:0!important;outline:2px solid #0B0B0B!important;outline-offset:-1px;clip-path:inset(1px);transform:translateZ(0);backface-visibility:hidden}.page-container{perspective:1300px!important}.page-slot:after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 10px 0 18px rgba(0,0,0,.18),inset -3px 0 7px rgba(255,255,255,.025)}
-.reader-reactions{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:column;gap:9px;transition:opacity .22s ease,transform .22s ease}.reader-reactions.hidden{opacity:0;transform:translateY(-50%) translateX(18px);pointer-events:none}.reader-reactions .reaction-btn{width:38px;height:48px;border:1px solid rgba(255,255,255,.075);border-radius:18px;background:rgba(8,8,8,.42);backdrop-filter:blur(7px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(240,234,214,.68);padding:0}.reader-reactions .reaction-symbol{width:23px;height:23px;line-height:1;opacity:.76;display:grid;place-items:center}.reader-reactions .reaction-symbol svg{width:22px;height:22px;display:block}.reader-reactions .heart-reaction svg{width:24px;height:24px}.reader-reactions .dislike-symbol svg{transform:rotate(180deg)}.reader-reactions .cnt{font-size:9px;color:rgba(240,234,214,.58)}.reader-reactions .reaction-btn.active{color:#E8C96D;background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.25)}.reader-reactions .reaction-btn.active .cnt{color:#E8C96D}
+.reader-reactions{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:column;gap:9px;transition:opacity .25s ease,transform .25s ease,visibility .25s ease}.reader-reactions.hidden{opacity:0!important;transform:translateY(-50%) translateX(35px)!important;pointer-events:none!important;visibility:hidden!important}.reader-reactions .reaction-btn{width:38px;height:48px;border:1px solid rgba(255,255,255,.075);border-radius:18px;background:rgba(8,8,8,.42);backdrop-filter:blur(7px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(240,234,214,.68);padding:0}.reader-reactions .reaction-symbol{width:23px;height:23px;line-height:1;opacity:.76;display:grid;place-items:center}.reader-reactions .reaction-symbol svg{width:22px;height:22px;display:block}.reader-reactions .heart-reaction svg{width:24px;height:24px}.reader-reactions .dislike-symbol svg{transform:rotate(180deg)}.reader-reactions .cnt{font-size:9px;color:rgba(240,234,214,.58)}.reader-reactions .reaction-btn.active{color:#E8C96D;background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.25)}.reader-reactions .reaction-btn.active .cnt{color:#E8C96D}
 .page-entry{cursor:text!important}.page-entry input{width:34px;height:29px;border:1px solid rgba(201,168,76,.22);border-radius:9px;background:#171717;color:#E8C96D;text-align:center;font-size:11px;outline:0;-moz-appearance:textfield}.page-entry input::-webkit-inner-spin-button,.page-entry input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.page-entry input:focus{border-color:#C9A84C;box-shadow:0 0 0 3px rgba(201,168,76,.09)}
 .reader-social-tray{display:none!important}.light-reading .reader-reactions .reaction-btn{background:rgba(245,240,232,.66);color:#536276}.light-reading .page-slot canvas{filter:none!important;outline-color:#E9E3D7!important}.light-reading .page-slot{background:#E9E3D7!important}.light-reading .page-entry input{background:#EEE7DB;color:#6F5417}
 @media(max-width:355px){.top-rating .rating-label{display:none}.reader-reactions{right:5px}.reader-reactions .reaction-btn{width:34px;height:44px}}
@@ -733,32 +733,85 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   let currentRating = 0;
 
   async function loadReactions() {
-    const token = localStorage.getItem('kk_token');
-    if (!token) return;
     const bookId = getBookId();
     if (!bookId) return;
+
+    // 1. Мгновенный показ из локального кэша (0 мс, 0 запросов к серверу)
     try {
-      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
-        headers: { 'Authorization': 'Bearer ' + token }
-      });
-      if (!resp.ok) throw new Error('HTTP '+resp.status);
-      const data = await resp.json();
-      if (data.reaction) {
-        currentReaction = data.reaction;
-        document.querySelectorAll('.reaction-btn').forEach(btn => {
-          btn.classList.toggle('active', btn.dataset.reaction === data.reaction);
-        });
+      const cached = JSON.parse(localStorage.getItem('kk_stats_' + bookId) || 'null');
+      if (cached) {
+        if ($('likeCount')) $('likeCount').textContent = cached.likes || 0;
+        if ($('loveCount')) $('loveCount').textContent = cached.loves || 0;
+        if ($('dislikeCount')) $('dislikeCount').textContent = cached.dislikes || 0;
+        if (cached.myReaction) {
+          currentReaction = cached.myReaction;
+          document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.reaction === cached.myReaction);
+          });
+        }
+        if (cached.myRating) {
+          currentRating = cached.myRating;
+          updateStarsUI(cached.myRating);
+        }
       }
-      if (data.rating) {
-        currentRating = data.rating;
-        updateStarsUI(data.rating);
+    } catch(e) {}
+
+    // 2. Фоновый запрос к Edge KV (кэшируется на границе Cloudflare, не нагружает базу Neon)
+    try {
+      const token = localStorage.getItem('kk_token');
+      const reqs = [
+        fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId))
+      ];
+      if (token) {
+        reqs.push(
+          fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
+            headers: { 'Authorization': 'Bearer ' + token }
+          })
+        );
       }
-      const statsResp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
-      if (!statsResp.ok) throw new Error('HTTP '+statsResp.status);
-      const stats = await statsResp.json();
-      $('likeCount').textContent = stats.likes || 0;
-      $('loveCount').textContent = stats.loves || 0;
-      $('dislikeCount').textContent = stats.dislikes || 0;
+
+      const results = await Promise.allSettled(reqs);
+      const statsRes = results[0];
+      const userRes = results[1];
+
+      let likes = parseInt($('likeCount')?.textContent) || 0;
+      let loves = parseInt($('loveCount')?.textContent) || 0;
+      let dislikes = parseInt($('dislikeCount')?.textContent) || 0;
+
+      if (statsRes && statsRes.status === 'fulfilled' && statsRes.value.ok) {
+        const stats = await statsRes.value.json();
+        likes = stats.likes || 0;
+        loves = stats.loves || 0;
+        dislikes = stats.dislikes || 0;
+        if ($('likeCount')) $('likeCount').textContent = likes;
+        if ($('loveCount')) $('loveCount').textContent = loves;
+        if ($('dislikeCount')) $('dislikeCount').textContent = dislikes;
+      }
+
+      if (userRes && userRes.status === 'fulfilled' && userRes.value.ok) {
+        const data = await userRes.value.json();
+        if (data.reaction) {
+          currentReaction = data.reaction;
+          document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.reaction === data.reaction);
+          });
+        }
+        if (data.rating) {
+          currentRating = data.rating;
+          updateStarsUI(data.rating);
+        }
+      }
+
+      // Сохраняем актуальные данные в локальный кэш
+      try {
+        localStorage.setItem('kk_stats_' + bookId, JSON.stringify({
+          likes, loves, dislikes,
+          myReaction: currentReaction,
+          myRating: currentRating,
+          ts: Date.now()
+        }));
+      } catch(e) {}
+
     } catch(e) {
       console.warn('Failed to load reactions:', e);
     }
@@ -784,6 +837,16 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
         btn.classList.toggle('active', btn.dataset.reaction === reaction);
       });
       currentReaction = reaction;
+      try {
+        localStorage.setItem('kk_stats_' + bookId, JSON.stringify({
+          likes: parseInt($('likeCount')?.textContent) || 0,
+          loves: parseInt($('loveCount')?.textContent) || 0,
+          dislikes: parseInt($('dislikeCount')?.textContent) || 0,
+          myReaction: currentReaction,
+          myRating: currentRating,
+          ts: Date.now()
+        }));
+      } catch(e) {}
       toast('Реакция сабт шуд');
     } catch(e) {
       console.error('Save reaction error:', e);
@@ -805,6 +868,16 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
       if (!resp.ok) throw new Error('HTTP '+resp.status);
       currentRating = rating;
       updateStarsUI(rating);
+      try {
+        localStorage.setItem('kk_stats_' + bookId, JSON.stringify({
+          likes: parseInt($('likeCount')?.textContent) || 0,
+          loves: parseInt($('loveCount')?.textContent) || 0,
+          dislikes: parseInt($('dislikeCount')?.textContent) || 0,
+          myReaction: currentReaction,
+          myRating: currentRating,
+          ts: Date.now()
+        }));
+      } catch(e) {}
       toast('Баҳо сабт шуд (⭐ ' + rating + '/10)');
     } catch(e) {
       console.error('Save rating error:', e);
@@ -1015,11 +1088,11 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   }
 
   $('readerMain').addEventListener('click', e => {
-    if (e.target.closest('.page-nav-area') || e.target.closest('.reader-reactions')) return;
+    if (e.target.closest('.page-nav-area') || e.target.closest('.reader-reactions') || e.target.closest('.reader-top-bar') || e.target.closest('.reader-bottom-bar')) return;
     bars = !bars;
-    $('topBar').classList.toggle('hidden', !bars);
-    $('bottomBar').classList.toggle('hidden', !bars);
-    $('readerReactions').classList.toggle('hidden', !bars);
+    if ($('topBar')) $('topBar').classList.toggle('hidden', !bars);
+    if ($('bottomBar')) $('bottomBar').classList.toggle('hidden', !bars);
+    document.querySelectorAll('.reader-reactions').forEach(el => el.classList.toggle('hidden', !bars));
   });
 
   let sx = 0, sy = 0, drag = false, startTime = 0;
@@ -1200,6 +1273,7 @@ html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0
   initPaperColor();
   initBrightnessDial();
   openPdf();
+  void loadReactions();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a3b81856ef766368',t:'MTc4OTQ4MDE3MA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
