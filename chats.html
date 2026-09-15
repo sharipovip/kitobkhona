@@ -1253,9 +1253,47 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   function openChat(userId, name) {
+    if (currentUser && userId) {
+      if (chatSummary && chatSummary.by_peer && chatSummary.by_peer[String(userId)]) {
+        const prevUnread = Number(chatSummary.by_peer[String(userId)].unread_count || 0);
+        chatSummary.by_peer[String(userId)].unread_count = 0;
+        chatSummary.total_unread = Math.max(0, Number(chatSummary.total_unread || 0) - prevUnread);
+        if (typeof CacheManager !== 'undefined' && summaryCacheKey) {
+          CacheManager.set(summaryCacheKey, chatSummary);
+        }
+      }
+      ChatAPI.markMessagesRead(userId).catch(() => {});
+    }
     location.href = `chat.html?to=${encodeURIComponent(userId)}&name=${encodeURIComponent(name)}`;
   }
   window.openChat = openChat;
+
+  window.addEventListener('pageshow', () => {
+    if (currentUser) {
+      if (typeof CacheManager !== 'undefined' && summaryCacheKey) {
+        CacheManager.invalidateKey(summaryCacheKey);
+      }
+      void loadData();
+    }
+  });
+
+  document.addEventListener('visibilitychange', () => {
+    if (!document.hidden && currentUser) {
+      if (typeof CacheManager !== 'undefined' && summaryCacheKey) {
+        CacheManager.invalidateKey(summaryCacheKey);
+      }
+      void loadData();
+    }
+  });
+
+  window.addEventListener('focus', () => {
+    if (currentUser) {
+      if (typeof CacheManager !== 'undefined' && summaryCacheKey) {
+        CacheManager.invalidateKey(summaryCacheKey);
+      }
+      void loadData();
+    }
+  });
 </script>
 </body>
 </html>

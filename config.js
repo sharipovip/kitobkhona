@@ -979,13 +979,17 @@ const ChatAPI = {
   markMessagesRead: async function(peerId) {
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return null;
-    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/messages/read', {
-      method: 'POST',
-      headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ peer_id: peerId })
-    }, 8000);
-    if (!r.ok) throw new Error('Ошибка отметки сообщений: ' + r.status);
-    return await r.json();
+    try {
+      const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/messages/read', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ peer_id: peerId, peerId: peerId })
+      }, 8000);
+      if (!r.ok) return null;
+      return await r.json();
+    } catch(e) {
+      return null;
+    }
   },
   deleteMessage: async function(messageId) {
     const token = localStorage.getItem('kk_token');
