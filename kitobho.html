@@ -931,7 +931,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   ];
   const $ = id => document.getElementById(id);
   const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
-  let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
+  let DATA = { repo: "sharipovip/books", branch: "main", categories: [] }, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
   let activeBookElement = null;
 
   function getCoverCacheMap() {
