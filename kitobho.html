@@ -1292,15 +1292,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       toast('Аз «Китобҳои ман» хориҷ шуд');
     } else {
       const bookTitle = name || book.name || book.title || 'Китоб';
+      const bookFolder = folder || book.folder || '';
+      const bookFile = file || book.file || (bookTitle + '.pdf');
+      const targetUrl = book.url || rawUrl(bookFolder, bookFile);
       list.unshift({
         id: cleanId,
         bookId: cleanId,
         name: bookTitle,
         title: bookTitle,
         author: book.author || '',
-        folder: folder || book.folder || '',
-        file: file || book.file || '',
+        folder: bookFolder,
+        file: bookFile,
         cover: cover || '',
+        url: targetUrl,
         added_at: Date.now()
       });
       localStorage.setItem('kk_my_books_v1', JSON.stringify(list));

@@ -1743,7 +1743,134 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
 
 
-<style id="index-mybooks-gov-browser-v2">
+
+<style id="app-complete-features-v3">
+/* Header live widget */
+.header-widget-v3 {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(16, 35, 59, 0.7);
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 20px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #F0EAD6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  user-select: none;
+}
+.header-widget-v3:hover, .header-widget-v3:active {
+  background: rgba(22, 48, 80, 0.9);
+  border-color: #E8C96D;
+  transform: scale(1.02);
+}
+.hw-time {
+  font-weight: 800;
+  color: #E8C96D;
+  letter-spacing: 0.3px;
+}
+.hw-divider {
+  color: rgba(201, 168, 76, 0.4);
+}
+.hw-city {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  font-weight: 600;
+}
+
+/* Weather city selector modal */
+.weather-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+  background: rgba(8, 16, 26, 0.85);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  animation: wmFadeIn 0.2s ease;
+}
+@keyframes wmFadeIn {
+  from { opacity: 0; transform: scale(0.96); }
+  to { opacity: 1; transform: scale(1); }
+}
+.weather-panel {
+  width: 100%;
+  max-width: 380px;
+  background: #10233B;
+  border: 1.5px solid rgba(201, 168, 76, 0.4);
+  border-radius: 20px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.6);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  max-height: 85vh;
+}
+.weather-head {
+  padding: 14px 16px;
+  background: #162E4E;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.weather-head-title {
+  font-size: 14px;
+  font-weight: 800;
+  color: #E8C96D;
+}
+.weather-search-wrap {
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.15);
+}
+.weather-search-input {
+  width: 100%;
+  height: 38px;
+  background: #0B1726;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  border-radius: 10px;
+  padding: 0 12px;
+  color: #FFFFFF;
+  font-size: 13px;
+  outline: none;
+}
+.weather-search-input:focus {
+  border-color: #E8C96D;
+  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
+}
+.weather-cities-list {
+  padding: 8px 10px;
+  overflow-y: auto;
+  flex: 1;
+}
+.weather-city-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 12px;
+  border-radius: 10px;
+  margin-bottom: 4px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  background: rgba(13, 27, 42, 0.4);
+}
+.weather-city-item:hover, .weather-city-item.active {
+  background: rgba(201, 168, 76, 0.2);
+  color: #E8C96D;
+}
+.weather-city-name {
+  font-size: 13px;
+  font-weight: 700;
+}
+.weather-city-temp {
+  font-size: 13px;
+  font-weight: 800;
+  color: #E8C96D;
+}
+
 /* My Books section styles */
 .my-books-empty-card {
   display: flex;
@@ -1754,7 +1881,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   background: linear-gradient(135deg, rgba(22, 38, 59, 0.8), rgba(13, 27, 42, 0.9));
   border: 1.5px dashed rgba(201, 168, 76, 0.45);
   border-radius: 16px;
-  padding: 26px 20px;
+  padding: 24px 20px;
   width: 100%;
   max-width: 380px;
   margin: 6px auto;
@@ -1769,20 +1896,44 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 }
 .my-books-empty-icon {
   font-size: 36px;
-  margin-bottom: 10px;
+  margin-bottom: 8px;
   filter: drop-shadow(0 2px 8px rgba(201, 168, 76, 0.4));
 }
 .my-books-empty-title {
-  font-size: 14px;
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 750;
   color: #FFFFFF;
   line-height: 1.4;
-  margin-bottom: 6px;
+  margin-bottom: 5px;
 }
 .my-books-empty-hint {
   font-size: 12px;
   color: #E8C96D;
   font-weight: 600;
+}
+.mybook-remove-btn {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  background: rgba(229, 83, 83, 0.9);
+  color: #FFFFFF;
+  border: 1px solid #FFFFFF;
+  font-size: 11px;
+  font-weight: 900;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 10;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  transition: all 0.18s ease;
+}
+.mybook-remove-btn:hover, .mybook-remove-btn:active {
+  background: #E74C3C;
+  transform: scale(1.15);
 }
 .pin-v3 {
   width: 30px;
@@ -1806,7 +1957,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   transform: scale(1.08);
 }
 
-/* Gov Sites section & Cards */
+/* Government Websites Cards (Framed Preview with Snapshot) */
 .gov-section-v3 {
   margin: 24px 0 24px 0;
   padding: 0 12px;
@@ -1815,52 +1966,64 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   display: flex;
   gap: 12px;
   overflow-x: auto;
-  padding: 10px 4px 14px 4px;
+  padding: 10px 4px 16px 4px;
   scroll-snap-type: x mandatory;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
 }
 .gov-scroll-v3::-webkit-scrollbar { display: none; }
 .gov-card-v3 {
-  flex: 0 0 160px;
+  flex: 0 0 185px;
   scroll-snap-align: start;
-  background: linear-gradient(180deg, #16263B 0%, #0D1B2A 100%);
-  border: 1.2px solid rgba(201, 168, 76, 0.25);
+  background: #142438;
+  border: 1.5px solid rgba(201, 168, 76, 0.35);
   border-radius: 16px;
-  padding: 14px 12px;
+  padding: 0;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  text-align: center;
   cursor: pointer;
   transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
-  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  box-shadow: 0 8px 20px rgba(0,0,0,0.35);
   position: relative;
   overflow: hidden;
 }
 .gov-card-v3:active, .gov-card-v3:hover {
   transform: translateY(-4px);
   border-color: #E8C96D;
-  box-shadow: 0 10px 26px rgba(201, 168, 76, 0.25);
+  box-shadow: 0 12px 28px rgba(201, 168, 76, 0.3);
 }
-.gov-card-v3::before {
-  content: '';
-  position: absolute;
-  top: 0; left: 0; right: 0; height: 3px;
-  background: linear-gradient(90deg, #C9A84C, #E8C96D, #C9A84C);
-}
-.gov-icon-v3 {
-  font-size: 32px;
-  width: 52px;
-  height: 52px;
+.gov-preview-box {
+  width: 100%;
+  height: 96px;
+  position: relative;
+  overflow: hidden;
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: rgba(13, 27, 42, 0.85);
-  border-radius: 14px;
-  border: 1px solid rgba(201, 168, 76, 0.3);
-  margin-bottom: 10px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  padding: 8px;
+}
+.gov-badge-emblem {
+  font-size: 32px;
+  filter: drop-shadow(0 2px 6px rgba(0,0,0,0.5));
+  margin-bottom: 4px;
+}
+.gov-domain-pill {
+  font-size: 10px;
+  font-weight: 800;
+  background: rgba(8, 16, 26, 0.85);
+  color: #E8C96D;
+  padding: 2px 8px;
+  border-radius: 20px;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  letter-spacing: 0.3px;
+}
+.gov-card-body {
+  padding: 10px 10px 12px 10px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
 }
 .gov-title-v3 {
   font-size: 12px;
@@ -1876,15 +2039,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 }
 .gov-sub-v3 {
   font-size: 10px;
-  color: #C9A84C;
-  font-weight: 600;
+  color: #94A3B8;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
 }
 
-/* In-App Browser Modal with full controls and text selection allowed */
+/* Full In-App Mini Browser */
 .inapp-browser-modal {
   position: fixed;
   inset: 0;
@@ -1892,7 +2054,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   background: #08101A;
   display: flex;
   flex-direction: column;
-  animation: inappSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: inappSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .inapp-browser-modal, .inapp-browser-modal * {
   user-select: text !important;
@@ -1903,69 +2065,56 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
-.inapp-browser-bar {
-  height: 56px;
-  background: #101F30;
+.inapp-top-toolbar {
+  height: 52px;
+  background: #0F1F33;
   border-bottom: 1px solid rgba(201, 168, 76, 0.3);
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 0 10px;
-  gap: 8px;
+  gap: 6px;
+  padding: 0 8px;
   user-select: none !important;
   -webkit-user-select: none !important;
 }
-.inapp-nav-group {
-  display: flex;
-  align-items: center;
-  gap: 4px;
-}
-.inapp-browser-title-wrap {
+.inapp-omnibox {
   flex: 1;
   min-width: 0;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 0 4px;
-}
-.inapp-browser-title {
-  font-size: 12.5px;
-  font-weight: 750;
-  color: #FFFFFF;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-}
-.inapp-browser-url {
-  font-size: 10px;
-  color: #C9A84C;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  line-height: 1.2;
-  margin-top: 1px;
-}
-.inapp-actions-group {
+  height: 36px;
+  background: #091321;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 10px;
   display: flex;
   align-items: center;
-  gap: 5px;
+  padding: 0 8px;
+  gap: 6px;
+  cursor: text;
+}
+.inapp-omnibox input {
+  flex: 1;
+  min-width: 0;
+  height: 100%;
+  background: transparent;
+  border: 0;
+  color: #FFFFFF;
+  font-size: 12.5px;
+  font-family: inherit;
+  outline: none;
 }
 .inapp-btn {
   height: 34px;
   border-radius: 9px;
   border: 1px solid rgba(201, 168, 76, 0.25);
-  background: rgba(22, 38, 59, 0.9);
+  background: rgba(22, 38, 59, 0.85);
   color: #E8C96D;
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 13px;
+  font-weight: 700;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 0 9px;
+  padding: 0 8px;
   transition: all 0.15s ease;
+  user-select: none !important;
 }
 .inapp-btn:hover, .inapp-btn:active {
   background: rgba(201, 168, 76, 0.25);
@@ -1974,22 +2123,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .inapp-btn-icon {
   width: 34px;
   padding: 0;
-  font-size: 14px;
 }
 .inapp-btn-close {
-  background: rgba(229, 83, 83, 0.25);
-  border-color: rgba(229, 83, 83, 0.5);
+  background: rgba(229, 83, 83, 0.2);
+  border-color: rgba(229, 83, 83, 0.4);
   color: #FFA5A5;
 }
-.inapp-btn-close:hover {
-  background: rgba(229, 83, 83, 0.45);
-}
 
-/* Loading animation bar */
+/* Browser Progress & Tabs Bar */
 .inapp-progress-bar {
   height: 3px;
   width: 100%;
-  background: rgba(201, 168, 76, 0.2);
+  background: rgba(201, 168, 76, 0.15);
   overflow: hidden;
   position: relative;
 }
@@ -2001,25 +2146,67 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   border-radius: 2px;
   animation: inappLoadingIndeterminate 1.2s infinite ease-in-out;
 }
-@keyframes inappLoadingIndeterminate {
-  0% { left: -40%; width: 30%; }
-  50% { left: 30%; width: 55%; }
-  100% { left: 100%; width: 25%; }
+.inapp-tabs-bar {
+  display: flex;
+  align-items: center;
+  background: #0B1726;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding: 4px 6px;
+  gap: 4px;
 }
-.inapp-browser-frame-wrap {
+.inapp-tabs-bar::-webkit-scrollbar { display: none; }
+.inapp-tab-chip {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: #142438;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  border-radius: 8px;
+  padding: 4px 10px;
+  font-size: 11px;
+  color: #94A3B8;
+  max-width: 140px;
+  cursor: pointer;
+}
+.inapp-tab-chip.active {
+  background: #1E3554;
+  border-color: #E8C96D;
+  color: #FFFFFF;
+  font-weight: 700;
+}
+.inapp-tab-title {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inapp-tab-close {
+  font-size: 11px;
+  color: #94A3B8;
+  cursor: pointer;
+  padding: 0 2px;
+}
+.inapp-tab-close:hover {
+  color: #FFA5A5;
+}
+
+/* Browser View Container */
+.inapp-view-wrap {
   flex: 1;
-  width: 100%;
   position: relative;
   background: #FFFFFF;
+  overflow: hidden;
 }
-.inapp-browser-frame {
+.inapp-iframe {
   width: 100%;
   height: 100%;
   border: 0;
   background: #FFFFFF;
   display: block;
+  transform-origin: 0 0;
 }
-.inapp-loading-overlay {
+.inapp-loading-screen {
   position: absolute;
   inset: 0;
   background: #08101A;
@@ -2031,18 +2218,52 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #F0EAD6;
   font-size: 13px;
   z-index: 5;
-  transition: opacity 0.3s ease, visibility 0.3s ease;
+  transition: opacity 0.25s ease;
 }
-.inapp-spinner {
-  width: 36px;
-  height: 36px;
-  border: 3px solid rgba(201, 168, 76, 0.2);
+.inapp-spinner-circle {
+  width: 38px;
+  height: 38px;
+  border: 3px solid rgba(201, 168, 76, 0.25);
   border-top-color: #E8C96D;
   border-radius: 50%;
-  animation: inappSpin 0.8s linear infinite;
+  animation: inappSpin 0.75s linear infinite;
 }
-@keyframes inappSpin {
-  to { transform: rotate(360deg); }
+
+/* Browser Menu Drawer */
+.inapp-menu-drawer {
+  position: absolute;
+  top: 56px;
+  right: 8px;
+  width: 220px;
+  background: #10233B;
+  border: 1.5px solid rgba(201, 168, 76, 0.35);
+  border-radius: 14px;
+  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
+  z-index: 100;
+  padding: 6px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  animation: wmFadeIn 0.18s ease;
+}
+.inapp-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 8px;
+  color: #F0EAD6;
+  font-size: 12.5px;
+  font-weight: 600;
+  cursor: pointer;
+  background: transparent;
+  border: 0;
+  width: 100%;
+  text-align: left;
+}
+.inapp-menu-item:hover, .inapp-menu-item:active {
+  background: rgba(201, 168, 76, 0.2);
+  color: #E8C96D;
 }
 </style>
 </head>
@@ -2078,6 +2299,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         </svg>
       </div>
       <div class="new-logo-text-v3"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div>
+    </div>
+        <div class="header-widget-v3" id="headerWidget" onclick="openWeatherModal()" title="Интихоби шаҳр ва обу ҳаво">
+      <span class="hw-time" id="headerLiveTime">--:--</span>
+      <span class="hw-divider">|</span>
+      <span class="hw-city" id="headerWeatherCity">☀️ Душанбе +24°</span>
     </div>
     <div class="new-top-actions-v3">
       <div class="new-icon-btn-v3" id="searchToggleBtn" title="Ҷустуҷӯ">
@@ -2136,26 +2362,34 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
     </section>
 
-    <!-- 4 Китобҳои Пешвои миллат -->
+        <!-- 4 Китобҳои Пешвои миллат -->
     <section class="books-v3" id="pesvoSection" style="display:none">
-      <div class="sec-head-v3"><div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div><div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div>
+        <div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div>
+      </div>
       <div class="books-scroll-v3" id="pesvoBooks"></div>
     </section>
 
     <!-- 5 Бахши махсус: Китобҳои ман (Дастрасии зуд) -->
     <section class="books-v3" id="myBooksSection">
-      <div class="sec-head-v3"><div class="sec-title-v3">📌 Китобҳои ман</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">📌 Китобҳои ман</div>
+        <div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div>
+      </div>
       <div class="books-scroll-v3" id="myBooksList"></div>
     </section>
 
     <!-- 6 Китобҳои серхонтарин -->
     <section class="books-v3" id="popSection" style="display:none">
-      <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонтарин</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=popular'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">🔥 Китобҳои серхонтарин</div>
+        <div class="sec-link-v3" onclick="location.href='kitobho.html?sort=popular'">Ҳамаашро бинед <span>›</span></div>
+      </div>
       <div class="books-scroll-v3" id="popBooks"></div>
     </section>
 
-  
-        <!-- 7 Сомонаҳои давлатӣ -->
+    <!-- 7 Сомонаҳои давлатӣ -->
     <section class="gov-section-v3">
       <div class="sec-head-v3">
         <div class="sec-title-v3">🏛️ Сомонаҳои давлатӣ</div>
@@ -2407,10 +2641,121 @@ if(typeof AndroidBridge!=='undefined'){ const userId=localStorage.getItem('kk_us
 function setActiveNav(el){ document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active')); el.classList.add('active'); }
 </script>
 
+
 <script>
-// ==============================================================
-// КИТОБҲОИ МАН (MY BOOKS / FAST ACCESS) & СОМОНАҲОИ ДАВЛАТӢ
-// ==============================================================
+// =========================================================================
+// 1. LIVE TIME, DATE & TAJIK WEATHER SYSTEM
+// =========================================================================
+const TAJIK_CITIES = [
+  { name: 'Душанбе', lat: 38.56, lon: 68.77, temp: '+24°', icon: '☀️' },
+  { name: 'Данғара', lat: 38.10, lon: 69.34, temp: '+26°', icon: '☀️' },
+  { name: 'Кӯлоб', lat: 37.91, lon: 69.78, temp: '+25°', icon: '☀️' },
+  { name: 'Бохтар', lat: 37.84, lon: 68.78, temp: '+27°', icon: '☀️' },
+  { name: 'Хуҷанд', lat: 40.28, lon: 69.62, temp: '+23°', icon: '🌤️' },
+  { name: 'Истаравшан', lat: 39.91, lon: 69.00, temp: '+22°', icon: '☀️' },
+  { name: 'Исфара', lat: 40.12, lon: 70.62, temp: '+23°', icon: '☀️' },
+  { name: 'Конибодом', lat: 40.29, lon: 70.43, temp: '+24°', icon: '☀️' },
+  { name: 'Панҷакент', lat: 39.50, lon: 67.61, temp: '+21°', icon: '⛅' },
+  { name: 'Хоруғ', lat: 37.49, lon: 71.55, temp: '+16°', icon: '🌤️' },
+  { name: 'Ваҳдат', lat: 38.55, lon: 69.01, temp: '+24°', icon: '☀️' },
+  { name: 'Ҳисор', lat: 38.53, lon: 68.55, temp: '+25°', icon: '☀️' },
+  { name: 'Турсунзода', lat: 38.51, lon: 68.23, temp: '+26°', icon: '☀️' },
+  { name: 'Рашт', lat: 39.03, lon: 70.37, temp: '+18°', icon: '⛅' },
+  { name: 'Мӯминобод', lat: 38.11, lon: 70.03, temp: '+22°', icon: '☀️' },
+  { name: 'Ёвон', lat: 38.31, lon: 69.04, temp: '+26°', icon: '☀️' }
+];
+
+let selectedCityName = localStorage.getItem('kk_weather_city') || 'Душанбе';
+
+function updateLiveClock() {
+  const timeEl = document.getElementById('headerLiveTime');
+  if (!timeEl) return;
+  const now = new Date();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const mm = String(now.getMinutes()).padStart(2, '0');
+  timeEl.textContent = `${hh}:${mm}`;
+}
+setInterval(updateLiveClock, 1000);
+updateLiveClock();
+
+async function fetchLiveCityWeather(cityName) {
+  const city = TAJIK_CITIES.find(c => c.name === cityName) || TAJIK_CITIES[0];
+  const weatherEl = document.getElementById('headerWeatherCity');
+  if (weatherEl) weatherEl.textContent = `${city.icon} ${city.name} ${city.temp}`;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Weather API error');
+    const data = await res.json();
+    const temp = Math.round(data.current_weather.temperature);
+    const code = data.current_weather.weathercode;
+    let icon = '☀️';
+    if (code > 0 && code <= 3) icon = '🌤️';
+    else if (code >= 45 && code <= 48) icon = '🌫️';
+    else if (code >= 51 && code <= 67) icon = '🌧️';
+    else if (code >= 71 && code <= 86) icon = '❄️';
+    else if (code >= 95) icon = '⛈️';
+
+    const tempStr = (temp > 0 ? '+' : '') + temp + '°';
+    city.temp = tempStr;
+    city.icon = icon;
+    if (weatherEl) weatherEl.textContent = `${icon} ${city.name} ${tempStr}`;
+  } catch(e) {
+    // Graceful fallback to pre-cached estimates
+  }
+}
+
+function openWeatherModal() {
+  document.getElementById('weatherModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'weatherModal';
+  modal.className = 'weather-modal';
+
+  modal.innerHTML = `
+    <div class="weather-panel">
+      <div class="weather-head">
+        <div class="weather-head-title">🌤️ Обу ҳавои Тоҷикистон</div>
+        <button class="inapp-btn inapp-btn-icon inapp-btn-close" type="button" onclick="document.getElementById('weatherModal').remove()">✕</button>
+      </div>
+      <div class="weather-search-wrap">
+        <input class="weather-search-input" id="weatherSearchInput" type="search" placeholder="Ҷустуҷӯи шаҳр ё ноҳия...">
+      </div>
+      <div class="weather-cities-list" id="weatherCitiesList"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const renderList = (q = '') => {
+    const listEl = document.getElementById('weatherCitiesList');
+    if (!listEl) return;
+    const filtered = TAJIK_CITIES.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()));
+    listEl.innerHTML = filtered.map(c => `
+      <div class="weather-city-item ${c.name === selectedCityName ? 'active' : ''}" onclick="selectWeatherCity('${c.name}')">
+        <span class="weather-city-name">${c.icon} ${c.name}</span>
+        <span class="weather-city-temp">${c.temp}</span>
+      </div>
+    `).join('');
+  };
+
+  renderList();
+  document.getElementById('weatherSearchInput')?.addEventListener('input', e => renderList(e.target.value.trim()));
+}
+
+function selectWeatherCity(name) {
+  selectedCityName = name;
+  localStorage.setItem('kk_weather_city', name);
+  fetchLiveCityWeather(name);
+  document.getElementById('weatherModal')?.remove();
+  toast(`Шаҳри ${name} интихоб шуд`);
+}
+
+fetchLiveCityWeather(selectedCityName);
+
+// =========================================================================
+// 2. КИТОБҲОИ МАН (MY BOOKS / FAST ACCESS)
+// =========================================================================
 const MY_BOOKS_KEY = 'kk_my_books_v1';
 
 function getMyBooks() {
@@ -2443,6 +2788,7 @@ function toggleMyBook(event, btn) {
   const file = btn.dataset.file || '';
   const cover = btn.dataset.cover || '';
   const cleanId = String(bookId || file || bookTitle).replace(/^books\//i, '');
+  const targetUrl = btn.dataset.url || rawUrl(folder, file || cleanId + '.pdf');
 
   let list = getMyBooks();
   const existsIndex = list.findIndex(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId.toLowerCase());
@@ -2461,12 +2807,23 @@ function toggleMyBook(event, btn) {
       folder: folder,
       file: file,
       cover: cover,
+      url: targetUrl,
       added_at: Date.now()
     });
     saveMyBooks(list);
     toast('Ба «Китобҳои ман» илова шуд ⭐');
   }
 
+  syncMyBookButtons();
+  renderMyBooksSection();
+}
+
+function removeMyBook(event, cleanId) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  let list = getMyBooks();
+  list = list.filter(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() !== String(cleanId).toLowerCase());
+  saveMyBooks(list);
+  toast('Китоб хориҷ шуд');
   syncMyBookButtons();
   renderMyBooksSection();
 }
@@ -2504,7 +2861,7 @@ function renderMyBooksSection() {
     const file = b.file || ((b.name || 'book') + '.pdf');
     const name = b.name || b.title || file.replace(/\.pdf$/i, '');
     const folder = b.folder || 'adabiyoti_klassiki';
-    const url = rawUrl(folder, file);
+    const url = b.url || rawUrl(folder, file);
     const covers = coverCandidates(folder, file);
     const cover = b.cover || covers[0] || '';
     const bookId = normalizeHomeBookId(folder, file);
@@ -2513,6 +2870,7 @@ function renderMyBooksSection() {
     return `
       <div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
         <div class="book-cover-v3" style="position:relative">
+          <button type="button" class="mybook-remove-btn" onclick="removeMyBook(event, '${esc(bookId)}')" title="Хориҷ кардан">✕</button>
           <div class="book-tag-v3" style="background:var(--gold);color:#08101A;font-weight:900">МАН</div>
           <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:6px;font-size:11px;font-weight:bold;color:#fff">${esc(name)}</span>
@@ -2523,7 +2881,7 @@ function renderMyBooksSection() {
           <div class="book-foot-v3">
             <div class="stars-v3">${STAR_ICON}<span>—</span></div>
             <div style="display:flex;align-items:center;gap:4px">
-              <button type="button" class="pin-v3 active" data-pin data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(b.author||'')}" data-folder="${esc(folder)}" data-file="${esc(file)}" data-cover="${esc(cover)}" onclick="toggleMyBook(event,this)" title="Аз Китобҳои ман хориҷ кардан">📌</button>
+              <button type="button" class="pin-v3 active" data-pin data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(b.author||'')}" data-folder="${esc(folder)}" data-file="${esc(file)}" data-cover="${esc(cover)}" data-url="${esc(url)}" onclick="toggleMyBook(event,this)" title="Аз Китобҳои ман хориҷ кардан">📌</button>
               ${bookmarkButton(bookId, name, b.author)}
             </div>
           </div>
@@ -2535,77 +2893,90 @@ function renderMyBooksSection() {
   syncBookmarkButtons(container);
 }
 
-// 10 Сомонаҳои расмии давлатии Тоҷикистон
+// =========================================================================
+// 3. СОМОНАҲОИ РАСМИИ ДАВЛАТИИ ТОҶИКИСТОН (9 PORTALS)
+// =========================================================================
 const GOV_SITES = [
   {
     id: 'president',
     name: 'Президенти Ҷумҳурии Тоҷикистон',
     short: 'president.tj · Портали расмӣ',
     url: 'https://www.president.tj',
-    icon: '👑'
+    domain: 'president.tj',
+    icon: '👑',
+    bg: 'linear-gradient(135deg, #0F2B48 0%, #1A4674 100%)'
   },
   {
     id: 'kmt',
     name: 'Китобхонаи миллии Тоҷикистон',
     short: 'kmt.tj · Фонди миллии китоб',
     url: 'http://kmt.tj',
-    icon: '📚'
+    domain: 'kmt.tj',
+    icon: '📚',
+    bg: 'linear-gradient(135deg, #1C3322 0%, #2A5A3B 100%)'
   },
   {
     id: 'nlt',
     name: 'Китобхонаи миллии электронӣ',
     short: 'nlt.tj · Электронная библиотека',
     url: 'https://nlt.tj',
-    icon: '📖'
+    domain: 'nlt.tj',
+    icon: '📖',
+    bg: 'linear-gradient(135deg, #3A2B14 0%, #63471D 100%)'
   },
   {
     id: 'maorif',
     name: 'Вазорати маориф ва илми ҶТ',
     short: 'maorif.tj · Соҳаи маориф ва илм',
     url: 'https://maorif.tj',
-    icon: '🏛️'
+    domain: 'maorif.tj',
+    icon: '🏛️',
+    bg: 'linear-gradient(135deg, #1A2E44 0%, #284D75 100%)'
   },
   {
     id: 'mmk',
     name: 'Маркази миллии қонунгузорӣ',
-    short: 'mmk.tj · Пойгоҳи қонунҳо',
+    short: 'mmk.tj · Пойгоҳи ягонаи қонунҳо',
     url: 'https://mmk.tj',
-    icon: '📜'
+    domain: 'mmk.tj',
+    icon: '📜',
+    bg: 'linear-gradient(135deg, #2D1A33 0%, #4D2B59 100%)'
   },
   {
     id: 'khovar',
     name: 'АМИТ «Ховар»',
     short: 'khovar.tj · Агентии иттилоотӣ',
     url: 'https://khovar.tj',
-    icon: '📰'
+    domain: 'khovar.tj',
+    icon: '📰',
+    bg: 'linear-gradient(135deg, #122F3D 0%, #1B506B 100%)'
   },
   {
     id: 'mfa',
     name: 'Вазорати корҳои хориҷии ҶТ',
-    short: 'mfa.tj · Сиёсати хориҷӣ',
+    short: 'mfa.tj · Сиёсати хориҷӣ ва равобит',
     url: 'https://mfa.tj',
-    icon: '🌐'
+    domain: 'mfa.tj',
+    icon: '🌐',
+    bg: 'linear-gradient(135deg, #152C4E 0%, #1F457E 100%)'
   },
   {
     id: 'dushanbe',
     name: 'Ҳокимияти ш. Душанбе',
     short: 'dushanbe.tj · Сомонаи шаҳрдорӣ',
     url: 'https://dushanbe.tj',
-    icon: '🏙️'
-  },
-  {
-    id: 'tpp',
-    name: 'Палатаи савдо ва саноат',
-    short: 'tpp.tj · Саноат ва тиҷорат',
-    url: 'https://tpp.tj',
-    icon: '🏭'
+    domain: 'dushanbe.tj',
+    icon: '🏙️',
+    bg: 'linear-gradient(135deg, #242A38 0%, #3D4861 100%)'
   },
   {
     id: 'ntc',
     name: 'Маркази миллии тестӣ (ИМТ)',
-    short: 'ntc.tj · Дохилшавӣ ва тест',
+    short: 'ntc.tj · Дохилшавӣ ва имтиҳонҳо',
     url: 'https://ntc.tj/tj/',
-    icon: '🎓'
+    domain: 'ntc.tj',
+    icon: '🎓',
+    bg: 'linear-gradient(135deg, #2B331A 0%, #4D5C2E 100%)'
   }
 ];
 
@@ -2613,92 +2984,364 @@ function renderGovSites() {
   const container = document.getElementById('govSitesList');
   if (!container) return;
   container.innerHTML = GOV_SITES.map(s => `
-    <div class="gov-card-v3" onclick="openInAppBrowser('${s.url}', '${esc(s.name)}')">
-      <div class="gov-icon-v3">${s.icon}</div>
-      <div class="gov-title-v3">${esc(s.name)}</div>
-      <div class="gov-sub-v3">${esc(s.short)}</div>
+    <div class="gov-card-v3" onclick="openMiniBrowser('${s.url}', '${esc(s.name)}')">
+      <div class="gov-preview-box" style="background:${s.bg}">
+        <div class="gov-badge-emblem">${s.icon}</div>
+        <div class="gov-domain-pill">${s.domain}</div>
+      </div>
+      <div class="gov-card-body">
+        <div class="gov-title-v3">${esc(s.name)}</div>
+        <div class="gov-sub-v3">${esc(s.short)}</div>
+      </div>
     </div>
   `).join('');
 }
 
-function openInAppBrowser(url, title) {
+// =========================================================================
+// 4. FULL IN-APP MINI BROWSER (TABS, BOOKMARKS, HISTORY, ZOOM, BACK-TRAP)
+// =========================================================================
+let browserTabs = [];
+let activeTabIndex = 0;
+let browserHistoryList = [];
+let browserBookmarksList = [];
+let browserZoomLevel = 1.0;
+
+function loadBrowserStorage() {
+  try {
+    browserHistoryList = JSON.parse(localStorage.getItem('kk_browser_history_v1') || '[]');
+    browserBookmarksList = JSON.parse(localStorage.getItem('kk_browser_bookmarks_v1') || '[]');
+  } catch(e) {}
+}
+
+function saveBrowserStorage() {
+  try {
+    localStorage.setItem('kk_browser_history_v1', JSON.stringify(browserHistoryList.slice(0, 100)));
+    localStorage.setItem('kk_browser_bookmarks_v1', JSON.stringify(browserBookmarksList.slice(0, 50)));
+  } catch(e) {}
+}
+
+function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle = 'Сомонаи давлатӣ') {
+  loadBrowserStorage();
   document.getElementById('inappBrowserModal')?.remove();
+
+  browserTabs = [{
+    url: initialUrl,
+    title: initialTitle,
+    history: [initialUrl],
+    historyIndex: 0
+  }];
+  activeTabIndex = 0;
+  browserZoomLevel = 1.0;
+
+  // Intercept back button
+  history.pushState({ inAppBrowserOpen: true }, '');
+
   const modal = document.createElement('div');
   modal.id = 'inappBrowserModal';
   modal.className = 'inapp-browser-modal';
 
   modal.innerHTML = `
-    <div class="inapp-browser-bar">
-      <div class="inapp-nav-group">
-        <button class="inapp-btn inapp-btn-icon" type="button" title="Навсозӣ" onclick="reloadInAppBrowser()">🔄</button>
+    <div class="inapp-top-toolbar">
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Бозгашт" onclick="browserGoBack()">⬅</button>
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Ба пеш" onclick="browserGoForward()">➡</button>
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Навсозӣ" onclick="browserReload()">🔄</button>
+      
+      <div class="inapp-omnibox">
+        <span style="font-size:14px">🔒</span>
+        <input id="browserOmniInput" type="text" value="${initialUrl}" onkeydown="if(event.key==='Enter') browserNavigate(this.value)">
       </div>
-      <div class="inapp-browser-title-wrap">
-        <div class="inapp-browser-title">${esc(title || 'Сомонаи давлатӣ')}</div>
-        <div class="inapp-browser-url">${esc(url.replace(/^https?:\/\//i, ''))}</div>
-      </div>
-      <div class="inapp-actions-group">
-        <button class="inapp-btn inapp-btn-icon" type="button" title="Нусхабардории пайванд" onclick="copyInAppLink('${url}')">📋</button>
-        <button class="inapp-btn inapp-btn-icon" type="button" title="Дар браузер кушоед" onclick="window.open('${url}','_blank')">↗️</button>
-        <button class="inapp-btn inapp-btn-icon inapp-btn-close" type="button" title="Пӯшидан" onclick="closeInAppBrowser()">✕</button>
-      </div>
+
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Варақаи нав" onclick="browserNewTab()">➕</button>
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Меню" onclick="toggleBrowserMenu()">⋮</button>
+      <button class="inapp-btn inapp-btn-icon inapp-btn-close" type="button" title="Пӯшидан" onclick="closeMiniBrowser()">✕</button>
     </div>
-    <div class="inapp-progress-bar" id="inappProgressBar">
+
+    <div class="inapp-progress-bar" id="browserProgressBar">
       <div class="inapp-progress-fill"></div>
     </div>
-    <div class="inapp-browser-frame-wrap">
-      <div class="inapp-loading-overlay" id="inappLoadingOverlay">
-        <div class="inapp-spinner"></div>
-        <div>Саҳифа кушода шуда истодааст...</div>
+
+    <div class="inapp-tabs-bar" id="browserTabsBar"></div>
+
+    <div class="inapp-view-wrap" id="browserViewWrap">
+      <div class="inapp-loading-screen" id="browserLoadingScreen">
+        <div class="inapp-spinner-circle"></div>
+        <div id="browserLoadingText">Саҳифа кушода шуда истодааст...</div>
       </div>
-      <iframe class="inapp-browser-frame" id="inappFrame" src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" loading="lazy" onload="onInAppFrameLoad()"></iframe>
+      <iframe class="inapp-iframe" id="browserFrame" src="${initialUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" onload="onBrowserFrameLoaded()"></iframe>
+    </div>
+
+    <div class="inapp-menu-drawer" id="browserMenuDrawer" style="display:none">
+      <button class="inapp-menu-item" type="button" onclick="browserAddBookmark()">⭐ Илова ба хатчӯбҳо</button>
+      <button class="inapp-menu-item" type="button" onclick="browserShowBookmarks()">📑 Хатчӯбҳои ман</button>
+      <button class="inapp-menu-item" type="button" onclick="browserShowHistory()">🕒 Таърих</button>
+      <button class="inapp-menu-item" type="button" onclick="browserZoom(0.15)">🔍 Калон кардан (+)</button>
+      <button class="inapp-menu-item" type="button" onclick="browserZoom(-0.15)">🔍 Хурд кардан (-)</button>
+      <button class="inapp-menu-item" type="button" onclick="browserZoomReset()">🔍 100% (Аслӣ)</button>
+      <button class="inapp-menu-item" type="button" onclick="browserOpenExternal()">↗️ Дар браузери беруна</button>
+      <button class="inapp-menu-item" style="color:#FFA5A5" type="button" onclick="closeMiniBrowser()">✕ Пӯшидан</button>
     </div>
   `;
 
   document.body.appendChild(modal);
+  renderBrowserTabs();
+  recordBrowserHistory(initialUrl, initialTitle);
+
+  // Pinch-to-zoom support inside browser
+  initBrowserPinchZoom();
 }
 
-function closeInAppBrowser() {
-  document.getElementById('inappBrowserModal')?.remove();
+function renderBrowserTabs() {
+  const tabsBar = document.getElementById('browserTabsBar');
+  if (!tabsBar) return;
+  tabsBar.innerHTML = browserTabs.map((t, idx) => `
+    <div class="inapp-tab-chip ${idx === activeTabIndex ? 'active' : ''}" onclick="browserSwitchTab(${idx})">
+      <span class="inapp-tab-title">${esc(t.title || t.url)}</span>
+      <span class="inapp-tab-close" onclick="event.stopPropagation(); browserCloseTab(${idx})">✕</span>
+    </div>
+  `).join('');
 }
 
-function reloadInAppBrowser() {
-  const frame = document.getElementById('inappFrame');
-  const overlay = document.getElementById('inappLoadingOverlay');
-  const bar = document.getElementById('inappProgressBar');
+function browserSwitchTab(index) {
+  if (index < 0 || index >= browserTabs.length) return;
+  activeTabIndex = index;
+  const tab = browserTabs[index];
+  const frame = document.getElementById('browserFrame');
+  const input = document.getElementById('browserOmniInput');
+  if (input) input.value = tab.url;
+  if (frame && frame.src !== tab.url) {
+    showBrowserLoading();
+    frame.src = tab.url;
+  }
+  renderBrowserTabs();
+}
+
+function browserNewTab(url = 'https://www.president.tj', title = 'Сомонаи давлатӣ') {
+  browserTabs.push({
+    url: url,
+    title: title,
+    history: [url],
+    historyIndex: 0
+  });
+  browserSwitchTab(browserTabs.length - 1);
+}
+
+function browserCloseTab(index) {
+  if (browserTabs.length <= 1) {
+    closeMiniBrowser();
+    return;
+  }
+  browserTabs.splice(index, 1);
+  if (activeTabIndex >= browserTabs.length) activeTabIndex = browserTabs.length - 1;
+  browserSwitchTab(activeTabIndex);
+}
+
+function browserNavigate(inputVal) {
+  let url = inputVal.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) {
+    if (url.includes('.') && !url.includes(' ')) {
+      url = 'https://' + url;
+    } else {
+      url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+    }
+  }
+  const tab = browserTabs[activeTabIndex];
+  if (tab) {
+    tab.url = url;
+    tab.title = url;
+    tab.history = tab.history.slice(0, tab.historyIndex + 1);
+    tab.history.push(url);
+    tab.historyIndex = tab.history.length - 1;
+  }
+  const frame = document.getElementById('browserFrame');
+  const input = document.getElementById('browserOmniInput');
+  if (input) input.value = url;
   if (frame) {
-    if (overlay) { overlay.style.display = 'flex'; overlay.style.opacity = '1'; }
-    if (bar) bar.style.display = 'block';
+    showBrowserLoading();
+    frame.src = url;
+  }
+  recordBrowserHistory(url, url);
+  renderBrowserTabs();
+}
+
+function browserGoBack() {
+  const tab = browserTabs[activeTabIndex];
+  if (tab && tab.historyIndex > 0) {
+    tab.historyIndex--;
+    const prevUrl = tab.history[tab.historyIndex];
+    tab.url = prevUrl;
+    const frame = document.getElementById('browserFrame');
+    const input = document.getElementById('browserOmniInput');
+    if (input) input.value = prevUrl;
+    if (frame) { showBrowserLoading(); frame.src = prevUrl; }
+    renderBrowserTabs();
+    return true;
+  }
+  closeMiniBrowser();
+  return false;
+}
+
+function browserGoForward() {
+  const tab = browserTabs[activeTabIndex];
+  if (tab && tab.historyIndex < tab.history.length - 1) {
+    tab.historyIndex++;
+    const nextUrl = tab.history[tab.historyIndex];
+    tab.url = nextUrl;
+    const frame = document.getElementById('browserFrame');
+    const input = document.getElementById('browserOmniInput');
+    if (input) input.value = nextUrl;
+    if (frame) { showBrowserLoading(); frame.src = nextUrl; }
+    renderBrowserTabs();
+  }
+}
+
+function browserReload() {
+  const frame = document.getElementById('browserFrame');
+  if (frame) {
+    showBrowserLoading();
     frame.src = frame.src;
   }
 }
 
-function copyInAppLink(url) {
-  try {
-    navigator.clipboard.writeText(url);
-    toast('Пайванд нусхабардорӣ шуд');
-  } catch(e) {
-    toast(url);
-  }
+function showBrowserLoading() {
+  const loader = document.getElementById('browserLoadingScreen');
+  const bar = document.getElementById('browserProgressBar');
+  if (loader) { loader.style.display = 'flex'; loader.style.opacity = '1'; }
+  if (bar) bar.style.display = 'block';
 }
 
-function onInAppFrameLoad() {
-  const overlay = document.getElementById('inappLoadingOverlay');
-  const bar = document.getElementById('inappProgressBar');
-  if (overlay) {
-    overlay.style.opacity = '0';
-    setTimeout(() => { overlay.style.display = 'none'; }, 300);
+function onBrowserFrameLoaded() {
+  const loader = document.getElementById('browserLoadingScreen');
+  const bar = document.getElementById('browserProgressBar');
+  if (loader) {
+    loader.style.opacity = '0';
+    setTimeout(() => { loader.style.display = 'none'; }, 250);
   }
   if (bar) bar.style.display = 'none';
 }
 
-// Initial render
+function toggleBrowserMenu() {
+  const menu = document.getElementById('browserMenuDrawer');
+  if (!menu) return;
+  menu.style.display = menu.style.display === 'none' ? 'flex' : 'none';
+}
+
+function browserAddBookmark() {
+  const tab = browserTabs[activeTabIndex];
+  if (!tab) return;
+  const exists = browserBookmarksList.some(b => b.url === tab.url);
+  if (!exists) {
+    browserBookmarksList.unshift({ url: tab.url, title: tab.title || tab.url, ts: Date.now() });
+    saveBrowserStorage();
+    toast('Ба хатчӯбҳо илова шуд ⭐');
+  } else {
+    toast('Ин саҳифа аллакай дар хатчӯбҳо ҳаст');
+  }
+  toggleBrowserMenu();
+}
+
+function browserShowBookmarks() {
+  toggleBrowserMenu();
+  const list = browserBookmarksList;
+  if (!list.length) {
+    toast('Хатчӯбҳо нестанд');
+    return;
+  }
+  alert('Хатчӯбҳои шумо:\n' + list.map(b => '• ' + b.title + ' (' + b.url + ')').join('\n'));
+}
+
+function recordBrowserHistory(url, title) {
+  browserHistoryList.unshift({ url, title: title || url, ts: Date.now() });
+  saveBrowserStorage();
+}
+
+function browserShowHistory() {
+  toggleBrowserMenu();
+  if (!browserHistoryList.length) {
+    toast('Таърих холӣ аст');
+    return;
+  }
+  if (confirm('Таърих:\n' + browserHistoryList.slice(0, 10).map(h => '• ' + h.url).join('\n') + '\n\nТаърих тоза карда шавад?')) {
+    browserHistoryList = [];
+    saveBrowserStorage();
+    toast('Таърих тоза карда шуд');
+  }
+}
+
+function browserZoom(delta) {
+  browserZoomLevel = Math.max(0.6, Math.min(2.5, browserZoomLevel + delta));
+  applyBrowserZoom();
+}
+
+function browserZoomReset() {
+  browserZoomLevel = 1.0;
+  applyBrowserZoom();
+  toggleBrowserMenu();
+}
+
+function applyBrowserZoom() {
+  const frame = document.getElementById('browserFrame');
+  if (frame) {
+    frame.style.transform = `scale(${browserZoomLevel})`;
+    frame.style.width = `${100 / browserZoomLevel}%`;
+    frame.style.height = `${100 / browserZoomLevel}%`;
+  }
+}
+
+function initBrowserPinchZoom() {
+  const wrap = document.getElementById('browserViewWrap');
+  if (!wrap) return;
+  let pinchDist = 0;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      pinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && pinchDist > 0) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / pinchDist;
+      if (Math.abs(factor - 1) > 0.05) {
+        browserZoomLevel = Math.max(0.7, Math.min(2.5, browserZoomLevel * factor));
+        applyBrowserZoom();
+        pinchDist = dist;
+      }
+    }
+  }, { passive: true });
+}
+
+function browserOpenExternal() {
+  const tab = browserTabs[activeTabIndex];
+  if (tab && tab.url) window.open(tab.url, '_blank');
+  toggleBrowserMenu();
+}
+
+function closeMiniBrowser() {
+  document.getElementById('inappBrowserModal')?.remove();
+}
+
+// Intercept Hardware / Browser Back button
+window.addEventListener('popstate', e => {
+  const modal = document.getElementById('inappBrowserModal');
+  if (modal) {
+    e.preventDefault();
+    browserGoBack();
+  }
+});
+
+// Initial boot
 document.addEventListener('DOMContentLoaded', () => {
   renderMyBooksSection();
   renderGovSites();
   syncMyBookButtons();
 });
-
-// Also trigger render when page loads immediately
 renderMyBooksSection();
 renderGovSites();
 syncMyBookButtons();
