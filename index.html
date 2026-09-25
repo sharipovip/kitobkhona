@@ -1740,6 +1740,215 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 @media(max-width:365px){.hero-v3-left{width:64%!important;padding:9px 9px!important}.hero-v3-right{width:48%!important}.hero-kicker-v3{margin-bottom:3px!important}.hero-author-v3 span{font-size:8px!important}.hero-author-v3 b{font-size:9px!important}}
 </style>
 <style id="startup-splash-style">#startupSplash{position:fixed;inset:0;z-index:1000000;background:radial-gradient(circle at 50% 42%,#173659,#071526 68%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#E8C96D;transition:opacity .45s ease,visibility .45s ease}#startupSplash.hide{opacity:0;visibility:hidden}#startupSplash img{width:170px;height:170px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 5px rgba(232,201,109,.18),0 20px 55px rgba(0,0,0,.45)}#startupSplash b{margin-top:20px;font-size:21px;letter-spacing:1px}#startupSplash span{margin-top:5px;color:#A8B8CC;font-size:12px}</style>
+
+<style id="index-mybooks-and-gov-styles">
+/* Китобҳои ман styles */
+.my-books-empty-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: rgba(22, 38, 59, 0.65);
+  border: 1.5px dashed rgba(201, 168, 76, 0.35);
+  border-radius: 16px;
+  padding: 24px 18px;
+  width: 100%;
+  max-width: 380px;
+  margin: 8px auto;
+  cursor: pointer;
+  transition: all 0.25s ease;
+}
+.my-books-empty-card:hover {
+  background: rgba(22, 38, 59, 0.9);
+  border-color: rgba(201, 168, 76, 0.7);
+  transform: translateY(-2px);
+}
+.my-books-empty-icon {
+  font-size: 32px;
+  margin-bottom: 8px;
+}
+.my-books-empty-title {
+  font-size: 13.5px;
+  font-weight: 700;
+  color: #F0EAD6;
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.my-books-empty-hint {
+  font-size: 11.5px;
+  color: #C9A84C;
+  font-weight: 600;
+}
+.pin-v3 {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  background: rgba(13, 27, 42, 0.7);
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+.pin-v3:hover, .pin-v3.active {
+  color: #E8C96D;
+  background: rgba(201, 168, 76, 0.22);
+  border-color: #C9A84C;
+}
+
+/* Сомонаҳои давлатӣ styles */
+.gov-section-v3 {
+  margin: 24px 0 20px 0;
+  padding: 0 12px;
+}
+.gov-grid-v3 {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+  margin-top: 10px;
+}
+@media(min-width: 600px) {
+  .gov-grid-v3 {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+.gov-card-v3 {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  background: #16263B;
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  transition: all 0.22s ease;
+  text-decoration: none;
+}
+.gov-card-v3:active, .gov-card-v3:hover {
+  background: #1C304A;
+  border-color: rgba(201, 168, 76, 0.6);
+  transform: translateY(-2px);
+}
+.gov-icon-v3 {
+  font-size: 24px;
+  flex: 0 0 36px;
+  height: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(13, 27, 42, 0.8);
+  border-radius: 10px;
+  border: 1px solid rgba(201, 168, 76, 0.25);
+}
+.gov-info-v3 {
+  flex: 1;
+  min-width: 0;
+}
+.gov-title-v3 {
+  font-size: 12px;
+  font-weight: 750;
+  color: #FFFFFF;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.gov-sub-v3 {
+  font-size: 10px;
+  color: #94A3B8;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 2px;
+}
+
+/* In-App Browser Modal */
+.inapp-browser-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 999999;
+  background: #08101A;
+  display: flex;
+  flex-direction: column;
+  animation: inappSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+}
+@keyframes inappSlideUp {
+  from { transform: translateY(100%); }
+  to { transform: translateY(0); }
+}
+.inapp-browser-bar {
+  height: 54px;
+  background: #101F30;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  gap: 10px;
+}
+.inapp-browser-title-wrap {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.inapp-browser-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: #F0EAD6;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inapp-browser-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.inapp-btn {
+  background: rgba(22, 38, 59, 0.8);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: #E8C96D;
+  border-radius: 8px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.inapp-btn:hover {
+  background: rgba(201, 168, 76, 0.25);
+}
+.inapp-btn-close {
+  background: rgba(229, 83, 83, 0.2);
+  border-color: rgba(229, 83, 83, 0.4);
+  color: #FFA5A5;
+}
+.inapp-browser-frame {
+  flex: 1;
+  width: 100%;
+  border: 0;
+  background: #FFFFFF;
+}
+.inapp-browser-footer {
+  padding: 6px 12px;
+  background: #0D1B2A;
+  font-size: 11px;
+  color: #94A3B8;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+</style>
+
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.jpg" alt="Китобхона"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');setTimeout(()=>{s.classList.add('hide');setTimeout(()=>s.remove(),500)},4000)})();</script>
@@ -1837,16 +2046,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="books-scroll-v3" id="pesvoBooks"></div>
     </section>
 
-    <!-- 5 Китобҳои нав -->
-    <section class="books-v3" id="newSection" style="display:none">
-      <div class="sec-head-v3"><div class="sec-title-v3">Китобҳои нав</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=new'">Ҳамаашро бинед <span>›</span></div></div>
-      <div class="books-scroll-v3" id="newBooks"></div>
+    <!-- 5 Бахши махсус: Китобҳои ман (Дастрасии зуд) -->
+    <section class="books-v3" id="myBooksSection">
+      <div class="sec-head-v3"><div class="sec-title-v3">📌 Китобҳои ман</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="books-scroll-v3" id="myBooksList"></div>
     </section>
 
     <!-- 6 Китобҳои серхонтарин -->
     <section class="books-v3" id="popSection" style="display:none">
       <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонтарин</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=popular'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="books-scroll-v3" id="popBooks"></div>
+    </section>
+
+  
+    <!-- 7 Сомонаҳои давлатӣ -->
+    <section class="gov-section-v3">
+      <div class="sec-head-v3"><div class="sec-title-v3">🏛️ Сомонаҳои давлатӣ</div></div>
+      <div class="gov-grid-v3" id="govSitesList"></div>
     </section>
 
   </main>
@@ -2082,6 +2298,238 @@ const isAndroidApp=(typeof AndroidBridge!=='undefined'||navigator.userAgent.incl
 if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{ if(!isAndroidApp){ setTimeout(()=>initFirebaseMessaging(),800); } }).catch(err=>{}); } else if(!isAndroidApp){ initFirebaseMessaging(); }
 if(typeof AndroidBridge!=='undefined'){ const userId=localStorage.getItem('kk_user_id'); const authToken=localStorage.getItem('kk_token'); if(userId) AndroidBridge.saveUserId(userId); if(authToken) AndroidBridge.saveAuthToken(authToken); }
 function setActiveNav(el){ document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active')); el.classList.add('active'); }
+</script>
+<script>
+// ==============================================================
+// КИТОБҲОИ МАН (MY BOOKS / FAST ACCESS) & СОМОНАҲОИ ДАВЛАТӢ
+// ==============================================================
+const MY_BOOKS_KEY = 'kk_my_books_v1';
+
+function getMyBooks() {
+  try {
+    const raw = localStorage.getItem(MY_BOOKS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveMyBooks(list) {
+  try {
+    localStorage.setItem(MY_BOOKS_KEY, JSON.stringify(list || []));
+  } catch(e) {}
+}
+
+function isMyBook(bookId) {
+  const list = getMyBooks();
+  const cleanId = String(bookId || '').replace(/^books\//i, '');
+  return list.some(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+}
+
+function toggleMyBook(event, btn) {
+  if (event) { event.preventDefault(); event.stopPropagation(); }
+  const bookId = btn.dataset.bookId;
+  const bookTitle = btn.dataset.bookTitle || 'Китоб';
+  const bookAuthor = btn.dataset.bookAuthor || '';
+  const folder = btn.dataset.folder || '';
+  const file = btn.dataset.file || '';
+  const cover = btn.dataset.cover || '';
+  const cleanId = String(bookId || '').replace(/^books\//i, '');
+
+  let list = getMyBooks();
+  const existsIndex = list.findIndex(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+
+  if (existsIndex >= 0) {
+    list.splice(existsIndex, 1);
+    saveMyBooks(list);
+    toast('Аз «Китобҳои ман» хориҷ шуд');
+  } else {
+    list.unshift({
+      id: cleanId,
+      bookId: cleanId,
+      name: bookTitle,
+      title: bookTitle,
+      author: bookAuthor,
+      folder: folder,
+      file: file,
+      cover: cover,
+      added_at: Date.now()
+    });
+    saveMyBooks(list);
+    toast('Ба «Китобҳои ман» илова шуд ⭐');
+  }
+
+  syncMyBookButtons();
+  renderMyBooksSection();
+}
+
+function syncMyBookButtons(root = document) {
+  const list = getMyBooks();
+  const idSet = new Set(list.map(b => String(b.id || b.bookId || '').replace(/^books\//i, '')));
+  root.querySelectorAll('[data-pin]').forEach(btn => {
+    const bId = String(btn.dataset.bookId || '').replace(/^books\//i, '');
+    const active = idSet.has(bId);
+    btn.classList.toggle('active', active);
+    btn.innerHTML = active ? '📌' : '➕';
+    btn.setAttribute('aria-label', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
+  });
+}
+
+function renderMyBooksSection() {
+  const container = document.getElementById('myBooksList');
+  if (!container) return;
+  const list = getMyBooks();
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="my-books-empty-card" onclick="location.href='kitobho.html'">
+        <div class="my-books-empty-icon">📖</div>
+        <div class="my-books-empty-title">Шумо метавонед китобҳоро барои дастрасии зуд ба ин бахш илова намоед</div>
+        <div class="my-books-empty-hint">Ба бахши «Китобҳо» гузаред ва тугмаи «➕»-ро пахш намоед ›</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map(b => {
+    const file = b.file || ((b.name || 'book') + '.pdf');
+    const name = b.name || b.title || file.replace(/\.pdf$/i, '');
+    const folder = b.folder || 'adabiyoti_klassiki';
+    const url = rawUrl(folder, file);
+    const covers = coverCandidates(folder, file);
+    const cover = b.cover || covers[0] || '';
+    const bookId = normalizeHomeBookId(folder, file);
+    const coverSrc = getCachedCoverDataUrl(cover) || cover;
+
+    return `
+      <div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
+        <div class="book-cover-v3" style="position:relative">
+          <div class="book-tag-v3" style="background:var(--gold);color:#08101A">МАН</div>
+          <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+        </div>
+        <div class="book-info-v3">
+          <b>${esc(name)}</b>
+          <span class="book-author-v3">${esc(b.author || '')}</span>
+          <div class="book-foot-v3">
+            <div class="stars-v3">${STAR_ICON}<span>—</span></div>
+            <div style="display:flex;align-items:center;gap:5px">
+              <button type="button" class="pin-v3 active" data-pin data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(b.author||'')}" data-folder="${esc(folder)}" data-file="${esc(file)}" data-cover="${esc(cover)}" onclick="toggleMyBook(event,this)" title="Аз Китобҳои ман хориҷ кардан">📌</button>
+              ${bookmarkButton(bookId, name, b.author)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+}
+
+// 8 Сомонаҳои давлатии Тоҷикистон
+const GOV_SITES = [
+  {
+    id: 'maorif',
+    name: 'Вазорати маориф ва илми ҶТ',
+    short: 'maorif.tj · Портали расмӣ',
+    url: 'https://maorif.tj',
+    icon: '🏛️'
+  },
+  {
+    id: 'president',
+    name: 'Президенти Ҷумҳурии Тоҷикистон',
+    short: 'president.tj · Хадамоти матбуот',
+    url: 'https://www.president.tj',
+    icon: '👑'
+  },
+  {
+    id: 'mmk',
+    name: 'Маркази миллии қонунгузорӣ',
+    short: 'mmk.tj · Пойгоҳи қонунҳо',
+    url: 'https://mmk.tj',
+    icon: '📜'
+  },
+  {
+    id: 'khovar',
+    name: 'АМИТ «Ховар»',
+    short: 'khovar.tj · Агентии иттилоотӣ',
+    url: 'https://khovar.tj',
+    icon: '📰'
+  },
+  {
+    id: 'mfa',
+    name: 'Вазорати корҳои хориҷии ҶТ',
+    short: 'mfa.tj · Дипломатияи тоҷик',
+    url: 'https://mfa.tj',
+    icon: '🌐'
+  },
+  {
+    id: 'dushanbe',
+    name: 'Ҳокимияти ш. Душанбе',
+    short: 'dushanbe.tj · Сомонаи шаҳрдорӣ',
+    url: 'https://dushanbe.tj',
+    icon: '🏙️'
+  },
+  {
+    id: 'tpp',
+    name: 'Палатаи савдо ва саноати ҶТ',
+    short: 'tpp.tj · Саноат ва тиҷорат',
+    url: 'https://tpp.tj',
+    icon: '🏭'
+  },
+  {
+    id: 'ntc',
+    name: 'Маркази миллии тестӣ (ИМТ)',
+    short: 'ntc.tj · Озмунҳои дохилшавӣ',
+    url: 'https://ntc.tj/tj/',
+    icon: '🎓'
+  }
+];
+
+function renderGovSites() {
+  const container = document.getElementById('govSitesList');
+  if (!container) return;
+  container.innerHTML = GOV_SITES.map(s => `
+    <div class="gov-card-v3" onclick="openInAppBrowser('${s.url}', '${esc(s.name)}')">
+      <div class="gov-icon-v3">${s.icon}</div>
+      <div class="gov-info-v3">
+        <div class="gov-title-v3">${esc(s.name)}</div>
+        <div class="gov-sub-v3">${esc(s.short)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+function openInAppBrowser(url, title) {
+  document.getElementById('inappBrowserModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'inappBrowserModal';
+  modal.className = 'inapp-browser-modal';
+
+  modal.innerHTML = `
+    <div class="inapp-browser-bar">
+      <div class="inapp-browser-title-wrap">
+        <span style="font-size:16px">🔒</span>
+        <div class="inapp-browser-title">${esc(title || 'Сомонаи давлатӣ')}</div>
+      </div>
+      <div class="inapp-browser-actions">
+        <button class="inapp-btn" type="button" onclick="window.open('${url}','_blank')">↗️ Браузер</button>
+        <button class="inapp-btn inapp-btn-close" type="button" onclick="document.getElementById('inappBrowserModal').remove()">✕ Пӯшидан</button>
+      </div>
+    </div>
+    <iframe class="inapp-browser-frame" id="inappFrame" src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="lazy"></iframe>
+    <div class="inapp-browser-footer">
+      <span>🏛️ Сомонаи расмии давлатии Тоҷикистон</span>
+      <a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--gold)">${url.replace(/^https?:\/\//i, '').replace(/\/$/, '')}</a>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+}
+
+// Hook into initial page load
+document.addEventListener('DOMContentLoaded', () => {
+  renderMyBooksSection();
+  renderGovSites();
+  syncMyBookButtons();
+});
 </script>
 </body>
 </html>

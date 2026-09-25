@@ -947,27 +947,29 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
     }
 
     async function loadWinners(period = 'all') {
-      const container=document.getElementById('winnersContent');
-      const cacheKey='kk_winners_'+period;
-      let cached=(typeof CacheManager!=='undefined')?CacheManager.get(cacheKey):null;
-      if(cached){
-        allData=cached;
-        allData.top3=(allData.top3||[]).map(u=>({...u,age:getAge(u.birth_year)}));
-        allData.top100=(allData.top100||[]).map(u=>({...u,age:getAge(u.birth_year)}));
+      const container = document.getElementById('winnersContent');
+      const cacheKey = 'kk_winners_v2_' + period;
+      let cached = (typeof CacheManager !== 'undefined') ? CacheManager.get(cacheKey) : null;
+      if (cached && Array.isArray(cached.top100)) {
+        allData = cached;
+        allData.top3 = (allData.top3 || []).map(u => ({ ...u, age: getAge(u.birth_year) }));
+        allData.top100 = (allData.top100 || []).map(u => ({ ...u, age: getAge(u.birth_year) }));
         applyFilters();
-      }else{
-        container.innerHTML='<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
+      } else {
+        container.innerHTML = '<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>';
       }
-      try{
-        const resp=await edgeApiFetch('/api/winners?period='+period,{},8000);
-        if(!resp.ok)throw new Error('Хатогӣ дар боргирӣ');
-        const data=await resp.json();
-        if(typeof CacheManager!=='undefined')CacheManager.set(cacheKey,data);
-        allData={top3:(data.top3||[]).map(u=>({...u,age:getAge(u.birth_year)})),top100:(data.top100||[]).map(u=>({...u,age:getAge(u.birth_year)}))};
+      try {
+        const resp = await edgeApiFetch('/api/winners?period=' + encodeURIComponent(period) + '&_t=' + Date.now(), {}, 8000);
+        if (!resp.ok) throw new Error('Хатогӣ дар боргирии рӯйхат');
+        const data = await resp.json();
+        const top100List = (data.top100 || []).map(u => ({ ...u, age: getAge(u.birth_year) }));
+        const top3List = (data.top3 && data.top3.length ? data.top3 : top100List.slice(0, 3)).map(u => ({ ...u, age: getAge(u.birth_year) }));
+        allData = { top3: top3List, top100: top100List };
+        if (typeof CacheManager !== 'undefined') CacheManager.set(cacheKey, allData);
         applyFilters();
-      }catch(e){
-        console.error('Error loading winners:',e);
-        if(!cached)container.innerHTML=`<div class="empty-msg" style="color:var(--red)">Хатогӣ: ${esc(e.message)}</div>`;
+      } catch (e) {
+        console.error('Error loading winners:', e);
+        if (!cached) container.innerHTML = `<div class="empty-msg" style="color:var(--red)">Хатогӣ: ${esc(e.message)}</div>`;
       }
     }
 
@@ -1068,7 +1070,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
       const ageVal = document.getElementById('ageFilter').value;
       const regionVal = document.getElementById('regionFilter').value;
 
-      let filtered = allData.top100.filter(user => {
+      const sourceList = Array.isArray(allData.top100) ? allData.top100 : [];
+      let filtered = sourceList.filter(user => {
         let ageMatch = true;
         if (ageVal !== 'all') {
           const age = user.age;
@@ -1083,12 +1086,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
         }
         let regionMatch = true;
         if (regionVal !== 'all') {
-          regionMatch = (user.region || '') === regionVal;
+          const uReg = String(user.region || '').toLowerCase();
+          const qReg = String(regionVal).toLowerCase();
+          regionMatch = uReg === qReg || uReg.includes(qReg) || qReg.includes(uReg);
         }
         return ageMatch && regionMatch;
       });
 
-      renderWinners(allData.top3, filtered);
+      const top3ForPodium = (filtered.length >= 3) 
+        ? filtered.slice(0, 3) 
+        : (filtered.length > 0 ? filtered : (ageVal === 'all' && regionVal === 'all' ? (allData.top3 || []) : []));
+
+      renderWinners(top3ForPodium, filtered);
     }
 
     document.getElementById('ageFilter').addEventListener('change', applyFilters);

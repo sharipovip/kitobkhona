@@ -1184,6 +1184,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div class="bk-actions" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-bookid="${encodeURIComponent(bookId)}">
             <button class="btn btn-close-actions" onclick="event.stopPropagation(); closeActiveActions();">✕</button>
             <button class="btn btn-primary btn-read">📖 Хондан</button>
+            <button class="btn btn-ghost btn-mybook">${isMyBook(bookId) ? '📌 Дар бахши ман' : '➕ Ба бахши ман'}</button>
             <button class="btn btn-ghost btn-favorite">❤️ Дӯстдошта</button>
             <button class="btn btn-success btn-complete">✅ Хатм</button>
             <button class="btn btn-ghost btn-download">⬇ Скачать</button>
@@ -1226,6 +1227,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         e.stopPropagation();
         openReader(url, name, cover);
       });
+      const myBtn = actions.querySelector('.btn-mybook');
+      if (myBtn) {
+        myBtn.addEventListener('click', function(e) {
+          e.stopPropagation();
+          handleToggleMyBook(bookId, book, name, folder, file, cover, this);
+        });
+      }
       actions.querySelector('.btn-favorite').addEventListener('click', function(e) {
         e.stopPropagation();
         handleFavorite(bookId, book, name, this);
@@ -1243,6 +1251,46 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         handleShare(url, name);
       });
     });
+  }
+
+  
+  function isMyBook(bookId) {
+    try {
+      const raw = localStorage.getItem('kk_my_books_v1');
+      const list = raw ? JSON.parse(raw) : [];
+      const cleanId = String(bookId || '').replace(/^books\//i, '');
+      return list.some(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+    } catch(e) {
+      return false;
+    }
+  }
+
+  function handleToggleMyBook(bookId, book, name, folder, file, cover, btn) {
+    let list = [];
+    try { list = JSON.parse(localStorage.getItem('kk_my_books_v1') || '[]'); } catch(e) {}
+    const cleanId = String(bookId || book.file || '').replace(/^books\//i, '');
+    const idx = list.findIndex(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+    if (idx >= 0) {
+      list.splice(idx, 1);
+      localStorage.setItem('kk_my_books_v1', JSON.stringify(list));
+      btn.textContent = '➕ Ба бахши ман';
+      toast('Аз «Китобҳои ман» хориҷ шуд');
+    } else {
+      list.unshift({
+        id: cleanId,
+        bookId: cleanId,
+        name: name || book.name,
+        title: name || book.name,
+        author: book.author || '',
+        folder: folder || book.folder || '',
+        file: file || book.file || '',
+        cover: cover || '',
+        added_at: Date.now()
+      });
+      localStorage.setItem('kk_my_books_v1', JSON.stringify(list));
+      btn.textContent = '📌 Дар бахши ман';
+      toast('Ба «Китобҳои ман» илова шуд ⭐');
+    }
   }
 
   function handleFavorite(bookId, book, name, btn) {
