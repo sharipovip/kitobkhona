@@ -1231,7 +1231,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if (myBtn) {
         myBtn.addEventListener('click', function(e) {
           e.stopPropagation();
-          handleToggleMyBook(bookId, book, name, folder, file, cover, this);
+          const bookFolder = book.folder || '';
+          const bookFile = book.file || '';
+          handleToggleMyBook(bookId, book, name, bookFolder, bookFile, cover, this);
         });
       }
       actions.querySelector('.btn-favorite').addEventListener('click', function(e) {
@@ -1265,22 +1267,36 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
+  function isMyBook(bookId) {
+    try {
+      const raw = localStorage.getItem('kk_my_books_v1');
+      const list = raw ? JSON.parse(raw) : [];
+      const cleanId = String(bookId || '').replace(/^books\//i, '').toLowerCase();
+      return list.some(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId);
+    } catch(e) {
+      return false;
+    }
+  }
+
   function handleToggleMyBook(bookId, book, name, folder, file, cover, btn) {
     let list = [];
     try { list = JSON.parse(localStorage.getItem('kk_my_books_v1') || '[]'); } catch(e) {}
-    const cleanId = String(bookId || book.file || '').replace(/^books\//i, '');
-    const idx = list.findIndex(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+    const cleanId = String(bookId || book.file || name || '').replace(/^books\//i, '').toLowerCase();
+    const idx = list.findIndex(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId);
     if (idx >= 0) {
       list.splice(idx, 1);
       localStorage.setItem('kk_my_books_v1', JSON.stringify(list));
       btn.textContent = '➕ Ба бахши ман';
+      btn.classList.remove('btn-success');
+      btn.classList.add('btn-ghost');
       toast('Аз «Китобҳои ман» хориҷ шуд');
     } else {
+      const bookTitle = name || book.name || book.title || 'Китоб';
       list.unshift({
         id: cleanId,
         bookId: cleanId,
-        name: name || book.name,
-        title: name || book.name,
+        name: bookTitle,
+        title: bookTitle,
         author: book.author || '',
         folder: folder || book.folder || '',
         file: file || book.file || '',
@@ -1288,7 +1304,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         added_at: Date.now()
       });
       localStorage.setItem('kk_my_books_v1', JSON.stringify(list));
-      btn.textContent = '📌 Дар бахши ман';
+      btn.textContent = '✓ Дар бахши ман';
+      btn.classList.remove('btn-ghost');
+      btn.classList.add('btn-success');
       toast('Ба «Китобҳои ман» илова шуд ⭐');
     }
   }

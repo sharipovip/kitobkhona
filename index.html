@@ -1741,214 +1741,310 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </style>
 <style id="startup-splash-style">#startupSplash{position:fixed;inset:0;z-index:1000000;background:radial-gradient(circle at 50% 42%,#173659,#071526 68%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#E8C96D;transition:opacity .45s ease,visibility .45s ease}#startupSplash.hide{opacity:0;visibility:hidden}#startupSplash img{width:170px;height:170px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 5px rgba(232,201,109,.18),0 20px 55px rgba(0,0,0,.45)}#startupSplash b{margin-top:20px;font-size:21px;letter-spacing:1px}#startupSplash span{margin-top:5px;color:#A8B8CC;font-size:12px}</style>
 
-<style id="index-mybooks-and-gov-styles">
-/* Китобҳои ман styles */
+
+
+<style id="index-mybooks-gov-browser-v2">
+/* My Books section styles */
 .my-books-empty-card {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   text-align: center;
-  background: rgba(22, 38, 59, 0.65);
-  border: 1.5px dashed rgba(201, 168, 76, 0.35);
+  background: linear-gradient(135deg, rgba(22, 38, 59, 0.8), rgba(13, 27, 42, 0.9));
+  border: 1.5px dashed rgba(201, 168, 76, 0.45);
   border-radius: 16px;
-  padding: 24px 18px;
+  padding: 26px 20px;
   width: 100%;
   max-width: 380px;
-  margin: 8px auto;
+  margin: 6px auto;
   cursor: pointer;
   transition: all 0.25s ease;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.25);
 }
-.my-books-empty-card:hover {
-  background: rgba(22, 38, 59, 0.9);
-  border-color: rgba(201, 168, 76, 0.7);
+.my-books-empty-card:active, .my-books-empty-card:hover {
+  background: linear-gradient(135deg, rgba(28, 48, 74, 0.95), rgba(18, 36, 56, 0.95));
+  border-color: #E8C96D;
   transform: translateY(-2px);
 }
 .my-books-empty-icon {
-  font-size: 32px;
-  margin-bottom: 8px;
+  font-size: 36px;
+  margin-bottom: 10px;
+  filter: drop-shadow(0 2px 8px rgba(201, 168, 76, 0.4));
 }
 .my-books-empty-title {
-  font-size: 13.5px;
+  font-size: 14px;
   font-weight: 700;
-  color: #F0EAD6;
+  color: #FFFFFF;
   line-height: 1.4;
   margin-bottom: 6px;
 }
 .my-books-empty-hint {
-  font-size: 11.5px;
-  color: #C9A84C;
+  font-size: 12px;
+  color: #E8C96D;
   font-weight: 600;
 }
 .pin-v3 {
-  width: 28px;
-  height: 28px;
+  width: 30px;
+  height: 30px;
   border-radius: 50%;
-  border: 1px solid rgba(201, 168, 76, 0.25);
-  background: rgba(13, 27, 42, 0.7);
+  border: 1.2px solid rgba(201, 168, 76, 0.35);
+  background: rgba(13, 27, 42, 0.85);
   color: #94A3B8;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  font-size: 12px;
+  font-size: 13px;
   transition: all 0.2s ease;
 }
 .pin-v3:hover, .pin-v3.active {
   color: #E8C96D;
-  background: rgba(201, 168, 76, 0.22);
-  border-color: #C9A84C;
+  background: rgba(201, 168, 76, 0.25);
+  border-color: #E8C96D;
+  transform: scale(1.08);
 }
 
-/* Сомонаҳои давлатӣ styles */
+/* Gov Sites section & Cards */
 .gov-section-v3 {
-  margin: 24px 0 20px 0;
+  margin: 24px 0 24px 0;
   padding: 0 12px;
 }
-.gov-grid-v3 {
-  display: grid;
-  grid-template-columns: repeat(2, 1fr);
-  gap: 10px;
-  margin-top: 10px;
-}
-@media(min-width: 600px) {
-  .gov-grid-v3 {
-    grid-template-columns: repeat(4, 1fr);
-  }
-}
-.gov-card-v3 {
+.gov-scroll-v3 {
   display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding: 10px 4px 14px 4px;
+  scroll-snap-type: x mandatory;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.gov-scroll-v3::-webkit-scrollbar { display: none; }
+.gov-card-v3 {
+  flex: 0 0 160px;
+  scroll-snap-align: start;
+  background: linear-gradient(180deg, #16263B 0%, #0D1B2A 100%);
+  border: 1.2px solid rgba(201, 168, 76, 0.25);
+  border-radius: 16px;
+  padding: 14px 12px;
+  display: flex;
+  flex-direction: column;
   align-items: center;
-  gap: 11px;
-  background: #16263B;
-  border: 1px solid rgba(201, 168, 76, 0.2);
-  border-radius: 14px;
-  padding: 12px 14px;
+  text-align: center;
   cursor: pointer;
-  transition: all 0.22s ease;
-  text-decoration: none;
+  transition: all 0.22s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.3);
+  position: relative;
+  overflow: hidden;
 }
 .gov-card-v3:active, .gov-card-v3:hover {
-  background: #1C304A;
-  border-color: rgba(201, 168, 76, 0.6);
-  transform: translateY(-2px);
+  transform: translateY(-4px);
+  border-color: #E8C96D;
+  box-shadow: 0 10px 26px rgba(201, 168, 76, 0.25);
+}
+.gov-card-v3::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 3px;
+  background: linear-gradient(90deg, #C9A84C, #E8C96D, #C9A84C);
 }
 .gov-icon-v3 {
-  font-size: 24px;
-  flex: 0 0 36px;
-  height: 36px;
+  font-size: 32px;
+  width: 52px;
+  height: 52px;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: rgba(13, 27, 42, 0.8);
-  border-radius: 10px;
-  border: 1px solid rgba(201, 168, 76, 0.25);
-}
-.gov-info-v3 {
-  flex: 1;
-  min-width: 0;
+  background: rgba(13, 27, 42, 0.85);
+  border-radius: 14px;
+  border: 1px solid rgba(201, 168, 76, 0.3);
+  margin-bottom: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.25);
 }
 .gov-title-v3 {
   font-size: 12px;
   font-weight: 750;
   color: #FFFFFF;
-  line-height: 1.25;
-  white-space: nowrap;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
   overflow: hidden;
-  text-overflow: ellipsis;
+  height: 32px;
+  margin-bottom: 4px;
 }
 .gov-sub-v3 {
   font-size: 10px;
-  color: #94A3B8;
+  color: #C9A84C;
+  font-weight: 600;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  margin-top: 2px;
+  width: 100%;
 }
 
-/* In-App Browser Modal */
+/* In-App Browser Modal with full controls and text selection allowed */
 .inapp-browser-modal {
   position: fixed;
   inset: 0;
-  z-index: 999999;
+  z-index: 9999999;
   background: #08101A;
   display: flex;
   flex-direction: column;
-  animation: inappSlideUp 0.28s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: inappSlideUp 0.26s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.inapp-browser-modal, .inapp-browser-modal * {
+  user-select: text !important;
+  -webkit-user-select: text !important;
+  -webkit-touch-callout: default !important;
 }
 @keyframes inappSlideUp {
   from { transform: translateY(100%); }
   to { transform: translateY(0); }
 }
 .inapp-browser-bar {
-  height: 54px;
+  height: 56px;
   background: #101F30;
-  border-bottom: 1px solid rgba(201, 168, 76, 0.25);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.3);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 12px;
-  gap: 10px;
+  padding: 0 10px;
+  gap: 8px;
+  user-select: none !important;
+  -webkit-user-select: none !important;
+}
+.inapp-nav-group {
+  display: flex;
+  align-items: center;
+  gap: 4px;
 }
 .inapp-browser-title-wrap {
   flex: 1;
   min-width: 0;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  justify-content: center;
+  padding: 0 4px;
 }
 .inapp-browser-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: #F0EAD6;
+  font-size: 12.5px;
+  font-weight: 750;
+  color: #FFFFFF;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  line-height: 1.2;
 }
-.inapp-browser-actions {
+.inapp-browser-url {
+  font-size: 10px;
+  color: #C9A84C;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  line-height: 1.2;
+  margin-top: 1px;
+}
+.inapp-actions-group {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 5px;
 }
 .inapp-btn {
-  background: rgba(22, 38, 59, 0.8);
+  height: 34px;
+  border-radius: 9px;
   border: 1px solid rgba(201, 168, 76, 0.25);
+  background: rgba(22, 38, 59, 0.9);
   color: #E8C96D;
-  border-radius: 8px;
-  padding: 6px 10px;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
-  display: flex;
+  display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
+  padding: 0 9px;
+  transition: all 0.15s ease;
 }
-.inapp-btn:hover {
+.inapp-btn:hover, .inapp-btn:active {
   background: rgba(201, 168, 76, 0.25);
+  border-color: #E8C96D;
+}
+.inapp-btn-icon {
+  width: 34px;
+  padding: 0;
+  font-size: 14px;
 }
 .inapp-btn-close {
-  background: rgba(229, 83, 83, 0.2);
-  border-color: rgba(229, 83, 83, 0.4);
+  background: rgba(229, 83, 83, 0.25);
+  border-color: rgba(229, 83, 83, 0.5);
   color: #FFA5A5;
 }
-.inapp-browser-frame {
+.inapp-btn-close:hover {
+  background: rgba(229, 83, 83, 0.45);
+}
+
+/* Loading animation bar */
+.inapp-progress-bar {
+  height: 3px;
+  width: 100%;
+  background: rgba(201, 168, 76, 0.2);
+  overflow: hidden;
+  position: relative;
+}
+.inapp-progress-fill {
+  position: absolute;
+  top: 0; bottom: 0; left: 0;
+  width: 40%;
+  background: linear-gradient(90deg, #C9A84C, #E8C96D, #FFFFFF);
+  border-radius: 2px;
+  animation: inappLoadingIndeterminate 1.2s infinite ease-in-out;
+}
+@keyframes inappLoadingIndeterminate {
+  0% { left: -40%; width: 30%; }
+  50% { left: 30%; width: 55%; }
+  100% { left: 100%; width: 25%; }
+}
+.inapp-browser-frame-wrap {
   flex: 1;
   width: 100%;
-  border: 0;
+  position: relative;
   background: #FFFFFF;
 }
-.inapp-browser-footer {
-  padding: 6px 12px;
-  background: #0D1B2A;
-  font-size: 11px;
-  color: #94A3B8;
+.inapp-browser-frame {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  background: #FFFFFF;
+  display: block;
+}
+.inapp-loading-overlay {
+  position: absolute;
+  inset: 0;
+  background: #08101A;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
+  gap: 12px;
+  color: #F0EAD6;
+  font-size: 13px;
+  z-index: 5;
+  transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+.inapp-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid rgba(201, 168, 76, 0.2);
+  border-top-color: #E8C96D;
+  border-radius: 50%;
+  animation: inappSpin 0.8s linear infinite;
+}
+@keyframes inappSpin {
+  to { transform: rotate(360deg); }
 }
 </style>
-
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.jpg" alt="Китобхона"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');setTimeout(()=>{s.classList.add('hide');setTimeout(()=>s.remove(),500)},4000)})();</script>
@@ -2059,10 +2155,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     </section>
 
   
-    <!-- 7 Сомонаҳои давлатӣ -->
+        <!-- 7 Сомонаҳои давлатӣ -->
     <section class="gov-section-v3">
-      <div class="sec-head-v3"><div class="sec-title-v3">🏛️ Сомонаҳои давлатӣ</div></div>
-      <div class="gov-grid-v3" id="govSitesList"></div>
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">🏛️ Сомонаҳои давлатӣ</div>
+      </div>
+      <div class="gov-scroll-v3" id="govSitesList"></div>
     </section>
 
   </main>
@@ -2185,7 +2283,16 @@ const STAR_ICON='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
 let favoriteBookIds=new Set();
 function normalizeHomeBookId(folder,file){return ((folder?folder.replace(/\/+$/,'')+'/':'')+file).replace(/^books\//i,'')}
 function bookmarkButton(bookId,name,author){return `<button type="button" class="bm-v3" data-bookmark data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(author||'')}" aria-label="Ба дӯстдошта илова кардан" onclick="toggleHomeFavorite(event,this)">${BOOKMARK_OUTLINE}</button>`}
-function bookCard(b,folder,badge=''){const file=b.file||((b.name||'book')+'.pdf'),name=b.name||file.replace(/\.pdf$/i,''),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||cover,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3" style="position:relative"><div class="book-tag-v3">НАВ</div><img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(coversJson)}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers),i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="${coverStyle}"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,.3)">${esc(name)}</span><div data-book-badge style="display:${state.show?'flex':'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff">${state.icon}</div></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.author||'')}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.author)}</div></div></div>`}
+function pinButton(bookId, name, author, folder, file, cover) {
+  const cleanId = String(bookId || '').replace(/^books\//i, '');
+  const active = isMyBook(cleanId);
+  return `<button type="button" class="pin-v3 ${active ? 'active' : ''}" data-pin data-book-id="${esc(cleanId)}" data-book-title="${esc(name)}" data-book-author="${esc(author || '')}" data-folder="${esc(folder || '')}" data-file="${esc(file || '')}" data-cover="${esc(cover || '')}" aria-label="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}" onclick="toggleMyBook(event,this)" title="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}">${active ? '📌' : '➕'}</button>`;
+}
+
+function bookCard(b,folder,badge=''){
+  const file=b.file||((b.name||'book')+'.pdf'),name=b.name||file.replace(/\.pdf$/i,''),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||cover,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';
+  return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3" style="position:relative"><div class="book-tag-v3">${badge||'ТОП'}</div><img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(coversJson)}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers),i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="${coverStyle}"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,.3)">${esc(name)}</span><div data-book-badge style="display:${state.show?'flex':'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff">${state.icon}</div></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.author||'')}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div><div style="display:flex;align-items:center;gap:4px">${pinButton(bookId,name,b.author,folder,file,cover)}${bookmarkButton(bookId,name,b.author)}</div></div></div></div>`;
+}
 async function loadHomeFavorites(){const token=localStorage.getItem('kk_token');if(!token){favoriteBookIds.clear();syncBookmarkButtons();return}try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token}});if(!r.ok)throw Error('HTTP '+r.status);favoriteBookIds=new Set((await r.json()).map(x=>String(x.book_id||'').replace(/^books\//i,'')));syncBookmarkButtons()}catch(e){console.warn('favorites',e)}}
 function syncBookmarkButtons(root=document){root.querySelectorAll('[data-bookmark]').forEach(btn=>{const active=favoriteBookIds.has(btn.dataset.bookId);btn.classList.toggle('active',active);btn.innerHTML=active?BOOKMARK_FILLED:BOOKMARK_OUTLINE;btn.setAttribute('aria-label',active?'Аз дӯстдошта хориҷ кардан':'Ба дӯстдошта илова кардан')})}
 async function toggleHomeFavorite(event,btn){event.preventDefault();event.stopPropagation();const token=localStorage.getItem('kk_token');if(!token){toast('Барои истифодаи дӯстдошта ворид шавед');return}const id=btn.dataset.bookId,active=favoriteBookIds.has(id);btn.disabled=true;try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(active?'/'+encodeURIComponent(id):''),{method:active?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!active?{'Content-Type':'application/json'}:{})},body:active?undefined:JSON.stringify({book_id:id,book_title:btn.dataset.bookTitle,book_author:btn.dataset.bookAuthor})});if(!r.ok)throw Error('HTTP '+r.status);active?favoriteBookIds.delete(id):favoriteBookIds.add(id);syncBookmarkButtons();toast(active?'Аз дӯстдошта хориҷ шуд':'Ба дӯстдошта илова шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд',true)}finally{btn.disabled=false}}
@@ -2299,6 +2406,7 @@ if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{sc
 if(typeof AndroidBridge!=='undefined'){ const userId=localStorage.getItem('kk_user_id'); const authToken=localStorage.getItem('kk_token'); if(userId) AndroidBridge.saveUserId(userId); if(authToken) AndroidBridge.saveAuthToken(authToken); }
 function setActiveNav(el){ document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active')); el.classList.add('active'); }
 </script>
+
 <script>
 // ==============================================================
 // КИТОБҲОИ МАН (MY BOOKS / FAST ACCESS) & СОМОНАҲОИ ДАВЛАТӢ
@@ -2322,22 +2430,22 @@ function saveMyBooks(list) {
 
 function isMyBook(bookId) {
   const list = getMyBooks();
-  const cleanId = String(bookId || '').replace(/^books\//i, '');
-  return list.some(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+  const cleanId = String(bookId || '').replace(/^books\//i, '').toLowerCase();
+  return list.some(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId);
 }
 
 function toggleMyBook(event, btn) {
   if (event) { event.preventDefault(); event.stopPropagation(); }
-  const bookId = btn.dataset.bookId;
+  const bookId = btn.dataset.bookId || '';
   const bookTitle = btn.dataset.bookTitle || 'Китоб';
   const bookAuthor = btn.dataset.bookAuthor || '';
   const folder = btn.dataset.folder || '';
   const file = btn.dataset.file || '';
   const cover = btn.dataset.cover || '';
-  const cleanId = String(bookId || '').replace(/^books\//i, '');
+  const cleanId = String(bookId || file || bookTitle).replace(/^books\//i, '');
 
   let list = getMyBooks();
-  const existsIndex = list.findIndex(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
+  const existsIndex = list.findIndex(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId.toLowerCase());
 
   if (existsIndex >= 0) {
     list.splice(existsIndex, 1);
@@ -2365,13 +2473,14 @@ function toggleMyBook(event, btn) {
 
 function syncMyBookButtons(root = document) {
   const list = getMyBooks();
-  const idSet = new Set(list.map(b => String(b.id || b.bookId || '').replace(/^books\//i, '')));
+  const idSet = new Set(list.map(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase()));
   root.querySelectorAll('[data-pin]').forEach(btn => {
-    const bId = String(btn.dataset.bookId || '').replace(/^books\//i, '');
+    const bId = String(btn.dataset.bookId || btn.dataset.file || '').replace(/^books\//i, '').toLowerCase();
     const active = idSet.has(bId);
     btn.classList.toggle('active', active);
     btn.innerHTML = active ? '📌' : '➕';
     btn.setAttribute('aria-label', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
+    btn.setAttribute('title', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
   });
 }
 
@@ -2404,15 +2513,16 @@ function renderMyBooksSection() {
     return `
       <div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
         <div class="book-cover-v3" style="position:relative">
-          <div class="book-tag-v3" style="background:var(--gold);color:#08101A">МАН</div>
-          <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover">
+          <div class="book-tag-v3" style="background:var(--gold);color:#08101A;font-weight:900">МАН</div>
+          <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:6px;font-size:11px;font-weight:bold;color:#fff">${esc(name)}</span>
         </div>
         <div class="book-info-v3">
           <b>${esc(name)}</b>
           <span class="book-author-v3">${esc(b.author || '')}</span>
           <div class="book-foot-v3">
             <div class="stars-v3">${STAR_ICON}<span>—</span></div>
-            <div style="display:flex;align-items:center;gap:5px">
+            <div style="display:flex;align-items:center;gap:4px">
               <button type="button" class="pin-v3 active" data-pin data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(b.author||'')}" data-folder="${esc(folder)}" data-file="${esc(file)}" data-cover="${esc(cover)}" onclick="toggleMyBook(event,this)" title="Аз Китобҳои ман хориҷ кардан">📌</button>
               ${bookmarkButton(bookId, name, b.author)}
             </div>
@@ -2421,23 +2531,39 @@ function renderMyBooksSection() {
       </div>
     `;
   }).join('');
+  hydrateBookCardCovers(container);
+  syncBookmarkButtons(container);
 }
 
-// 8 Сомонаҳои давлатии Тоҷикистон
+// 10 Сомонаҳои расмии давлатии Тоҷикистон
 const GOV_SITES = [
-  {
-    id: 'maorif',
-    name: 'Вазорати маориф ва илми ҶТ',
-    short: 'maorif.tj · Портали расмӣ',
-    url: 'https://maorif.tj',
-    icon: '🏛️'
-  },
   {
     id: 'president',
     name: 'Президенти Ҷумҳурии Тоҷикистон',
-    short: 'president.tj · Хадамоти матбуот',
+    short: 'president.tj · Портали расмӣ',
     url: 'https://www.president.tj',
     icon: '👑'
+  },
+  {
+    id: 'kmt',
+    name: 'Китобхонаи миллии Тоҷикистон',
+    short: 'kmt.tj · Фонди миллии китоб',
+    url: 'http://kmt.tj',
+    icon: '📚'
+  },
+  {
+    id: 'nlt',
+    name: 'Китобхонаи миллии электронӣ',
+    short: 'nlt.tj · Электронная библиотека',
+    url: 'https://nlt.tj',
+    icon: '📖'
+  },
+  {
+    id: 'maorif',
+    name: 'Вазорати маориф ва илми ҶТ',
+    short: 'maorif.tj · Соҳаи маориф ва илм',
+    url: 'https://maorif.tj',
+    icon: '🏛️'
   },
   {
     id: 'mmk',
@@ -2456,7 +2582,7 @@ const GOV_SITES = [
   {
     id: 'mfa',
     name: 'Вазорати корҳои хориҷии ҶТ',
-    short: 'mfa.tj · Дипломатияи тоҷик',
+    short: 'mfa.tj · Сиёсати хориҷӣ',
     url: 'https://mfa.tj',
     icon: '🌐'
   },
@@ -2469,7 +2595,7 @@ const GOV_SITES = [
   },
   {
     id: 'tpp',
-    name: 'Палатаи савдо ва саноати ҶТ',
+    name: 'Палатаи савдо ва саноат',
     short: 'tpp.tj · Саноат ва тиҷорат',
     url: 'https://tpp.tj',
     icon: '🏭'
@@ -2477,7 +2603,7 @@ const GOV_SITES = [
   {
     id: 'ntc',
     name: 'Маркази миллии тестӣ (ИМТ)',
-    short: 'ntc.tj · Озмунҳои дохилшавӣ',
+    short: 'ntc.tj · Дохилшавӣ ва тест',
     url: 'https://ntc.tj/tj/',
     icon: '🎓'
   }
@@ -2489,10 +2615,8 @@ function renderGovSites() {
   container.innerHTML = GOV_SITES.map(s => `
     <div class="gov-card-v3" onclick="openInAppBrowser('${s.url}', '${esc(s.name)}')">
       <div class="gov-icon-v3">${s.icon}</div>
-      <div class="gov-info-v3">
-        <div class="gov-title-v3">${esc(s.name)}</div>
-        <div class="gov-sub-v3">${esc(s.short)}</div>
-      </div>
+      <div class="gov-title-v3">${esc(s.name)}</div>
+      <div class="gov-sub-v3">${esc(s.short)}</div>
     </div>
   `).join('');
 }
@@ -2505,31 +2629,79 @@ function openInAppBrowser(url, title) {
 
   modal.innerHTML = `
     <div class="inapp-browser-bar">
-      <div class="inapp-browser-title-wrap">
-        <span style="font-size:16px">🔒</span>
-        <div class="inapp-browser-title">${esc(title || 'Сомонаи давлатӣ')}</div>
+      <div class="inapp-nav-group">
+        <button class="inapp-btn inapp-btn-icon" type="button" title="Навсозӣ" onclick="reloadInAppBrowser()">🔄</button>
       </div>
-      <div class="inapp-browser-actions">
-        <button class="inapp-btn" type="button" onclick="window.open('${url}','_blank')">↗️ Браузер</button>
-        <button class="inapp-btn inapp-btn-close" type="button" onclick="document.getElementById('inappBrowserModal').remove()">✕ Пӯшидан</button>
+      <div class="inapp-browser-title-wrap">
+        <div class="inapp-browser-title">${esc(title || 'Сомонаи давлатӣ')}</div>
+        <div class="inapp-browser-url">${esc(url.replace(/^https?:\/\//i, ''))}</div>
+      </div>
+      <div class="inapp-actions-group">
+        <button class="inapp-btn inapp-btn-icon" type="button" title="Нусхабардории пайванд" onclick="copyInAppLink('${url}')">📋</button>
+        <button class="inapp-btn inapp-btn-icon" type="button" title="Дар браузер кушоед" onclick="window.open('${url}','_blank')">↗️</button>
+        <button class="inapp-btn inapp-btn-icon inapp-btn-close" type="button" title="Пӯшидан" onclick="closeInAppBrowser()">✕</button>
       </div>
     </div>
-    <iframe class="inapp-browser-frame" id="inappFrame" src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" loading="lazy"></iframe>
-    <div class="inapp-browser-footer">
-      <span>🏛️ Сомонаи расмии давлатии Тоҷикистон</span>
-      <a href="${url}" target="_blank" rel="noopener noreferrer" style="color:var(--gold)">${url.replace(/^https?:\/\//i, '').replace(/\/$/, '')}</a>
+    <div class="inapp-progress-bar" id="inappProgressBar">
+      <div class="inapp-progress-fill"></div>
+    </div>
+    <div class="inapp-browser-frame-wrap">
+      <div class="inapp-loading-overlay" id="inappLoadingOverlay">
+        <div class="inapp-spinner"></div>
+        <div>Саҳифа кушода шуда истодааст...</div>
+      </div>
+      <iframe class="inapp-browser-frame" id="inappFrame" src="${url}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" loading="lazy" onload="onInAppFrameLoad()"></iframe>
     </div>
   `;
 
   document.body.appendChild(modal);
 }
 
-// Hook into initial page load
+function closeInAppBrowser() {
+  document.getElementById('inappBrowserModal')?.remove();
+}
+
+function reloadInAppBrowser() {
+  const frame = document.getElementById('inappFrame');
+  const overlay = document.getElementById('inappLoadingOverlay');
+  const bar = document.getElementById('inappProgressBar');
+  if (frame) {
+    if (overlay) { overlay.style.display = 'flex'; overlay.style.opacity = '1'; }
+    if (bar) bar.style.display = 'block';
+    frame.src = frame.src;
+  }
+}
+
+function copyInAppLink(url) {
+  try {
+    navigator.clipboard.writeText(url);
+    toast('Пайванд нусхабардорӣ шуд');
+  } catch(e) {
+    toast(url);
+  }
+}
+
+function onInAppFrameLoad() {
+  const overlay = document.getElementById('inappLoadingOverlay');
+  const bar = document.getElementById('inappProgressBar');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    setTimeout(() => { overlay.style.display = 'none'; }, 300);
+  }
+  if (bar) bar.style.display = 'none';
+}
+
+// Initial render
 document.addEventListener('DOMContentLoaded', () => {
   renderMyBooksSection();
   renderGovSites();
   syncMyBookButtons();
 });
+
+// Also trigger render when page loads immediately
+renderMyBooksSection();
+renderGovSites();
+syncMyBookButtons();
 </script>
 </body>
 </html>
