@@ -1049,22 +1049,43 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     return await pdfjsLib.getDocument({data}).promise;
   }
 
+  async function findFallbackBookUrl(bookName, origUrl) {
+    try {
+      const res = await fetch('search-index.json');
+      if (!res.ok) return null;
+      const data = await res.json();
+      const items = data.items || [];
+      const clean = (bookName || '').replace(/\.pdf$/i, '').toLowerCase().trim();
+      const found = items.find(it => {
+        const n = (it.name || '').replace(/\.pdf$/i, '').toLowerCase().trim();
+        const f = (it.file || '').replace(/\.pdf$/i, '').toLowerCase().trim();
+        return n === clean || f === clean || (clean && (n.includes(clean) || clean.includes(n)));
+      });
+      if (found) {
+        const encP = p => String(p||'').split('/').map(encodeURIComponent).join('/');
+        return `https://raw.githubusercontent.com/sharipovip/books/main/${encP(found.folder)}/${encodeURIComponent(found.file)}`;
+      }
+    } catch(e) {}
+    return null;
+  }
+
   async function openPdf() {
     if (!url) {
       $('currentSlot').innerHTML = '<div class="error">URL-и китоб нест</div>';
       $('loading').classList.remove('on');
       return;
     }
-    if (!url.includes('raw.githubusercontent.com') && !url.includes('cdn.jsdelivr.net')) {
-      $('currentSlot').innerHTML = '<div class="error">URL-и китоб нодуруст аст</div>';
-      $('loading').classList.remove('on');
-      return;
-    }
-    const urls = [...new Set([cdnPdfUrl(url), url].filter(Boolean).map(canonicalBookUrl))];
+    const candidateUrls = [...new Set([cdnPdfUrl(url), url].filter(Boolean).map(canonicalBookUrl))];
     try {
       let lastErr = null;
-      for (const u of urls) {
+      for (const u of candidateUrls) {
         try { pdf = await loadPdfFrom(u); break; } catch(e) { lastErr = e; }
+      }
+      if (!pdf) {
+        const fallbackUrl = await findFallbackBookUrl(name, url);
+        if (fallbackUrl) {
+          try { pdf = await loadPdfFrom(canonicalBookUrl(fallbackUrl)); } catch(e) { lastErr = e; }
+        }
       }
       if (!pdf) throw lastErr || new Error('PDF дастрас нест');
       pages = pdf.numPages;

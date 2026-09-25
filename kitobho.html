@@ -1256,23 +1256,37 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   
-  function isMyBook(bookId) {
-    try {
-      const raw = localStorage.getItem('kk_my_books_v1');
-      const list = raw ? JSON.parse(raw) : [];
-      const cleanId = String(bookId || '').replace(/^books\//i, '');
-      return list.some(b => String(b.id || b.bookId || '').replace(/^books\//i, '') === cleanId);
-    } catch(e) {
-      return false;
-    }
+  function normalizeBookKey(val) {
+    if (!val) return '';
+    let s = String(val).trim().toLowerCase().replace(/\/g, '/');
+    try { s = decodeURIComponent(s); } catch(e) {}
+    s = s.replace(/^books\//i, '');
+    if (s.includes('/')) s = s.split('/').pop() || s;
+    s = s.replace(/\.pdf$/i, '').trim();
+    return s;
   }
 
-  function isMyBook(bookId) {
+  function matchesBook(bookObj, queryVal) {
+    if (!bookObj || !queryVal) return false;
+    const targetKey = typeof queryVal === 'object'
+      ? (normalizeBookKey(queryVal.id) || normalizeBookKey(queryVal.bookId) || normalizeBookKey(queryVal.file) || normalizeBookKey(queryVal.name) || normalizeBookKey(queryVal.title))
+      : normalizeBookKey(queryVal);
+    if (!targetKey) return false;
+
+    const k1 = normalizeBookKey(bookObj.id);
+    const k2 = normalizeBookKey(bookObj.bookId);
+    const k3 = normalizeBookKey(bookObj.file);
+    const k4 = normalizeBookKey(bookObj.name);
+    const k5 = normalizeBookKey(bookObj.title);
+
+    return k1 === targetKey || k2 === targetKey || k3 === targetKey || k4 === targetKey || k5 === targetKey;
+  }
+
+  function isMyBook(queryVal) {
     try {
       const raw = localStorage.getItem('kk_my_books_v1');
       const list = raw ? JSON.parse(raw) : [];
-      const cleanId = String(bookId || '').replace(/^books\//i, '').toLowerCase();
-      return list.some(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId);
+      return list.some(b => matchesBook(b, queryVal));
     } catch(e) {
       return false;
     }
@@ -1281,20 +1295,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function handleToggleMyBook(bookId, book, name, folder, file, cover, btn) {
     let list = [];
     try { list = JSON.parse(localStorage.getItem('kk_my_books_v1') || '[]'); } catch(e) {}
-    const cleanId = String(bookId || book.file || name || '').replace(/^books\//i, '').toLowerCase();
-    const idx = list.findIndex(b => String(b.id || b.bookId || b.file || '').replace(/^books\//i, '').toLowerCase() === cleanId);
-    if (idx >= 0) {
-      list.splice(idx, 1);
+    const bookTitle = name || book.name || book.title || 'Китоб';
+    const bookFolder = folder || book.folder || (sub && sub.folder) || '';
+    const bookFile = file || book.file || (bookTitle + '.pdf');
+    const targetUrl = book.url || rawUrl(bookFolder, bookFile);
+    const cleanId = normalizeBookKey(bookId || bookFile || bookTitle);
+
+    const existsIndex = list.findIndex(b => matchesBook(b, cleanId));
+
+    if (existsIndex >= 0) {
+      list.splice(existsIndex, 1);
       localStorage.setItem('kk_my_books_v1', JSON.stringify(list));
       btn.textContent = '➕ Ба бахши ман';
       btn.classList.remove('btn-success');
       btn.classList.add('btn-ghost');
       toast('Аз «Китобҳои ман» хориҷ шуд');
     } else {
-      const bookTitle = name || book.name || book.title || 'Китоб';
-      const bookFolder = folder || book.folder || '';
-      const bookFile = file || book.file || (bookTitle + '.pdf');
-      const targetUrl = book.url || rawUrl(bookFolder, bookFile);
       list.unshift({
         id: cleanId,
         bookId: cleanId,

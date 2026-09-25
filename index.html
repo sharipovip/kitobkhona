@@ -1744,14 +1744,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
 
 
-<style id="app-complete-features-v3">
-/* Header live widget */
-.header-widget-v3 {
+
+<style id="app-features-clean-v4">
+/* Top Header Live Widget */
+.header-widget-v4 {
   display: flex;
   align-items: center;
   gap: 6px;
-  background: rgba(16, 35, 59, 0.7);
-  border: 1px solid rgba(201, 168, 76, 0.3);
+  background: rgba(16, 35, 59, 0.75);
+  border: 1px solid rgba(201, 168, 76, 0.35);
   border-radius: 20px;
   padding: 4px 10px;
   font-size: 11px;
@@ -1759,11 +1760,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   cursor: pointer;
   transition: all 0.2s ease;
   user-select: none;
+  white-space: nowrap;
 }
-.header-widget-v3:hover, .header-widget-v3:active {
-  background: rgba(22, 48, 80, 0.9);
+.header-widget-v4:hover, .header-widget-v4:active {
+  background: rgba(22, 48, 80, 0.95);
   border-color: #E8C96D;
   transform: scale(1.02);
+}
+.hw-date {
+  color: #CBD5E1;
+  font-weight: 600;
+  letter-spacing: 0.2px;
 }
 .hw-time {
   font-weight: 800;
@@ -1777,7 +1784,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   display: flex;
   align-items: center;
   gap: 3px;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 /* Weather city selector modal */
@@ -1915,20 +1922,20 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   position: absolute;
   top: 6px;
   right: 6px;
-  width: 24px;
-  height: 24px;
+  width: 26px;
+  height: 26px;
   border-radius: 50%;
-  background: rgba(229, 83, 83, 0.9);
+  background: rgba(229, 83, 83, 0.95);
   color: #FFFFFF;
-  border: 1px solid #FFFFFF;
-  font-size: 11px;
+  border: 1.5px solid #FFFFFF;
+  font-size: 13px;
   font-weight: 900;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   z-index: 10;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+  box-shadow: 0 3px 10px rgba(0,0,0,0.5);
   transition: all 0.18s ease;
 }
 .mybook-remove-btn:hover, .mybook-remove-btn:active {
@@ -2046,7 +2053,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   width: 100%;
 }
 
-/* Full In-App Mini Browser */
+/* Streamlined In-App Browser */
 .inapp-browser-modal {
   position: fixed;
   inset: 0;
@@ -2054,7 +2061,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   background: #08101A;
   display: flex;
   flex-direction: column;
-  animation: inappSlideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+  animation: inappSlideUp 0.22s cubic-bezier(0.16, 1, 0.3, 1);
 }
 .inapp-browser-modal, .inapp-browser-modal * {
   user-select: text !important;
@@ -2087,7 +2094,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   align-items: center;
   padding: 0 8px;
   gap: 6px;
-  cursor: text;
 }
 .inapp-omnibox input {
   flex: 1;
@@ -2129,8 +2135,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   border-color: rgba(229, 83, 83, 0.4);
   color: #FFA5A5;
 }
-
-/* Browser Progress & Tabs Bar */
 .inapp-progress-bar {
   height: 3px;
   width: 100%;
@@ -2141,57 +2145,16 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .inapp-progress-fill {
   position: absolute;
   top: 0; bottom: 0; left: 0;
-  width: 40%;
+  width: 45%;
   background: linear-gradient(90deg, #C9A84C, #E8C96D, #FFFFFF);
   border-radius: 2px;
   animation: inappLoadingIndeterminate 1.2s infinite ease-in-out;
 }
-.inapp-tabs-bar {
-  display: flex;
-  align-items: center;
-  background: #0B1726;
-  border-bottom: 1px solid rgba(201, 168, 76, 0.2);
-  overflow-x: auto;
-  scrollbar-width: none;
-  padding: 4px 6px;
-  gap: 4px;
+@keyframes inappLoadingIndeterminate {
+  0% { left: -40%; width: 40%; }
+  50% { left: 30%; width: 60%; }
+  100% { left: 100%; width: 40%; }
 }
-.inapp-tabs-bar::-webkit-scrollbar { display: none; }
-.inapp-tab-chip {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  background: #142438;
-  border: 1px solid rgba(201, 168, 76, 0.25);
-  border-radius: 8px;
-  padding: 4px 10px;
-  font-size: 11px;
-  color: #94A3B8;
-  max-width: 140px;
-  cursor: pointer;
-}
-.inapp-tab-chip.active {
-  background: #1E3554;
-  border-color: #E8C96D;
-  color: #FFFFFF;
-  font-weight: 700;
-}
-.inapp-tab-title {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.inapp-tab-close {
-  font-size: 11px;
-  color: #94A3B8;
-  cursor: pointer;
-  padding: 0 2px;
-}
-.inapp-tab-close:hover {
-  color: #FFA5A5;
-}
-
-/* Browser View Container */
 .inapp-view-wrap {
   flex: 1;
   position: relative;
@@ -2228,42 +2191,74 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   border-radius: 50%;
   animation: inappSpin 0.75s linear infinite;
 }
+@keyframes inappSpin {
+  100% { transform: rotate(360deg); }
+}
 
-/* Browser Menu Drawer */
-.inapp-menu-drawer {
+/* Offline Government Portal View */
+.inapp-offline-view {
   position: absolute;
-  top: 56px;
-  right: 8px;
-  width: 220px;
-  background: #10233B;
-  border: 1.5px solid rgba(201, 168, 76, 0.35);
-  border-radius: 14px;
-  box-shadow: 0 16px 36px rgba(0,0,0,0.6);
-  z-index: 100;
-  padding: 6px;
+  inset: 0;
+  background: #0B1726;
+  color: #FFFFFF;
+  padding: 20px 16px;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
-  gap: 2px;
-  animation: wmFadeIn 0.18s ease;
+  gap: 16px;
+  z-index: 4;
 }
-.inapp-menu-item {
+.offline-portal-header {
   display: flex;
   align-items: center;
-  gap: 10px;
-  padding: 9px 12px;
-  border-radius: 8px;
-  color: #F0EAD6;
-  font-size: 12.5px;
-  font-weight: 600;
-  cursor: pointer;
-  background: transparent;
-  border: 0;
-  width: 100%;
-  text-align: left;
+  gap: 14px;
+  background: #142438;
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 16px;
+  padding: 16px;
 }
-.inapp-menu-item:hover, .inapp-menu-item:active {
-  background: rgba(201, 168, 76, 0.2);
+.offline-portal-emblem {
+  font-size: 42px;
+}
+.offline-portal-info b {
+  font-size: 15px;
   color: #E8C96D;
+  display: block;
+  margin-bottom: 4px;
+}
+.offline-status-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: rgba(46, 204, 113, 0.15);
+  border: 1px solid rgba(46, 204, 113, 0.4);
+  color: #2ECC71;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 3px 8px;
+  border-radius: 20px;
+}
+.offline-card-block {
+  background: #10233B;
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 14px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: #CBD5E1;
+}
+.offline-card-block h4 {
+  font-size: 14px;
+  color: #E8C96D;
+  margin-bottom: 8px;
+  font-weight: 800;
+}
+.offline-card-block ul {
+  padding-left: 18px;
+  margin: 6px 0;
+}
+.offline-card-block li {
+  margin-bottom: 6px;
 }
 </style>
 </head>
@@ -2300,7 +2295,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </div>
       <div class="new-logo-text-v3"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div>
     </div>
-        <div class="header-widget-v3" id="headerWidget" onclick="openWeatherModal()" title="Интихоби шаҳр ва обу ҳаво">
+        
+        <div class="header-widget-v4" id="headerWidget" onclick="openWeatherModal()" title="Интихоби шаҳр ва обу ҳаво">
+      <span class="hw-date" id="headerLiveDate">25.09.2026</span>
       <span class="hw-time" id="headerLiveTime">--:--</span>
       <span class="hw-divider">|</span>
       <span class="hw-city" id="headerWeatherCity">☀️ Душанбе +24°</span>
@@ -2362,8 +2359,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
     </section>
 
-        <!-- 4 Китобҳои Пешвои миллат -->
-    <section class="books-v3" id="pesvoSection" style="display:none">
+            <!-- 4 Китобҳои Пешвои миллат -->
+    <section class="books-v3" id="pesvoSection">
       <div class="sec-head-v3">
         <div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div>
         <div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div>
@@ -3342,6 +3339,657 @@ document.addEventListener('DOMContentLoaded', () => {
   renderGovSites();
   syncMyBookButtons();
 });
+renderMyBooksSection();
+renderGovSites();
+syncMyBookButtons();
+</script>
+<script>
+// =========================================================================
+// 1. LIVE TIME, DATE (ДД.ММ.ГГГГ) & TAJIK WEATHER SYSTEM
+// =========================================================================
+const TAJIK_CITIES = [
+  { name: 'Душанбе', lat: 38.56, lon: 68.77, temp: '+24°', icon: '☀️' },
+  { name: 'Данғара', lat: 38.10, lon: 69.34, temp: '+26°', icon: '☀️' },
+  { name: 'Кӯлоб', lat: 37.91, lon: 69.78, temp: '+25°', icon: '☀️' },
+  { name: 'Бохтар', lat: 37.84, lon: 68.78, temp: '+27°', icon: '☀️' },
+  { name: 'Хуҷанд', lat: 40.28, lon: 69.62, temp: '+23°', icon: '🌤️' },
+  { name: 'Истаравшан', lat: 39.91, lon: 69.00, temp: '+22°', icon: '☀️' },
+  { name: 'Исфара', lat: 40.12, lon: 70.62, temp: '+23°', icon: '☀️' },
+  { name: 'Конибодом', lat: 40.29, lon: 70.43, temp: '+24°', icon: '☀️' },
+  { name: 'Панҷакент', lat: 39.50, lon: 67.61, temp: '+21°', icon: '⛅' },
+  { name: 'Хоруғ', lat: 37.49, lon: 71.55, temp: '+16°', icon: '🌤️' },
+  { name: 'Ваҳдат', lat: 38.55, lon: 69.01, temp: '+24°', icon: '☀️' },
+  { name: 'Ҳисор', lat: 38.53, lon: 68.55, temp: '+25°', icon: '☀️' },
+  { name: 'Турсунзода', lat: 38.51, lon: 68.23, temp: '+26°', icon: '☀️' },
+  { name: 'Рашт', lat: 39.03, lon: 70.37, temp: '+18°', icon: '⛅' },
+  { name: 'Мӯминобод', lat: 38.11, lon: 70.03, temp: '+22°', icon: '☀️' },
+  { name: 'Ёвон', lat: 38.31, lon: 69.04, temp: '+26°', icon: '☀️' }
+];
+
+let selectedCityName = localStorage.getItem('kk_weather_city') || 'Душанбе';
+
+function updateLiveClockAndDate() {
+  const timeEl = document.getElementById('headerLiveTime');
+  const dateEl = document.getElementById('headerLiveDate');
+  const now = new Date();
+  
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yyyy = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+
+  if (dateEl) dateEl.textContent = `${dd}.${mm}.${yyyy}`;
+  if (timeEl) timeEl.textContent = `${hh}:${min}`;
+}
+setInterval(updateLiveClockAndDate, 1000);
+updateLiveClockAndDate();
+
+async function fetchLiveCityWeather(cityName) {
+  const city = TAJIK_CITIES.find(c => c.name === cityName) || TAJIK_CITIES[0];
+  const weatherEl = document.getElementById('headerWeatherCity');
+  if (weatherEl) weatherEl.textContent = `${city.icon} ${city.name} ${city.temp}`;
+
+  try {
+    const url = `https://api.open-meteo.com/v1/forecast?latitude=${city.lat}&longitude=${city.lon}&current_weather=true`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('Weather API error');
+    const data = await res.json();
+    const temp = Math.round(data.current_weather.temperature);
+    const code = data.current_weather.weathercode;
+    let icon = '☀️';
+    if (code > 0 && code <= 3) icon = '🌤️';
+    else if (code >= 45 && code <= 48) icon = '🌫️';
+    else if (code >= 51 && code <= 67) icon = '🌧️';
+    else if (code >= 71 && code <= 86) icon = '❄️';
+    else if (code >= 95) icon = '⛈️';
+
+    const tempStr = (temp > 0 ? '+' : '') + temp + '°';
+    city.temp = tempStr;
+    city.icon = icon;
+    if (weatherEl) weatherEl.textContent = `${icon} ${city.name} ${tempStr}`;
+  } catch(e) {}
+}
+
+function openWeatherModal() {
+  document.getElementById('weatherModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'weatherModal';
+  modal.className = 'weather-modal';
+
+  modal.innerHTML = `
+    <div class="weather-panel">
+      <div class="weather-head">
+        <div class="weather-head-title">🌤️ Обу ҳавои Тоҷикистон</div>
+        <button class="inapp-btn inapp-btn-icon inapp-btn-close" type="button" onclick="document.getElementById('weatherModal').remove()">✕</button>
+      </div>
+      <div class="weather-search-wrap">
+        <input class="weather-search-input" id="weatherSearchInput" type="search" placeholder="Ҷустуҷӯи шаҳр ё ноҳия...">
+      </div>
+      <div class="weather-cities-list" id="weatherCitiesList"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const renderList = (q = '') => {
+    const listEl = document.getElementById('weatherCitiesList');
+    if (!listEl) return;
+    const filtered = TAJIK_CITIES.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()));
+    listEl.innerHTML = filtered.map(c => `
+      <div class="weather-city-item ${c.name === selectedCityName ? 'active' : ''}" onclick="selectWeatherCity('${c.name}')">
+        <span class="weather-city-name">${c.icon} ${c.name}</span>
+        <span class="weather-city-temp">${c.temp}</span>
+      </div>
+    `).join('');
+  };
+
+  renderList();
+  document.getElementById('weatherSearchInput')?.addEventListener('input', e => renderList(e.target.value.trim()));
+}
+
+function selectWeatherCity(name) {
+  selectedCityName = name;
+  localStorage.setItem('kk_weather_city', name);
+  fetchLiveCityWeather(name);
+  document.getElementById('weatherModal')?.remove();
+  toast(`Шаҳри ${name} интихоб шуд`);
+}
+
+fetchLiveCityWeather(selectedCityName);
+
+// =========================================================================
+// 2. КИТОБҲОИ МАН (100% RELIABLE MATCHING, PERSISTENCE & RESOLUTION)
+// =========================================================================
+const MY_BOOKS_KEY = 'kk_my_books_v1';
+
+function normalizeBookKey(val) {
+  if (!val) return '';
+  let s = String(val).trim().toLowerCase().replace(/\\/g, '/');
+  try { s = decodeURIComponent(s); } catch(e) {}
+  s = s.replace(/^books\//i, '');
+  if (s.includes('/')) s = s.split('/').pop() || s;
+  s = s.replace(/\.pdf$/i, '').trim();
+  return s;
+}
+
+function matchesBook(bookObj, queryVal) {
+  if (!bookObj || !queryVal) return false;
+  const targetKey = typeof queryVal === 'object'
+    ? (normalizeBookKey(queryVal.id) || normalizeBookKey(queryVal.bookId) || normalizeBookKey(queryVal.file) || normalizeBookKey(queryVal.name) || normalizeBookKey(queryVal.title))
+    : normalizeBookKey(queryVal);
+  if (!targetKey) return false;
+
+  const k1 = normalizeBookKey(bookObj.id);
+  const k2 = normalizeBookKey(bookObj.bookId);
+  const k3 = normalizeBookKey(bookObj.file);
+  const k4 = normalizeBookKey(bookObj.name);
+  const k5 = normalizeBookKey(bookObj.title);
+
+  return k1 === targetKey || k2 === targetKey || k3 === targetKey || k4 === targetKey || k5 === targetKey;
+}
+
+function getMyBooks() {
+  try {
+    const raw = localStorage.getItem(MY_BOOKS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveMyBooks(list) {
+  try {
+    localStorage.setItem(MY_BOOKS_KEY, JSON.stringify(list || []));
+  } catch(e) {}
+}
+
+function isMyBook(queryVal) {
+  const list = getMyBooks();
+  return list.some(b => matchesBook(b, queryVal));
+}
+
+function removeMyBook(event, queryVal) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  let list = getMyBooks();
+  list = list.filter(b => !matchesBook(b, queryVal));
+  saveMyBooks(list);
+  toast('Китоб аз «Китобҳои ман» хориҷ шуд');
+  syncMyBookButtons();
+  renderMyBooksSection();
+}
+
+function toggleMyBook(event, btn) {
+  if (event) {
+    event.preventDefault();
+    event.stopPropagation();
+  }
+  const bookId = btn.dataset.bookId || '';
+  const bookTitle = btn.dataset.bookTitle || 'Китоб';
+  const bookAuthor = btn.dataset.bookAuthor || '';
+  const folder = btn.dataset.folder || '';
+  const file = btn.dataset.file || '';
+  const cover = btn.dataset.cover || '';
+  const targetUrl = btn.dataset.url || (folder ? rawUrl(folder, file || bookTitle + '.pdf') : '');
+
+  let list = getMyBooks();
+  const existsIndex = list.findIndex(b => matchesBook(b, bookId || file || bookTitle));
+
+  if (existsIndex >= 0) {
+    list.splice(existsIndex, 1);
+    saveMyBooks(list);
+    toast('Аз «Китобҳои ман» хориҷ шуд');
+  } else {
+    list.unshift({
+      id: bookId || file || bookTitle,
+      bookId: bookId || file || bookTitle,
+      name: bookTitle,
+      title: bookTitle,
+      author: bookAuthor,
+      folder: folder,
+      file: file || (bookTitle + '.pdf'),
+      cover: cover,
+      url: targetUrl,
+      added_at: Date.now()
+    });
+    saveMyBooks(list);
+    toast('Ба «Китобҳои ман» илова шуд ⭐');
+  }
+
+  syncMyBookButtons();
+  renderMyBooksSection();
+}
+
+function syncMyBookButtons(root = document) {
+  const list = getMyBooks();
+  root.querySelectorAll('[data-pin]').forEach(btn => {
+    const qVal = btn.dataset.bookId || btn.dataset.file || btn.dataset.bookTitle || '';
+    const active = list.some(b => matchesBook(b, qVal));
+    btn.classList.toggle('active', active);
+    btn.innerHTML = active ? '📌' : '➕';
+    btn.setAttribute('aria-label', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
+    btn.setAttribute('title', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
+  });
+}
+
+async function openMyBook(index) {
+  const list = getMyBooks();
+  const b = list[index];
+  if (!b) return;
+
+  const name = b.name || b.title || String(b.file || 'Китоб').replace(/\.pdf$/i, '');
+  let url = b.url || '';
+  let cover = b.cover || '';
+
+  if (!url || !url.includes('raw.githubusercontent.com')) {
+    try {
+      const searchIdx = await getHomeSearchIndex();
+      const wanted = normalizeBookKey(name);
+      const found = searchIdx.find(item => matchesBook(item, wanted));
+      if (found) {
+        url = rawUrl(found.folder, found.file || found.name + '.pdf');
+        if (!cover) {
+          const covers = coverCandidates(found.folder, found.file || found.name + '.pdf');
+          cover = covers[0] || '';
+        }
+      }
+    } catch(e) {}
+  }
+
+  if (!url && b.folder && b.file) {
+    url = rawUrl(b.folder, b.file);
+  }
+
+  if (!url) {
+    url = `https://raw.githubusercontent.com/sharipovip/books/main/books/${encodeURIComponent(b.file || name + '.pdf')}`;
+  }
+
+  openReader(url, name, cover);
+}
+
+function renderMyBooksSection() {
+  const container = document.getElementById('myBooksList');
+  if (!container) return;
+  const list = getMyBooks();
+
+  if (!list.length) {
+    container.innerHTML = `
+      <div class="my-books-empty-card" onclick="location.href='kitobho.html'">
+        <div class="my-books-empty-icon">📖</div>
+        <div class="my-books-empty-title">Шумо метавонед китобҳоро барои дастрасии зуд ба ин бахш илова намоед</div>
+        <div class="my-books-empty-hint">Ба бахши «Китобҳо» гузаред ва тугмаи «➕»-ро пахш намоед ›</div>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = list.map((b, idx) => {
+    const file = b.file || ((b.name || 'book') + '.pdf');
+    const name = b.name || b.title || file.replace(/\.pdf$/i, '');
+    const folder = b.folder || 'books/Пешвои Миллат';
+    const covers = coverCandidates(folder, file);
+    const cover = b.cover || covers[0] || '';
+    const bookId = normalizeBookKey(b.id || b.bookId || file);
+    const coverSrc = getCachedCoverDataUrl(cover) || cover;
+
+    return `
+      <div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openMyBook(${idx})">
+        <div class="book-cover-v3" style="position:relative">
+          <button type="button" class="mybook-remove-btn" onclick="removeMyBook(event, '${esc(bookId)}')" title="Хориҷ кардан">✕</button>
+          <div class="book-tag-v3" style="background:var(--gold);color:#08101A;font-weight:900">МАН</div>
+          <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:6px;font-size:11px;font-weight:bold;color:#fff">${esc(name)}</span>
+        </div>
+        <div class="book-info-v3">
+          <b>${esc(name)}</b>
+          <span class="book-author-v3">${esc(b.author || '')}</span>
+          <div class="book-foot-v3">
+            <div class="stars-v3">${STAR_ICON}<span>—</span></div>
+            <div style="display:flex;align-items:center;gap:4px">
+              <button type="button" class="pin-v3 active" data-pin data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(b.author||'')}" data-folder="${esc(folder)}" data-file="${esc(file)}" data-cover="${esc(cover)}" onclick="toggleMyBook(event,this)" title="Аз Китобҳои ман хориҷ кардан">📌</button>
+              ${bookmarkButton(bookId, name, b.author)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+  }).join('');
+  hydrateBookCardCovers(container);
+  syncBookmarkButtons(container);
+}
+
+// =========================================================================
+// 3. ПЕШВОИ МИЛЛАТ PRE-POPULATION (NEVER DISAPPEARS)
+// =========================================================================
+async function renderPeshvoBooksFast() {
+  const container = $('pesvoBooks');
+  const sec = $('pesvoSection');
+  if (!container || !sec) return;
+  sec.style.display = 'block';
+  try {
+    const searchIdx = await getHomeSearchIndex();
+    const peshvoItems = searchIdx.filter(b => (b.category_id === 'peshvoi_millat') || /пешвои миллат/i.test(b.folder || b.category || ''));
+    if (peshvoItems.length && !container.children.length) {
+      container.innerHTML = peshvoItems.slice(0, 12).map(b => bookCard(b, b.folder, '👑')).join('');
+      hydrateBookCardCovers(container);
+      syncBookmarkButtons(container);
+      syncMyBookButtons(container);
+    }
+  } catch(e) {}
+}
+
+// =========================================================================
+// 4. СОМОНАҲОИ РАСМИИ ДАВЛАТӢ (9 PORTALS WITH OFFLINE CACHE)
+// =========================================================================
+const GOV_SITES = [
+  {
+    id: 'president',
+    name: 'Президенти Ҷумҳурии Тоҷикистон',
+    short: 'president.tj · Портали расмӣ',
+    url: 'https://www.president.tj',
+    domain: 'president.tj',
+    icon: '👑',
+    bg: 'linear-gradient(135deg, #0F2B48 0%, #1A4674 100%)',
+    offlineDesc: 'Сомонаи расмии Президенти Ҷумҳурии Тоҷикистон. Дар ин портал санадҳои меъёрӣ-ҳуқуқӣ, паёмҳо ба Маҷлиси Олӣ, хабарҳои расмӣ ва хизматрасониҳои давлатӣ ҷойгиранд.',
+    contacts: 'Тел: (+992 37) 221-72-89 | Почта: info@president.tj'
+  },
+  {
+    id: 'kmt',
+    name: 'Китобхонаи миллии Тоҷикистон',
+    short: 'kmt.tj · Фонди миллии китоб',
+    url: 'http://kmt.tj',
+    domain: 'kmt.tj',
+    icon: '📚',
+    bg: 'linear-gradient(135deg, #1C3322 0%, #2A5A3B 100%)',
+    offlineDesc: 'Сархазинаи китобу нашрияҳои миллии Тоҷикистон. Дорои беш аз 6 миллион нусха китоб, толорҳои электронии хониш ва феҳристҳои ягонаи библиографӣ.',
+    contacts: 'Тел: (+992 37) 221-03-05 | Почта: kmt-tj@mail.ru'
+  },
+  {
+    id: 'nlt',
+    name: 'Китобхонаи миллии электронӣ',
+    short: 'nlt.tj · Электронная библиотека',
+    url: 'https://nlt.tj',
+    domain: 'nlt.tj',
+    icon: '📖',
+    bg: 'linear-gradient(135deg, #3A2B14 0%, #63471D 100%)',
+    offlineDesc: 'Пойгоҳи миллии электронии китобҳо, рисолаҳои илмӣ, дастурҳо ва асарҳои таърихӣ дар шакли рақамӣ.',
+    contacts: 'Почта: info@nlt.tj'
+  },
+  {
+    id: 'maorif',
+    name: 'Вазорати маориф ва илми ҶТ',
+    short: 'maorif.tj · Соҳаи маориф ва илм',
+    url: 'https://maorif.tj',
+    domain: 'maorif.tj',
+    icon: '🏛️',
+    bg: 'linear-gradient(135deg, #1A2E44 0%, #284D75 100%)',
+    offlineDesc: 'Мақомоти марказии ҳокимияти иҷроия дар соҳаи маориф ва илм. Қоидаҳои аттестатсия, барномаҳои давлатии таълимӣ ва олимпиадаҳои ҷумҳуриявӣ.',
+    contacts: 'Тел: (+992 37) 221-46-05 | Почта: info@maorif.tj'
+  },
+  {
+    id: 'mmk',
+    name: 'Маркази миллии қонунгузорӣ',
+    short: 'mmk.tj · Пойгоҳи ягонаи қонунҳо',
+    url: 'https://mmk.tj',
+    domain: 'mmk.tj',
+    icon: '📜',
+    bg: 'linear-gradient(135deg, #2D1A33 0%, #4D2B59 100%)',
+    offlineDesc: 'Маркази миллии қонунгузории назди Президенти ҶТ. Махзани ягонаи ҳамаи кодексҳо, қонунҳо ва санадҳои меъёрии ҳуқуқии амалкунанда.',
+    contacts: 'Тел: (+992 37) 227-86-85 | Почта: mmk@mmk.tj'
+  },
+  {
+    id: 'khovar',
+    name: 'АМИТ «Ховар»',
+    short: 'khovar.tj · Агентии иттилоотӣ',
+    url: 'https://khovar.tj',
+    domain: 'khovar.tj',
+    icon: '📰',
+    bg: 'linear-gradient(135deg, #122F3D 0%, #1B506B 100%)',
+    offlineDesc: 'Агентии миллии иттилоотии Тоҷикистон «Ховар». Хабарҳои расмии фаврӣ, мусоҳибаҳо, таҳлилҳо ва гузоришҳои муҳимтарини рӯз.',
+    contacts: 'Тел: (+992 37) 221-34-85 | Почта: khovar@khovar.tj'
+  },
+  {
+    id: 'mfa',
+    name: 'Вазорати корҳои хориҷии ҶТ',
+    short: 'mfa.tj · Сиёсати хориҷӣ ва равобит',
+    url: 'https://mfa.tj',
+    domain: 'mfa.tj',
+    icon: '🌐',
+    bg: 'linear-gradient(135deg, #152C4E 0%, #1F457E 100%)',
+    offlineDesc: 'Пешбурди сиёсати хориҷии ҶТ, хизматрасониҳои консулӣ, раводидҳои электронӣ (eVisa) ва маълумотномаи сафоратхонаҳои хориҷӣ.',
+    contacts: 'Тел: (+992 37) 221-18-00 | Почта: info@mfa.tj'
+  },
+  {
+    id: 'dushanbe',
+    name: 'Ҳокимияти ш. Душанбе',
+    short: 'dushanbe.tj · Сомонаи шаҳрдорӣ',
+    url: 'https://dushanbe.tj',
+    domain: 'dushanbe.tj',
+    icon: '🏙️',
+    bg: 'linear-gradient(135deg, #242A38 0%, #3D4861 100%)',
+    offlineDesc: 'Мақомоти иҷроияи ҳокимияти давлатии шаҳри Душанбе. Хадамоти коммуналӣ, нақлиёти шаҳрӣ, иншоотҳои нав ва қарорҳои шаҳрдорӣ.',
+    contacts: 'Тел: (+992 37) 221-22-49 | Почта: dushanbe@dushanbe.tj'
+  },
+  {
+    id: 'ntc',
+    name: 'Маркази миллии тестӣ (ИМТ)',
+    short: 'ntc.tj · Дохилшавӣ ва имтиҳонҳо',
+    url: 'https://ntc.tj/tj/',
+    domain: 'ntc.tj',
+    icon: '🎓',
+    bg: 'linear-gradient(135deg, #2B331A 0%, #4D5C2E 100%)',
+    offlineDesc: 'Маркази миллии тестии назди Президенти Ҷумҳурии Тоҷикистон. Бақайдгирии довталабон, кластерҳои ихтисосҳо, ҷадвали имтиҳонҳо ва натиҷаҳои ИМТ.',
+    contacts: 'Тел: (+992 37) 224-53-68 | Почта: info@ntc.tj'
+  }
+];
+
+function renderGovSites() {
+  const container = document.getElementById('govSitesList');
+  if (!container) return;
+  container.innerHTML = GOV_SITES.map(s => `
+    <div class="gov-card-v3" onclick="openMiniBrowser('${s.url}', '${esc(s.name)}')">
+      <div class="gov-preview-box" style="background:${s.bg}">
+        <div class="gov-badge-emblem">${s.icon}</div>
+        <div class="gov-domain-pill">${s.domain}</div>
+      </div>
+      <div class="gov-card-body">
+        <div class="gov-title-v3">${esc(s.name)}</div>
+        <div class="gov-sub-v3">${esc(s.short)}</div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// =========================================================================
+// 5. STREAMLINED IN-APP BROWSER (CLEAN TOP BAR, OFFLINE CACHE, NO EXIT TRAP)
+// =========================================================================
+let currentBrowserUrl = '';
+let currentBrowserTitle = '';
+let browserZoomLevel = 1.0;
+
+function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle = 'Сомонаи давлатӣ') {
+  document.getElementById('inappBrowserModal')?.remove();
+  currentBrowserUrl = initialUrl;
+  currentBrowserTitle = initialTitle;
+  browserZoomLevel = 1.0;
+
+  history.pushState({ inAppBrowserOpen: true }, '');
+
+  const portal = GOV_SITES.find(s => initialUrl.includes(s.domain)) || GOV_SITES[0];
+  const isOnline = navigator.onLine;
+
+  const modal = document.createElement('div');
+  modal.id = 'inappBrowserModal';
+  modal.className = 'inapp-browser-modal';
+
+  modal.innerHTML = `
+    <div class="inapp-top-toolbar">
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Бозгашт" onclick="closeMiniBrowser()">⬅</button>
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Навсозӣ" onclick="browserReload()">🔄</button>
+      
+      <div class="inapp-omnibox">
+        <span style="font-size:13px">🔒</span>
+        <input id="browserOmniInput" type="text" value="${initialUrl}" onkeydown="if(event.key==='Enter') browserNavigate(this.value)">
+      </div>
+
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Хурд кардан" onclick="browserZoom(-0.15)">−</button>
+      <button class="inapp-btn inapp-btn-icon" type="button" title="Калон кардан" onclick="browserZoom(0.15)">+</button>
+      <button class="inapp-btn inapp-btn-icon inapp-btn-close" type="button" title="Пӯшидан" onclick="closeMiniBrowser()">✕</button>
+    </div>
+
+    <div class="inapp-progress-bar" id="browserProgressBar">
+      <div class="inapp-progress-fill"></div>
+    </div>
+
+    <div class="inapp-view-wrap" id="browserViewWrap">
+      <div class="inapp-loading-screen" id="browserLoadingScreen">
+        <div class="inapp-spinner-circle"></div>
+        <div>Саҳифа кушода шуда истодааст...</div>
+      </div>
+
+      ${!isOnline ? `
+      <div class="inapp-offline-view" id="browserOfflineView">
+        <div class="offline-portal-header">
+          <div class="offline-portal-emblem">${portal.icon}</div>
+          <div class="offline-portal-info">
+            <b>${esc(portal.name)}</b>
+            <span class="offline-status-badge">🟢 Нусхаи офлайн (Офлайн-кэш)</span>
+          </div>
+        </div>
+
+        <div class="offline-card-block">
+          <h4>🏛️ Маълумот оид ба сомона</h4>
+          <p>${esc(portal.offlineDesc)}</p>
+        </div>
+
+        <div class="offline-card-block">
+          <h4>📞 Тамос ва суроғаҳои расмӣ</h4>
+          <p>${esc(portal.contacts)}</p>
+          <p style="margin-top:6px;color:#94A3B8">Ҳангоми пайваст шудан ба интернет, саҳифаи мукаммали сомона ба таври автоматӣ навсозӣ мешавад.</p>
+        </div>
+      </div>
+      ` : ''}
+
+      <iframe class="inapp-iframe" id="browserFrame" src="${initialUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" onload="onBrowserFrameLoaded()"></iframe>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+  initBrowserPinchZoom();
+}
+
+function browserNavigate(inputVal) {
+  let url = inputVal.trim();
+  if (!url) return;
+  if (!/^https?:\/\//i.test(url)) {
+    if (url.includes('.') && !url.includes(' ')) {
+      url = 'https://' + url;
+    } else {
+      url = 'https://www.google.com/search?q=' + encodeURIComponent(url);
+    }
+  }
+  currentBrowserUrl = url;
+  const frame = document.getElementById('browserFrame');
+  const input = document.getElementById('browserOmniInput');
+  if (input) input.value = url;
+  if (frame) {
+    showBrowserLoading();
+    frame.src = url;
+  }
+}
+
+function browserReload() {
+  const frame = document.getElementById('browserFrame');
+  if (frame) {
+    showBrowserLoading();
+    frame.src = frame.src;
+  }
+}
+
+function showBrowserLoading() {
+  const loader = document.getElementById('browserLoadingScreen');
+  const bar = document.getElementById('browserProgressBar');
+  if (loader) { loader.style.display = 'flex'; loader.style.opacity = '1'; }
+  if (bar) bar.style.display = 'block';
+}
+
+function onBrowserFrameLoaded() {
+  const loader = document.getElementById('browserLoadingScreen');
+  const bar = document.getElementById('browserProgressBar');
+  if (loader) {
+    loader.style.opacity = '0';
+    setTimeout(() => { loader.style.display = 'none'; }, 220);
+  }
+  if (bar) bar.style.display = 'none';
+}
+
+function browserZoom(delta) {
+  browserZoomLevel = Math.max(0.6, Math.min(2.5, browserZoomLevel + delta));
+  const frame = document.getElementById('browserFrame');
+  if (frame) {
+    frame.style.transform = `scale(${browserZoomLevel})`;
+    frame.style.width = `${100 / browserZoomLevel}%`;
+    frame.style.height = `${100 / browserZoomLevel}%`;
+  }
+}
+
+function initBrowserPinchZoom() {
+  const wrap = document.getElementById('browserViewWrap');
+  if (!wrap) return;
+  let pinchDist = 0;
+  wrap.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      pinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+    }
+  }, { passive: true });
+
+  wrap.addEventListener('touchmove', e => {
+    if (e.touches.length === 2 && pinchDist > 0) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / pinchDist;
+      if (Math.abs(factor - 1) > 0.05) {
+        browserZoomLevel = Math.max(0.7, Math.min(2.5, browserZoomLevel * factor));
+        const frame = document.getElementById('browserFrame');
+        if (frame) {
+          frame.style.transform = `scale(${browserZoomLevel})`;
+          frame.style.width = `${100 / browserZoomLevel}%`;
+          frame.style.height = `${100 / browserZoomLevel}%`;
+        }
+        pinchDist = dist;
+      }
+    }
+  }, { passive: true });
+}
+
+function closeMiniBrowser() {
+  document.getElementById('inappBrowserModal')?.remove();
+}
+
+window.addEventListener('popstate', e => {
+  const modal = document.getElementById('inappBrowserModal');
+  if (modal) {
+    e.preventDefault();
+    closeMiniBrowser();
+  }
+});
+
+// Initial boot
+document.addEventListener('DOMContentLoaded', () => {
+  renderPeshvoBooksFast();
+  renderMyBooksSection();
+  renderGovSites();
+  syncMyBookButtons();
+});
+renderPeshvoBooksFast();
 renderMyBooksSection();
 renderGovSites();
 syncMyBookButtons();
