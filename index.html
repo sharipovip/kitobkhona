@@ -1740,8 +1740,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 @media(max-width:365px){.hero-v3-left{width:64%!important;padding:9px 9px!important}.hero-v3-right{width:48%!important}.hero-kicker-v3{margin-bottom:3px!important}.hero-author-v3 span{font-size:8px!important}.hero-author-v3 b{font-size:9px!important}}
 </style>
 <style id="startup-splash-style">#startupSplash{position:fixed;inset:0;z-index:1000000;background:radial-gradient(circle at 50% 42%,#173659,#071526 68%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#E8C96D;transition:opacity .45s ease,visibility .45s ease}#startupSplash.hide{opacity:0;visibility:hidden}#startupSplash img{width:170px;height:170px;border-radius:50%;object-fit:cover;box-shadow:0 0 0 5px rgba(232,201,109,.18),0 20px 55px rgba(0,0,0,.45)}#startupSplash b{margin-top:20px;font-size:21px;letter-spacing:1px}#startupSplash span{margin-top:5px;color:#A8B8CC;font-size:12px}</style>
-<style id="app-unified-complete-v7">
-/* Header DateTime Widget */
+<style id="app-custom-additions-v6">
+/* Top Header Date/Time & Weather Widget */
 .header-datetime-widget {
   display: flex;
   align-items: center;
@@ -1793,7 +1793,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #F0EAD6;
 }
 
-/* Weather Modal */
+/* Weather modal */
 .weather-modal {
   position: fixed;
   inset: 0;
@@ -1863,10 +1863,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #FFFFFF;
   font-size: 13px;
   outline: none;
-}
-.weather-search-input:focus {
-  border-color: #E8C96D;
-  box-shadow: 0 0 0 2px rgba(201, 168, 76, 0.2);
 }
 .weather-cities-list {
   padding: 8px 10px;
@@ -2168,140 +2164,538 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   background: transparent;
   border: 0;
   color: #E8C96D;
-  font-size: 1<script>
-// =========================================================================
-// 1. DATA AND GLOBAL CONFIG
-// =========================================================================
-var DATA = { repo: 'sharipovip/books', branch: 'main', categories: [] };
-var BOOKS_JSON_URLS = [
-  'books.json?t=' + Date.now(),
-  'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t=' + Date.now()
-];
+  font-size: 18px;
+  cursor: pointer;
+  padding: 4px 12px;
+  border-radius: 10px;
+  transition: all 0.15s ease;
+}
+.inapp-bottom-btn span {
+  font-size: 9.5px;
+  font-weight: 700;
+  color: #CBD5E1;
+}
+.inapp-bottom-btn:hover, .inapp-bottom-btn:active {
+  background: rgba(201, 168, 76, 0.2);
+  transform: scale(1.08);
+}
+.inapp-bottom-btn-close {
+  color: #FFA5A5;
+}
+.inapp-bottom-btn-close span {
+  color: #FFA5A5;
+}
+</style>
+</head>
+<body>
+<div id="startupSplash"><img src="splash_logo.jpg" alt="Китобхона"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');setTimeout(()=>{s.classList.add('hide');setTimeout(()=>s.remove(),500)},4000)})();</script>
+<div class="phone-wrapper">
+  <!-- Объявление админа — ставится в верхушку над логотипом с красивой анимацией появления/исчезновения по очереди -->
+  <div id="announcementBannerTop" class="announce-top">
+    <div class="announce-icon">📢</div>
+    <div class="announce-text" id="announcementTextTop">Эълон!</div>
+    <button class="announce-close" onclick="hideAnnouncementTop()">✕</button>
+  </div>
+
+  <!-- TOP BAR — точь-в-точь как на фото, subtitle изменен на Китоб манбаи дониш -->
+  <header class="new-top-bar-v3">
+    <div class="new-logo-v3">
+      <div class="new-logo-icon-v3 crown-brand-v3" aria-hidden="true">
+        <svg viewBox="0 0 44 40" width="38" height="35" fill="none">
+          <defs>
+            <linearGradient id="crownGold" x1="6" y1="5" x2="38" y2="35" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF4B0"/><stop offset=".38" stop-color="#F0D477"/><stop offset=".72" stop-color="#C99735"/><stop offset="1" stop-color="#8D5D16"/></linearGradient>
+            <linearGradient id="crownFace" x1="22" y1="10" x2="22" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#F9E79A"/><stop offset="1" stop-color="#B77D21"/></linearGradient>
+            <filter id="crownGlow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+          </defs>
+          <path d="M6.5 12.5 14 20l8-13 8 13 7.5-7.5-3.2 18.1H9.7L6.5 12.5Z" fill="url(#crownFace)" stroke="url(#crownGold)" stroke-width="1.6" stroke-linejoin="round" filter="url(#crownGlow)"/>
+          <path d="M10 26.2h24M10.4 30.5h23.2" stroke="#FFF0A0" stroke-width="1.15" stroke-linecap="round" opacity=".9"/>
+          <path d="M13.3 21.2 17 24l5-9 5 9 3.7-2.8" stroke="#FFF3AB" stroke-width="1" stroke-linejoin="round" opacity=".75"/>
+          <circle cx="6.5" cy="11.5" r="2.1" fill="#D84A47" stroke="#FFE99A" stroke-width=".8"/>
+          <circle cx="14" cy="18.8" r="1.75" fill="#F8F4E8" stroke="#D5AA45" stroke-width=".7"/>
+          <circle cx="22" cy="6" r="2.4" fill="#E9C962" stroke="#FFF4B0" stroke-width=".9"/>
+          <circle cx="30" cy="18.8" r="1.75" fill="#F8F4E8" stroke="#D5AA45" stroke-width=".7"/>
+          <circle cx="37.5" cy="11.5" r="2.1" fill="#3DA66A" stroke="#FFE99A" stroke-width=".8"/>
+          <path d="M16 34h12" stroke="url(#crownGold)" stroke-width="2" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="new-logo-text-v3"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div>
+    </div>
+    <div class="new-top-actions-v3">
+      <div class="header-datetime-widget" id="headerWidget" onclick="openWeatherModal()" title="Обу ҳаво ва тақвим">
+        <div class="hdw-col">
+          <span class="hdw-date" id="headerLiveDate">25.09.2026</span>
+          <span class="hdw-time" id="headerLiveTime">--:--</span>
+        </div>
+        <span class="hdw-divider">|</span>
+        <span class="hdw-weather" id="headerWeatherCity">☀️ Душанбе +24°</span>
+      </div>
+      <div class="new-icon-btn-v3" id="searchToggleBtn" title="Ҷустуҷӯ">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8C96D" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/></svg>
+      </div>
+      <div class="new-icon-btn-v3" id="notifBtn" title="Огоҳӣ">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8C96D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 6 7 6 7H0s6 0 6-7"/><path d="M9 21a3 3 0 0 0 6 0"/></svg>
+        <span id="notifBadge" class="badge-v3" style="display:none">3</span>
+      </div>
+      <div class="new-icon-btn-v3" id="themeBtn" style="display:none">🌙</div>
+    </div>
+  </header>
+
+  <main class="main-content">
+    <!-- 1 Ситат Президента — без кавычки “, фото не круглый как в твоем дизайне, прямоугольный с флагом -->
+    <section class="hero-v3">
+      <div class="hero-v3-inner">
+        <div class="hero-v3-left">
+          <div class="hero-kicker-v3" id="heroKicker">Суханҳои Пешвои муаззами миллат дар бораи <b>маориф</b></div>
+          <div class="hero-quote-v3" id="heroQuote">Китоб сарчашмаи дониш ва маърифат аст. Ҳар чӣ ки инсон дар зиндагӣ ба даст меорад, аз роҳи илму маърифат аст.</div>
+          <div class="hero-author-v3">
+            <div class="hero-line-v3"></div>
+            <div><b>ЭМОМАЛӢ РАҲМОН</b><span>Президенти Ҷумҳурии Тоҷикистон</span></div>
+          </div>
+        </div>
+        <div class="hero-v3-right">
+          <img id="heroImg" src="assets/hero/01-president-official.jpg" alt="Президенти ҶТ" loading="eager">
+          <div class="hero-flag-v3"></div>
+          <div class="hero-shadow-v3"></div>
+        </div>
+      </div>
+    </section>
+    <div class="hero-dots-v3" id="heroDots"></div>
+
+    <!-- Search hidden -->
+    <div class="search-section-v3" id="searchSection" style="display:none;">
+      <form class="search-mini-v3" id="homeSearchForm"><span class="s-icon">🔍</span><input id="homeSearch" type="search" placeholder="Ҷустуҷӯи китоб..."><button type="button" onclick="document.getElementById('searchSection').style.display='none'" class="s-close">✕</button></form>
+      <div id="homeSearchResults" class="home-search-results-v3" style="display:none"></div>
+    </div>
+
+    <div id="announcementBanner" style="display:none"><span id="announcementText"></span></div>
+    <div id="quotesUpdatedBanner" style="display:none"></div>
+
+    <!-- 2 Озмунҳои ҷумҳуриявӣ — круглые красиво -->
+    <section class="ozmun-v3">
+      <div class="sec-head-v3"><div class="sec-title-v3">🏆 Озмунҳои ҷумҳуриявӣ</div></div>
+      <div class="ozmun-scroll-v3" id="ozmunList"></div>
+    </section>
+
+    <!-- Продолжить чтение — теперь сверху категории как просил -->
+    <div class="continue-section" id="continueSection" style="display:none"><div class="continue-card" id="continueCard"></div></div>
+
+    <!-- 3 Категории — как на фото один в один иконки -->
+    <section class="cat-v3">
+      <div class="sec-head-v3"><div class="sec-title-v3">Категорияҳо</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
+    </section>
+
+    <!-- 4 Китобҳои Пешвои миллат -->
+    <section class="books-v3" id="pesvoSection" style="display:none">
+      <div class="sec-head-v3"><div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div><div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="books-scroll-v3" id="pesvoBooks"></div>
+    </section>
+
+    <!-- 4.1 Бахши махсус: Китобҳои ман -->
+    <section class="books-v3" id="myBooksSection">
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">📌 Китобҳои ман</div>
+        <div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div>
+      </div>
+      <div class="books-scroll-v3" id="myBooksList"></div>
+    </section>
+
+    <!-- 5 Китобҳои нав -->
+    <section class="books-v3" id="newSection" style="display:none">
+      <div class="sec-head-v3"><div class="sec-title-v3">Китобҳои нав</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=new'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="books-scroll-v3" id="newBooks"></div>
+    </section>
+
+    <!-- 6 Китобҳои серхонтарин -->
+    <section class="books-v3" id="popSection" style="display:none">
+      <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонтарин</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=popular'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="books-scroll-v3" id="popBooks"></div>
+    </section>
+
+    <!-- 7 Сомонаҳои давлатӣ -->
+    <section class="gov-section-v3" id="govSection">
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">🏛️ Сомонаҳои давлатӣ</div>
+      </div>
+      <div class="gov-scroll-v3" id="govSitesList"></div>
+    </section>
+
+  </main>
+
+  <div class="nav-bottom">
+    <div class="kh-nav2">
+      <a class="nav-item active" href="index.html" aria-label="Асосӣ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span>Асосӣ</span>
+      </a>
+      <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
+      <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
+      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
+      <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
+      <a class="nav-item" href="profile.html" aria-label="Профил"><div class="profile-wrap"><div class="person-group"><div class="person-small ps1"></div><div class="person-small ps2"></div><div class="person-small ps3"></div></div></div><span>Профил</span></a>
+    </div>
+  </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => { CacheManager.init(); const sBtn=document.getElementById('searchToggleBtn'); const sSec=document.getElementById('searchSection'); if(sBtn&&sSec){sBtn.addEventListener('click',()=>{ sSec.style.display=sSec.style.display==='none'?'block':'none'; if(sSec.style.display==='block'){setTimeout(()=>document.getElementById('homeSearch')?.focus(),100);} });}});
+const BOOKS_JSON_URLS = ['books.json?t='+Date.now(),'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now()];
 const $ = id => document.getElementById(id);
-const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
-
-function rawUrl(folder, file) {
-  const repo = (DATA && DATA.repo) || 'sharipovip/books';
-  const branch = (DATA && DATA.branch) || 'main';
-  return 'https://raw.githubusercontent.com/' + repo + '/' + branch + '/' + enc(folder) + '/' + encodeURIComponent(file);
-}
-
-function coverCandidates(folder, file) {
-  const repo = (DATA && DATA.repo) || 'sharipovip/books';
-  const branch = (DATA && DATA.branch) || 'main';
-  const jpg = encodeURIComponent(file.replace(/\.pdf$/i, '.jpg'));
-  const clean = String(folder).replace(/^books\//, '');
-  const base = 'https://raw.githubusercontent.com/' + repo + '/' + branch;
-  return [
-    base + '/covers/' + enc(clean) + '/' + jpg,
-    base + '/covers/books/' + enc(clean) + '/' + jpg,
-    base + '/covers/' + enc(folder) + '/' + jpg
-  ];
-}
-
-function getCoverCacheMap() {
-  try {
-    const map1 = JSON.parse(localStorage.getItem('kk_cover_cache') || '{}');
-    const map2 = JSON.parse(localStorage.getItem('kk_cache_covers') || '{}');
-    return Object.assign({}, map1, map2);
-  } catch(e) { return {}; }
-}
-function setCoverCacheMap(map) {
-  try { localStorage.setItem('kk_cover_cache', JSON.stringify(map)); } catch(e) {}
-}
-function getCachedCoverDataUrl(url) {
-  if (!url) return '';
-  const map = getCoverCacheMap();
-  const item = map[url];
-  if (item && item.dataUrl && (Date.now() - (item.ts || 0) < 7 * 24 * 60 * 60 * 1000)) return item.dataUrl;
-  return '';
-}
-function setCachedCoverDataUrl(url, dataUrl) {
-  if (!url || !dataUrl) return;
-  const map = getCoverCacheMap();
-  map[url] = { dataUrl, ts: Date.now() };
-  setCoverCacheMap(map);
-}
-function blobToDataUrl(blob) {
-  return new Promise((resolve) => {
-    const reader = new FileReader();
-    reader.onloadend = () => resolve(reader.result || '');
-    reader.readAsDataURL(blob);
-  });
-}
-async function ensureCoverDataUrl(url, imgEl) {
-  if (!url) return '';
+const enc = p => String(p||'').split('/').map(encodeURIComponent).join('/');
+let DATA=null;
+const getCachedCoverDataUrl = (url) => CacheManager?.getCachedCover(url) || '';
+const setCachedCoverDataUrl = (url, dataUrl) => CacheManager?.setCachedCover(url, dataUrl);
+const ensureCoverDataUrl = async (url, imgEl) => {
   const cached = getCachedCoverDataUrl(url);
-  if (cached) {
-    if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached);
-    return cached;
-  }
-  try {
-    const r = await fetch(url);
-    if (!r.ok) return '';
-    const blob = await r.blob();
-    const dataUrl = await blobToDataUrl(blob);
-    setCachedCoverDataUrl(url, dataUrl);
-    if (imgEl) imgEl.setAttribute('src', dataUrl);
-    return dataUrl;
-  } catch(e) {
-    return '';
+  if (cached) { if (imgEl && imgEl.getAttribute('src') !== cached) imgEl.setAttribute('src', cached); return cached; }
+  try { const r = await fetch(url); if (!r.ok) return ''; const blob = await r.blob(); const dataUrl = await CacheManager?.blobToDataUrl(blob) || ''; if (dataUrl) { setCachedCoverDataUrl(url, dataUrl); if (imgEl) imgEl.setAttribute('src', dataUrl); } return dataUrl; } catch(e){ return ''; }
+};
+function getBookAccessState(url){let cached=false;try{const map=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'),wanted=canonicalBookUrl(url);cached=Object.keys(map).some(k=>canonicalBookUrl(k)===wanted)}catch(e){}const online=navigator.onLine;if(!online)return cached?{show:false,icon:'',bg:'',dim:false}:{show:true,icon:'🔒',bg:'rgba(220,80,80,0.9)',dim:true};return{show:false,icon:'',bg:'',dim:false}}
+function hydrateBookCardCovers(root=document){ if(window.CacheManager&&typeof CacheManager.hydrateBookCardCovers==='function'){ CacheManager.hydrateBookCardCovers(root); return;} const nodes=root.querySelectorAll('img[data-cover-url]'); nodes.forEach(img=>{ const cover=img.getAttribute('data-cover-url')||''; const cached=getCachedCoverDataUrl(cover); if(cached&&img.getAttribute('src')!==cached) img.setAttribute('src',cached); if(cover) ensureCoverDataUrl(cover,img); });}
+function theme(t){ document.body.classList.toggle('light-theme',t==='light'); localStorage.setItem('kk_theme',t); }
+theme(localStorage.getItem('kk_theme')||'dark');
+let hero = window.QUOTES || [];
+if(!hero.length){ hero=[ {img:'assets/hero/01-president-official.jpg',topic:'маориф',quote:'Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад.',color:'#ffffff',fontSize:15,displayDuration:12,fontFamily:'Manrope, sans-serif'}, {img:'assets/hero/02-istiqlol-flag.jpg',topic:'истиқлолият',quote:'Истиқлолият неъмати бебаҳо ва асоси ҳастии давлатдории миллӣ аст.',color:'#ffffff',fontSize:15,displayDuration:12,fontFamily:'Manrope, sans-serif'}, {img:'assets/hero/03-vahdat-diplomacy.jpg',topic:'ваҳдати миллӣ',quote:'Ваҳдати миллӣ пояи сулҳу субот ва рушди ҷомеа мебошад.',color:'#ffffff',fontSize:15,displayDuration:12,fontFamily:'Manrope, sans-serif'} ];}
+let hi=0,typeTimer=null,heroAuto=null;
+function typeText(text){ clearInterval(typeTimer); const el=$('heroQuote'); if(!el) return; el.textContent=''; let n=0; typeTimer=setInterval(()=>{ el.textContent=text.slice(0,++n); if(n>=text.length) clearInterval(typeTimer); }, 70); }
+function fitHeroQuote(preferredSize){
+  const heroEl=document.querySelector('.hero-v3'),left=document.querySelector('.hero-v3-left'),quote=$('heroQuote'),kicker=$('heroKicker'),author=document.querySelector('.hero-author-v3');
+  if(!heroEl||!left||!quote)return;
+  const narrow=innerWidth<=365,minSize=narrow?4.2:4.8,start=Math.min(11.5,Math.max(8,Number(preferredSize)||11.5));
+  let size=start,line=1.22;
+  const available=()=>Math.max(28,left.clientHeight-(kicker?.offsetHeight||0)-(author?.offsetHeight||0)-24);
+  const apply=()=>{heroEl.style.setProperty('--hero-quote-size',size.toFixed(1)+'px');heroEl.style.setProperty('--hero-quote-line',line.toFixed(2));void quote.offsetHeight};
+  apply();
+  while(size>minSize&&quote.scrollHeight>available()+1){size-=.35;if(size<7)line=1.16;apply()}
+  while(line>1.02&&quote.scrollHeight>available()+1){line-=.03;apply()}
+  if(quote.scrollHeight>available()+1){size=Math.max(3.6,size-.8);line=1.02;apply()}
+}
+let heroFitTimer=null;
+function scheduleHeroFit(size){clearTimeout(heroFitTimer);requestAnimationFrame(()=>fitHeroQuote(size));heroFitTimer=setTimeout(()=>fitHeroQuote(size),180)}
+window.addEventListener('resize',()=>scheduleHeroFit(hero[hi]?.fontSize));window.visualViewport?.addEventListener('resize',()=>scheduleHeroFit(hero[hi]?.fontSize));
+function setHero(i){
+  if(!hero.length)return;hi=i%hero.length;const h=hero[hi],inner=document.querySelector('.hero-v3-inner');
+  if(inner)inner.classList.add('hero-changing');
+  setTimeout(()=>{const imgEl=$('heroImg');if(imgEl){imgEl.src=h.img;imgEl.alt='Пешвои миллат — '+h.topic;const right=imgEl.closest('.hero-v3-right');if(right)right.style.setProperty('--hero-image',`url("${String(h.img).replace(/"/g,'')}")`)}const kicker=$('heroKicker');if(kicker)kicker.innerHTML='Суханҳои Пешвои муаззами миллат дар бораи <b>'+h.topic+'</b>';const quoteEl=$('heroQuote');if(quoteEl){quoteEl.style.color=h.color||'#fff';quoteEl.style.fontFamily=h.fontFamily||"Georgia,'Times New Roman',serif";quoteEl.title='Манбаъ: '+(h.sourceTitle||'president.tj');quoteEl.textContent=h.quote;scheduleHeroFit(h.fontSize)}if($('heroDots'))$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot-v3 ${j===hi?'active':''}"></div>`).join('');requestAnimationFrame(()=>inner?.classList.remove('hero-changing'))},220);
+  clearTimeout(heroAuto);heroAuto=setTimeout(()=>setHero(hi+1),(h.displayDuration||12)*1000)
+}
+setHero(Math.floor(Math.random()*hero.length));
+document.fonts?.ready?.then(()=>scheduleHeroFit(hero[hi]?.fontSize)).catch(()=>{});
+
+function hideAnnouncementTop(){ const el=document.getElementById('announcementBannerTop'); if(el){ el.classList.remove('show'); setTimeout(()=>el.style.display='none',400);} }
+function showAnnouncementTop(text){
+  const banner=document.getElementById('announcementBannerTop');
+  const txt=document.getElementById('announcementTextTop');
+  if(!banner||!txt) return;
+  txt.textContent=text;
+  banner.style.display='flex';
+  requestAnimationFrame(()=>{ banner.classList.add('show'); });
+  // авто скрытие через 6 сек красиво
+  setTimeout(()=>hideAnnouncementTop(), 20000);
+}
+async function loadAnnouncementCached(){
+  let data=CacheManager.get(CacheManager.KEYS.ANNOUNCEMENT);
+  if(!data){ try{ const resp=await edgeApiFetch('/api/announcements/active',{},5000); if(resp.ok){ data=await resp.json(); CacheManager.set(CacheManager.KEYS.ANNOUNCEMENT,data);} }catch(e){} }
+  // Показываем в верхушке над логотипом с красивой анимацией по очереди
+  if(data && data.text){
+    // старый hidden для совместимости
+    const oldTxt=$('announcementText'); if(oldTxt) oldTxt.textContent=data.text;
+    // новый в топе
+    setTimeout(()=>showAnnouncementTop(data.text), 800);
   }
 }
+const NOTIF_ICONS={chat_message:'💬',friend_request:'🤝',achievement:'🏆',report:'⚠️',reminder:'📚',system:'🔔',general:'🔔'};
+const NOTIF_CACHE_KEY='kk_notifications_cache_v2';
+const NOTIF_CACHE_TTL=10*60*1000;
+function unreadNotifications(items){return(Array.isArray(items)?items:[]).filter(n=>!n.is_read)}
+function readNotifCache(){try{const x=JSON.parse(localStorage.getItem(NOTIF_CACHE_KEY)||'null');return x&&Array.isArray(x.items)&&Date.now()-Number(x.ts||0)<NOTIF_CACHE_TTL?x:null}catch(e){return null}}
+function writeNotifCache(items){try{localStorage.setItem(NOTIF_CACHE_KEY,JSON.stringify({items:Array.isArray(items)?items:[],ts:Date.now()}))}catch(e){}}
+function markNotifCacheSeen(ids){const c=readNotifCache();if(!c)return;const set=new Set(ids.map(String));writeNotifCache(c.items.map(n=>set.has(String(n.id))?{...n,is_read:true}:n))}
+async function refreshNotifCache(){const items=await getNotifications();writeNotifCache(items);return items}
+function paintNotifBadge(items){const badge=$('notifBadge');if(!badge)return;const n=unreadNotifications(items).length;if(n){badge.textContent=n>99?'99+':n;badge.style.display='flex'}else badge.style.display='none'}
+async function updateNotifBadge(){const token=localStorage.getItem('kk_token'),badge=$('notifBadge');if(!badge)return;if(!token){badge.style.display='none';return}const cached=readNotifCache();if(cached){paintNotifBadge(cached.items);return}refreshNotifCache().then(paintNotifBadge).catch(()=>{})}
+function notificationTarget(n){let link=String(n?.link||'').trim();if(!link||link==='#'||link==='/')return n?.type==='chat_message'?'chats.html':'';if(/^https?:\/\//i.test(link))return link;const appRoot=location.pathname.split('/').filter(Boolean)[0]||'';if(link.startsWith('/')&&appRoot&&link.startsWith('/'+appRoot+'/'))return link;return link.replace(/^\/+/, '')}
+function formatNotifTime(value){try{return new Intl.DateTimeFormat('tg-TJ',{day:'2-digit',month:'short',hour:'2-digit',minute:'2-digit'}).format(new Date(value))}catch(e){return''}}
+function showNotificationsModal(items){
+  document.getElementById('notifModal')?.remove();const unread=unreadNotifications(items),modal=document.createElement('div');modal.id='notifModal';modal.className='notif-modal';
+  const box=document.createElement('section');box.className='notif-panel';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Огоҳиҳо');
+  box.innerHTML=`<header class="notif-head"><div class="notif-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M9 20h6"/></svg></div><div class="notif-head-copy"><b>Огоҳиҳо</b><span>${unread.length?unread.length+' огоҳии нав':'Ҳама огоҳиҳо дида шуданд'}</span></div><button class="notif-close" type="button" aria-label="Пӯшидан">×</button></header><div class="notif-list"></div>`;
+  const list=box.querySelector('.notif-list');if(!unread.length)list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Огоҳии нав нест</b><span>Санҷиш дар замина идома дорад.</span></div>';
+  else unread.forEach(n=>{const btn=document.createElement('button');btn.type='button';btn.className='notif-item';btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><span><span class="notif-title">${esc(n.title||'Китобхона')}</span><span class="notif-body">${esc(n.body||'')}</span><span class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</span></span><span class="notif-arrow">›</span>`;btn.addEventListener('click',()=>{markNotificationRead(n.id);markNotifCacheSeen([n.id]);const target=notificationTarget(n);modal.remove();if(target)location.href=target});list.appendChild(btn)});
+  const close=()=>modal.remove();box.querySelector('.notif-close').onclick=close;modal.onclick=e=>{if(e.target===modal)close()};modal.appendChild(box);document.body.appendChild(modal);box.querySelector('.notif-close').focus();
+  const ids=unread.map(n=>n.id);markNotifCacheSeen(ids);paintNotifBadge([]);Promise.allSettled(ids.map(markNotificationRead));return modal
+}
+const nb=$('notifBtn');if(nb)nb.style.display='none';if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
 
-function getBookAccessState(url) {
-  let cached = false;
+const oz=[ ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'] ];
+const ozEl=$('ozmunList'); if(ozEl) ozEl.innerHTML=oz.map(o=>`<div class="ozmun-item-v3" onclick="location.href='${o[0]}'"><div class="ozmun-circle-v3"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label-v3">${o[2]}</div></div>`).join('');
+
+const hsForm=$('homeSearchForm'); if(hsForm) hsForm.onsubmit=e=>{e.preventDefault(); const q=$('homeSearch').value.trim(); if(q) searchHome(q,true);};
+async function fetchJsonFast(u,ms=4500){ const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),ms); try{ const r=await fetch(u,{cache:'no-store',signal:ctrl.signal}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); } finally{ clearTimeout(t);} }
+async function loadBooksJson(){ try{ const cached=localStorage.getItem('kk_booksjson_cache'); if(cached){ const parsed=JSON.parse(cached); if(parsed){ DATA=parsed; return DATA; } } }catch(e){} for(const u of BOOKS_JSON_URLS){ try{ DATA=await fetchJsonFast(u); try{ localStorage.setItem('kk_booksjson_cache',JSON.stringify(DATA));}catch(_){} return DATA; }catch(e){} } try{ DATA=JSON.parse(localStorage.getItem('kk_booksjson_cache')||'null'); if(DATA) return DATA;}catch(e){} throw new Error('Пайвастшавӣ дастрас нест. Интернетро санҷед.');}
+function rawUrl(folder,file){ return `https://raw.githubusercontent.com/${DATA.repo||'sharipovip/books'}/${DATA.branch||'main'}/${enc(folder)}/${encodeURIComponent(file)}`; }
+function coverCandidates(folder,file){ const jpg=encodeURIComponent(file.replace(/\.pdf$/i,'.jpg')); const clean=String(folder).replace(/^books\//,''); const base=`https://raw.githubusercontent.com/${DATA.repo||'sharipovip/books'}/${DATA.branch||'main'}`; return [`${base}/covers/${enc(clean)}/${jpg}`,`${base}/covers/books/${enc(clean)}/${jpg}`,`${base}/covers/${enc(folder)}/${jpg}`]; }
+const BOOKMARK_OUTLINE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>';
+const BOOKMARK_FILLED='<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.2"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>';
+const STAR_ICON='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5 14.1 9.1H20l-4.8 3.5 1.4 5.9-4.6-3.3-4.6 3.3 1.4-5.9L4 9.1h5.9z"/></svg>';
+let favoriteBookIds=new Set();
+function normalizeHomeBookId(folder,file){return ((folder?folder.replace(/\/+$/,'')+'/':'')+file).replace(/^books\//i,'')}
+function bookmarkButton(bookId,name,author){return `<button type="button" class="bm-v3" data-bookmark data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(author||'')}" aria-label="Ба дӯстдошта илова кардан" onclick="toggleHomeFavorite(event,this)">${BOOKMARK_OUTLINE}</button>`}
+function pinButton(bookId, name, author, folder, file, cover) {
+  const cleanId = normalizeBookKey(bookId || file || name);
+  const active = isMyBook(cleanId);
+  return `<button type="button" class="pin-v3 ${active ? 'active' : ''}" data-pin data-book-id="${esc(cleanId)}" data-book-title="${esc(name)}" data-book-author="${esc(author || '')}" data-folder="${esc(folder || '')}" data-file="${esc(file || '')}" data-cover="${esc(cover || '')}" aria-label="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}" onclick="toggleMyBook(event,this)" title="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}">${active ? '📌' : '➕'}</button>`;
+}
+
+function bookCard(b,folder,badge=''){
+  const file=b.file||((b.name||'book')+'.pdf'),name=b.name||file.replace(/\.pdf$/i,''),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||cover,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';
+  const tag=badge||'НАВ';
+  return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3" style="position:relative"><div class="book-tag-v3">${tag}</div><img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(coversJson)}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="${coverStyle}"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,.3)">${esc(name)}</span><div data-book-badge style="display:${state.show?'flex':'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff">${state.icon}</div></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.author||'')}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div><div style="display:flex;align-items:center;gap:4px">${pinButton(bookId,name,b.author,folder,file,cover)}${bookmarkButton(bookId,name,b.author)}</div></div></div></div>`;
+}
+async function loadHomeFavorites(){const token=localStorage.getItem('kk_token');if(!token){favoriteBookIds.clear();syncBookmarkButtons();return}try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites',{headers:{Authorization:'Bearer '+token}});if(!r.ok)throw Error('HTTP '+r.status);favoriteBookIds=new Set((await r.json()).map(x=>String(x.book_id||'').replace(/^books\//i,'')));syncBookmarkButtons()}catch(e){console.warn('favorites',e)}}
+function syncBookmarkButtons(root=document){root.querySelectorAll('[data-bookmark]').forEach(btn=>{const active=favoriteBookIds.has(btn.dataset.bookId);btn.classList.toggle('active',active);btn.innerHTML=active?BOOKMARK_FILLED:BOOKMARK_OUTLINE;btn.setAttribute('aria-label',active?'Аз дӯстдошта хориҷ кардан':'Ба дӯстдошта илова кардан')})}
+async function toggleHomeFavorite(event,btn){event.preventDefault();event.stopPropagation();const token=localStorage.getItem('kk_token');if(!token){toast('Барои истифодаи дӯстдошта ворид шавед');return}const id=btn.dataset.bookId,active=favoriteBookIds.has(id);btn.disabled=true;try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(active?'/'+encodeURIComponent(id):''),{method:active?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!active?{'Content-Type':'application/json'}:{})},body:active?undefined:JSON.stringify({book_id:id,book_title:btn.dataset.bookTitle,book_author:btn.dataset.bookAuthor})});if(!r.ok)throw Error('HTTP '+r.status);active?favoriteBookIds.delete(id):favoriteBookIds.add(id);syncBookmarkButtons();toast(active?'Аз дӯстдошта хориҷ шуд':'Ба дӯстдошта илова шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд',true)}finally{btn.disabled=false}}
+function openReader(url,name,cover=''){ let decodedCover=''; try{ decodedCover=decodeURIComponent(cover||''); }catch(e){ decodedCover=''; } const coverParam=decodedCover&&!/^data:/i.test(decodedCover)?`&cover=${encodeURIComponent(decodedCover)}`:''; location.href=`reader.html?url=${url}&name=${name}${coverParam}`; }
+const manifestCache=new Map(); let searchTimer=null;
+async function loadManifest(sub){ const key=sub?.folder; if(!key) return []; if(manifestCache.has(key)) return manifestCache.get(key); try{ const raw=localStorage.getItem('kk_manifest_cache'); if(raw){ const parsed=JSON.parse(raw); const cached=parsed[key]; if(Array.isArray(cached)){ manifestCache.set(key,cached); return cached; } } }catch(e){} let arr=[]; try{ const r=await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(sub.folder)}/manifest.json?t=${Date.now()}`,{cache:'no-store'}); if(r.ok){ const j=await r.json(); arr=Array.isArray(j.books)?j.books:[]; } }catch(e){} manifestCache.set(key,arr); try{ const raw=localStorage.getItem('kk_manifest_cache'); const parsed=raw?JSON.parse(raw):{}; parsed[key]=arr; localStorage.setItem('kk_manifest_cache',JSON.stringify(parsed)); }catch(e){} return arr; }
+let HOME_SEARCH_INDEX=null,HOME_SEARCH_INDEX_PROMISE=null;
+async function getHomeSearchIndex(){
+  if(Array.isArray(HOME_SEARCH_INDEX))return HOME_SEARCH_INDEX;
+  if(HOME_SEARCH_INDEX_PROMISE)return HOME_SEARCH_INDEX_PROMISE;
+  HOME_SEARCH_INDEX_PROMISE=(async()=>{
+    try{const cached=JSON.parse(localStorage.getItem('kk_home_search_index_v1')||'null');if(cached?.items?.length){HOME_SEARCH_INDEX=cached.items;return HOME_SEARCH_INDEX}}catch(e){}
+    try{const r=await fetch('search-index.json',{cache:'force-cache'});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();HOME_SEARCH_INDEX=Array.isArray(data.items)?data.items:[];try{localStorage.setItem('kk_home_search_index_v1',JSON.stringify({items:HOME_SEARCH_INDEX,ts:Date.now()}))}catch(e){}return HOME_SEARCH_INDEX}catch(e){}
+    // Fallback to manifests only if the packaged index is unavailable.
+    if(!DATA)await loadBooksJson();const groups=await Promise.all((DATA.categories||[]).flatMap(cat=>(cat.subs||[]).map(async sub=>{const books=await loadManifest(sub);return books.map(book=>({name:book.name||String(book.file||'').replace(/\.pdf$/i,''),file:book.file,author:book.author||'',folder:sub.folder,category_id:cat.id,category:cat.name,subcategory:sub.name||sub.folder}))})));HOME_SEARCH_INDEX=groups.flat();return HOME_SEARCH_INDEX
+  })().finally(()=>HOME_SEARCH_INDEX_PROMISE=null);
+  return HOME_SEARCH_INDEX_PROMISE
+}
+async function searchHome(q,force=false){
+  q=(q||'').trim().toLowerCase();const box=$('homeSearchResults');if(!box)return;if(!q){box.style.display='none';box.innerHTML='';return}if(q.length<2&&!force)return;
+  box.style.display='block';box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⌕</div><div><div class="search-result-name">Ҷустуҷӯ...</div><div class="search-result-sub">Як лаҳза</div></div></div>';
+  try{const index=await getHomeSearchIndex();const results=[];for(const item of index){const hay=[item.name,item.file,item.author,item.category,item.subcategory].filter(Boolean).join(' ').toLowerCase();if(hay.includes(q)){results.push(item);if(results.length>=20)break}}
+    if(!results.length){box.innerHTML='<div class="search-result-item"><div class="search-result-icon">📭</div><div><div class="search-result-name">Ёфт нашуд</div><div class="search-result-sub">Калимаи дигар нависед</div></div></div>';return}
+    box.innerHTML=results.map(item=>{const file=item.file||item.name+'.pdf',url=rawUrl(item.folder,file);return `<div class="search-result-item" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(item.name||file.replace(/\.pdf$/i,''))}')"><div class="search-result-icon">📖</div><div><div class="search-result-name">${esc(item.name||file)}</div><div class="search-result-sub">${esc(item.category||'')} · ${esc(item.subcategory||item.folder||'')}</div></div></div>`}).join('')
+  }catch(e){box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⚠️</div><div><div class="search-result-name">Пайвастшавӣ</div><div class="search-result-sub">'+esc(e.message||e)+'</div></div></div>'}
+}
+const hsInput=$('homeSearch'); if(hsInput) hsInput.addEventListener('input',()=>{ clearTimeout(searchTimer); searchTimer=setTimeout(()=>searchHome(hsInput.value),350); });
+function renderCategories(cats){
+  const grid=$('catGrid');if(!grid)return;if(!cats||!cats.length){grid.innerHTML='<div class="empty">Категория нест</div>';return}
+  const svg=(body)=>`<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
+  const icons={
+    adabiyoti_klassiki:svg('<path d="M4 5.5c3-1.5 5.5-.8 8 1.2 2.5-2 5-2.7 8-1.2v13c-3-1.4-5.5-.8-8 1.1-2.5-1.9-5-2.5-8-1.1z"/><path d="M12 6.7v12.9"/>'),
+    adabiyoti_jahon:svg('<circle cx="12" cy="12" r="8.5"/><path d="M3.8 12h16.4M12 3.5c2.5 2.3 3.7 5.1 3.7 8.5S14.5 18.2 12 20.5C9.5 18.2 8.3 15.4 8.3 12S9.5 5.8 12 3.5z"/>'),
+    adabiyoti_muosir:svg('<path d="m5 18 1.2-4.5L16.8 3l4.2 4.2-10.5 10.6z"/><path d="m13.8 6 4.2 4.2M5 18l4.5-1.2L7 14.5z"/>'),
+    chiston:svg('<path d="M9.2 9a3 3 0 1 1 4.3 2.7c-1 .5-1.5 1.2-1.5 2.3"/><circle cx="12" cy="18" r=".8" fill="currentColor"/><circle cx="12" cy="12" r="9"/>'),
+    farhang:svg('<path d="M4 20h16M6 17h12M7 7v10m5-10v10m5-10v10M4 7h16L12 3z"/>'),
+    zindaginoma:svg('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3.2-6.5 7-6.5s6.3 2.3 7 6.5"/><path d="M4 3h3M17 3h3"/>'),
+    zhurnalistika:svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h4v4H7zM14 9h4M14 12h4M7 16h11"/>'),
+    iqtisod:svg('<path d="M4 19V5M4 19h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/>'),
+    tib:svg('<path d="M9 4h6v5h5v6h-5v5H9v-5H4V9h5z"/>'),
+    kitobhoi_darsi:svg('<path d="m3 9 9-5 9 5-9 5z"/><path d="M6 11.2V16l6 3 6-3v-4.8M21 9v6"/>'),
+    ilmi:svg('<circle cx="12" cy="12" r="2" fill="currentColor"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>'),
+    peshvoi_millat:svg('<path d="m4 9 3 3 5-7 5 7 3-3-2 9H6z"/><path d="M7 21h10"/><circle cx="4" cy="7" r="1" fill="currentColor"/><circle cx="12" cy="3" r="1" fill="currentColor"/><circle cx="20" cy="7" r="1" fill="currentColor"/>'),
+    tarih:svg('<path d="M4 20h16M6 17h12M7 8v9m5-9v9m5-9v9M4 8h16L12 3z"/><path d="M9.5 12h5"/>'),
+    digar:svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>')
+  };
+  grid.innerHTML=cats.slice(0,6).map(c=>`<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${icons[c.id]||icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
+}
+async function loadHome(){
+  try{
+    const d=await loadBooksJson();
+    const categories=d.categories||[];
+    CacheManager.set(CacheManager.KEYS.CATEGORIES,categories);
+    renderCategories(categories);
+    const priority=categories.find(c=>c.id==='peshvoi_millat')||categories.find(c=>c.id==='president')||categories.find(c=>/пешвои|президент|president|peshvoi|эмомали/i.test([c.name,c.id].join(' ')));
+    if(priority){
+      const folders=(priority.subs&&priority.subs.length)?priority.subs:[{folder:priority.folder||priority.folder_raw||('books/'+(priority.name||'')),name:priority.name}];
+      let all=[];
+      for(const ps of folders){ try{ const folder=ps.folder||ps.folder_raw||('books/'+(ps.name||'')); const arr=await loadManifest({...ps,folder}); all.push(...arr.map(b=>({...b,_folder:folder})));}catch(e){} }
+      if(!all.length){
+        try{
+          const idx=await getHomeSearchIndex();
+          const pItems=idx.filter(b=>b.category_id==='peshvoi_millat'||/пешвои миллат/i.test(b.folder||b.category||''));
+          all=pItems.map(b=>({...b,_folder:b.folder}));
+        }catch(e){}
+      }
+      if(all.length){
+        $('pesvoSection').style.display='block';
+        $('pesvoBooks').innerHTML=all.slice(0,12).map(b=>bookCard(b,b._folder,'👑')).join('');
+        hydrateBookCardCovers($('pesvoBooks'));
+        syncBookmarkButtons($('pesvoBooks'));
+        syncMyBookButtons($('pesvoBooks'));
+      }
+    }
+    await loadNewBooks(d);
+  }catch(e){ console.error('loadHome',e); }
+  await loadPopularBooksCached();
+}
+async function loadNewBooks(data){
+  try{
+    const categories=data.categories||[];
+    let candidates=[];
+    for(const c of categories.slice(0,5)){ for(const s of (c.subs||[]).slice(0,2)){ const arr=await loadManifest(s); candidates.push(...arr.slice(-4).map(b=>({b,folder:s.folder}))); if(candidates.length>30) break; } if(candidates.length>30) break; }
+    candidates=candidates.sort(()=>0.5-Math.random()).slice(0,12);
+    const html=candidates.map(x=>bookCard(x.b,x.folder)).join('');
+    const newSec=$('newSection'); const newBooks=$('newBooks');
+    if(newBooks&&html){ newBooks.innerHTML=html; if(newSec) newSec.style.display='block'; hydrateBookCardCovers(newBooks); syncBookmarkButtons(newBooks); }
+  }catch(e){ console.warn('loadNewBooks',e); }
+}
+async function loadPopularBooksCached(){ let books=CacheManager.get('kk_cache_popular_books'); if(!books){ try{ const r=await edgeApiFetch('/api/popular-books?period=all',{},8000); if(!r.ok) throw new Error('Failed'); books=await r.json(); CacheManager.set('kk_cache_popular_books',books);}catch(e){ console.warn(e); return;} } renderPopularBooks(books); }
+function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' дақ';const h=Math.floor(total/60),m=total%60;return h+' соат'+(m?' '+m+' дақ':'')}
+let POPULAR_BOOKS=[];
+function normalizeBookTitle(value){return String(value||'').toLowerCase().replace(/\.pdf$/i,'').replace(/[_.-]+/g,' ').replace(/\s+/g,' ').trim()}
+function normalizeRawGithubUrl(value){
+  try{const u=new URL(value);let path=u.pathname;for(let i=0;i<3;i++){try{const next=decodeURIComponent(path);if(next===path)break;path=next}catch(e){break}}u.pathname=path.split('/').map((part,i)=>i===0?'':encodeURIComponent(part)).join('/');return u.toString()}catch(e){return String(value||'')}
+}
+async function openPopularBook(index){
+  const b=POPULAR_BOOKS[index];if(!b)return;const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,'');
+  let url='',cover=b.cover_url||'';
+  try{const search=await getHomeSearchIndex();const wanted=normalizeBookTitle(name);const found=search.find(item=>normalizeBookTitle(item.name||item.file)===wanted);if(found){url=rawUrl(found.folder,found.file||found.name+'.pdf');const covers=coverCandidates(found.folder,found.file||found.name+'.pdf');cover=cover||covers[0]||''}}catch(e){}
+  if(!url&&b.pdf_url)url=normalizeRawGithubUrl(b.pdf_url);
+  if(!url){let id=String(b.book_id||'');for(let i=0;i<3;i++){try{const next=decodeURIComponent(id);if(next===id)break;id=next}catch(e){break}}const parts=id.replace(/^books\//,'').split('/'),file=parts.pop(),folder='books/'+parts.join('/');url=rawUrl(folder==='books/'?'books':folder,file)}
+  location.href=`reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}${cover?'&cover='+encodeURIComponent(cover):''}`;
+}
+function renderPopularBooks(books){
+  const popEl=$('popBooks'),popSec=$('popSection');if(!popEl)return;POPULAR_BOOKS=Array.isArray(books)?books:[];
+  if(!POPULAR_BOOKS.length){popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>';if(popSec)popSec.style.display='block';return}
+  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,''),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
+  hydrateBookCardCovers(popEl);syncBookmarkButtons(popEl);if(popSec)popSec.style.display='block';fetchAndUpdateRatings();
+}
+
+function ratingDbBookId(id){return String(id||'').replace(/^books\//i,'').split('/').map(part=>{try{return encodeURIComponent(decodeURIComponent(part))}catch(e){return encodeURIComponent(part)}}).join('/')}
+async function fetchAndUpdateRatings(){
+  const cards=[...document.querySelectorAll('.book-card-v3[data-book-id]')],ids=[...new Set(cards.map(c=>ratingDbBookId(c.dataset.bookId)).filter(Boolean))];if(!ids.length)return;
+  try{const r=await edgeApiFetch('/api/book-stats-batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book_ids:ids.slice(0,200)})});if(!r.ok)throw Error('HTTP '+r.status);const stats=await r.json();cards.forEach(card=>{const dbId=ratingDbBookId(card.dataset.bookId),st=stats[dbId],el=card.querySelector('.stars-v3 span');if(el)el.textContent=st?.avg_rating?`${parseFloat(st.avg_rating).toFixed(1)} (${st.ratings_count||0})`:'—'})}catch(e){console.warn('ratings',e)}
+}
+
+function loadContinue(){ try{ const all=JSON.parse(localStorage.getItem('kk_reader_progress')||'{}'); const cache=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'); const vals=Object.entries(all).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0)); if(!vals.length) return; const [url,p]=vals[0]; const list=[cache[url]?.cover,p.cover,...coverListFromPdfUrl(url)].filter(Boolean); const cov=list[0]||''; const name=p.name||'Китоб'; const sec=$('continueSection'); const card=$('continueCard'); if(!sec||!card) return; sec.style.display='block'; card.innerHTML=`<div class="continue-book-cover" style="background:linear-gradient(160deg,#1A3A5C,#2A5298);overflow:hidden">${cov?`<img src="${cov}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" onerror="const a=${esc(JSON.stringify(list))};let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.textContent='📗'}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`:'📗'}</div><div class="continue-info"><div class="continue-label-small">Давом додани хондани китоби</div><div class="continue-book-title">${esc(name)}</div><div class="continue-author">Саҳ. ${p.page||1} / ${p.pages||'?'} </div><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${p.pages?Math.round((p.page||1)/p.pages*100):0}%"></div></div></div><button class="continue-btn" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cov)}')">Давом</button>`; }catch(e){} }
+function coverListFromPdfUrl(u){ try{ const x=new URL(u); if(!x.hostname.includes('githubusercontent.com')) return []; const parts=x.pathname.split('/').filter(Boolean); if(parts.length<5) return []; const owner=parts[0],repo=parts[1],branch=parts[2],path=parts.slice(3); const file=decodeURIComponent(path.pop()||'').replace(/\.pdf$/i,'.jpg'); let folder=path.join('/'); let clean=folder.replace(/^books\//,''); const base=`https://raw.githubusercontent.com/${owner}/${repo}/${branch}`; return [`${base}/covers/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,`${base}/covers/books/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,`${base}/covers/${folder.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`]; }catch(e){ return []; } }
+function esc(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
+loadContinue(); setTimeout(()=>getHomeSearchIndex().catch(()=>{}),350); loadHome().then(()=>{loadHomeFavorites();fetchAndUpdateRatings()});
+const isAndroidApp=(typeof AndroidBridge!=='undefined'||navigator.userAgent.includes('KitobkhonaApp'));
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{ if(!isAndroidApp){ setTimeout(()=>initFirebaseMessaging(),800); } }).catch(err=>{}); } else if(!isAndroidApp){ initFirebaseMessaging(); }
+if(typeof AndroidBridge!=='undefined'){ const userId=localStorage.getItem('kk_user_id'); const authToken=localStorage.getItem('kk_token'); if(userId) AndroidBridge.saveUserId(userId); if(authToken) AndroidBridge.saveAuthToken(authToken); }
+function setActiveNav(el){ document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active')); el.classList.add('active'); }
+</script>
+<script>
+// =========================================================================
+// 1. LIVE TIME, DATE (ДД.ММ.ГГГГ) & TAJIK WEATHER
+// =========================================================================
+const TAJIK_CITIES = [
+  { name: 'Душанбе', lat: 38.56, lon: 68.77, temp: '+24°', icon: '☀️' },
+  { name: 'Данғара', lat: 38.10, lon: 69.34, temp: '+26°', icon: '☀️' },
+  { name: 'Кӯлоб', lat: 37.91, lon: 69.78, temp: '+25°', icon: '☀️' },
+  { name: 'Бохтар', lat: 37.84, lon: 68.78, temp: '+27°', icon: '☀️' },
+  { name: 'Хуҷанд', lat: 40.28, lon: 69.62, temp: '+23°', icon: '🌤️' },
+  { name: 'Истаравшан', lat: 39.91, lon: 69.00, temp: '+22°', icon: '☀️' },
+  { name: 'Исфара', lat: 40.12, lon: 70.62, temp: '+23°', icon: '☀️' },
+  { name: 'Конибодом', lat: 40.29, lon: 70.43, temp: '+24°', icon: '☀️' },
+  { name: 'Панҷакент', lat: 39.50, lon: 67.61, temp: '+21°', icon: '⛅' },
+  { name: 'Хоруғ', lat: 37.49, lon: 71.55, temp: '+16°', icon: '🌤️' },
+  { name: 'Ваҳдат', lat: 38.55, lon: 69.01, temp: '+24°', icon: '☀️' },
+  { name: 'Ҳисор', lat: 38.53, lon: 68.55, temp: '+25°', icon: '☀️' },
+  { name: 'Турсунзода', lat: 38.51, lon: 68.23, temp: '+26°', icon: '☀️' },
+  { name: 'Рашт', lat: 39.03, lon: 70.37, temp: '+18°', icon: '⛅' },
+  { name: 'Мӯминобод', lat: 38.11, lon: 70.03, temp: '+22°', icon: '☀️' },
+  { name: 'Ёвон', lat: 38.31, lon: 69.04, temp: '+26°', icon: '☀️' }
+];
+
+let selectedCityName = localStorage.getItem('kk_weather_city') || 'Душанбе';
+
+function updateLiveClockAndDate() {
+  const timeEl = document.getElementById('headerLiveTime');
+  const dateEl = document.getElementById('headerLiveDate');
+  const now = new Date();
+  
+  const dd = String(now.getDate()).padStart(2, '0');
+  const mm = String(now.getMonth() + 1).padStart(2, '0');
+  const yyyy = now.getFullYear();
+  const hh = String(now.getHours()).padStart(2, '0');
+  const min = String(now.getMinutes()).padStart(2, '0');
+
+  if (dateEl) dateEl.textContent = dd + '.' + mm + '.' + yyyy;
+  if (timeEl) timeEl.textContent = hh + ':' + min;
+}
+setInterval(updateLiveClockAndDate, 1000);
+updateLiveClockAndDate();
+
+async function fetchLiveCityWeather(cityName) {
+  const city = TAJIK_CITIES.find(c => c.name === cityName) || TAJIK_CITIES[0];
+  const weatherEl = document.getElementById('headerWeatherCity');
+  if (weatherEl) weatherEl.textContent = city.icon + ' ' + city.name + ' ' + city.temp;
+
   try {
-    const map = JSON.parse(localStorage.getItem('kk_cached_books') || '{}');
-    const wanted = canonicalBookUrl(url);
-    cached = Object.keys(map).some(k => canonicalBookUrl(k) === wanted);
+    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat + '&longitude=' + city.lon + '&current_weather=true';
+    const res = await fetch(url);
+    if (!res.ok) throw new Error('API error');
+    const data = await res.json();
+    const temp = Math.round(data.current_weather.temperature);
+    const code = data.current_weather.weathercode;
+    let icon = '☀️';
+    if (code > 0 && code <= 3) icon = '🌤️';
+    else if (code >= 45 && code <= 48) icon = '🌫️';
+    else if (code >= 51 && code <= 67) icon = '🌧️';
+    else if (code >= 71 && code <= 86) icon = '❄️';
+    else if (code >= 95) icon = '⛈️';
+
+    const tempStr = (temp > 0 ? '+' : '') + temp + '°';
+    city.temp = tempStr;
+    city.icon = icon;
+    if (weatherEl) weatherEl.textContent = icon + ' ' + city.name + ' ' + tempStr;
   } catch(e) {}
-  const online = navigator.onLine;
-  if (!online) {
-    return cached
-      ? { show: false, icon: '', bg: '', dim: false }
-      : { show: true, icon: '🔒', bg: 'rgba(220,80,80,0.9)', dim: true };
-  }
-  return { show: false, icon: '', bg: '', dim: false };
 }
 
-function hydrateBookCardCovers(root = document) {
-  if (window.CacheManager && typeof CacheManager.hydrateBookCardCovers === 'function') {
-    CacheManager.hydrateBookCardCovers(root);
-    return;
-  }
-  const nodes = root.querySelectorAll('img[data-cover-url]');
-  nodes.forEach(img => {
-    const cover = img.getAttribute('data-cover-url') || '';
-    const cached = getCachedCoverDataUrl(cover);
-    if (cached && img.getAttribute('src') !== cached) img.setAttribute('src', cached);
-    if (cover) ensureCoverDataUrl(cover, img);
-  });
+function openWeatherModal() {
+  document.getElementById('weatherModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'weatherModal';
+  modal.className = 'weather-modal';
+
+  modal.innerHTML = `
+    <div class="weather-panel">
+      <div class="weather-head">
+        <div class="weather-head-title">🌤️ Обу ҳавои Тоҷикистон</div>
+        <button class="weather-close-btn" type="button" onclick="document.getElementById('weatherModal').remove()">✕</button>
+      </div>
+      <div class="weather-search-wrap">
+        <input class="weather-search-input" id="weatherSearchInput" type="search" placeholder="Ҷустуҷӯи шаҳр ё ноҳия...">
+      </div>
+      <div class="weather-cities-list" id="weatherCitiesList"></div>
+    </div>
+  `;
+
+  document.body.appendChild(modal);
+
+  const renderList = (q = '') => {
+    const listEl = document.getElementById('weatherCitiesList');
+    if (!listEl) return;
+    const filtered = TAJIK_CITIES.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()));
+    listEl.innerHTML = filtered.map(c => `
+      <div class="weather-city-item ${c.name === selectedCityName ? 'active' : ''}" onclick="selectWeatherCity('${c.name}')">
+        <span class="weather-city-name">${c.icon} ${c.name}</span>
+        <span class="weather-city-temp">${c.temp}</span>
+      </div>
+    `).join('');
+  };
+
+  renderList();
+  document.getElementById('weatherSearchInput')?.addEventListener('input', e => renderList(e.target.value.trim()));
 }
 
-function theme(t) {
-  document.body.classList.toggle('light-theme', t === 'light');
-  localStorage.setItem('kk_theme', t);
-}
-theme(localStorage.getItem('kk_theme') || 'dark');
-
-function toast(msg, d = 2000) {
-  let t = document.querySelector('.toast');
-  if (!t) { t = document.createElement('div'); t.className = 'toast'; document.body.appendChild(t); }
-  t.textContent = msg;
-  t.classList.add('show');
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => t.classList.remove('show'), d);
+function selectWeatherCity(name) {
+  selectedCityName = name;
+  localStorage.setItem('kk_weather_city', name);
+  fetchLiveCityWeather(name);
+  document.getElementById('weatherModal')?.remove();
+  toast('Шаҳри ' + name + ' интихоб шуд');
 }
 
-const BOOKMARK_OUTLINE = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>';
-const BOOKMARK_FILLED = '<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.2"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>';
-const STAR_ICON = '<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5 14.1 9.1H20l-4.8 3.5 1.4 5.9-4.6-3.3-4.6 3.3 1.4-5.9L4 9.1h5.9z"/></svg>';
-let favoriteBookIds = new Set();
+fetchLiveCityWeather(selectedCityName);
 
-function normalizeHomeBookId(folder, file) {
-  return ((folder ? folder.replace(/\/+$/, '') + '/' : '') + file).replace(/^books\//i, '');
-}
+// =========================================================================
+// 2. КИТОБҲОИ МАН (ROCK SOLID INDEX-BASED REMOVAL & RESOLUTION)
+// =========================================================================
+const MY_BOOKS_KEY = 'kk_my_books_v1';
 
 function normalizeBookKey(val) {
   if (!val) return '';
@@ -2332,7 +2726,6 @@ function matchesBook(bookObj, queryVal) {
   return k1 === targetKey || k2 === targetKey || k3 === targetKey || k4 === targetKey || k5 === targetKey;
 }
 
-const MY_BOOKS_KEY = 'kk_my_books_v1';
 function getMyBooks() {
   try {
     const raw = localStorage.getItem(MY_BOOKS_KEY);
@@ -2341,101 +2734,19 @@ function getMyBooks() {
     return [];
   }
 }
+
 function saveMyBooks(list) {
   try {
     localStorage.setItem(MY_BOOKS_KEY, JSON.stringify(list || []));
     localStorage.setItem('kk_my_books', JSON.stringify(list || []));
   } catch(e) {}
 }
+
 function isMyBook(queryVal) {
   const list = getMyBooks();
   return list.some(b => matchesBook(b, queryVal));
 }
 
-function bookmarkButton(bookId, name, author) {
-  return `<button type="button" class="bm-v3" data-bookmark data-book-id="${esc(bookId)}" data-book-title="${esc(name)}" data-book-author="${esc(author || '')}" aria-label="Ба дӯстдошта илова кардан" onclick="toggleHomeFavorite(event,this)">${BOOKMARK_OUTLINE}</button>`;
-}
-
-function pinButton(bookId, name, author, folder, file, cover) {
-  const cleanId = normalizeBookKey(bookId || file || name);
-  const active = isMyBook(cleanId);
-  return `<button type="button" class="pin-v3 ${active ? 'active' : ''}" data-pin data-book-id="${esc(cleanId)}" data-book-title="${esc(name)}" data-book-author="${esc(author || '')}" data-folder="${esc(folder || '')}" data-file="${esc(file || '')}" data-cover="${esc(cover || '')}" aria-label="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}" onclick="toggleMyBook(event,this)" title="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}">${active ? '📌' : '➕'}</button>`;
-}
-
-function bookCard(b, folder, badge = '') {
-  const file = b.file || ((b.name || 'book') + '.pdf');
-  const name = b.name || file.replace(/\.pdf$/i, '');
-  const url = rawUrl(folder, file);
-  const covers = coverCandidates(folder, file);
-  const coversJson = JSON.stringify(covers);
-  const cover = covers[0] || '';
-  const state = getBookAccessState(url);
-  const coverSrc = getCachedCoverDataUrl(cover) || cover;
-  const bookId = normalizeHomeBookId(folder, file);
-  const coverStyle = state.show && state.dim ? 'width:100%;height:100%;object-fit:cover;filter:brightness(.72)' : 'width:100%;height:100%;object-fit:cover';
-  const tag = badge || 'НАВ';
-
-  return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')">
-    <div class="book-cover-v3" style="position:relative">
-      <div class="book-tag-v3">${tag}</div>
-      <img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(coversJson)}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="${coverStyle}">
-      <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,.3)">${esc(name)}</span>
-      <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff">${state.icon}</div>
-    </div>
-    <div class="book-info-v3">
-      <b>${esc(name)}</b>
-      <span class="book-author-v3">${esc(b.author || '')}</span>
-      <div class="book-foot-v3">
-        <div class="stars-v3">${STAR_ICON}<span>—</span></div>
-        <div style="display:flex;align-items:center;gap:4px">
-          ${pinButton(bookId, name, b.author, folder, file, cover)}
-          ${bookmarkButton(bookId, name, b.author)}
-        </div>
-      </div>
-    </div>
-  </div>`;
-}
-
-function openReader(url, name, cover = '') {
-  let decodedCover = '';
-  try { decodedCover = decodeURIComponent(cover || ''); } catch(e) { decodedCover = ''; }
-  const coverParam = decodedCover && !/^data:/i.test(decodedCover) ? '&cover=' + encodeURIComponent(decodedCover) : '';
-  location.href = 'reader.html?url=' + encodeURIComponent(decodeURIComponent(url)) + '&name=' + encodeURIComponent(decodeURIComponent(name)) + coverParam;
-}
-
-// =========================================================================
-// 2. PRESIDENT BOOKS (PERMANENT EMBEDDED LIST & FAST RENDER)
-// =========================================================================
-const PESVO_DEFAULT_BOOKS = [
-  { name: "Бист қадами созанда", file: "Бист қадами созанда.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Ватани худро дӯст доред!", file: "Ватани худро дӯст доред!.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Дирӯз ва имрӯзи тоҷикон", file: "Дирӯз ва имрӯзи тоҷикон.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Душанбе шаҳри дӯстӣ ва бародарӣ", file: "Душанбе шаҳри дӯстӣ ва бародарӣ.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Забони давлатӣ ва Истиқлол", file: "Забони давлатӣ ва Истиқлол.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Забони Миллат - Ҳастии Миллат Китоби-1", file: "Забони Миллат - Ҳастии Миллат Китоби-1.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Забони Миллат - Ҳастии Миллат Китоби-2", file: "Забони Миллат - Ҳастии Миллат Китоби-2.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Зиндагӣ аз Модар сар мешавад", file: "Зиндагӣ аз Модар сар мешавад.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Ислохоти иқтисодӣ тақозои замон", file: "Ислохоти иқтисодӣ тақозои замон.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Истиқлолият неъмати бебаҳост", file: "Истиқлолият неъмати бебаҳост.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "ИСТИҚЛОЛИЯТИ ТОҶИКИСТОН ВА ПЕШВОИ МИЛЛАТ", file: "ИСТИҚЛОЛИЯТИ ТОҶИКИСТОН ВА ПЕШВОИ МИЛЛАТ.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" },
-  { name: "Мавлоно ва тамаддунӣ инсонӣ", file: "Мавлоно ва тамаддунӣ инсонӣ.pdf", folder: "books/Пешвои Миллат", author: "Эмомалӣ Раҳмон" }
-];
-
-function renderPeshvoBooks(customList = null) {
-  const container = document.getElementById('pesvoBooks');
-  const sec = document.getElementById('pesvoSection');
-  if (!container || !sec) return;
-  sec.style.display = 'block';
-  const list = (customList && customList.length) ? customList : PESVO_DEFAULT_BOOKS;
-  container.innerHTML = list.slice(0, 12).map(b => bookCard(b, b.folder || 'books/Пешвои Миллат', '👑')).join('');
-  hydrateBookCardCovers(container);
-  syncBookmarkButtons(container);
-  syncMyBookButtons(container);
-}
-
-// =========================================================================
-// 3. КИТОБҲОИ МАН
-// =========================================================================
 function removeMyBookByIndex(event, index) {
   if (event) {
     event.preventDefault();
@@ -2591,640 +2902,8 @@ function renderMyBooksSection() {
 }
 
 // =========================================================================
-// 4. LOAD MANIFEST, SEARCH INDEX & CATEGORIES
+// 3. СОМОНАҲОИ РАСМИИ ДАВЛАТӢ (9 PORTALS)
 // =========================================================================
-const manifestCache = new Map();
-let searchTimer = null;
-
-async function fetchJsonFast(u, ms = 4500) {
-  const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), ms);
-  try {
-    const r = await fetch(u, { cache: 'no-store', signal: ctrl.signal });
-    if (!r.ok) throw new Error('HTTP ' + r.status);
-    return await r.json();
-  } finally { clearTimeout(t); }
-}
-
-async function loadBooksJson() {
-  try {
-    const cached = localStorage.getItem('kk_booksjson_cache');
-    if (cached) {
-      const parsed = JSON.parse(cached);
-      if (parsed) { DATA = parsed; return DATA; }
-    }
-  } catch(e) {}
-  for (const u of BOOKS_JSON_URLS) {
-    try {
-      DATA = await fetchJsonFast(u);
-      try { localStorage.setItem('kk_booksjson_cache', JSON.stringify(DATA)); } catch(_) {}
-      return DATA;
-    } catch(e) {}
-  }
-  try {
-    DATA = JSON.parse(localStorage.getItem('kk_booksjson_cache') || 'null');
-    if (DATA) return DATA;
-  } catch(e) {}
-  return DATA;
-}
-
-async function loadManifest(sub) {
-  const key = sub?.folder;
-  if (!key) return [];
-  if (manifestCache.has(key)) return manifestCache.get(key);
-  try {
-    const raw = localStorage.getItem('kk_manifest_cache');
-    if (raw) {
-      const parsed = JSON.parse(raw);
-      const cached = parsed[key];
-      if (Array.isArray(cached)) { manifestCache.set(key, cached); return cached; }
-    }
-  } catch(e) {}
-  let arr = [];
-  try {
-    const repo = (DATA && DATA.repo) || 'sharipovip/books';
-    const branch = (DATA && DATA.branch) || 'main';
-    const r = await fetch('https://raw.githubusercontent.com/' + repo + '/' + branch + '/' + enc(sub.folder) + '/manifest.json?t=' + Date.now(), { cache: 'no-store' });
-    if (r.ok) {
-      const j = await r.json();
-      arr = Array.isArray(j.books) ? j.books : [];
-    }
-  } catch(e) {}
-  manifestCache.set(key, arr);
-  try {
-    const raw = localStorage.getItem('kk_manifest_cache');
-    const parsed = raw ? JSON.parse(raw) : {};
-    parsed[key] = arr;
-    localStorage.setItem('kk_manifest_cache', JSON.stringify(parsed));
-  } catch(e) {}
-  return arr;
-}
-
-let HOME_SEARCH_INDEX = null, HOME_SEARCH_INDEX_PROMISE = null;
-async function getHomeSearchIndex() {
-  if (Array.isArray(HOME_SEARCH_INDEX)) return HOME_SEARCH_INDEX;
-  if (HOME_SEARCH_INDEX_PROMISE) return HOME_SEARCH_INDEX_PROMISE;
-  HOME_SEARCH_INDEX_PROMISE = (async () => {
-    try {
-      const cached = JSON.parse(localStorage.getItem('kk_home_search_index_v1') || 'null');
-      if (cached?.items?.length) { HOME_SEARCH_INDEX = cached.items; return HOME_SEARCH_INDEX; }
-    } catch(e) {}
-    try {
-      const r = await fetch('search-index.json', { cache: 'force-cache' });
-      if (!r.ok) throw Error('HTTP ' + r.status);
-      const data = await r.json();
-      HOME_SEARCH_INDEX = Array.isArray(data.items) ? data.items : [];
-      try { localStorage.setItem('kk_home_search_index_v1', JSON.stringify({ items: HOME_SEARCH_INDEX, ts: Date.now() })); } catch(e) {}
-      return HOME_SEARCH_INDEX;
-    } catch(e) {}
-    if (!DATA) await loadBooksJson();
-    const groups = await Promise.all((DATA.categories || []).flatMap(cat => (cat.subs || []).map(async sub => {
-      const books = await loadManifest(sub);
-      return books.map(book => ({ name: book.name || String(book.file || '').replace(/\.pdf$/i, ''), file: book.file, author: book.author || '', folder: sub.folder, category_id: cat.id, category: cat.name, subcategory: sub.name || sub.folder }));
-    })));
-    HOME_SEARCH_INDEX = groups.flat();
-    return HOME_SEARCH_INDEX;
-  })().finally(() => HOME_SEARCH_INDEX_PROMISE = null);
-  return HOME_SEARCH_INDEX_PROMISE;
-}
-
-function renderCategories(cats) {
-  const grid = $('catGrid');
-  if (!grid) return;
-  if (!cats || !cats.length) { grid.innerHTML = '<div class="empty">Категория нест</div>'; return; }
-  const svg = (body) => `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="1.65" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${body}</svg>`;
-  const icons = {
-    adabiyoti_klassiki: svg('<path d="M4 5.5c3-1.5 5.5-.8 8 1.2 2.5-2 5-2.7 8-1.2v13c-3-1.4-5.5-.8-8 1.1-2.5-1.9-5-2.5-8-1.1z"/><path d="M12 6.7v12.9"/>'),
-    adabiyoti_jahon: svg('<circle cx="12" cy="12" r="8.5"/><path d="M3.8 12h16.4M12 3.5c2.5 2.3 3.7 5.1 3.7 8.5S14.5 18.2 12 20.5C9.5 18.2 8.3 15.4 8.3 12S9.5 5.8 12 3.5z"/>'),
-    adabiyoti_muosir: svg('<path d="m5 18 1.2-4.5L16.8 3l4.2 4.2-10.5 10.6z"/><path d="m13.8 6 4.2 4.2M5 18l4.5-1.2L7 14.5z"/>'),
-    chiston: svg('<path d="M9.2 9a3 3 0 1 1 4.3 2.7c-1 .5-1.5 1.2-1.5 2.3"/><circle cx="12" cy="18" r=".8" fill="currentColor"/><circle cx="12" cy="12" r="9"/>'),
-    farhang: svg('<path d="M4 20h16M6 17h12M7 7v10m5-10v10m5-10v10M4 7h16L12 3z"/>'),
-    zindaginoma: svg('<circle cx="12" cy="8" r="3.5"/><path d="M5 20c.7-4.2 3.2-6.5 7-6.5s6.3 2.3 7 6.5"/><path d="M4 3h3M17 3h3"/>'),
-    zhurnalistika: svg('<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 9h4v4H7zM14 9h4M14 12h4M7 16h11"/>'),
-    iqtisod: svg('<path d="M4 19V5M4 19h16M7 15l4-4 3 2 5-6"/><path d="M16 7h3v3"/>'),
-    tib: svg('<path d="M9 4h6v5h5v6h-5v5H9v-5H4V9h5z"/>'),
-    kitobhoi_darsi: svg('<path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/>'),
-    ilmi: svg('<circle cx="12" cy="12" r="2" fill="currentColor"/><ellipse cx="12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>'),
-    peshvoi_millat: svg('<path d="m4 9 3 3 5-7 5 7 3-3-2 9H6z"/><path d="M7 21h10"/><circle cx="4" cy="7" r="1" fill="currentColor"/><circle cx="12" cy="3" r="1" fill="currentColor"/><circle cx="20" cy="7" r="1" fill="currentColor"/>'),
-    tarih: svg('<path d="M4 20h16M6 17h12M7 8v9m5-9v9m5-9v9M4 8h16L12 3z"/><path d="M9.5 12h5"/>'),
-    digar: svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>')
-  };
-  grid.innerHTML = cats.slice(0, 6).map(c => `<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${icons[c.id] || icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ', '<br>')}</div></div>`).join('');
-}
-
-async function loadHome() {
-  try {
-    renderPeshvoBooks();
-    const d = await loadBooksJson();
-    const categories = d.categories || [];
-    CacheManager.set(CacheManager.KEYS.CATEGORIES, categories);
-    renderCategories(categories);
-    const priority = categories.find(c => c.id === 'peshvoi_millat') || categories.find(c => c.id === 'president') || categories.find(c => /пешвои|президент|president|peshvoi|эмомали/i.test([c.name, c.id].join(' ')));
-    if (priority) {
-      const folders = (priority.subs && priority.subs.length) ? priority.subs : [{ folder: priority.folder || priority.folder_raw || ('books/' + (priority.name || '')), name: priority.name }];
-      let all = [];
-      for (const ps of folders) {
-        try {
-          const folder = ps.folder || ps.folder_raw || ('books/' + (ps.name || ''));
-          const arr = await loadManifest({ ...ps, folder });
-          all.push(...arr.map(b => ({ ...b, _folder: folder })));
-        } catch(e) {}
-      }
-      if (all.length) {
-        renderPeshvoBooks(all);
-      } else {
-        renderPeshvoBooks();
-      }
-    } else {
-      renderPeshvoBooks();
-    }
-    await loadNewBooks(d);
-  } catch(e) {
-    console.error('loadHome', e);
-    renderPeshvoBooks();
-  }
-  await loadPopularBooksCached();
-}
-
-async function loadNewBooks(data) {
-  try {
-    const categories = data.categories || [];
-    let candidates = [];
-    for (const c of categories.slice(0, 5)) {
-      for (const s of (c.subs || []).slice(0, 2)) {
-        const arr = await loadManifest(s);
-        candidates.push(...arr.slice(-4).map(b => ({ b, folder: s.folder })));
-        if (candidates.length > 30) break;
-      }
-      if (candidates.length > 30) break;
-    }
-    candidates = candidates.sort(() => 0.5 - Math.random()).slice(0, 12);
-    const htmlCards = candidates.map(x => bookCard(x.b, x.folder)).join('');
-    const newSec = $('newSection');
-    const newBooks = $('newBooks');
-    if (newBooks && htmlCards) {
-      newBooks.innerHTML = htmlCards;
-      if (newSec) newSec.style.display = 'block';
-      hydrateBookCardCovers(newBooks);
-      syncBookmarkButtons(newBooks);
-      syncMyBookButtons(newBooks);
-    }
-  } catch(e) {
-    console.warn('loadNewBooks', e);
-  }
-}
-
-async function loadPopularBooksCached() {
-  let books = CacheManager.get('kk_cache_popular_books');
-  if (!books) {
-    try {
-      const r = await edgeApiFetch('/api/popular-books?period=all', {}, 8000);
-      if (!r.ok) throw new Error('Failed');
-      books = await r.json();
-      CacheManager.set('kk_cache_popular_books', books);
-    } catch(e) {
-      console.warn(e);
-      return;
-    }
-  }
-  renderPopularBooks(books);
-}
-
-function formatReadingMinutes(value) {
-  const total = Math.max(0, Math.round(Number(value || 0)));
-  if (total < 60) return total + ' дақ';
-  const h = Math.floor(total / 60), m = total % 60;
-  return h + ' соат' + (m ? ' ' + m + ' дақ' : '');
-}
-
-let POPULAR_BOOKS = [];
-function normalizeBookTitle(value) {
-  return String(value || '').toLowerCase().replace(/\.pdf$/i, '').replace(/[_.-]+/g, ' ').replace(/\s+/g, ' ').trim();
-}
-function normalizeRawGithubUrl(value) {
-  try {
-    const u = new URL(value);
-    let path = u.pathname;
-    for (let i = 0; i < 3; i++) {
-      try {
-        const next = decodeURIComponent(path);
-        if (next === path) break;
-        path = next;
-      } catch(e) { break; }
-    }
-    u.pathname = path.split('/').map((part, i) => i === 0 ? '' : encodeURIComponent(part)).join('/');
-    return u.toString();
-  } catch(e) { return String(value || ''); }
-}
-
-async function openPopularBook(index) {
-  const b = POPULAR_BOOKS[index];
-  if (!b) return;
-  const name = b.book_title || String(b.book_id || 'Китоб').split('/').pop().replace(/\.pdf$/i, '');
-  let url = '', cover = b.cover_url || '';
-  try {
-    const search = await getHomeSearchIndex();
-    const wanted = normalizeBookTitle(name);
-    const found = search.find(item => normalizeBookTitle(item.name || item.file) === wanted);
-    if (found) {
-      url = rawUrl(found.folder, found.file || found.name + '.pdf');
-      const covers = coverCandidates(found.folder, found.file || found.name + '.pdf');
-      cover = cover || covers[0] || '';
-    }
-  } catch(e) {}
-  if (!url && b.pdf_url) url = normalizeRawGithubUrl(b.pdf_url);
-  if (!url) {
-    let id = String(b.book_id || '');
-    for (let i = 0; i < 3; i++) {
-      try {
-        const next = decodeURIComponent(id);
-        if (next === id) break;
-        id = next;
-      } catch(e) { break; }
-    }
-    const parts = id.replace(/^books\//, '').split('/'), file = parts.pop(), folder = 'books/' + parts.join('/');
-    url = rawUrl(folder === 'books/' ? 'books' : folder, file);
-  }
-  location.href = `reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}${cover ? '&cover=' + encodeURIComponent(cover) : ''}`;
-}
-
-function renderPopularBooks(books) {
-  const popEl = $('popBooks'), popSec = $('popSection');
-  if (!popEl) return;
-  POPULAR_BOOKS = Array.isArray(books) ? books : [];
-  if (!POPULAR_BOOKS.length) {
-    popEl.innerHTML = '<div class="empty">Ҳоло маълумот нест</div>';
-    if (popSec) popSec.style.display = 'block';
-    return;
-  }
-  popEl.innerHTML = POPULAR_BOOKS.slice(0, 12).map((b, index) => {
-    const name = b.book_title || String(b.book_id || 'Китоб').split('/').pop().replace(/\.pdf$/i, '');
-    const cover = b.cover_url || '';
-    const bookId = String(b.book_id || name).replace(/^books\//i, '');
-    return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})">
-      <div class="book-cover-v3">
-        <div class="book-tag-v3">🔥</div>
-        <img src="${getCachedCoverDataUrl(cover) || cover}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
-        <span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span>
-      </div>
-      <div class="book-info-v3">
-        <b>${esc(name)}</b>
-        <span class="book-author-v3">${esc(b.book_author || '')}</span>
-        <span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span>
-        <div class="book-foot-v3">
-          <div class="stars-v3">${STAR_ICON}<span>—</span></div>
-          <div style="display:flex;align-items:center;gap:4px">
-            ${pinButton(bookId, name, b.book_author, '', '', cover)}
-            ${bookmarkButton(bookId, name, b.book_author)}
-          </div>
-        </div>
-      </div>
-    </div>`;
-  }).join('');
-  hydrateBookCardCovers(popEl);
-  syncBookmarkButtons(popEl);
-  syncMyBookButtons(popEl);
-  if (popSec) popSec.style.display = 'block';
-  fetchAndUpdateRatings();
-}
-
-function ratingDbBookId(id) {
-  return String(id || '').replace(/^books\//i, '').split('/').map(part => {
-    try { return encodeURIComponent(decodeURIComponent(part)); } catch(e) { return encodeURIComponent(part); }
-  }).join('/');
-}
-async function fetchAndUpdateRatings() {
-  const cards = [...document.querySelectorAll('.book-card-v3[data-book-id]')];
-  const ids = [...new Set(cards.map(c => ratingDbBookId(c.dataset.bookId)).filter(Boolean))];
-  if (!ids.length) return;
-  try {
-    const cached = JSON.parse(localStorage.getItem('kk_ratings_cache_v2') || '{}');
-    applyRatingsToDom(cached);
-  } catch(e) {}
-  try {
-    const r = await edgeApiFetch('/api/book-stats-batch', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ book_ids: ids })
-    }, 6000);
-    if (!r.ok) return;
-    const statsMap = await r.json();
-    try { localStorage.setItem('kk_ratings_cache_v2', JSON.stringify(statsMap)); } catch(e) {}
-    applyRatingsToDom(statsMap);
-  } catch(e) {}
-}
-function applyRatingsToDom(statsMap) {
-  if (!statsMap) return;
-  document.querySelectorAll('.book-card-v3[data-book-id]').forEach(card => {
-    const bookId = ratingDbBookId(card.dataset.bookId);
-    const stats = statsMap[bookId];
-    const badge = card.querySelector('.stars-v3 span');
-    if (badge && stats && stats.avg_rating) {
-      badge.textContent = parseFloat(stats.avg_rating).toFixed(1);
-    }
-  });
-}
-
-async function loadHomeFavorites() {
-  const token = localStorage.getItem('kk_token');
-  if (!token) {
-    favoriteBookIds.clear();
-    syncBookmarkButtons();
-    return;
-  }
-  try {
-    const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites', {
-      headers: { Authorization: 'Bearer ' + token }
-    });
-    if (!r.ok) throw Error('HTTP ' + r.status);
-    favoriteBookIds = new Set((await r.json()).map(x => String(x.book_id || '').replace(/^books\//i, '')));
-    syncBookmarkButtons();
-  } catch(e) {
-    console.warn('favorites', e);
-  }
-}
-function syncBookmarkButtons(root = document) {
-  root.querySelectorAll('[data-bookmark]').forEach(btn => {
-    const active = favoriteBookIds.has(btn.dataset.bookId);
-    btn.classList.toggle('active', active);
-    btn.innerHTML = active ? BOOKMARK_FILLED : BOOKMARK_OUTLINE;
-    btn.setAttribute('aria-label', active ? 'Аз дӯстдошта хориҷ кардан' : 'Ба дӯстдошта илова кардан');
-  });
-}
-async function toggleHomeFavorite(event, btn) {
-  event.preventDefault();
-  event.stopPropagation();
-  const token = localStorage.getItem('kk_token');
-  if (!token) { toast('Барои истифодаи дӯстдошта ворид шавед'); return; }
-  const id = btn.dataset.bookId, active = favoriteBookIds.has(id);
-  btn.disabled = true;
-  try {
-    const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/favorites' + (active ? '/' + encodeURIComponent(id) : ''), {
-      method: active ? 'DELETE' : 'POST',
-      headers: { Authorization: 'Bearer ' + token, ...(!active ? { 'Content-Type': 'application/json' } : {}) },
-      body: active ? undefined : JSON.stringify({ book_id: id, book_title: btn.dataset.bookTitle, book_author: btn.dataset.bookAuthor })
-    });
-    if (!r.ok) throw Error('HTTP ' + r.status);
-    active ? favoriteBookIds.delete(id) : favoriteBookIds.add(id);
-    syncBookmarkButtons();
-    toast(active ? 'Аз дӯстдошта хориҷ шуд' : 'Ба дӯстдошта илова шуд');
-  } catch(e) {
-    toast('Дӯстдошта нигоҳ дошта нашуд', true);
-  } finally {
-    btn.disabled = false;
-  }
-}
-
-// =========================================================================
-// 5. HERO QUOTE BANNER & OZOMUNS
-// =========================================================================
-let hero = window.QUOTES || [];
-if (!hero.length) {
-  hero = [
-    { img: 'assets/hero/01-president-official.jpg', topic: 'маориф', quote: 'Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад.', color: '#ffffff', fontSize: 15, displayDuration: 12, fontFamily: 'Manrope, sans-serif' },
-    { img: 'assets/hero/02-istiqlol-flag.jpg', topic: 'истиқлолият', quote: 'Истиқлолият неъмати бебаҳо ва асоси ҳастии давлатдории миллӣ аст.', color: '#ffffff', fontSize: 15, displayDuration: 12, fontFamily: 'Manrope, sans-serif' },
-    { img: 'assets/hero/03-vahdat-diplomacy.jpg', topic: 'ваҳдати миллӣ', quote: 'Ваҳдати миллӣ пояи сулҳу субот ва рушди ҷомеа мебошад.', color: '#ffffff', fontSize: 15, displayDuration: 12, fontFamily: 'Manrope, sans-serif' }
-  ];
-}
-let hi = 0, typeTimer = null, heroAuto = null;
-function typeText(text) {
-  clearInterval(typeTimer);
-  const el = $('heroQuote');
-  if (!el) return;
-  el.textContent = '';
-  let n = 0;
-  typeTimer = setInterval(() => {
-    el.textContent = text.slice(0, ++n);
-    if (n >= text.length) clearInterval(typeTimer);
-  }, 70);
-}
-function fitHeroQuote(preferredSize) {
-  const heroEl = document.querySelector('.hero-v3'), left = document.querySelector('.hero-v3-left'), quote = $('heroQuote'), kicker = $('heroKicker'), author = document.querySelector('.hero-author-v3');
-  if (!heroEl || !left || !quote) return;
-  const narrow = innerWidth <= 365, minSize = narrow ? 4.2 : 4.8, start = Math.min(11.5, Math.max(8, Number(preferredSize) || 11.5));
-  let size = start, line = 1.22;
-  const available = () => Math.max(28, left.clientHeight - (kicker?.offsetHeight || 0) - (author?.offsetHeight || 0) - 24);
-  const apply = () => { heroEl.style.setProperty('--hero-quote-size', size.toFixed(1) + 'px'); heroEl.style.setProperty('--hero-quote-line', line.toFixed(2)); void quote.offsetHeight; };
-  apply();
-  while (size > minSize && quote.scrollHeight > available() + 1) { size -= .35; if (size < 7) line = 1.16; apply(); }
-  while (line > 1.02 && quote.scrollHeight > available() + 1) { line -= .03; apply(); }
-  if (quote.scrollHeight > available() + 1) { size = Math.max(3.6, size - .8); line = 1.02; apply(); }
-}
-function setHero(idx) {
-  hi = (idx + hero.length) % hero.length;
-  const item = hero[hi];
-  $('heroImg').src = item.img;
-  $('heroKicker').innerHTML = `Суханҳои Пешвои муаззами миллат дар бораи <b>${item.topic}</b>`;
-  const quoteEl = $('heroQuote');
-  quoteEl.style.color = item.color || '#fff';
-  quoteEl.style.fontFamily = item.fontFamily || 'Manrope, sans-serif';
-  fitHeroQuote(item.fontSize);
-  typeText(item.quote);
-  document.querySelectorAll('.hero-dot-v3').forEach((d, i) => d.classList.toggle('active', i === hi));
-  clearInterval(heroAuto);
-  heroAuto = setInterval(() => setHero(hi + 1), (item.displayDuration || 10) * 1000);
-}
-const dotsEl = $('heroDots');
-if (dotsEl) {
-  dotsEl.innerHTML = hero.map((_, i) => `<div class="hero-dot-v3 ${i === 0 ? 'active' : ''}" onclick="setHero(${i})"></div>`).join('');
-}
-setHero(0);
-
-const OZMUNS = [
-  { id: 'furugi', title: 'Фурӯғи субҳи доноӣ', icon: 'furugi_banner.jpg', url: 'furugi_subhi_donoi.html' },
-  { id: 'ilm', title: 'Илм — фурӯғи маърифат', icon: 'ilm_banner.jpg', url: 'ilm_furugi_marifat.html' },
-  { id: 'donandai', title: 'Донандаи асарҳо', icon: 'donandai_banner.jpg', url: 'donandai_asarho.html' },
-  { id: 'vatan', title: 'Тоҷикистон — Ватани азизи ман', icon: 'vatan_banner.jpg', url: 'vatani_azizi_man.html' },
-  { id: 'shohnoma', title: 'Озмуни «Шоҳномахонӣ»', icon: 'shohnoma_banner.jpg', url: 'shohnomahoni.html' }
-];
-const ozmunListEl = $('ozmunList');
-if (ozmunListEl) {
-  ozmunListEl.innerHTML = OZMUNS.map(o => `
-    <div class="ozmun-item-v3" onclick="location.href='${o.url}'">
-      <div class="ozmun-avatar-v3">
-        <img src="${o.icon}" alt="${esc(o.title)}" onerror="this.src='icon-192.png'">
-      </div>
-      <div class="ozmun-name-v3">${esc(o.title)}</div>
-    </div>
-  `).join('');
-}
-
-// Continue reading
-function loadContinue() {
-  try {
-    const raw = localStorage.getItem('kk_reader_progress');
-    if (!raw) return;
-    const progress = JSON.parse(raw);
-    const keys = Object.keys(progress);
-    if (!keys.length) return;
-    const lastUrl = keys.sort((a, b) => (progress[b].ts || 0) - (progress[a].ts || 0))[0];
-    const item = progress[lastUrl];
-    if (!item) return;
-    const pct = item.pages ? Math.round((item.page / item.pages) * 100) : 0;
-    const sec = $('continueSection'), card = $('continueCard');
-    if (!sec || !card) return;
-    sec.style.display = 'block';
-    card.innerHTML = `
-      <div style="flex:1" onclick="openReader('${encodeURIComponent(lastUrl)}','${encodeURIComponent(item.name || 'Китоб')}','${encodeURIComponent(item.cover || '')}')">
-        <div style="font-size:11px;color:var(--gold);font-weight:bold">ИДОМАИ МУТОЛИА</div>
-        <div style="font-size:13px;font-weight:bold;margin:2px 0 4px 0">${esc(item.name || 'Китоб')}</div>
-        <div style="font-size:11px;color:var(--muted)">Саҳифаи ${item.page} аз ${item.pages || '—'} (${pct}%)</div>
-      </div>
-      <button onclick="openReader('${encodeURIComponent(lastUrl)}','${encodeURIComponent(item.name || 'Китоб')}','${encodeURIComponent(item.cover || '')}')" style="background:var(--gold);color:#08101A;border:0;border-radius:8px;padding:8px 14px;font-weight:bold;cursor:pointer">Хондан ›</button>
-    `;
-  } catch(e) {}
-}
-
-// Search Home
-async function searchHome(q, force = false) {
-  q = (q || '').trim().toLowerCase();
-  const box = $('homeSearchResults');
-  if (!box) return;
-  if (!q) { box.style.display = 'none'; box.innerHTML = ''; return; }
-  if (q.length < 2 && !force) return;
-  box.style.display = 'block';
-  box.innerHTML = '<div class="search-result-item"><div class="search-result-icon">⌕</div><div><div class="search-result-name">Ҷустуҷӯ...</div><div class="search-result-sub">Як лаҳза</div></div></div>';
-  try {
-    const index = await getHomeSearchIndex();
-    const results = [];
-    for (const item of index) {
-      const hay = [item.name, item.file, item.author, item.category, item.subcategory].filter(Boolean).join(' ').toLowerCase();
-      if (hay.includes(q)) {
-        results.push(item);
-        if (results.length >= 20) break;
-      }
-    }
-    if (!results.length) {
-      box.innerHTML = '<div class="search-result-item"><div class="search-result-icon">📭</div><div><div class="search-result-name">Ёфт нашуд</div><div class="search-result-sub">Калимаи дигар нависед</div></div></div>';
-      return;
-    }
-    box.innerHTML = results.map(item => {
-      const file = item.file || item.name + '.pdf';
-      const url = rawUrl(item.folder, file);
-      return `<div class="search-result-item" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(item.name || file.replace(/\.pdf$/i, ''))}')">
-        <div class="search-result-icon">📖</div>
-        <div>
-          <div class="search-result-name">${esc(item.name || file)}</div>
-          <div class="search-result-sub">${esc(item.category || '')} · ${esc(item.subcategory || item.folder || '')}</div>
-        </div>
-      </div>`;
-    }).join('');
-  } catch(e) {
-    box.innerHTML = '<div class="search-result-item"><div class="search-result-icon">⚠️</div><div><div class="search-result-name">Пайвастшавӣ</div><div class="search-result-sub">' + esc(e.message || e) + '</div></div></div>';
-  }
-}
-const hsInput = $('homeSearch');
-if (hsInput) {
-  hsInput.addEventListener('input', () => {
-    clearTimeout(searchTimer);
-    searchTimer = setTimeout(() => searchHome(hsInput.value), 350);
-  });
-}
-
-// =========================================================================
-// 6. LIVE WEATHER, GOV SITES & IN-APP BROWSER
-// =========================================================================
-const TAJIK_CITIES = [
-  { name: 'Душанбе', lat: 38.56, lon: 68.77, temp: '+24°', icon: '☀️' },
-  { name: 'Данғара', lat: 38.10, lon: 69.34, temp: '+26°', icon: '☀️' },
-  { name: 'Кӯлоб', lat: 37.91, lon: 69.78, temp: '+25°', icon: '☀️' },
-  { name: 'Бохтар', lat: 37.84, lon: 68.78, temp: '+27°', icon: '☀️' },
-  { name: 'Хуҷанд', lat: 40.28, lon: 69.62, temp: '+23°', icon: '🌤️' },
-  { name: 'Истаравшан', lat: 39.91, lon: 69.00, temp: '+22°', icon: '☀️' },
-  { name: 'Исфара', lat: 40.12, lon: 70.62, temp: '+23°', icon: '☀️' },
-  { name: 'Конибодом', lat: 40.29, lon: 70.43, temp: '+24°', icon: '☀️' },
-  { name: 'Панҷакент', lat: 39.50, lon: 67.61, temp: '+21°', icon: '⛅' },
-  { name: 'Хоруғ', lat: 37.49, lon: 71.55, temp: '+16°', icon: '🌤️' },
-  { name: 'Ваҳдат', lat: 38.55, lon: 69.01, temp: '+24°', icon: '☀️' },
-  { name: 'Ҳисор', lat: 38.53, lon: 68.55, temp: '+25°', icon: '☀️' },
-  { name: 'Турсунзода', lat: 38.51, lon: 68.23, temp: '+26°', icon: '☀️' },
-  { name: 'Рашт', lat: 39.03, lon: 70.37, temp: '+18°', icon: '⛅' },
-  { name: 'Мӯминобод', lat: 38.11, lon: 70.03, temp: '+22°', icon: '☀️' },
-  { name: 'Ёвон', lat: 38.31, lon: 69.04, temp: '+26°', icon: '☀️' }
-];
-
-let selectedCityName = localStorage.getItem('kk_weather_city') || 'Душанбе';
-
-function updateLiveClockAndDate() {
-  const timeEl = document.getElementById('headerLiveTime');
-  const dateEl = document.getElementById('headerLiveDate');
-  const now = new Date();
-  const dd = String(now.getDate()).padStart(2, '0');
-  const mm = String(now.getMonth() + 1).padStart(2, '0');
-  const yyyy = now.getFullYear();
-  const hh = String(now.getHours()).padStart(2, '0');
-  const min = String(now.getMinutes()).padStart(2, '0');
-  if (dateEl) dateEl.textContent = dd + '.' + mm + '.' + yyyy;
-  if (timeEl) timeEl.textContent = hh + ':' + min;
-}
-setInterval(updateLiveClockAndDate, 1000);
-updateLiveClockAndDate();
-
-async function fetchLiveCityWeather(cityName) {
-  const city = TAJIK_CITIES.find(c => c.name === cityName) || TAJIK_CITIES[0];
-  const weatherEl = document.getElementById('headerWeatherCity');
-  if (weatherEl) weatherEl.textContent = city.icon + ' ' + city.name + ' ' + city.temp;
-  try {
-    const url = 'https://api.open-meteo.com/v1/forecast?latitude=' + city.lat + '&longitude=' + city.lon + '&current_weather=true';
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('API error');
-    const data = await res.json();
-    const temp = Math.round(data.current_weather.temperature);
-    const code = data.current_weather.weathercode;
-    let icon = '☀️';
-    if (code > 0 && code <= 3) icon = '🌤️';
-    else if (code >= 45 && code <= 48) icon = '🌫️';
-    else if (code >= 51 && code <= 67) icon = '🌧️';
-    else if (code >= 71 && code <= 86) icon = '❄️';
-    else if (code >= 95) icon = '⛈️';
-    const tempStr = (temp > 0 ? '+' : '') + temp + '°';
-    city.temp = tempStr;
-    city.icon = icon;
-    if (weatherEl) weatherEl.textContent = icon + ' ' + city.name + ' ' + tempStr;
-  } catch(e) {}
-}
-
-function openWeatherModal() {
-  document.getElementById('weatherModal')?.remove();
-  const modal = document.createElement('div');
-  modal.id = 'weatherModal';
-  modal.className = 'weather-modal';
-  modal.innerHTML = `
-    <div class="weather-panel">
-      <div class="weather-head">
-        <div class="weather-head-title">🌤️ Обу ҳавои Тоҷикистон</div>
-        <button class="weather-close-btn" type="button" onclick="document.getElementById('weatherModal').remove()">✕</button>
-      </div>
-      <div class="weather-search-wrap">
-        <input class="weather-search-input" id="weatherSearchInput" type="search" placeholder="Ҷустуҷӯи шаҳр ё ноҳия...">
-      </div>
-      <div class="weather-cities-list" id="weatherCitiesList"></div>
-    </div>
-  `;
-  document.body.appendChild(modal);
-  const renderList = (q = '') => {
-    const listEl = document.getElementById('weatherCitiesList');
-    if (!listEl) return;
-    const filtered = TAJIK_CITIES.filter(c => !q || c.name.toLowerCase().includes(q.toLowerCase()));
-    listEl.innerHTML = filtered.map(c => `
-      <div class="weather-city-item ${c.name === selectedCityName ? 'active' : ''}" onclick="selectWeatherCity('${c.name}')">
-        <span class="weather-city-name">${c.icon} ${c.name}</span>
-        <span class="weather-city-temp">${c.temp}</span>
-      </div>
-    `).join('');
-  };
-  renderList();
-  document.getElementById('weatherSearchInput')?.addEventListener('input', e => renderList(e.target.value.trim()));
-}
-function selectWeatherCity(name) {
-  selectedCityName = name;
-  localStorage.setItem('kk_weather_city', name);
-  fetchLiveCityWeather(name);
-  document.getElementById('weatherModal')?.remove();
-  toast('Шаҳри ' + name + ' интихоб шуд');
-}
-fetchLiveCityWeather(selectedCityName);
-
 const GOV_SITES = [
   { id: 'president', name: 'Президенти Ҷумҳурии Тоҷикистон', short: 'president.tj · Портали расмӣ', url: 'https://www.president.tj', domain: 'president.tj', icon: '👑', bg: 'linear-gradient(135deg, #0F2B48 0%, #1A4674 100%)' },
   { id: 'kmt', name: 'Китобхонаи миллии Тоҷикистон', short: 'kmt.tj · Фонди миллии китоб', url: 'http://kmt.tj', domain: 'kmt.tj', icon: '📚', bg: 'linear-gradient(135deg, #1C3322 0%, #2A5A3B 100%)' },
@@ -3236,6 +2915,7 @@ const GOV_SITES = [
   { id: 'dushanbe', name: 'Ҳокимияти ш. Душанбе', short: 'dushanbe.tj · Сомонаи шаҳрдорӣ', url: 'https://dushanbe.tj', domain: 'dushanbe.tj', icon: '🏙️', bg: 'linear-gradient(135deg, #242A38 0%, #3D4861 100%)' },
   { id: 'ntc', name: 'Маркази миллии тестӣ (ИМТ)', short: 'ntc.tj · Дохилшавӣ ва имтиҳонҳо', url: 'https://ntc.tj/tj/', domain: 'ntc.tj', icon: '🎓', bg: 'linear-gradient(135deg, #2B331A 0%, #4D5C2E 100%)' }
 ];
+
 function renderGovSites() {
   const container = document.getElementById('govSitesList');
   if (!container) return;
@@ -3253,38 +2933,70 @@ function renderGovSites() {
   `).join('');
 }
 
+// =========================================================================
+// 4. IN-APP BROWSER (FULLSCREEN, PINCH ZOOM, BOTTOM CONTROLS)
+// =========================================================================
 let currentInitialBrowserUrl = '';
 let browserZoomScale = 1.0;
+
 function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle = 'Сомонаи давлатӣ') {
   document.getElementById('inappBrowserModal')?.remove();
   currentInitialBrowserUrl = initialUrl;
   browserZoomScale = 1.0;
+
   history.pushState({ inAppBrowserOpen: true }, '');
+
   const modal = document.createElement('div');
   modal.id = 'inappBrowserModal';
   modal.className = 'inapp-browser-modal';
+
   modal.innerHTML = `
     <div class="inapp-view-wrap" id="browserViewWrap">
       <div class="inapp-progress-bar" id="browserProgressBar">
         <div class="inapp-progress-fill"></div>
       </div>
+
       <div class="inapp-loading-screen" id="browserLoadingScreen">
         <div class="inapp-spinner-circle"></div>
         <div>Саҳифа кушода шуда истодааст...</div>
       </div>
+
       <iframe class="inapp-iframe" id="browserFrame" src="${initialUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" onload="onBrowserFrameLoaded()"></iframe>
     </div>
+
+    <!-- BOTTOM TOOLBAR -->
     <div class="inapp-bottom-toolbar">
-      <button class="inapp-bottom-btn" type="button" title="Бозгашт" onclick="browserBack()"><span>⬅</span><span>Қафо</span></button>
-      <button class="inapp-bottom-btn" type="button" title="Ба пеш" onclick="browserForward()"><span>➡</span><span>Пеш</span></button>
-      <button class="inapp-bottom-btn" type="button" title="Навсозӣ" onclick="browserReload()"><span>🔄</span><span>Навсозӣ</span></button>
-      <button class="inapp-bottom-btn" type="button" title="Ба саҳифаи аввал" onclick="browserHome()"><span>🏠</span><span>Аввал</span></button>
-      <button class="inapp-bottom-btn inapp-bottom-btn-close" type="button" title="Пӯшидани браузер" onclick="closeMiniBrowser()"><span>✕</span><span>Баромад</span></button>
+      <button class="inapp-bottom-btn" type="button" title="Бозгашт" onclick="browserBack()">
+        <span>⬅</span>
+        <span>Қафо</span>
+      </button>
+
+      <button class="inapp-bottom-btn" type="button" title="Ба пеш" onclick="browserForward()">
+        <span>➡</span>
+        <span>Пеш</span>
+      </button>
+
+      <button class="inapp-bottom-btn" type="button" title="Навсозӣ" onclick="browserReload()">
+        <span>🔄</span>
+        <span>Навсозӣ</span>
+      </button>
+
+      <button class="inapp-bottom-btn" type="button" title="Ба саҳифаи аввал" onclick="browserHome()">
+        <span>🏠</span>
+        <span>Аввал</span>
+      </button>
+
+      <button class="inapp-bottom-btn inapp-bottom-btn-close" type="button" title="Пӯшидани браузер" onclick="closeMiniBrowser()">
+        <span>✕</span>
+        <span>Баромад</span>
+      </button>
     </div>
   `;
+
   document.body.appendChild(modal);
   initBrowserPinchZoom();
 }
+
 function browserBack() {
   const frame = document.getElementById('browserFrame');
   try {
@@ -3295,47 +3007,72 @@ function browserBack() {
   } catch(e) {}
   closeMiniBrowser();
 }
+
 function browserForward() {
   const frame = document.getElementById('browserFrame');
   try {
-    if (frame && frame.contentWindow) frame.contentWindow.history.forward();
+    if (frame && frame.contentWindow) {
+      frame.contentWindow.history.forward();
+    }
   } catch(e) {}
 }
+
 function browserReload() {
   const frame = document.getElementById('browserFrame');
-  if (frame) { showBrowserLoading(); frame.src = frame.src; }
+  if (frame) {
+    showBrowserLoading();
+    frame.src = frame.src;
+  }
 }
+
 function browserHome() {
   const frame = document.getElementById('browserFrame');
-  if (frame && currentInitialBrowserUrl) { showBrowserLoading(); frame.src = currentInitialBrowserUrl; }
+  if (frame && currentInitialBrowserUrl) {
+    showBrowserLoading();
+    frame.src = currentInitialBrowserUrl;
+  }
 }
+
 function showBrowserLoading() {
   const loader = document.getElementById('browserLoadingScreen');
   const bar = document.getElementById('browserProgressBar');
   if (loader) { loader.style.display = 'flex'; loader.style.opacity = '1'; }
   if (bar) bar.style.display = 'block';
 }
+
 function onBrowserFrameLoaded() {
   const loader = document.getElementById('browserLoadingScreen');
   const bar = document.getElementById('browserProgressBar');
-  if (loader) { loader.style.opacity = '0'; setTimeout(() => { loader.style.display = 'none'; }, 200); }
+  if (loader) {
+    loader.style.opacity = '0';
+    setTimeout(() => { loader.style.display = 'none'; }, 200);
+  }
   if (bar) bar.style.display = 'none';
 }
+
 function closeMiniBrowser() {
   document.getElementById('inappBrowserModal')?.remove();
 }
+
 function initBrowserPinchZoom() {
   const wrap = document.getElementById('browserViewWrap');
   if (!wrap) return;
   let pinchDist = 0;
   wrap.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
-      pinchDist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      pinchDist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
     }
   }, { passive: true });
+
   wrap.addEventListener('touchmove', e => {
     if (e.touches.length === 2 && pinchDist > 0) {
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
       const factor = dist / pinchDist;
       if (Math.abs(factor - 1) > 0.04) {
         browserZoomScale = Math.max(0.65, Math.min(3.0, browserZoomScale * factor));
@@ -3350,114 +3087,24 @@ function initBrowserPinchZoom() {
     }
   }, { passive: true });
 }
+
 window.addEventListener('popstate', e => {
   const modal = document.getElementById('inappBrowserModal');
-  if (modal) { e.preventDefault(); closeMiniBrowser(); }
+  if (modal) {
+    e.preventDefault();
+    closeMiniBrowser();
+  }
 });
 
-function esc(str) {
-  if (!str) return '';
-  return String(str).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&#39;');
-}
-
-// Initial Boot
+// Boot render
 document.addEventListener('DOMContentLoaded', () => {
-  if (typeof CacheManager !== 'undefined') CacheManager.init();
-  const sBtn = document.getElementById('searchToggleBtn');
-  const sSec = document.getElementById('searchSection');
-  if (sBtn && sSec) {
-    sBtn.addEventListener('click', () => {
-      sSec.style.display = sSec.style.display === 'none' ? 'block' : 'none';
-      if (sSec.style.display === 'block') { setTimeout(() => document.getElementById('homeSearch')?.focus(), 100); }
-    });
-  }
-  loadContinue();
-  renderPeshvoBooks();
   renderMyBooksSection();
   renderGovSites();
   syncMyBookButtons();
-  setTimeout(() => getHomeSearchIndex().catch(() => {}), 350);
-  loadHome().then(() => {
-    loadHomeFavorites();
-    fetchAndUpdateRatings();
-  });
 });
-
-renderPeshvoBooks();
 renderMyBooksSection();
 renderGovSites();
 syncMyBookButtons();
-</script>12" cy="12" rx="9" ry="3.6"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(60 12 12)"/><ellipse cx="12" cy="12" rx="9" ry="3.6" transform="rotate(120 12 12)"/>'),
-    peshvoi_millat:svg('<path d="m4 9 3 3 5-7 5 7 3-3-2 9H6z"/><path d="M7 21h10"/><circle cx="4" cy="7" r="1" fill="currentColor"/><circle cx="12" cy="3" r="1" fill="currentColor"/><circle cx="20" cy="7" r="1" fill="currentColor"/>'),
-    tarih:svg('<path d="M4 20h16M6 17h12M7 8v9m5-9v9m5-9v9M4 8h16L12 3z"/><path d="M9.5 12h5"/>'),
-    digar:svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>')
-  };
-  grid.innerHTML=cats.slice(0,6).map(c=>`<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${icons[c.id]||icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
-}
-async function loadHome(){
-  try{
-    const d=await loadBooksJson();
-    const categories=d.categories||[];
-    CacheManager.set(CacheManager.KEYS.CATEGORIES,categories);
-    renderCategories(categories);
-    const priority=categories.find(c=>c.id==='peshvoi_millat')||categories.find(c=>c.id==='president')||categories.find(c=>/пешвои|президент|president|peshvoi|эмомали/i.test([c.name,c.id].join(' ')));
-    if(priority){
-      const folders=(priority.subs&&priority.subs.length)?priority.subs:[{folder:priority.folder||priority.folder_raw||('books/'+(priority.name||'')),name:priority.name}];
-      let all=[];
-      for(const ps of folders){ try{ const folder=ps.folder||ps.folder_raw||('books/'+(ps.name||'')); const arr=await loadManifest({...ps,folder}); all.push(...arr.map(b=>({...b,_folder:folder})));}catch(e){} }
-      if(all.length){ $('pesvoSection').style.display='block'; $('pesvoBooks').innerHTML=all.slice(0,12).map(b=>bookCard(b,b._folder,'')).join(''); hydrateBookCardCovers($('pesvoBooks')); syncBookmarkButtons($('pesvoBooks')); }
-    }
-    await loadNewBooks(d);
-  }catch(e){ console.error('loadHome',e); }
-  await loadPopularBooksCached();
-}
-async function loadNewBooks(data){
-  try{
-    const categories=data.categories||[];
-    let candidates=[];
-    for(const c of categories.slice(0,5)){ for(const s of (c.subs||[]).slice(0,2)){ const arr=await loadManifest(s); candidates.push(...arr.slice(-4).map(b=>({b,folder:s.folder}))); if(candidates.length>30) break; } if(candidates.length>30) break; }
-    candidates=candidates.sort(()=>0.5-Math.random()).slice(0,12);
-    const html=candidates.map(x=>bookCard(x.b,x.folder)).join('');
-    const newSec=$('newSection'); const newBooks=$('newBooks');
-    if(newBooks&&html){ newBooks.innerHTML=html; if(newSec) newSec.style.display='block'; hydrateBookCardCovers(newBooks); syncBookmarkButtons(newBooks); }
-  }catch(e){ console.warn('loadNewBooks',e); }
-}
-async function loadPopularBooksCached(){ let books=CacheManager.get('kk_cache_popular_books'); if(!books){ try{ const r=await edgeApiFetch('/api/popular-books?period=all',{},8000); if(!r.ok) throw new Error('Failed'); books=await r.json(); CacheManager.set('kk_cache_popular_books',books);}catch(e){ console.warn(e); return;} } renderPopularBooks(books); }
-function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' дақ';const h=Math.floor(total/60),m=total%60;return h+' соат'+(m?' '+m+' дақ':'')}
-let POPULAR_BOOKS=[];
-function normalizeBookTitle(value){return String(value||'').toLowerCase().replace(/\.pdf$/i,'').replace(/[_.-]+/g,' ').replace(/\s+/g,' ').trim()}
-function normalizeRawGithubUrl(value){
-  try{const u=new URL(value);let path=u.pathname;for(let i=0;i<3;i++){try{const next=decodeURIComponent(path);if(next===path)break;path=next}catch(e){break}}u.pathname=path.split('/').map((part,i)=>i===0?'':encodeURIComponent(part)).join('/');return u.toString()}catch(e){return String(value||'')}
-}
-async function openPopularBook(index){
-  const b=POPULAR_BOOKS[index];if(!b)return;const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,'');
-  let url='',cover=b.cover_url||'';
-  try{const search=await getHomeSearchIndex();const wanted=normalizeBookTitle(name);const found=search.find(item=>normalizeBookTitle(item.name||item.file)===wanted);if(found){url=rawUrl(found.folder,found.file||found.name+'.pdf');const covers=coverCandidates(found.folder,found.file||found.name+'.pdf');cover=cover||covers[0]||''}}catch(e){}
-  if(!url&&b.pdf_url)url=normalizeRawGithubUrl(b.pdf_url);
-  if(!url){let id=String(b.book_id||'');for(let i=0;i<3;i++){try{const next=decodeURIComponent(id);if(next===id)break;id=next}catch(e){break}}const parts=id.replace(/^books\//,'').split('/'),file=parts.pop(),folder='books/'+parts.join('/');url=rawUrl(folder==='books/'?'books':folder,file)}
-  location.href=`reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}${cover?'&cover='+encodeURIComponent(cover):''}`;
-}
-function renderPopularBooks(books){
-  const popEl=$('popBooks'),popSec=$('popSection');if(!popEl)return;POPULAR_BOOKS=Array.isArray(books)?books:[];
-  if(!POPULAR_BOOKS.length){popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>';if(popSec)popSec.style.display='block';return}
-  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,''),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
-  hydrateBookCardCovers(popEl);syncBookmarkButtons(popEl);if(popSec)popSec.style.display='block';fetchAndUpdateRatings();
-}
-
-function ratingDbBookId(id){return String(id||'').replace(/^books\//i,'').split('/').map(part=>{try{return encodeURIComponent(decodeURIComponent(part))}catch(e){return encodeURIComponent(part)}}).join('/')}
-async function fetchAndUpdateRatings(){
-  const cards=[...document.querySelectorAll('.book-card-v3[data-book-id]')],ids=[...new Set(cards.map(c=>ratingDbBookId(c.dataset.bookId)).filter(Boolean))];if(!ids.length)return;
-  try{const r=await edgeApiFetch('/api/book-stats-batch',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({book_ids:ids.slice(0,200)})});if(!r.ok)throw Error('HTTP '+r.status);const stats=await r.json();cards.forEach(card=>{const dbId=ratingDbBookId(card.dataset.bookId),st=stats[dbId],el=card.querySelector('.stars-v3 span');if(el)el.textContent=st?.avg_rating?`${parseFloat(st.avg_rating).toFixed(1)} (${st.ratings_count||0})`:'—'})}catch(e){console.warn('ratings',e)}
-}
-
-function loadContinue(){ try{ const all=JSON.parse(localStorage.getItem('kk_reader_progress')||'{}'); const cache=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'); const vals=Object.entries(all).sort((a,b)=>(b[1].ts||0)-(a[1].ts||0)); if(!vals.length) return; const [url,p]=vals[0]; const list=[cache[url]?.cover,p.cover,...coverListFromPdfUrl(url)].filter(Boolean); const cov=list[0]||''; const name=p.name||'Китоб'; const sec=$('continueSection'); const card=$('continueCard'); if(!sec||!card) return; sec.style.display='block'; card.innerHTML=`<div class="continue-book-cover" style="background:linear-gradient(160deg,#1A3A5C,#2A5298);overflow:hidden">${cov?`<img src="${cov}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" onerror="const a=${esc(JSON.stringify(list))};let i=(+this.dataset.i)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.textContent='📗'}" style="width:100%;height:100%;object-fit:cover;border-radius:10px">`:'📗'}</div><div class="continue-info"><div class="continue-label-small">Давом додани хондани китоби</div><div class="continue-book-title">${esc(name)}</div><div class="continue-author">Саҳ. ${p.page||1} / ${p.pages||'?'} </div><div class="progress-bar-wrap"><div class="progress-bar-fill" style="width:${p.pages?Math.round((p.page||1)/p.pages*100):0}%"></div></div></div><button class="continue-btn" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cov)}')">Давом</button>`; }catch(e){} }
-function coverListFromPdfUrl(u){ try{ const x=new URL(u); if(!x.hostname.includes('githubusercontent.com')) return []; const parts=x.pathname.split('/').filter(Boolean); if(parts.length<5) return []; const owner=parts[0],repo=parts[1],branch=parts[2],path=parts.slice(3); const file=decodeURIComponent(path.pop()||'').replace(/\.pdf$/i,'.jpg'); let folder=path.join('/'); let clean=folder.replace(/^books\//,''); const base=`https://raw.githubusercontent.com/${owner}/${repo}/${branch}`; return [`${base}/covers/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,`${base}/covers/books/${clean.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`,`${base}/covers/${folder.split('/').map(encodeURIComponent).join('/')}/${encodeURIComponent(file)}`]; }catch(e){ return []; } }
-function esc(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
-loadContinue(); setTimeout(()=>getHomeSearchIndex().catch(()=>{}),350); loadHome().then(()=>{loadHomeFavorites();fetchAndUpdateRatings()});
-const isAndroidApp=(typeof AndroidBridge!=='undefined'||navigator.userAgent.includes('KitobkhonaApp'));
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{ if(!isAndroidApp){ setTimeout(()=>initFirebaseMessaging(),800); } }).catch(err=>{}); } else if(!isAndroidApp){ initFirebaseMessaging(); }
-if(typeof AndroidBridge!=='undefined'){ const userId=localStorage.getItem('kk_user_id'); const authToken=localStorage.getItem('kk_token'); if(userId) AndroidBridge.saveUserId(userId); if(authToken) AndroidBridge.saveAuthToken(authToken); }
-function setActiveNav(el){ document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active')); el.classList.add('active'); }
 </script>
 </body>
 </html>
