@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v66-gov-shots-splash';
+const CACHE_NAME = 'kitobkhona-v67-quality-fixes';
 const LOCAL_FILES = [
   './',
   './index.html',

@@ -1046,7 +1046,6 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 
 /* Книги открываются — оставляем оригинальный book-card-v3 без изменений, но НАВ только у новых */
 .book-tag-v3{display:none !important}
-#newSection .book-tag-v3{display:flex !important}
 
 /* Иконки без фото — используем предыдущую технику SVG inline, без папки v3 */
  .new-icon-btn-v3{ background:rgba(255,255,255,.06) !important; border:1px solid rgba(255,255,255,.08) !important; }
@@ -1749,12 +1748,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="books-scroll-v3" id="myBooksList"></div>
     </section>
 
-    <!-- 5 Китобҳои нав -->
-    <section class="books-v3" id="newSection" style="display:none">
-      <div class="sec-head-v3"><div class="sec-title-v3">Китобҳои нав</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=new'">Ҳамаашро бинед <span>›</span></div></div>
-      <div class="books-scroll-v3" id="newBooks"></div>
-    </section>
-
     <!-- 6 Китобҳои серхонтарин -->
     <section class="books-v3" id="popSection" style="display:none">
       <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонтарин</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=popular'">Ҳамаашро бинед <span>›</span></div></div>
@@ -1900,6 +1893,73 @@ async function loadBooksJson(){
   throw new Error('Пайвастшавӣ дастрас нест. Интернетро санҷед.');}
 function rawUrl(folder,file){ return `https://raw.githubusercontent.com/${DATA.repo||'sharipovip/books'}/${DATA.branch||'main'}/${enc(folder)}/${encodeURIComponent(file)}`; }
 function coverCandidates(folder,file){ const jpg=encodeURIComponent(file.replace(/\.pdf$/i,'.jpg')); const clean=String(folder).replace(/^books\//,''); const base=`https://raw.githubusercontent.com/${DATA.repo||'sharipovip/books'}/${DATA.branch||'main'}`; return [`${base}/covers/${enc(clean)}/${jpg}`,`${base}/covers/books/${enc(clean)}/${jpg}`,`${base}/covers/${enc(folder)}/${jpg}`]; }
+// ===== Китобҳои ман: утилитҳои асосӣ (МЕБОЯНД дар ҳамин блок бошанд) =====
+// ИСЛОҲИ ХАТОГӢ: пештар normalizeBookKey/isMyBook дар блоки поёнӣ буданд ва ҳангоми кэши фаврӣ
+// (бории дуюм) loadHome пеш аз иҷрои он блок меравид → 'normalizeBookKey is not defined' → бахши Пешво холӣ мемонад.
+const MY_BOOKS_KEY = 'kk_my_books_v1';
+
+function normalizeBookKey(val) {
+  if (!val) return '';
+  var s = String(val).trim().toLowerCase();
+  try { s = decodeURIComponent(s); } catch(e) {}
+  s = s.replace(/^books\//i, '');
+  if (s.indexOf('/') !== -1) {
+    var parts = s.split('/');
+    s = parts[parts.length - 1] || s;
+  }
+  s = s.replace(/\.pdf$/i, '').trim();
+  return s;
+}
+
+function matchesBook(bookObj, queryVal) {
+  if (!bookObj || !queryVal) return false;
+  var targetKey = typeof queryVal === 'object'
+    ? (normalizeBookKey(queryVal.id) || normalizeBookKey(queryVal.bookId) || normalizeBookKey(queryVal.file) || normalizeBookKey(queryVal.name) || normalizeBookKey(queryVal.title))
+    : normalizeBookKey(queryVal);
+  if (!targetKey) return false;
+
+  var k1 = normalizeBookKey(bookObj.id);
+  var k2 = normalizeBookKey(bookObj.bookId);
+  var k3 = normalizeBookKey(bookObj.file);
+  var k4 = normalizeBookKey(bookObj.name);
+  var k5 = normalizeBookKey(bookObj.title);
+
+  return k1 === targetKey || k2 === targetKey || k3 === targetKey || k4 === targetKey || k5 === targetKey;
+}
+
+function getMyBooks() {
+  try {
+    const raw = localStorage.getItem(MY_BOOKS_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch(e) {
+    return [];
+  }
+}
+
+function saveMyBooks(list) {
+  try {
+    localStorage.setItem(MY_BOOKS_KEY, JSON.stringify(list || []));
+    localStorage.setItem('kk_my_books', JSON.stringify(list || []));
+  } catch(e) {}
+}
+
+function isMyBook(queryVal) {
+  const list = getMyBooks();
+  return list.some(b => matchesBook(b, queryVal));
+}
+
+function syncMyBookButtons(root = document) {
+  const list = getMyBooks();
+  root.querySelectorAll('[data-pin]').forEach(btn => {
+    const qVal = btn.dataset.bookId || btn.dataset.file || btn.dataset.bookTitle || '';
+    const active = list.some(b => matchesBook(b, qVal));
+    btn.classList.toggle('active', active);
+    btn.innerHTML = active ? '📌' : '➕';
+    btn.setAttribute('aria-label', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
+    btn.setAttribute('title', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
+  });
+}
+
 const BOOKMARK_OUTLINE='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>';
 const BOOKMARK_FILLED='<svg viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="1.2"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>';
 const STAR_ICON='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5 14.1 9.1H20l-4.8 3.5 1.4 5.9-4.6-3.3-4.6 3.3 1.4-5.9L4 9.1h5.9z"/></svg>';
@@ -2016,20 +2076,8 @@ async function loadHome(){
       syncBookmarkButtons($('pesvoBooks'));
       syncMyBookButtons($('pesvoBooks'));
     }
-    await loadNewBooks(d);
   }catch(e){ console.error('loadHome',e); }
   await loadPopularBooksCached();
-}
-async function loadNewBooks(data){
-  try{
-    const categories=data.categories||[];
-    let candidates=[];
-    for(const c of categories.slice(0,5)){ for(const s of (c.subs||[]).slice(0,2)){ const arr=await loadManifest(s); candidates.push(...arr.slice(-4).map(b=>({b,folder:s.folder}))); if(candidates.length>30) break; } if(candidates.length>30) break; }
-    candidates=candidates.sort(()=>0.5-Math.random()).slice(0,12);
-    const html=candidates.map(x=>bookCard(x.b,x.folder)).join('');
-    const newSec=$('newSection'); const newBooks=$('newBooks');
-    if(newBooks&&html){ newBooks.innerHTML=html; if(newSec) newSec.style.display='block'; hydrateBookCardCovers(newBooks); syncBookmarkButtons(newBooks); }
-  }catch(e){ console.warn('loadNewBooks',e); }
 }
 async function loadPopularBooksCached(){ let books=CacheManager.get('kk_cache_popular_books'); if(!books){ try{ const r=await edgeApiFetch('/api/popular-books?period=all',{},8000); if(!r.ok) throw new Error('Failed'); books=await r.json(); CacheManager.set('kk_cache_popular_books',books);}catch(e){ console.warn(e); return;} } renderPopularBooks(books); }
 function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' дақ';const h=Math.floor(total/60),m=total%60;return h+' соат'+(m?' '+m+' дақ':'')}
@@ -2186,58 +2234,7 @@ fetchLiveCityWeather(selectedCityName);
 // =========================================================================
 // 2. КИТОБҲОИ МАН (ROCK SOLID INDEX-BASED REMOVAL & RESOLUTION)
 // =========================================================================
-const MY_BOOKS_KEY = 'kk_my_books_v1';
-
-function normalizeBookKey(val) {
-  if (!val) return '';
-  var s = String(val).trim().toLowerCase();
-  try { s = decodeURIComponent(s); } catch(e) {}
-  s = s.replace(/^books\//i, '');
-  if (s.indexOf('/') !== -1) {
-    var parts = s.split('/');
-    s = parts[parts.length - 1] || s;
-  }
-  s = s.replace(/\.pdf$/i, '').trim();
-  return s;
-}
-
-function matchesBook(bookObj, queryVal) {
-  if (!bookObj || !queryVal) return false;
-  var targetKey = typeof queryVal === 'object'
-    ? (normalizeBookKey(queryVal.id) || normalizeBookKey(queryVal.bookId) || normalizeBookKey(queryVal.file) || normalizeBookKey(queryVal.name) || normalizeBookKey(queryVal.title))
-    : normalizeBookKey(queryVal);
-  if (!targetKey) return false;
-
-  var k1 = normalizeBookKey(bookObj.id);
-  var k2 = normalizeBookKey(bookObj.bookId);
-  var k3 = normalizeBookKey(bookObj.file);
-  var k4 = normalizeBookKey(bookObj.name);
-  var k5 = normalizeBookKey(bookObj.title);
-
-  return k1 === targetKey || k2 === targetKey || k3 === targetKey || k4 === targetKey || k5 === targetKey;
-}
-
-function getMyBooks() {
-  try {
-    const raw = localStorage.getItem(MY_BOOKS_KEY);
-    return raw ? JSON.parse(raw) : [];
-  } catch(e) {
-    return [];
-  }
-}
-
-function saveMyBooks(list) {
-  try {
-    localStorage.setItem(MY_BOOKS_KEY, JSON.stringify(list || []));
-    localStorage.setItem('kk_my_books', JSON.stringify(list || []));
-  } catch(e) {}
-}
-
-function isMyBook(queryVal) {
-  const list = getMyBooks();
-  return list.some(b => matchesBook(b, queryVal));
-}
-
+// (MY_BOOKS_KEY, normalizeBookKey, matchesBook, getMyBooks, saveMyBooks, isMyBook) — ба блоки болоӣ кӯчонида шуданд
 function removeMyBookByIndex(event, index) {
   if (event) {
     event.preventDefault();
@@ -2294,17 +2291,7 @@ function toggleMyBook(event, btn) {
   renderMyBooksSection();
 }
 
-function syncMyBookButtons(root = document) {
-  const list = getMyBooks();
-  root.querySelectorAll('[data-pin]').forEach(btn => {
-    const qVal = btn.dataset.bookId || btn.dataset.file || btn.dataset.bookTitle || '';
-    const active = list.some(b => matchesBook(b, qVal));
-    btn.classList.toggle('active', active);
-    btn.innerHTML = active ? '📌' : '➕';
-    btn.setAttribute('aria-label', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
-    btn.setAttribute('title', active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан');
-  });
-}
+// syncMyBookButtons — ба блоки болоӣ кӯчонида шуд
 
 async function openMyBook(index) {
   const list = getMyBooks();
