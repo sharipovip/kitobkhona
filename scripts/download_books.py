@@ -1,6 +1,7 @@
 """
-Скачивание ВСЕХ книг с nlt.tj → в sharipovip/books/books/<Категория>/
-Существующие файлы пропускаются. Большие файлы (>95 МБ) пропускаются.
+Скачивание ВСЕХ книг с nlt.tj → в sharipovip/books/
+Существующие папки используются по нормализованному имени.
+Большие файлы (>95 МБ) пропускаются.
 """
 
 import asyncio
@@ -13,8 +14,8 @@ from playwright.async_api import async_playwright
 
 # ============ НАСТРОЙКИ ============
 BASE_URL = "http://nlt.tj"
-LOGIN_URL = f"{BASE_URL}/signin"  # Страница входа (по коду сайта)
-JANR_URL = f"{BASE_URL}/janr"  # Страница со всеми категориями
+LOGIN_URL = f"{BASE_URL}/signin"
+JANR_URL = f"{BASE_URL}/janr"
 
 USERNAME = os.environ.get("NLT_USERNAME", "")
 PASSWORD = os.environ.get("NLT_PASSWORD", "")
@@ -23,12 +24,104 @@ BOOKS_ROOT = Path("books")
 BOOKS_ROOT.mkdir(parents=True, exist_ok=True)
 
 MAX_SIZE_MB = 95
-seen_books = set()  # Глобальный набор URL книг, чтобы не качать дважды
+seen_books = set()
+
+
+# ============ РУЧНАЯ КАРТА ДЛЯ СЛОЖНЫХ СЛУЧАЕВ ============
+# Ключ — как называется категория на сайте (в нижнем регистре, как есть)
+# Значение — точный путь в репо (относительно books/)
+MANUAL_MAP = {
+    "китобҳои дарсӣ":        "Kitobhoi darsi",
+    "китобхои дарси":        "Kitobhoi darsi",
+    "kitobhoi darsi":        "Kitobhoi darsi",
+    "адабиёти бачагона":     "Адабиёти бачагона",
+    "китобҳо барои пешвои миллат": "КИТОБҲО БАРОИ ПЕШВОИ МИЛЛАТ",
+    "пешвои миллат":         "Пешвои Миллат",
+    "исломӣ":                "Исломӣ",
+    "исломи":                "Исломӣ",
+}
+
+
+def normalize(s):
+    """Приводит строку к каноническому виду для сравнения."""
+    if not s:
+        return ""
+    s = str(s).strip().lower()
+    # Таджикские буквы → русские аналоги
+    trans = str.maketrans({
+        "ӣ": "и", "ҳ": "х", "ҷ": "ч", "қ": "к",
+        "ӯ": "у", "ғ": "г", "ё": "е",
+        "’": "", "'": "", "`": "",
+    })
+    s = s.translate(trans)
+    # Убираем всё, кроме букв и цифр
+    s = re.sub(r"[^a-zа-яё0-9]+", "", s)
+    return s
+
+
+def build_existing_index():
+    """Обходит books/ и строит {нормализованный_путь: реальный_путь}."""
+    index = {}
+    for item in BOOKS_ROOT.rglob("*"):
+        if item.is_dir():
+            rel = item.relative_to(BOOKS_ROOT).as_posix()
+            # Нормализуем полный путь (с учётом вложенности)
+            parts = rel.split("/")
+            norm_parts = [normalize(p) for p in parts]
+            norm_key = "/".join(norm_parts)
+            index[norm_key] = rel
+    print(f"[+] Существующих папок в репо: {len(index)}")
+    return index
+
+
+def resolve_folder(site_category_path, existing_index):
+    """
+    site_category_path: список частей пути с сайта, например ['Адабиёти классикӣ', 'Шеър']
+    Возвращает реальный путь в репо (str) относительно books/.
+    Логика:
+    1) Проверяем MANUAL_MAP для первого уровня.
+    2) Нормализуем каждый уровень и ищем совпадение в existing_index.
+    3) Если нашли — берём реальное имя папки.
+    4) Иначе — создаём по имени с сайта (safe_folder).
+    """
+    # Проверка ручной карты для верхнего уровня
+    top = site_category_path[0]
+    top_lower = top.strip().lower()
+    if top_lower in MANUAL_MAP:
+        real_top = MANUAL_MAP[top_lower]
+        # Проверяем, есть ли вложенность (подкатегория)
+        if len(site_category_path) > 1:
+            # Ищем подкатегорию внутри реального верхнего уровня
+            sub = site_category_path[1]
+            norm_sub = normalize(sub)
+            # Ищем в existing_index запись вида normalize(real_top)/norm_sub
+            norm_key = normalize(real_top) + "/" + norm_sub
+            if norm_key in existing_index:
+                return existing_index[norm_key]
+            # Иначе создаём подпапку
+            return f"{real_top}/{safe_folder(sub)}"
+        return real_top
+
+    # Автоматический поиск по нормализации
+    norm_parts = [normalize(p) for p in site_category_path]
+    norm_key = "/".join(norm_parts)
+    if norm_key in existing_index:
+        return existing_index[norm_key]
+
+    # Пробуем только первый уровень (на случай, если подкатегория на сайте,
+    # а в репо книги лежат прямо в категории)
+    if len(norm_parts) > 1 and norm_parts[0] in existing_index:
+        real_top = existing_index[norm_parts[0]]
+        # Создаём подпапку
+        return f"{real_top}/{safe_folder(site_category_path[1])}"
+
+    # Совсем не нашли — создаём всё с нуля
+    return "/".join(safe_folder(p) for p in site_category_path)
 
 
 def safe_folder(name):
     """Чистит имя папки от запрещённых символов."""
-    name = re.sub(r'[<>:"/\\|?*]', "_", name)
+    name = re.sub(r'[<>:"/\\|?*]', "_", str(name))
     name = re.sub(r"\s+", " ", name).strip().rstrip(". ")
     return name or "Без названия"
 
@@ -41,15 +134,13 @@ def safe_filename(name):
     return name or "book.pdf"
 
 
+# ============ PLAYWRIGHT ============
 async def login(page):
     print("[*] Логин...")
     await page.goto(LOGIN_URL, wait_until="networkidle")
-
-    # Селекторы для страницы /signin (уточнены по коду сайта)
-    await page.fill('input[name="email"], input[type="email"], input[name="username"]', USERNAME)
-    await page.fill('input[name="password"], input[type="password"]', PASSWORD)
-    await page.click('button[type="submit"], input[type="submit"]')
-
+    await page.fill('input[type="email"], input[name="email"], input[name="username"]', USERNAME)
+    await page.fill('input[type="password"], input[name="password"]', PASSWORD)
+    await page.click('button[type="submit"], input[type="submit"], .login-button')
     try:
         await page.wait_for_load_state("networkidle", timeout=20000)
     except Exception:
@@ -58,12 +149,11 @@ async def login(page):
 
 
 async def collect_categories(page):
-    """Собирает все категории со страницы /janr."""
+    """Собирает ВСЕ категории со страницы /janr."""
     print(f"[*] Сбор категорий: {JANR_URL}")
     await page.goto(JANR_URL, wait_until="networkidle")
     await page.wait_for_timeout(1500)
 
-    # Собираем ссылки на категории
     cats = await page.eval_on_selector_all(
         'a[href^="/category/"]',
         """els => els.map(e => ({
@@ -72,33 +162,30 @@ async def collect_categories(page):
         }))"""
     )
 
-    # Убираем дубликаты по URL
     seen = {}
     for c in cats:
-        if c["url"] and c["url"] not in seen:
-            seen[c["url"]] = c["name"] or "Категория"
+        if c["url"] and c["url"] not in seen and c["name"]:
+            seen[c["url"]] = c["name"]
     result = [{"url": u, "name": n} for u, n in seen.items()]
     print(f"[+] Найдено категорий: {len(result)}")
-    for c in result[:10]:
+    for c in result[:20]:
         print(f"    • {c['name']} → {c['url']}")
+    if len(result) > 20:
+        print(f"    ... и ещё {len(result) - 20}")
     return result
 
 
-async def collect_books_in_category(page, cat_url, cat_name):
-    """Собирает все книги в категории (с пагинацией)."""
-    print(f"\n[*] Категория: {cat_name}")
+async def collect_books_in_category(page, cat_url):
+    """Собирает все книги в категории с учётом пагинации."""
     books = []
     page_num = 1
     while True:
-        # Формируем URL с учётом пагинации
         if page_num == 1:
             url = cat_url
         else:
-            # Используем cat_id, который есть в URL категории
-            cat_id_match = re.search(r'/category/(\d+)', cat_url)
-            if cat_id_match:
-                cat_id = cat_id_match.group(1)
-                url = f"{cat_url}?cat_id={cat_id}&page={page_num}"
+            m = re.search(r'/category/(\d+)', cat_url)
+            if m:
+                url = f"{cat_url}?cat_id={m.group(1)}&page={page_num}"
             else:
                 url = f"{cat_url}?page={page_num}"
 
@@ -106,9 +193,8 @@ async def collect_books_in_category(page, cat_url, cat_name):
             await page.goto(url, wait_until="networkidle", timeout=30000)
         except Exception:
             break
-        await page.wait_for_timeout(1200)
+        await page.wait_for_timeout(1000)
 
-        # Собираем ссылки на книги
         found = await page.eval_on_selector_all(
             'a[href^="/book/"]',
             """els => els.map(e => ({
@@ -117,40 +203,35 @@ async def collect_books_in_category(page, cat_url, cat_name):
             }))"""
         )
 
-        new_books = []
-        for b in found:
-            if b["url"] and b["url"] not in seen_books:
-                new_books.append(b)
-                seen_books.add(b["url"])
+        new_books = [b for b in found if b["url"] and b["url"] not in seen_books]
+        for b in new_books:
+            seen_books.add(b["url"])
 
         if not new_books:
             break
 
         books.extend(new_books)
-        print(f"    страница {page_num}: +{len(new_books)} книг (всего {len(books)})")
+        print(f"    стр. {page_num}: +{len(new_books)} (всего {len(books)})")
 
-        # Проверяем, есть ли следующая страница
         has_next = await page.query_selector('a[rel="next"]')
         if not has_next:
             break
-
         page_num += 1
-        if page_num > 100:  # Защита от бесконечного цикла
+        if page_num > 100:
             break
 
     return books
 
 
 async def download_book(page, book_url, save_folder):
-    """Скачивает одну книгу в указанную папку."""
+    """Скачивает одну книгу."""
     try:
         await page.goto(book_url, wait_until="networkidle", timeout=30000)
         await page.wait_for_timeout(1000)
 
-        # Ищем ссылку на скачивание (предполагаем, что после авторизации она есть)
         dl = await page.query_selector(
             'a[href$=".pdf"], a[href$=".djvu"], a[href$=".epub"], '
-            'a.download-link, a[download], a.btn-download'
+            'a.download-link, a[download], button.download, a.btn-download'
         )
         if not dl:
             return None
@@ -164,7 +245,6 @@ async def download_book(page, book_url, save_folder):
         if not resp.ok:
             return None
 
-        # Имя файла из заголовка
         cd = resp.headers.get("content-disposition", "")
         filename = None
         m = re.search(r"filename\*=utf-8''([^;]+)", cd, re.IGNORECASE)
@@ -179,14 +259,12 @@ async def download_book(page, book_url, save_folder):
 
         filename = safe_filename(filename)
 
-        # Проверка размера
         body = await resp.body()
         size_mb = len(body) / (1024 * 1024)
         if size_mb > MAX_SIZE_MB:
-            print(f"    [!] {filename} — {size_mb:.1f} МБ, пропуск (лимит GitHub 100 МБ)")
+            print(f"    [!] {filename} — {size_mb:.1f} МБ, пропуск")
             return None
 
-        # Пропуск, если файл уже есть в этой папке
         target = save_folder / filename
         if target.exists():
             print(f"    [=] уже есть: {filename}")
@@ -214,30 +292,32 @@ async def main():
         )
         page = await ctx.new_page()
 
-        # 1. Авторизация
         await login(page)
 
-        # 2. Сбор всех категорий
+        # Строим индекс существующих папок
+        existing_index = build_existing_index()
+
+        # Собираем категории
         categories = await collect_categories(page)
 
         total_new = 0
-        # 3. Обход каждой категории
         for i, cat in enumerate(categories, 1):
             print(f"\n{'='*60}")
             print(f"[{i}/{len(categories)}] {cat['name']}")
             print('='*60)
 
-            # Собираем книги в категории
-            books = await collect_books_in_category(page, cat["url"], cat["name"])
-            # Создаём папку для категории
-            folder = BOOKS_ROOT / safe_folder(cat["name"])
+            # Определяем целевую папку
+            rel_folder = resolve_folder([cat["name"]], existing_index)
+            folder = BOOKS_ROOT / rel_folder
+            print(f"    → папка: books/{rel_folder}")
 
-            # Скачиваем каждую книгу
+            books = await collect_books_in_category(page, cat["url"])
+
             for b in books:
                 result = await download_book(page, b["url"], folder)
                 if result:
                     total_new += 1
-                await asyncio.sleep(1.2)  # Пауза между книгами
+                await asyncio.sleep(1.2)
 
         await browser.close()
 
