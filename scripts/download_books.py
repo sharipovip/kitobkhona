@@ -1,5 +1,5 @@
 """
-Скачивание ВСЕХ книг с nlt.tj → в sharipovip/books/books/<Категория>/<Подкатегория>/
+Скачивание ВСЕХ книг с nlt.tj → в sharipovip/books/books/<Категория>/
 Существующие файлы пропускаются. Большие файлы (>95 МБ) пропускаются.
 """
 
@@ -11,9 +11,11 @@ from pathlib import Path
 from urllib.parse import urljoin, urlparse
 from playwright.async_api import async_playwright
 
+# ============ НАСТРОЙКИ ============
 BASE_URL = "http://nlt.tj"
-LOGIN_URL = f"{BASE_URL}/login"
-CATEGORIES_URL = f"{BASE_URL}/categories"   # ← проверьте реальный URL
+LOGIN_URL = f"{BASE_URL}/signin"  # Страница входа (по коду сайта)
+JANR_URL = f"{BASE_URL}/janr"  # Страница со всеми категориями
+
 USERNAME = os.environ.get("NLT_USERNAME", "")
 PASSWORD = os.environ.get("NLT_PASSWORD", "")
 
@@ -21,7 +23,7 @@ BOOKS_ROOT = Path("books")
 BOOKS_ROOT.mkdir(parents=True, exist_ok=True)
 
 MAX_SIZE_MB = 95
-seen_books = set()  # чтобы не качать одну книгу дважды
+seen_books = set()  # Глобальный набор URL книг, чтобы не качать дважды
 
 
 def safe_folder(name):
@@ -42,9 +44,12 @@ def safe_filename(name):
 async def login(page):
     print("[*] Логин...")
     await page.goto(LOGIN_URL, wait_until="networkidle")
-    await page.fill('input[type="email"], input[name="email"], input[name="username"]', USERNAME)
-    await page.fill('input[type="password"], input[name="password"]', PASSWORD)
-    await page.click('button[type="submit"], input[type="submit"], .login-button')
+
+    # Селекторы для страницы /signin (уточнены по коду сайта)
+    await page.fill('input[name="email"], input[type="email"], input[name="username"]', USERNAME)
+    await page.fill('input[name="password"], input[type="password"]', PASSWORD)
+    await page.click('button[type="submit"], input[type="submit"]')
+
     try:
         await page.wait_for_load_state("networkidle", timeout=20000)
     except Exception:
@@ -53,14 +58,14 @@ async def login(page):
 
 
 async def collect_categories(page):
-    """Собирает все категории с главной / страницы категорий."""
-    print(f"[*] Сбор категорий: {CATEGORIES_URL}")
-    await page.goto(CATEGORIES_URL, wait_until="networkidle")
+    """Собирает все категории со страницы /janr."""
+    print(f"[*] Сбор категорий: {JANR_URL}")
+    await page.goto(JANR_URL, wait_until="networkidle")
     await page.wait_for_timeout(1500)
 
-    # Пробуем разные селекторы — что-то сработает
+    # Собираем ссылки на категории
     cats = await page.eval_on_selector_all(
-        'a[href*="/category/"]',
+        'a[href^="/category/"]',
         """els => els.map(e => ({
             url: e.href,
             name: (e.innerText || e.textContent || '').trim()
@@ -85,31 +90,27 @@ async def collect_books_in_category(page, cat_url, cat_name):
     books = []
     page_num = 1
     while True:
-        url = cat_url if page_num == 1 else f"{cat_url}?page={page_num}"
+        # Формируем URL с учётом пагинации
+        if page_num == 1:
+            url = cat_url
+        else:
+            # Используем cat_id, который есть в URL категории
+            cat_id_match = re.search(r'/category/(\d+)', cat_url)
+            if cat_id_match:
+                cat_id = cat_id_match.group(1)
+                url = f"{cat_url}?cat_id={cat_id}&page={page_num}"
+            else:
+                url = f"{cat_url}?page={page_num}"
+
         try:
             await page.goto(url, wait_until="networkidle", timeout=30000)
         except Exception:
             break
         await page.wait_for_timeout(1200)
 
-        # Прокрутка (ленивая загрузка)
-        await page.evaluate("""
-            async () => {
-                await new Promise(r => {
-                    let h = 0;
-                    const t = setInterval(() => {
-                        window.scrollBy(0, 600);
-                        h += 600;
-                        if (h >= document.body.scrollHeight) { clearInterval(t); r(); }
-                    }, 250);
-                });
-            }
-        """)
-        await page.wait_for_timeout(1000)
-
         # Собираем ссылки на книги
         found = await page.eval_on_selector_all(
-            'a[href*="/book/"], a[href*="/kitob/"]',
+            'a[href^="/book/"]',
             """els => els.map(e => ({
                 url: e.href,
                 title: (e.innerText || e.textContent || '').trim()
@@ -129,12 +130,12 @@ async def collect_books_in_category(page, cat_url, cat_name):
         print(f"    страница {page_num}: +{len(new_books)} книг (всего {len(books)})")
 
         # Проверяем, есть ли следующая страница
-        has_next = await page.query_selector('a[rel="next"], .pagination .next:not(.disabled), a.next-page')
+        has_next = await page.query_selector('a[rel="next"]')
         if not has_next:
             break
 
         page_num += 1
-        if page_num > 50:  # защита от бесконечного цикла
+        if page_num > 100:  # Защита от бесконечного цикла
             break
 
     return books
@@ -146,7 +147,7 @@ async def download_book(page, book_url, save_folder):
         await page.goto(book_url, wait_until="networkidle", timeout=30000)
         await page.wait_for_timeout(1000)
 
-        # Ссылка на скачивание
+        # Ищем ссылку на скачивание (предполагаем, что после авторизации она есть)
         dl = await page.query_selector(
             'a[href$=".pdf"], a[href$=".djvu"], a[href$=".epub"], '
             'a.download-link, a[download], a.btn-download'
@@ -163,7 +164,7 @@ async def download_book(page, book_url, save_folder):
         if not resp.ok:
             return None
 
-        # Имя файла
+        # Имя файла из заголовка
         cd = resp.headers.get("content-disposition", "")
         filename = None
         m = re.search(r"filename\*=utf-8''([^;]+)", cd, re.IGNORECASE)
@@ -182,10 +183,10 @@ async def download_book(page, book_url, save_folder):
         body = await resp.body()
         size_mb = len(body) / (1024 * 1024)
         if size_mb > MAX_SIZE_MB:
-            print(f"    [!] {filename} — {size_mb:.1f} МБ, пропуск")
+            print(f"    [!] {filename} — {size_mb:.1f} МБ, пропуск (лимит GitHub 100 МБ)")
             return None
 
-        # Пропуск существующих
+        # Пропуск, если файл уже есть в этой папке
         target = save_folder / filename
         if target.exists():
             print(f"    [=] уже есть: {filename}")
@@ -213,23 +214,30 @@ async def main():
         )
         page = await ctx.new_page()
 
+        # 1. Авторизация
         await login(page)
+
+        # 2. Сбор всех категорий
         categories = await collect_categories(page)
 
         total_new = 0
+        # 3. Обход каждой категории
         for i, cat in enumerate(categories, 1):
             print(f"\n{'='*60}")
             print(f"[{i}/{len(categories)}] {cat['name']}")
             print('='*60)
 
+            # Собираем книги в категории
             books = await collect_books_in_category(page, cat["url"], cat["name"])
+            # Создаём папку для категории
             folder = BOOKS_ROOT / safe_folder(cat["name"])
 
+            # Скачиваем каждую книгу
             for b in books:
                 result = await download_book(page, b["url"], folder)
                 if result:
                     total_new += 1
-                await asyncio.sleep(1.2)
+                await asyncio.sleep(1.2)  # Пауза между книгами
 
         await browser.close()
 
