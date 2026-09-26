@@ -1,60 +1,102 @@
-name: Download nlt.tj books → sharipovip/books
+async def download_book(page, url):
+    print(f"[*] {url}")
+    try:
+        await page.goto(url, wait_until="networkidle")
+        await page.wait_for_timeout(1200)
 
-on:
-  workflow_dispatch:
-  schedule:
-    - cron: '0 3 * * *'
+        # Проверка автора
+        text = await page.inner_text("body")
+        if not re.search(r"Эмомал[ӣи]\s+Раҳмон", text, re.IGNORECASE):
+            print("  [-] Не Эмомалӣ Раҳмонов — пропуск")
+            return False
 
-jobs:
-  download:
-    runs-on: ubuntu-latest
+        dl = await page.query_selector(
+            'a[href$=".pdf"], a[href$=".djvu"], a[href$=".epub"], '
+            'a.download-link, a[download], button.download, a.btn-download'
+        )
+        if not dl:
+            print("  [-] Кнопка скачивания не найдена")
+            return False
 
-    steps:
-      - name: Checkout sharipovip/books
-        uses: actions/checkout@v4
-        with:
-          repository: sharipovip/books
-          token: ${{ secrets.BOOKS_REPO_TOKEN }}
-          ref: main
-          path: books-repo
-          fetch-depth: 0
+        href = await dl.get_attribute("href")
 
-      - name: Checkout kitobkhona
-        uses: actions/checkout@v4
-        with:
-          path: scripts-repo
+        # Кнопка без href → JS-скачивание
+        if not href:
+            async with page.expect_download(timeout=60000) as di:
+                await dl.click()
+            d = await di.value
+            filename = d.suggested_filename
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
+            # Проверка размера невозможна до скачивания — качаем во временный файл
+            tmp_path = OUTPUT_DIR / ("__tmp__" + filename)
+            await d.save_as(tmp_path)
+            size_mb = tmp_path.stat().st_size / (1024 * 1024)
 
-      - name: Install Playwright
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r scripts-repo/requirements.txt
-          playwright install chromium
-          playwright install-deps chromium
+            if size_mb > 95:
+                print(f"  [!] Пропуск: {filename} — {size_mb:.1f} МБ (> 95 МБ, GitHub не примет)")
+                tmp_path.unlink(missing_ok=True)
+                return False
 
-      - name: Run downloader
-        working-directory: books-repo
-        env:
-          NLT_USERNAME: ${{ secrets.NLT_USERNAME }}
-          NLT_PASSWORD: ${{ secrets.NLT_PASSWORD }}
-        run: |
-          mkdir -p scripts
-          cp ../scripts-repo/scripts/download_books.py scripts/
-          python scripts/download_books.py
+            if filename.lower() in existing_files:
+                print(f"  [=] Уже есть: {filename}")
+                tmp_path.unlink(missing_ok=True)
+                return False
 
-      - name: Commit and push
-        working-directory: books-repo
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add "books/Пешвои Миллат"
-          if git diff --staged --quiet; then
-            echo "✅ Новых книг нет — коммит не нужен"
-            exit 0
-          fi
-          git commit -m "📚 Auto-download: Пешвои Миллат [$(date +'%Y-%m-%d %H:%M')]"
-          git push
+            final_path = OUTPUT_DIR / filename
+            tmp_path.rename(final_path)
+            existing_files.add(filename.lower())
+            print(f"  [+] Сохранено: {filename} ({size_mb:.1f} МБ)")
+            return True
+
+        # Обычная ссылка
+        file_url = urljoin(BASE_URL, href)
+        resp = await page.context.request.get(file_url)
+        if not resp.ok:
+            print(f"  [-] HTTP {resp.status}")
+            return False
+
+        # --- ПАРСИНГ ИМЕНИ ФАЙЛА (правильный, с учётом RFC 5987) ---
+        cd = resp.headers.get("content-disposition", "")
+        filename = None
+
+        # RFC 5987: filename*=utf-8''имя.pdf
+        m = re.search(r"filename\*=utf-8''([^;]+)", cd, re.IGNORECASE)
+        if m:
+            filename = urllib.parse.unquote(m.group(1).strip())
+
+        # Обычный: filename="имя.pdf"
+        if not filename:
+            m = re.search(r'filename="?([^";]+)"?', cd, re.IGNORECASE)
+            if m:
+                filename = m.group(1).strip()
+
+        # Фолбэк — из URL
+        if not filename:
+            filename = os.path.basename(urlparse(file_url).path) or "book.pdf"
+
+        # Чистим имя
+        filename = urllib.parse.unquote(filename)
+        filename = re.sub(r'[<>:"/\\|?*]', "_", filename)
+        filename = re.sub(r"\s+", " ", filename).strip()
+        filename = filename.rstrip(". ")
+
+        # --- ПРОВЕРКА РАЗМЕРА ---
+        body = await resp.body()
+        size_mb = len(body) / (1024 * 1024)
+
+        if size_mb > 95:
+            print(f"  [!] Пропуск: {filename} — {size_mb:.1f} МБ (> 95 МБ, GitHub не примет)")
+            return False
+
+        if filename.lower() in existing_files:
+            print(f"  [=] Уже есть: {filename}")
+            return False
+
+        (OUTPUT_DIR / filename).write_bytes(body)
+        existing_files.add(filename.lower())
+        print(f"  [+] Сохранено: {filename} ({size_mb:.1f} МБ)")
+        return True
+
+    except Exception as e:
+        print(f"  [-] Ошибка: {e}")
+        return False
