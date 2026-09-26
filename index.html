@@ -1160,6 +1160,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </style>
 <style id="startup-splash-style">#startupSplash{position:fixed;inset:0;z-index:1000000;background:radial-gradient(circle at 50% 42%,#173659,#071526 68%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#E8C96D;transition:opacity .5s ease,visibility .5s ease}#startupSplash.hide{opacity:0;visibility:hidden}
 /* Логотипи калон — то ~80% паҳнои экран, бе ҳалқа: тоза ва содда */
+/* РАЗМЕР ЛОГОТИПА: 80vw = 80% ширины экрана. Хочешь больше — поставь 85vw или 90vw,
+   меньше — 70vw. 345px — предел для больших экранов (можно поднять до 400px) */
 #startupSplash img{width:min(80vw,345px);aspect-ratio:1;border-radius:50%;object-fit:cover;box-shadow:0 24px 60px rgba(0,0,0,.55)}
 #startupSplash b{margin-top:24px;font-size:22px;letter-spacing:1.5px}#startupSplash span{margin-top:5px;color:#A8B8CC;font-size:12px}
 </style>
@@ -1636,7 +1638,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </style>
 </head>
 <body>
-<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* Ҳадди ақал 5 сония намоиш — ҳатто агар барнома зуд бор шавад */const MIN=5000,MAX=9000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
+<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
+   Цифры в миллисекундах: 6000 = 6 сек, 3000 = 3 сек. MIN — сколько ждать, даже если
+   программа уже загрузилась; MAX — страховка, дольше не держит */const MIN=5000,MAX=9000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
 <div class="phone-wrapper">
   <!-- Объявление админа — ставится в верхушку над логотипом с красивой анимацией появления/исчезновения по очереди -->
   <div id="announcementBannerTop" class="announce-top">

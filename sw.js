@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v72-splash-vector';
+const CACHE_NAME = 'kitobkhona-v73-splash-centered';
 const LOCAL_FILES = [
   './',
   './index.html',
