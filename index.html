@@ -1559,31 +1559,35 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   50% { left: 30%; width: 60%; }
   100% { left: 100%; width: 40%; }
 }
-.inapp-loading-screen {
+/* Офлайн-панел: танҳо ҳангоми набудани интернет нишон дода мешавад.
+   Саҳифаи сомона фавран ва оҳиста-оҳиста пурра мешавад — дигар экрани
+   «интизор шавед» нест, танҳо хати раванд дар боло. */
+.inapp-offline-panel {
   position: absolute;
   inset: 0;
   background: #08101A;
-  display: flex;
+  display: none;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 12px;
+  gap: 10px;
   color: #F0EAD6;
   font-size: 13px;
-  z-index: 5;
-  transition: opacity 0.22s ease;
+  z-index: 6;
+  padding: 18px;
+  text-align: center;
 }
-.inapp-spinner-circle {
-  width: 36px;
-  height: 36px;
-  border: 3px solid rgba(201, 168, 76, 0.25);
-  border-top-color: #E8C96D;
-  border-radius: 50%;
-  animation: inappSpin 0.75s linear infinite;
+.inapp-offline-panel .off-title { font-size: 15px; font-weight: 900; color: #E8C96D; }
+.inapp-offline-panel .off-sub { font-size: 11.5px; color: #A8B8CC; line-height: 1.5; max-width: 300px; }
+.inapp-offline-panel .off-shot {
+  width: 200px; height: 150px; object-fit: cover; object-position: top;
+  border-radius: 12px; border: 1.5px solid rgba(201,168,76,.45); box-shadow: 0 12px 30px rgba(0,0,0,.45);
 }
-@keyframes inappSpin {
-  100% { transform: rotate(360deg); }
+.inapp-offline-panel .off-btn {
+  border: 1.5px solid rgba(201,168,76,.5); background: rgba(201,168,76,.14); color: #E8C96D;
+  font-weight: 900; border-radius: 999px; padding: 9px 18px; font-size: 13px;
 }
+.inapp-offline-panel .off-btn:active { transform: scale(.95); }
 .inapp-bottom-toolbar {
   height: 52px;
   background: #0F1F33;
@@ -2376,23 +2380,28 @@ function renderMyBooksSection() {
 // =========================================================================
 const GOV_SITES = [
   { id: 'president', name: 'Президенти Ҷумҳурии Тоҷикистон', short: 'president.tj · Портали расмӣ', url: 'https://www.president.tj', domain: 'president.tj', icon: '👑', bg: 'linear-gradient(135deg, #0F2B48 0%, #1A4674 100%)' },
-  { id: 'kmt', name: 'Китобхонаи миллии Тоҷикистон', short: 'kmt.tj · Фонди миллии китоб', url: 'http://kmt.tj', domain: 'kmt.tj', icon: '📚', bg: 'linear-gradient(135deg, #1C3322 0%, #2A5A3B 100%)' },
-  { id: 'nlt', name: 'Китобхонаи миллии электронӣ', short: 'nlt.tj · Электронная библиотека', url: 'https://nlt.tj', domain: 'nlt.tj', icon: '📖', bg: 'linear-gradient(135deg, #3A2B14 0%, #63471D 100%)' },
+  { id: 'kmt', name: 'Китобхонаи миллии Тоҷикистон', short: 'kmt.tj · Фонди миллии китоб', url: 'https://kmt.tj', domain: 'kmt.tj', icon: '📚', bg: 'linear-gradient(135deg, #1C3322 0%, #2A5A3B 100%)' },
   { id: 'maorif', name: 'Вазорати маориф ва илми ҶТ', short: 'maorif.tj · Соҳаи маориф ва илм', url: 'https://maorif.tj', domain: 'maorif.tj', icon: '🏛️', bg: 'linear-gradient(135deg, #1A2E44 0%, #284D75 100%)' },
-  { id: 'mmk', name: 'Маркази миллии қонунгузорӣ', short: 'mmk.tj · Пойгоҳи ягонаи қонунҳо', url: 'https://mmk.tj', domain: 'mmk.tj', icon: '📜', bg: 'linear-gradient(135deg, #2D1A33 0%, #4D2B59 100%)' },
+  { id: 'mmk', name: 'Маркази миллии қонунгузорӣ', short: 'mmk.tj · Пойгоҳи ягонаи қонунҳо', url: 'https://mmk.tj', domain: 'mmk.tj', icon: '📜', external: true, bg: 'linear-gradient(135deg, #2D1A33 0%, #4D2B59 100%)' },
   { id: 'khovar', name: 'АМИТ «Ховар»', short: 'khovar.tj · Агентии иттилоотӣ', url: 'https://khovar.tj', domain: 'khovar.tj', icon: '📰', bg: 'linear-gradient(135deg, #122F3D 0%, #1B506B 100%)' },
   { id: 'mfa', name: 'Вазорати корҳои хориҷии ҶТ', short: 'mfa.tj · Сиёсати хориҷӣ ва равобит', url: 'https://mfa.tj', domain: 'mfa.tj', icon: '🌐', bg: 'linear-gradient(135deg, #152C4E 0%, #1F457E 100%)' },
   { id: 'dushanbe', name: 'Ҳокимияти ш. Душанбе', short: 'dushanbe.tj · Сомонаи шаҳрдорӣ', url: 'https://dushanbe.tj', domain: 'dushanbe.tj', icon: '🏙️', bg: 'linear-gradient(135deg, #242A38 0%, #3D4861 100%)' },
   { id: 'ntc', name: 'Маркази миллии тестӣ (ИМТ)', short: 'ntc.tj · Дохилшавӣ ва имтиҳонҳо', url: 'https://ntc.tj/tj/', domain: 'ntc.tj', icon: '🎓', bg: 'linear-gradient(135deg, #2B331A 0%, #4D5C2E 100%)' }
 ];
 
+// nlt.tj хориҷ карда шуд (сервер ҷавоб намедиҳад); kmt.tj ба https гузашт (http дар iframe блок мешавад);
+// mmk.tj — X-Frame-Options: SAMEORIGIN → дар браузери берунӣ кушода мешавад
+
 function govSiteCard(s, isCopy) {
+  const action = s.external
+    ? `openExternalSite('${s.url}')`
+    : `openMiniBrowser('${s.url}', '${esc(s.name)}', '${s.id}')`;
   return `
-    <div class="gov-card-v3"${isCopy ? ' aria-hidden="true"' : ''} onclick="openMiniBrowser('${s.url}', '${esc(s.name)}')">
+    <div class="gov-card-v3"${isCopy ? ' aria-hidden="true"' : ''} onclick="${action}">
       <div class="gov-preview-box" style="background:${s.bg}">
         <img class="gov-site-shot" src="assets/sites/${s.id}.jpg" alt="${esc(s.name)}" loading="eager" decoding="async" onerror="this.style.display='none';this.parentNode.querySelector('.gov-shot-fallback').style.display='flex'">
         <div class="gov-shot-fallback"><span>${s.icon}</span><b>${esc(s.domain)}</b></div>
-        <div class="gov-domain-pill">${s.domain}</div>
+        <div class="gov-domain-pill">${s.domain}${s.external ? ' ↗' : ''}</div>
       </div>
       <div class="gov-card-body">
         <div class="gov-title-v3">${esc(s.name)}</div>
@@ -2457,6 +2466,29 @@ function renderGovSites() {
   govInitGestures();
   govMeasure();
   if (!govRafOn) { govRafOn = true; requestAnimationFrame(govTick); }
+  // Тезкушоӣ: ҳангоми наздик шудани бахши сомонҳо пешакӣ пайвастшавӣ (DNS+TLS)
+  // бо сомонаҳо барпо мешавад — кушодан чанд баробар тезтар мешавад
+  try {
+    const sec = document.getElementById('govSection');
+    if (sec && 'IntersectionObserver' in window) {
+      const io = new IntersectionObserver(entries => {
+        if (entries.some(en => en.isIntersecting)) { govWarmConnections(); io.disconnect(); }
+      }, { rootMargin: '600px' });
+      io.observe(sec);
+    } else { govWarmConnections(); }
+  } catch(e) {}
+}
+let govConnectionsWarmed = false;
+function govWarmConnections(){
+  if (govConnectionsWarmed) return; govConnectionsWarmed = true;
+  try{
+    const urls = GOV_SITES.map(s => { try { return new URL(s.url).origin; } catch(e){ return null; } }).filter(Boolean);
+    [...new Set(urls)].forEach(origin => {
+      const l = document.createElement('link');
+      l.rel = 'preconnect'; l.href = origin;
+      document.head.appendChild(l);
+    });
+  }catch(e){}
 }
 
 // =========================================================================
@@ -2465,7 +2497,7 @@ function renderGovSites() {
 let currentInitialBrowserUrl = '';
 let browserZoomScale = 1.0;
 
-function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle = 'Сомонаи давлатӣ') {
+function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle = 'Сомонаи давлатӣ', siteId = '') {
   document.getElementById('inappBrowserModal')?.remove();
   currentInitialBrowserUrl = initialUrl;
   browserZoomScale = 1.0;
@@ -2482,12 +2514,18 @@ function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle =
         <div class="inapp-progress-fill"></div>
       </div>
 
-      <div class="inapp-loading-screen" id="browserLoadingScreen">
-        <div class="inapp-spinner-circle"></div>
-        <div>Саҳифа кушода шуда истодааст...</div>
-      </div>
-
+      <!-- Саҳифа фавран нишон дода мешавад (оҳиста-оҳиста пурра мешавад) —
+           дигар интизори пурракашолуд нест, танҳо хати раванд дар боло -->
       <iframe class="inapp-iframe" id="browserFrame" src="${initialUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" onload="onBrowserFrameLoaded()"></iframe>
+
+      <div class="inapp-offline-panel" id="browserOfflinePanel">
+        <div class="off-title">📡 Интернет дастрас нест</div>
+        <img class="off-shot" id="browserOfflineShot" src="" alt="">
+        <div id="browserOfflineName" style="font-weight:900"></div>
+        <div class="off-sub">Сомонаро бе интернет пурра кушодан имконнопазир аст. Агар он қаблан дар ҳамин дастгоҳ кушода шуда бошад, тугмаи «Дубора кӯшиш» метавонад онро аз кэши браузер нишон диҳад.</div>
+        <button class="off-btn" type="button" onclick="browserRetryOnline()">🔄 Дубора кӯшиш</button>
+        <button class="off-btn" type="button" style="border-color:rgba(217,107,99,.5);color:#D96B63" onclick="closeMiniBrowser()">Баромад</button>
+      </div>
     </div>
 
     <!-- BOTTOM TOOLBAR -->
@@ -2521,6 +2559,36 @@ function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle =
 
   document.body.appendChild(modal);
   initBrowserPinchZoom();
+  // Агар интернет набошад — офлайн-панел бо сурати сомона нишон дода мешавад
+  if (!navigator.onLine) showBrowserOfflinePanel(initialTitle, siteId);
+}
+
+function showBrowserOfflinePanel(title, siteId) {
+  const panel = document.getElementById('browserOfflinePanel');
+  const frame = document.getElementById('browserFrame');
+  const bar = document.getElementById('browserProgressBar');
+  if (!panel) return;
+  const nameEl = document.getElementById('browserOfflineName');
+  if (nameEl) nameEl.textContent = title || 'Сомонаи давлатӣ';
+  const shot = document.getElementById('browserOfflineShot');
+  if (shot) shot.src = siteId ? 'assets/sites/' + siteId + '.jpg' : '';
+  panel.style.display = 'flex';
+  if (frame) frame.style.visibility = 'hidden';
+  if (bar) bar.style.display = 'none';
+}
+
+function browserRetryOnline() {
+  const panel = document.getElementById('browserOfflinePanel');
+  const frame = document.getElementById('browserFrame');
+  const bar = document.getElementById('browserProgressBar');
+  if (panel) panel.style.display = 'none';
+  if (frame) { frame.style.visibility = 'visible'; frame.src = currentInitialBrowserUrl; }
+  if (bar) bar.style.display = 'block';
+}
+
+// Сомонаҳое, ки дар фрейм кушода намешаванд (X-Frame-Options) — дар браузери берунӣ
+function openExternalSite(url) {
+  window.open(url, '_blank', 'noopener,noreferrer');
 }
 
 function browserBack() {
@@ -2567,12 +2635,8 @@ function showBrowserLoading() {
 }
 
 function onBrowserFrameLoaded() {
-  const loader = document.getElementById('browserLoadingScreen');
+  // Хати раванд пинҳон мешавад; саҳифа аз аввал худ нишон дода истодааст
   const bar = document.getElementById('browserProgressBar');
-  if (loader) {
-    loader.style.opacity = '0';
-    setTimeout(() => { loader.style.display = 'none'; }, 200);
-  }
   if (bar) bar.style.display = 'none';
 }
 

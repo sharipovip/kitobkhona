@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v69-splash-edge';
+const CACHE_NAME = 'kitobkhona-v70-browser-offline';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -29,7 +29,6 @@ const LOCAL_FILES = [
   './icon-512.png',
   './assets/sites/president.jpg',
   './assets/sites/kmt.jpg',
-  './assets/sites/nlt.jpg',
   './assets/sites/maorif.jpg',
   './assets/sites/mmk.jpg',
   './assets/sites/khovar.jpg',
