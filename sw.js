@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v70-browser-offline';
+const CACHE_NAME = 'kitobkhona-v71-splash-flag-ring';
 const LOCAL_FILES = [
   './',
   './index.html',
