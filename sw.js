@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v65-directory-actions';
+const CACHE_NAME = 'kitobkhona-v66-gov-shots-splash';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -14,6 +14,7 @@ const LOCAL_FILES = [
   './config.js',
   './cache.js',
   './quotes-data.js',
+  './splash_logo.png',
   './splash_logo.jpg',
   './manifest.json',
   './search-index.json',
@@ -25,7 +26,16 @@ const LOCAL_FILES = [
   './delete-account.html',
   './favicon.ico',
   './icon-192.png',
-  './icon-512.png'
+  './icon-512.png',
+  './assets/sites/president.jpg',
+  './assets/sites/kmt.jpg',
+  './assets/sites/nlt.jpg',
+  './assets/sites/maorif.jpg',
+  './assets/sites/mmk.jpg',
+  './assets/sites/khovar.jpg',
+  './assets/sites/mfa.jpg',
+  './assets/sites/dushanbe.jpg',
+  './assets/sites/ntc.jpg'
 ];
 
 const BOOKS_JSON_URL = 'books.json';
