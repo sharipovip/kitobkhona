@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v68-gov-swipe';
+const CACHE_NAME = 'kitobkhona-v69-splash-edge';
 const LOCAL_FILES = [
   './',
   './index.html',
