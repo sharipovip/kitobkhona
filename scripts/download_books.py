@@ -1,15 +1,14 @@
 """
-Автоматическая загрузка книг с nlt.tj в sharipovip/books
-- Качает батчами по 30, каждый батч коммитит и пушит.
-- Работает до 5 часов, потом выходит и триггерит следующий запуск.
-- Продолжает с того места, где остановился (state.json).
+Загрузка книг с nlt.tj в sharipovip/books.
+- Батчами по 30 шт, каждый батч коммитит и пушит.
+- До 5 часов за один запуск, потом триггерит следующий.
+- Продолжает с места остановки через _downloader_state.json.
 """
 
 import asyncio
 import os
 import json
 import re
-import shutil
 import subprocess
 import time
 import urllib.parse
@@ -29,15 +28,14 @@ STATE_FILE = BOOKS_ROOT / "_downloader_state.json"
 
 MAX_SIZE_MB = 95
 BATCH_SIZE = 30
-MAX_RUNTIME_SECONDS = 5 * 3600  # 5 часов — потом graceful exit
+MAX_RUNTIME_SECONDS = 5 * 3600
 
-# Ручная карта нестандартных категорий
 MANUAL_MAP = {
-    "китобҳои дарсӣ":               "Kitobhoi darsi",
-    "китобхои дарси":               "Kitobhoi darsi",
-    "kitobhoi darsi":               "Kitobhoi darsi",
-    "китобҳо барои пешвои миллат":  "КИТОБҲО БАРОИ ПЕШВОИ МИЛЛАТ",
-    "пешвои миллат":                "Пешвои Миллат",
+    "китобҳои дарсӣ": "Kitobhoi darsi",
+    "китобхои дарси": "Kitobhoi darsi",
+    "kitobhoi darsi": "Kitobhoi darsi",
+    "китобҳо барои пешвои миллат": "КИТОБҲО БАРОИ ПЕШВОИ МИЛЛАТ",
+    "пешвои миллат": "Пешвои Миллат",
 }
 
 
@@ -57,7 +55,7 @@ def normalize(s):
 def build_existing_index():
     index = {}
     for item in BOOKS_ROOT.rglob("*"):
-        if item.is_dir() and item.name not in ("_inbox",):
+        if item.is_dir() and item.name != "_inbox":
             rel = item.relative_to(BOOKS_ROOT).as_posix()
             norm_key = "/".join(normalize(p) for p in rel.split("/"))
             index[norm_key] = rel
@@ -102,10 +100,10 @@ def git_commit_and_push(batch_num):
     if result.returncode == 0:
         print("[i] Нет изменений — коммит не нужен")
         return True
-    subprocess.run(["git", "commit", "-m", f"📚 Batch {batch_num} [skip ci]"], check=True)
+    subprocess.run(["git", "commit", "-m", f"batch {batch_num}"], check=True)
     try:
         subprocess.run(["git", "push"], check=True)
-        print(f"[+] Batch {batch_num} запушен в GitHub")
+        print(f"[+] Batch {batch_num} запушен")
         return True
     except subprocess.CalledProcessError as e:
         print(f"[!] Ошибка push: {e}")
@@ -126,7 +124,7 @@ async def login(page):
 
 
 async def collect_categories(page):
-    print(f"[*] Сбор категорий: {JANR_URL}")
+    print(f"[*] Категории: {JANR_URL}")
     await page.goto(JANR_URL, wait_until="networkidle")
     await page.wait_for_timeout(1500)
     cats = await page.eval_on_selector_all(
@@ -220,21 +218,21 @@ async def download_book(page, book_url, target_dir):
         body = await resp.body()
         size_mb = len(body) / (1024 * 1024)
         if size_mb > MAX_SIZE_MB:
-            print(f"      [!] {filename} — {size_mb:.1f} МБ, пропуск")
+            print(f"      [!] {filename} - {size_mb:.1f} MB, skip")
             return None
 
         target_dir.mkdir(parents=True, exist_ok=True)
         target = target_dir / filename
         if target.exists():
-            print(f"      [=] уже есть: {filename}")
+            print(f"      [=] already exists: {filename}")
             return None
 
         target.write_bytes(body)
-        print(f"      [+] {filename} ({size_mb:.1f} МБ)")
+        print(f"      [+] {filename} ({size_mb:.1f} MB)")
         return filename
 
     except Exception as e:
-        print(f"      [-] ошибка: {e}")
+        print(f"      [-] error: {e}")
         return None
 
 
@@ -243,10 +241,10 @@ async def main():
 
     state = load_state()
     completed = set(state.get("completed_categories", []))
-    print(f"[+] Уже завершённых категорий: {len(completed)}")
+    print(f"[+] Already completed categories: {len(completed)}")
 
     existing_index = build_existing_index()
-    print(f"[+] Существующих папок в репо: {len(existing_index)}")
+    print(f"[+] Existing folders: {len(existing_index)}")
 
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
@@ -270,7 +268,7 @@ async def main():
 
         for i, cat in enumerate(categories, 1):
             if cat["url"] in completed:
-                print(f"\n[{i}/{len(categories)}] [=] {cat['name']} — уже обработано ранее")
+                print(f"\n[{i}/{len(categories)}] [=] {cat['name']} - already done")
                 continue
 
             print(f"\n{'='*60}")
@@ -279,16 +277,16 @@ async def main():
 
             target_rel = resolve_folder(cat["name"], existing_index)
             target_dir = BOOKS_ROOT / target_rel
-            print(f"    → папка: books/{target_rel}")
+            print(f"    -> folder: books/{target_rel}")
 
             books = await collect_books_in_category(page, cat["url"])
-            print(f"    найдено книг: {len(books)}")
+            print(f"    found books: {len(books)}")
 
             category_ok = True
             for b in books:
                 elapsed = time.time() - start_time
                 if elapsed > MAX_RUNTIME_SECONDS:
-                    print(f"\n[!] Лимит времени ({elapsed/3600:.2f} ч) — graceful exit")
+                    print(f"\n[!] Time limit reached ({elapsed/3600:.2f} h) - graceful exit")
                     stopped_by_time = True
                     category_ok = False
                     break
@@ -307,35 +305,31 @@ async def main():
                         category_ok = False
                         break
                     batch_count = 0
-                    print(f"[+] Всего новых за этот запуск: {total_new}")
+                    print(f"[+] Total new this run: {total_new}")
 
             if stopped_by_time or stopped_by_push_error:
                 break
 
             if category_ok:
-                # Категория полностью обработана — помечаем
                 completed.add(cat["url"])
                 state["completed_categories"] = sorted(completed)
                 save_state(state)
-                print(f"    [✓] Категория завершена и помечена")
+                print(f"    [OK] Category marked as completed")
 
-        # Финальный коммит остатков
         if batch_count > 0:
             batch += 1
             git_commit_and_push(batch)
 
         await browser.close()
 
-    # Определяем, нужно ли продолжать
     all_done = (len(completed) == len(categories))
     more_to_do = (not all_done) or stopped_by_time
 
     print(f"\n{'='*60}")
-    print(f"[+] Итог за запуск: +{total_new} книг")
-    print(f"[+] Завершено категорий: {len(completed)} / {len(categories)}")
-    print(f"[+] Нужен ли ещё запуск: {'ДА' if more_to_do else 'НЕТ'}")
+    print(f"[+] New this run: {total_new}")
+    print(f"[+] Completed categories: {len(completed)} / {len(categories)}")
+    print(f"[+] More runs needed: {'YES' if more_to_do else 'NO'}")
 
-    # GitHub Actions читает этот файл, чтобы понять — триггерить ли следующий run
     Path("_more_to_do").write_text("yes" if more_to_do else "no", encoding="utf-8")
 
 
