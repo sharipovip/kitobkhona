@@ -3,11 +3,19 @@ name: Download nlt.tj books → sharipovip/books
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 3 * * *'
+    - cron: '0 */6 * * *'   # каждые 6 часов — на случай, если цепочка оборвалась
+  workflow_run:
+    workflows: ["Download nlt.tj books → sharipovip/books"]
+    types: [completed]
+
+permissions:
+  actions: write
+  contents: read
 
 jobs:
   download:
     runs-on: ubuntu-latest
+    timeout-minutes: 340    # < 6 ч (лимит GitHub)
 
     steps:
       - name: Checkout sharipovip/books
@@ -36,33 +44,33 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
-      # ЭТАП 1: Скачиваем всё в books/_inbox/
-      - name: Download (to _inbox)
+      - name: Run downloader
         working-directory: books-repo
         env:
           NLT_USERNAME: ${{ secrets.NLT_USERNAME }}
           NLT_PASSWORD: ${{ secrets.NLT_PASSWORD }}
         run: |
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
           mkdir -p scripts
           cp ../scripts-repo/scripts/download_books.py scripts/
           python scripts/download_books.py
 
-      # ЭТАП 2: Раскладываем по категориям
-      - name: Distribute (to categories)
+      - name: Check if more work needed
+        id: check
         working-directory: books-repo
         run: |
-          cp ../scripts-repo/scripts/distribute_books.py scripts/
-          python scripts/distribute_books.py
-
-      - name: Commit and push
-        working-directory: books-repo
-        run: |
-          git config user.name  "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add books/
-          if git diff --staged --quiet; then
-            echo "✅ Новых книг нет"
-            exit 0
+          if [ -f _more_to_do ] && [ "$(cat _more_to_do)" = "yes" ]; then
+            echo "more=yes" >> $GITHUB_OUTPUT
+          else
+            echo "more=no" >> $GITHUB_OUTPUT
           fi
-          git commit -m "📚 Auto-download + distribute [$(date +'%Y-%m-%d %H:%M')]"
-          git push
+
+      - name: Trigger next run
+        if: steps.check.outputs.more == 'yes'
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          echo "🔁 Триггерим следующий запуск..."
+          sleep 15
+          gh workflow run "download-books.yml" --repo ${{ github.repository }} --ref ${{ github.ref_name }}
