@@ -36,7 +36,8 @@ jobs:
           playwright install chromium
           playwright install-deps chromium
 
-      - name: Run downloader
+      # ЭТАП 1: Скачиваем всё в books/_inbox/
+      - name: Download (to _inbox)
         working-directory: books-repo
         env:
           NLT_USERNAME: ${{ secrets.NLT_USERNAME }}
@@ -46,6 +47,13 @@ jobs:
           cp ../scripts-repo/scripts/download_books.py scripts/
           python scripts/download_books.py
 
+      # ЭТАП 2: Раскладываем по категориям
+      - name: Distribute (to categories)
+        working-directory: books-repo
+        run: |
+          cp ../scripts-repo/scripts/distribute_books.py scripts/
+          python scripts/distribute_books.py
+
       - name: Commit and push
         working-directory: books-repo
         run: |
@@ -53,8 +61,8 @@ jobs:
           git config user.email "github-actions[bot]@users.noreply.github.com"
           git add books/
           if git diff --staged --quiet; then
-            echo "✅ Новых книг нет — коммит не нужен"
+            echo "✅ Новых книг нет"
             exit 0
           fi
-          git commit -m "📚 Auto-download all categories [$(date +'%Y-%m-%d %H:%M')]"
+          git commit -m "📚 Auto-download + distribute [$(date +'%Y-%m-%d %H:%M')]"
           git push
