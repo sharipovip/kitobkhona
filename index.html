@@ -1159,14 +1159,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 @media(max-width:365px){.hero-v3-left{width:64%!important;padding:9px 9px!important}.hero-v3-right{width:48%!important}.hero-kicker-v3{margin-bottom:3px!important}.hero-author-v3 span{font-size:8px!important}.hero-author-v3 b{font-size:9px!important}}
 </style>
 <style id="startup-splash-style">#startupSplash{position:fixed;inset:0;z-index:1000000;background:radial-gradient(circle at 50% 42%,#173659,#071526 68%);display:flex;flex-direction:column;align-items:center;justify-content:center;color:#E8C96D;transition:opacity .5s ease,visibility .5s ease}#startupSplash.hide{opacity:0;visibility:hidden}
-/* Логотипи калон — то ~80% паҳнои экран */
-.splash-frame{position:relative;width:min(80vw,345px);aspect-ratio:1;display:grid;place-items:center}
-/* Ҳалқаи ҳаракатнок бо рангҳои Парчами Тоҷикистон (сурх-сафед-сабз) — то анҷоми боршавӣ */
-.splash-ring{position:absolute;inset:0;border-radius:50%;background:conic-gradient(from 0deg,#D01F2F 0deg,#E8434A 60deg,#FFFFFF 115deg,#F6F2E8 150deg,#1FA463 205deg,#2FBF74 285deg,#7A1230 330deg,#D01F2F 360deg);-webkit-mask:radial-gradient(farthest-side,transparent calc(100% - 14px),#000 calc(100% - 13px));mask:radial-gradient(farthest-side,transparent calc(100% - 14px),#000 calc(100% - 13px));animation:splashRingSpin 1.8s linear infinite;filter:drop-shadow(0 0 18px rgba(208,31,47,.25)) drop-shadow(0 0 30px rgba(31,164,99,.18))}
-@keyframes splashRingSpin{to{transform:rotate(360deg)}}
-#startupSplash img{position:relative;width:calc(100% - 30px);aspect-ratio:1;border-radius:50%;object-fit:cover;box-shadow:0 0 0 2.5px rgba(232,201,109,.55),0 22px 55px rgba(0,0,0,.5)}
-#startupSplash b{margin-top:22px;font-size:22px;letter-spacing:1.5px}#startupSplash span{margin-top:5px;color:#A8B8CC;font-size:12px}
-@media (prefers-reduced-motion:reduce){.splash-ring{animation:none}}
+/* Логотипи калон — то ~80% паҳнои экран, бе ҳалқа: тоза ва содда */
+#startupSplash img{width:min(80vw,345px);aspect-ratio:1;border-radius:50%;object-fit:cover;box-shadow:0 24px 60px rgba(0,0,0,.55)}
+#startupSplash b{margin-top:24px;font-size:22px;letter-spacing:1.5px}#startupSplash span{margin-top:5px;color:#A8B8CC;font-size:12px}
 </style>
 <style id="app-custom-additions-v6">
 /* Top Header Date/Time & Weather Widget */
@@ -1641,7 +1636,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </style>
 </head>
 <body>
-<div id="startupSplash"><div class="splash-frame"><div class="splash-ring"></div><img src="splash_logo.png" alt="Китобхона"></div><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');const MIN=1700,MAX=5500,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
+<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Китоб манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* Ҳадди ақал 5 сония намоиш — ҳатто агар барнома зуд бор шавад */const MIN=5000,MAX=9000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
 <div class="phone-wrapper">
   <!-- Объявление админа — ставится в верхушку над логотипом с красивой анимацией появления/исчезновения по очереди -->
   <div id="announcementBannerTop" class="announce-top">

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v71-splash-flag-ring';
+const CACHE_NAME = 'kitobkhona-v72-splash-vector';
 const LOCAL_FILES = [
   './',
   './index.html',
