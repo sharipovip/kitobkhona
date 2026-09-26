@@ -1,12 +1,9 @@
-name: Download nlt.tj books → sharipovip/books
+name: Download nlt books to sharipovip-books
 
 on:
   workflow_dispatch:
   schedule:
-    - cron: '0 */6 * * *'   # каждые 6 часов — на случай, если цепочка оборвалась
-  workflow_run:
-    workflows: ["Download nlt.tj books → sharipovip/books"]
-    types: [completed]
+    - cron: '0 */6 * * *'
 
 permissions:
   actions: write
@@ -15,7 +12,7 @@ permissions:
 jobs:
   download:
     runs-on: ubuntu-latest
-    timeout-minutes: 340    # < 6 ч (лимит GitHub)
+    timeout-minutes: 340
 
     steps:
       - name: Checkout sharipovip/books
@@ -69,8 +66,8 @@ jobs:
       - name: Trigger next run
         if: steps.check.outputs.more == 'yes'
         env:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GH_TOKEN: ${{ secrets.BOOKS_REPO_TOKEN }}
         run: |
-          echo "🔁 Триггерим следующий запуск..."
+          echo "Triggering next run..."
           sleep 15
-          gh workflow run "download-books.yml" --repo ${{ github.repository }} --ref ${{ github.ref_name }}
+          gh workflow run "download-books.yml" --repo sharipovip/kitobkhona --ref main
