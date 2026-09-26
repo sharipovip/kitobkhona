@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v73-splash-centered';
+const CACHE_NAME = 'kitobkhona-v74-brand-header-fix';
 const LOCAL_FILES = [
   './',
   './index.html',
