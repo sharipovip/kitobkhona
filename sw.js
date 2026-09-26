@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v67-quality-fixes';
+const CACHE_NAME = 'kitobkhona-v68-gov-swipe';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -101,15 +101,19 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (event.request.mode === 'navigate') {
+    // Аввал шабака: баъди нашр корбар фавран саҳифаи навро мебинад.
+    // Саҳифаи кӯҳнаи кэшшуда (масалан, бо бахши кӯҳна) дигар нишон дода намешавад.
     event.respondWith((async () => {
-      const cached = await caches.match(event.request, { ignoreSearch: true });
       const network = fetch(event.request).then(response => {
         if (response && response.status === 200) {
           safeCachePut(event.request, response);
         }
         return response;
       }).catch(() => null);
-      return cached || await network || await caches.match('./offline.html');
+      const net = await network;
+      if (net) return net;
+      const cached = await caches.match(event.request, { ignoreSearch: true });
+      return cached || await caches.match('./offline.html');
     })());
     return;
   }

@@ -1408,27 +1408,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   display: block;
   overflow: hidden;
   padding: 10px 0 16px 0;
+  touch-action: pan-y; /* ҳаракати чап-рост бо панҷа; боло-поён — варақгардонии саҳифа */
   -webkit-mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
   mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
 }
-/* Ҳаракати оҳистаи сомонаҳо аз рост ба чап — ҳамаи сомонаҳо дидан мешаванд */
+/* Ҳаракати оҳиста (худкор) + ҷойгузорӣ бо панҷа ҳар ду тараф — тавассути JS идора мешавад */
 .gov-track-v3 {
   display: flex;
   width: max-content;
-  animation: govMarquee 70s linear infinite;
   will-change: transform;
+  cursor: grab;
 }
-.gov-track-v3:hover { animation-play-state: paused; }
+.gov-track-v3:active { cursor: grabbing; }
 .gov-set-v3 { display: flex; gap: 12px; padding-right: 12px; }
-@keyframes govMarquee {
-  from { transform: translateX(0); }
-  to { transform: translateX(-50%); }
-}
-@media (prefers-reduced-motion: reduce) {
-  .gov-track-v3 { animation: none; }
-  .gov-scroll-v3 { overflow-x: auto; }
-  .gov-set-v3 + .gov-set-v3 { display: none; }
-}
 .gov-card-v3 {
   flex: 0 0 185px;
   background: #142438;
@@ -2409,21 +2401,62 @@ function govSiteCard(s, isCopy) {
     </div>
   `;
 }
+// Ҳаракати худкор (оҳиста, аз рост ба чап) + ҷойгузорӣ бо панҷа ҳар ду самт.
+// Пахши кӯтоҳ = кушодани сомона; кашолан бо панҷа = интихоби сомона.
+let govPos = 0;            // мавқеи ҳозира (px, мусбат)
+let govSetWidth = 0;       // паҳнои як маҷмӯа (барои даврзанӣ)
+let govSpeed = 22;         // px/сония
+let govDragging = false, govResumeAt = 0, govPointer = null, govSuppressClick = false, govRafOn = false, govLastTs = 0;
+function govReducedMotion(){ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
+function govWrap(p){ const w = govSetWidth || 1; return ((p % w) + w) % w; }
+function govApply(){ const t = document.getElementById('govTrack'); if (t) t.style.transform = 'translateX(' + (-govWrap(govPos)) + 'px)'; }
+function govMeasure(){ const t = document.getElementById('govTrack'); if (t && t.firstElementChild) { govSetWidth = t.firstElementChild.getBoundingClientRect().width || govSetWidth; govApply(); } }
+function govTick(ts){
+  const dt = govLastTs ? Math.min((ts - govLastTs) / 1000, 0.1) : 0; govLastTs = ts;
+  if (govResumeAt && ts >= govResumeAt) govResumeAt = 0;
+  if (!govDragging && !govResumeAt && !govReducedMotion()) govPos += govSpeed * dt;
+  govApply();
+  requestAnimationFrame(govTick);
+}
+function govInitGestures(){
+  const box = document.getElementById('govSitesList'); if (!box || box.dataset.govGestures) return; box.dataset.govGestures = '1';
+  box.addEventListener('pointerdown', e => {
+    if (govPointer) return;
+    govPointer = { id: e.pointerId, startX: e.clientX, startPos: govPos, moved: 0 };
+    govDragging = true;
+  });
+  box.addEventListener('pointermove', e => {
+    if (!govPointer || e.pointerId !== govPointer.id) return;
+    const dx = e.clientX - govPointer.startX;
+    govPointer.moved = Math.max(govPointer.moved, Math.abs(dx));
+    if (govPointer.moved > 6) {
+      try { box.setPointerCapture(e.pointerId); } catch (err) {}
+      govPos = govPointer.startPos - dx; // панҷа ба рост = мавод ба рост
+      govApply();
+    }
+  });
+  const govEnd = e => {
+    if (!govPointer || e.pointerId !== govPointer.id) return;
+    const tap = govPointer.moved <= 6;
+    govPointer = null; govDragging = false;
+    govResumeAt = performance.now() + 2200; // баъди кашолан 2.2 сония ҳаракат давом меёбад
+    if (!tap) { govSuppressClick = true; setTimeout(() => { govSuppressClick = false; }, 350); }
+  };
+  box.addEventListener('pointerup', govEnd);
+  box.addEventListener('pointercancel', govEnd);
+  box.addEventListener('click', e => { if (govSuppressClick) { e.stopPropagation(); e.preventDefault(); } }, true);
+  addEventListener('resize', govMeasure);
+}
 function renderGovSites() {
   const container = document.getElementById('govSitesList');
   if (!container) return;
-  // Ду нусхаи рӯйхат — ҳаракати бефосила (аз рост ба чап, оҳиста)
+  // Ду нусхаи рӯйхат — даврзании бефосила (ҳам худкор, ҳам бо панҷа)
   const set = GOV_SITES.map(s => govSiteCard(s, false)).join('');
   const setCopy = GOV_SITES.map(s => govSiteCard(s, true)).join('');
   container.innerHTML = `<div class="gov-track-v3" id="govTrack"><div class="gov-set-v3">${set}</div><div class="gov-set-v3" aria-hidden="true">${setCopy}</div></div>`;
-  const track = document.getElementById('govTrack');
-  if (track) {
-    // Дар ҳолати дастан дахл кардан ҳаракат таваққуф мешавад
-    track.addEventListener('pointerdown', () => { track.style.animationPlayState = 'paused'; });
-    const resume = () => { track.style.animationPlayState = 'running'; };
-    addEventListener('pointerup', resume, { passive: true });
-    addEventListener('pointercancel', resume, { passive: true });
-  }
+  govInitGestures();
+  govMeasure();
+  if (!govRafOn) { govRafOn = true; requestAnimationFrame(govTick); }
 }
 
 // =========================================================================
