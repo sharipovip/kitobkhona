@@ -1761,7 +1761,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-track-v3{display:flex;gap:12px;width:max-content;will-change:transform;cursor:grab}
 .news-track-v3:active{cursor:grabbing}
 .news-card-v3{
-  position:relative;flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(216px,55vw,300px);
+  position:relative;flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(150px,38vw,176px);
   /* канорҳо дар мисли экрани каҷи Samsung Ultra — дуғравии амудӣ 50% */
   border-radius:34px / 50%;overflow:hidden;cursor:pointer;background:#14243A;
   outline:1px solid rgba(201,168,76,.10);outline-offset:-9px;
@@ -1774,10 +1774,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   pointer-events:none;-webkit-user-drag:none;opacity:0;transition:opacity .35s ease}
 .news-media img.ok{opacity:1}
 /* бе сурат: матни пурраи хабар дар ҷои сурат */
-.news-desc-media{position:absolute;inset:0;z-index:1;padding:46px 18px 78px;overflow:hidden;
+.news-desc-media{position:absolute;inset:0;z-index:1;padding:38px 16px 76px;overflow:hidden;
   background:linear-gradient(160deg,#1B3050 0%,#14243A 62%,#101E33 100%);
-  font-size:13px;line-height:1.68;color:rgba(240,234,214,.92);
-  display:-webkit-box;-webkit-line-clamp:11;-webkit-box-orient:vertical}
+  font-size:12px;line-height:1.55;color:rgba(240,234,214,.92);
+  display:-webkit-box;-webkit-line-clamp:5;-webkit-box-orient:vertical}
 /* қисми поёнии сурат — градиенти сиёҳ ~50% барои хониши матн */
 .news-fade{position:absolute;left:0;right:0;bottom:0;height:62%;z-index:2;pointer-events:none;
   background:linear-gradient(to top, rgba(0,0,0,.82) 0%, rgba(0,0,0,.55) 45%, rgba(0,0,0,0) 100%)}
@@ -1788,10 +1788,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 }
 .news-external{position:absolute;top:9px;right:9px;z-index:4;font-size:9.5px;font-weight:900;
   padding:3px 8px;border-radius:99px;background:rgba(8,16,26,.85);color:#8FB8E8;border:1px solid rgba(120,170,230,.4)}
-.news-body{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:13px 15px 13px;display:flex;flex-direction:column;gap:6px}
-.news-title{font-size:15px;font-weight:800;color:#fff;line-height:1.42;text-shadow:0 1px 3px rgba(0,0,0,.6);
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
-.news-sub{font-size:11.5px;line-height:1.52;color:rgba(255,255,255,.75);text-shadow:0 1px 2px rgba(0,0,0,.55);
+.news-body{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:11px 14px 11px;display:flex;flex-direction:column;gap:5px}
+.news-title{font-size:13.5px;font-weight:800;color:#fff;line-height:1.4;text-shadow:0 1px 3px rgba(0,0,0,.6);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.news-sub{font-size:11px;line-height:1.45;color:rgba(255,255,255,.75);text-shadow:0 1px 2px rgba(0,0,0,.55);
   display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .news-meta{font-size:11px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:5px;
   text-shadow:0 1px 2px rgba(0,0,0,.5)}
@@ -1799,9 +1799,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);transition:all .25s ease}
 .news-dot.on{width:16px;border-radius:99px;background:#E8C96D}
 /* скелетон ҳангоми боршавӣ */
-.news-skel{flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(216px,55vw,300px);border-radius:34px / 50%;overflow:hidden;
+.news-skel{flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(150px,38vw,176px);border-radius:34px / 50%;overflow:hidden;
   background:#14243A;border:1.5px solid rgba(201,168,76,.18)}
-.news-skel .sk-img{height:56%}
+.news-skel .sk-img{height:52%}
 .news-skel .sk-line{height:13px;margin:13px 15px;border-radius:6px}
 .news-skel .sk-line.short{width:55%}
 .sk-anim{background:linear-gradient(100deg,rgba(255,255,255,.05) 40%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 60%);
