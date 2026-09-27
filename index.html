@@ -1786,6 +1786,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-body{position:absolute;left:0;right:0;bottom:0;z-index:3;padding:13px 15px 13px;display:flex;flex-direction:column;gap:6px}
 .news-title{font-size:15px;font-weight:800;color:#fff;line-height:1.42;text-shadow:0 1px 3px rgba(0,0,0,.6);
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-sub{font-size:11.5px;line-height:1.52;color:rgba(255,255,255,.75);text-shadow:0 1px 2px rgba(0,0,0,.55);
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
 .news-meta{font-size:11px;color:rgba(255,255,255,.8);display:flex;align-items:center;gap:5px;
   text-shadow:0 1px 2px rgba(0,0,0,.5)}
 .news-dots-v3{display:flex;gap:6px;justify-content:center;padding:2px 0 6px}
@@ -2952,19 +2954,26 @@ function newsImgStep(img){
   const i = (+img.dataset.i || 0) + 1;
   img.dataset.i = i;
   if (a[i]) { img.classList.remove('ok'); img.src = a[i]; }
+  else if (img.dataset.banner && img.dataset.banner !== img.getAttribute('src')){
+    // ҳатто сурат ва weserv нагузаштанд — баннери сомона нишон медиҳем
+    img.classList.remove('ok'); img.src = img.dataset.banner;
+  }
   else img.remove(); // мондани 📰 дар замина
 }
 function newsCardHTML(n, i){
-  let media;
+  let media, sub = '';
   if (n.image){
+    // 1) сурати аслии хабар (+ занҷираи эҳтиётӣ: weserv → баннери сомона)
     const covers = JSON.stringify(newsImgCandidates(n.image));
-    media = `<img src="${esc(n.image)}" data-covers='${esc(covers)}' data-i="0" alt="" loading="eager" decoding="async"
+    media = `<img src="${esc(n.image)}" data-covers='${esc(covers)}' data-i="0" data-banner="${esc(n.site || '')}" alt="" loading="eager" decoding="async"
       onload="this.classList.add('ok')" onerror="newsImgStep(this)">`;
-  } else if (n.desc){
-    media = `<div class="news-desc-media">${esc(n.desc)}</div>`;
   } else if (n.site){
-    // на ҳе сурат на матн — баннери расмии сомона (скриншоти маҳаллӣ)
+    // 2) СУРАТ НАБУД → баннери расмии сомона (скриншоти маҳаллӣ — фаврӣ пайдо мешавад)
     media = `<img src="${esc(n.site)}" alt="" onload="this.classList.add('ok')" onerror="this.remove()">`;
+    if (n.desc) sub = `<div class="news-sub">${esc(n.desc)}</div>`;
+  } else if (n.desc){
+    // 3) на сурат на баннер — матни пурраи хабар
+    media = `<div class="news-desc-media">${esc(n.desc)}</div>`;
   } else { media = ''; }
   return `
     <div class="news-card-v3" data-i="${i}">
@@ -2974,6 +2983,7 @@ function newsCardHTML(n, i){
       ${n.external ? '<span class="news-external">↗ берунӣ</span>' : ''}
       <div class="news-body">
         <div class="news-title">${esc(n.title)}</div>
+        ${sub}
         <div class="news-meta"><span>🕘</span><span>${newsTimeAgo(n.published)}</span></div>
       </div>
     </div>`;
