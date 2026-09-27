@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v90-real-curve';
+const CACHE_NAME = 'kitobkhona-v92-ogg-typo';
 const LOCAL_FILES = [
   './',
   './index.html',
