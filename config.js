@@ -732,13 +732,20 @@ async function cachedBookBlob(url,onProgress){
   const response=await getOrFetchBookResponse(url,{onProgress});return await response.blob();
 }
 function rememberCachedBook(url,name,blob){try{const m=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'),key=canonicalBookUrl(url);m[key]={url:key,name:name||'Китоб',cover:'',ts:Date.now(),size:blob.size};localStorage.setItem('kk_cached_books',JSON.stringify(m))}catch(e){}}
+// Васлкунанда ва MIME-и китоб аз URL (pdf/epub/fb2/doc/docx/mp4/txt/zip) — ҳеҷ «.pdf»-и барқароринашаванда
+const BOOK_MIMES={pdf:'application/pdf',epub:'application/epub+zip',fb2:'application/x-fictionbook+xml',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',mp4:'video/mp4',m4v:'video/mp4',webm:'video/webm',txt:'text/plain',zip:'application/zip'};
+function bookFileExt(url){const m=String(url||'').split('?')[0].match(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)\s*$/i);return m?m[1].toLowerCase():''}
+function bookFileName(name,url){const ext=bookFileExt(url)||'pdf';const base=(name||'kitob').replace(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)$/i,'');return base+'.'+ext}
+function bookMime(url){return BOOK_MIMES[bookFileExt(url)||'pdf']||'application/pdf'}
+window.bookFileName=bookFileName;window.bookMime=bookMime;
+
 async function shareFile(url, name) {
   url=canonicalBookUrl(url);const toastEl=getToastEl();
   try {
     if(toastEl){toastEl.textContent='Омодасозии китоб...';toastEl.classList.add('show')}
-    const blob=await cachedBookBlob(url);rememberCachedBook(url,name,blob);const fileName=(name||'kitob')+'.pdf';
-    if(isAndroid()&&typeof AndroidBridge.shareFile==='function'){AndroidBridge.shareFile(await blobToBase64(blob),fileName,'application/pdf');if(toastEl)toastEl.classList.remove('show');return}
-    if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:'application/pdf'});if(navigator.canShare({files:[file]})){await navigator.share({title:name,files:[file]});if(toastEl)toastEl.classList.remove('show');return}}
+    const blob=await cachedBookBlob(url);rememberCachedBook(url,name,blob);const fileName=bookFileName(name,url);const mime=bookMime(url);
+    if(isAndroid()&&typeof AndroidBridge.shareFile==='function'){AndroidBridge.shareFile(await blobToBase64(blob),fileName,mime);if(toastEl)toastEl.classList.remove('show');return}
+    if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:mime});if(navigator.canShare({files:[file]})){await navigator.share({title:name,files:[file]});if(toastEl)toastEl.classList.remove('show');return}}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
     if(toastEl){toastEl.textContent='Файл боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2500)}
   }catch(e){if(e.name!=='AbortError'&&toastEl){toastEl.textContent='Мубодила нашуд: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}}
@@ -748,7 +755,7 @@ async function downloadFile(url,name,showProgress=true){
   try{
     const already=await getCachedBookResponse(url);if(toastEl&&showProgress){toastEl.textContent=already?'✓ Аз ҳифзшуда гирифта шуд':'Ҳифз шуда истодааст... 0%';toastEl.classList.add('show')}
     const blob=await cachedBookBlob(url,(loaded,total)=>{if(toastEl&&showProgress&&total)toastEl.textContent=`Ҳифз шуда истодааст... ${Math.min(100,Math.round(loaded*100/total))}%`});rememberCachedBook(url,name,blob);
-    const fileName=(name||'kitob')+'.pdf';if(isAndroid()&&typeof AndroidBridge.saveFile==='function'){AndroidBridge.saveFile(await blobToBase64(blob),fileName,'application/pdf');if(toastEl){toastEl.textContent='✓ Файл барои захира кардан омода';setTimeout(()=>toastEl.classList.remove('show'),2000)}return}
+    const fileName=bookFileName(name,url);const mime=bookMime(url);if(isAndroid()&&typeof AndroidBridge.saveFile==='function'){AndroidBridge.saveFile(await blobToBase64(blob),fileName,mime);if(toastEl){toastEl.textContent='✓ Файл барои захира кардан омода';setTimeout(()=>toastEl.classList.remove('show'),2000)}return}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2000)}
   }catch(e){if(toastEl){toastEl.textContent='Хатогӣ: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}console.error('Download error:',e)}
 }
