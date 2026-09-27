@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v84-more-photos';
+const CACHE_NAME = 'kitobkhona-v85-kmt-ntc-sets';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -46,6 +46,12 @@ const LOCAL_FILES = [
     './assets/newsimg/khovar/5.jpg',
     './assets/newsimg/khovar/6.jpg',
     './assets/newsimg/khovar/7.jpg',
+    './assets/newsimg/kmt/1.jpg',
+    './assets/newsimg/kmt/2.jpg',
+    './assets/newsimg/kmt/3.jpg',
+    './assets/newsimg/kmt/4.jpg',
+    './assets/newsimg/kmt/5.jpg',
+    './assets/newsimg/kmt/6.jpg',
     './assets/newsimg/maorif/1.jpg',
     './assets/newsimg/maorif/2.jpg',
     './assets/newsimg/maorif/3.jpg',
@@ -62,13 +68,17 @@ const LOCAL_FILES = [
     './assets/newsimg/ntc/1.jpg',
     './assets/newsimg/ntc/2.jpg',
     './assets/newsimg/ntc/3.jpg',
+    './assets/newsimg/ntc/4.jpg',
+    './assets/newsimg/ntc/5.jpg',
+    './assets/newsimg/ntc/6.jpg',
+    './assets/newsimg/ntc/7.jpg',
     './assets/newsimg/president/1.jpg',
     './assets/newsimg/president/2.jpg',
     './assets/newsimg/president/3.jpg',
     './assets/newsimg/president/4.jpg',
     './assets/newsimg/president/5.jpg',
     './assets/newsimg/president/6.jpg',
-    './assets/newsimg/president/7.jpg',,,,,,,,,,,,,,,,,,,,,,,,,,,,
+    './assets/newsimg/president/7.jpg',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
 ];
 
 const BOOKS_JSON_URL = 'books.json';
