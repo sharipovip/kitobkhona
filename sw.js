@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v92-ogg-typo';
+const CACHE_NAME = 'kitobkhona-v93-mp3-symbolbridge';
 const LOCAL_FILES = [
   './',
   './index.html',
