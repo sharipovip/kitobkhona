@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v77-symbols-news';
+const CACHE_NAME = 'kitobkhona-v78-news-upgrade';
 const LOCAL_FILES = [
   './',
   './index.html',
