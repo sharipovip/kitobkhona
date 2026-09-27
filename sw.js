@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v89-pesvo-height';
+const CACHE_NAME = 'kitobkhona-v90-real-curve';
 const LOCAL_FILES = [
   './',
   './index.html',
