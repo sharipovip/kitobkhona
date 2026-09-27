@@ -2965,11 +2965,11 @@ function newsCardHTML(n, i){
   if (n.image){
     // 1) сурати аслии хабар (+ занҷираи эҳтиётӣ: weserv → баннери сомона)
     const covers = JSON.stringify(newsImgCandidates(n.image));
-    media = `<img src="${esc(n.image)}" data-covers='${esc(covers)}' data-i="0" data-banner="${esc(n.site || '')}" alt="" loading="eager" decoding="async"
+    media = `<img src="${esc(n.image)}" data-covers='${esc(covers)}' data-i="0" data-banner="${esc(n.site || '')}" alt="" loading="lazy" decoding="async"
       onload="this.classList.add('ok')" onerror="newsImgStep(this)">`;
   } else if (n.site){
     // 2) СУРАТ НАБУД → баннери расмии сомона (скриншоти маҳаллӣ — фаврӣ пайдо мешавад)
-    media = `<img src="${esc(n.site)}" alt="" onload="this.classList.add('ok')" onerror="this.remove()">`;
+    media = `<img src="${esc(n.site)}" alt="" loading="lazy" decoding="async" onload="this.classList.add('ok')" onerror="this.remove()">`;
     if (n.desc) sub = `<div class="news-sub">${esc(n.desc)}</div>`;
   } else if (n.desc){
     // 3) на сурат на баннер — матни пурраи хабар
@@ -3105,10 +3105,14 @@ function newsRender(){
   // ҳар бор кушодани саҳифаи асосӣ — аз хабари ТАСОДУФӢ сар мекунем
   newsIdx = Math.floor(Math.random() * NEWS_ITEMS.length);
   newsGoTo(newsIdx, false);
-  // агар сурат бе натиҷа часҳоид — ба нусхаи эҳтиётӣ мегузарем
+  // СУРАТШИНОС (watchdog): агар сурат бе натиҷа часҳоид (интернет суст),
+  // ҳар 8 сония ба нусхаи оянда мегузарем: асосӣ → weserv → баннери сомона (маҳаллӣ).
+  // Ин саҳифаро аз "боркунии абадӣ" наҷот медиҳад — дар охир ҳамеша маҳаллӣбор мешавад.
   sc.querySelectorAll('.news-media img').forEach(img => {
-    setTimeout(() => {
-      if (img.isConnected && !img.classList.contains('ok') && !(img.complete && img.naturalWidth > 0)) newsImgStep(img);
+    const wd = setInterval(() => {
+      if (!img.isConnected){ clearInterval(wd); return; }
+      if (img.classList.contains('ok') || (img.complete && img.naturalWidth > 0)){ clearInterval(wd); return; }
+      newsImgStep(img);
     }, 8000);
   });
   newsInitGestures();

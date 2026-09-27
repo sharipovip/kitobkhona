@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v85-kmt-ntc-sets';
+const CACHE_NAME = 'kitobkhona-v86-fastinstall';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -37,49 +37,11 @@ const LOCAL_FILES = [
   './assets/sites/ntc.jpg',
   './assets/sites/khatlon.jpg',
   './assets/symbols/parcham.png',
-  './assets/symbols/nishon.jpg',
-  './assets/symbols/surudi_milli.mp3'
-    './assets/newsimg/khovar/1.jpg',
-    './assets/newsimg/khovar/2.jpg',
-    './assets/newsimg/khovar/3.jpg',
-    './assets/newsimg/khovar/4.jpg',
-    './assets/newsimg/khovar/5.jpg',
-    './assets/newsimg/khovar/6.jpg',
-    './assets/newsimg/khovar/7.jpg',
-    './assets/newsimg/kmt/1.jpg',
-    './assets/newsimg/kmt/2.jpg',
-    './assets/newsimg/kmt/3.jpg',
-    './assets/newsimg/kmt/4.jpg',
-    './assets/newsimg/kmt/5.jpg',
-    './assets/newsimg/kmt/6.jpg',
-    './assets/newsimg/maorif/1.jpg',
-    './assets/newsimg/maorif/2.jpg',
-    './assets/newsimg/maorif/3.jpg',
-    './assets/newsimg/maorif/4.jpg',
-    './assets/newsimg/maorif/5.jpg',
-    './assets/newsimg/maorif/6.jpg',
-    './assets/newsimg/maorif/7.jpg',
-    './assets/newsimg/mfa/1.jpg',
-    './assets/newsimg/mfa/2.jpg',
-    './assets/newsimg/mfa/3.jpg',
-    './assets/newsimg/mfa/4.jpg',
-    './assets/newsimg/mfa/5.jpg',
-    './assets/newsimg/mfa/6.jpg',
-    './assets/newsimg/ntc/1.jpg',
-    './assets/newsimg/ntc/2.jpg',
-    './assets/newsimg/ntc/3.jpg',
-    './assets/newsimg/ntc/4.jpg',
-    './assets/newsimg/ntc/5.jpg',
-    './assets/newsimg/ntc/6.jpg',
-    './assets/newsimg/ntc/7.jpg',
-    './assets/newsimg/president/1.jpg',
-    './assets/newsimg/president/2.jpg',
-    './assets/newsimg/president/3.jpg',
-    './assets/newsimg/president/4.jpg',
-    './assets/newsimg/president/5.jpg',
-    './assets/newsimg/president/6.jpg',
-    './assets/newsimg/president/7.jpg',,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,,
+  './assets/symbols/nishon.jpg'
 ];
+// МУҲИМ: surudi_milli.mp3 (1.8МБ) ва 50 сурати newsimg (2МБ) ба пешкэш НАМЕРОХАНД —
+// онҳо ҳангоми аввалин дархост аз тарафи fetch-обработчик кэш мешаванд.
+// Ин насби навсозии аппро барои босуръат месозад (пешина "боркунии абадӣ" буд).;
 
 const BOOKS_JSON_URL = 'books.json';
 const SYNC_INTERVAL = 60 * 60 * 1000; // 1 час
