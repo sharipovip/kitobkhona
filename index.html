@@ -1721,6 +1721,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .sym-dl-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .25s ease}
 .sym-dl-pct{margin-top:9px;font-size:13px;font-weight:900;color:#E8C96D}
 .sym-dl-ph{font-size:11px;color:#8A9BB0;margin-top:3px;min-height:14px}
+.sym-dl-cancel{margin-top:12px;width:100%;border:1.5px solid rgba(201,168,76,.5);background:transparent;color:#E8C96D;
+  border-radius:13px;padding:10px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+.sym-dl-cancel:active{transform:scale(.97);background:rgba(201,168,76,.12)}
 /* Плеери Суруди Миллӣ */
 .sym-player{margin:2px 18px 14px;border:1.4px solid rgba(201,168,76,.4);border-radius:16px;
   background:rgba(10,20,36,.7);padding:13px 14px;display:flex;align-items:center;gap:12px}
@@ -1758,8 +1761,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-track-v3{display:flex;gap:12px;width:max-content;will-change:transform;cursor:grab}
 .news-track-v3:active{cursor:grabbing}
 .news-card-v3{
-  position:relative;flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(300px,78vw,430px);
-  border-radius:20px;overflow:hidden;cursor:pointer;background:#14243A;
+  position:relative;flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(252px,64vw,340px);
+  border-radius:32px 32px 32px 32px;overflow:hidden;cursor:pointer;background:#14243A;
+  outline:1px solid rgba(201,168,76,.10);outline-offset:-10px;
   border:1.5px solid rgba(201,168,76,.32);box-shadow:0 12px 30px rgba(0,0,0,.42);
 }
 .news-media{position:absolute;inset:0;background:radial-gradient(130% 95% at 28% 18%, #22406B 0%, #14243A 72%)}
@@ -1794,7 +1798,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);transition:all .25s ease}
 .news-dot.on{width:16px;border-radius:99px;background:#E8C96D}
 /* скелетон ҳангоми боршавӣ */
-.news-skel{flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(300px,78vw,430px);border-radius:20px;overflow:hidden;
+.news-skel{flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(252px,64vw,340px);border-radius:32px;overflow:hidden;
   background:#14243A;border:1.5px solid rgba(201,168,76,.18)}
 .news-skel .sk-img{height:56%}
 .news-skel .sk-line{height:13px;margin:13px 15px;border-radius:6px}
@@ -2828,6 +2832,7 @@ function symDlShow(name){
     <div class="sym-dl-bar"><div class="sym-dl-fill" id="symDlFill"></div></div>
     <div class="sym-dl-pct" id="symDlPct">0%</div>
     <div class="sym-dl-ph" id="symDlPh">Интизор шавед, файл боргирӣ мешавад...</div>
+    <button type="button" class="sym-dl-cancel" onclick="symDlCancel()">✕ Бекор кардан</button>
   </div>`;
   document.body.appendChild(ov);
 }
@@ -2865,13 +2870,21 @@ function symBlobToB64(blob, onProgress){
     readNext();
   });
 }
+let symDlCtl = null; // барои бекор кардани боргирӣ
+function symDlCancel(){
+  try { if (symDlCtl) symDlCtl.abort(); } catch(e){}
+  document.getElementById('symDlOverlay')?.remove();
+  symDlCtl = null;
+  toast('Боргирӣ бекор шуд');
+}
 async function symDownload(kind){
   const s = SYMBOLS[kind];
   if (!s || !s.dl){ return; }
   symDlShow(s.dl.name);
+  const ctl = symDlCtl = new AbortController();
   try {
     // 1) пурборшунавӣ бо фоизи ҳақиқӣ (0–70%); no-store — ҳамеша аз шабака
-    const r = await fetch(s.dl.href, { cache: 'no-store' });
+    const r = await fetch(s.dl.href, { cache: 'no-store', signal: ctl.signal });
     if (!r.ok) throw new Error('HTTP ' + r.status);
     const total = +(r.headers.get('content-length') || 0);
     let blob;
@@ -2889,6 +2902,7 @@ async function symDownload(kind){
       blob = await r.blob();
       symDlSet(55, 'Пурборшавӣ...');
     }
+    symDlCtl = null; // боргирӣ ба анҷом расид — бекоркунӣ дигар ғайриимкон аст
     const mime = blob.type || (kind === 'surud' ? 'audio/mpeg' : 'image/png');
     // 2) телефон (Kotlin): ҳамон AndroidBridge-и китобҳо, кодикунӣ бо прогресс (70–95%)
     if (typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.saveFile === 'function'){
@@ -2916,7 +2930,11 @@ async function symDownload(kind){
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000);
     symDlDone(true);
-  } catch(e){ symDlDone(false); }
+  } catch(e){
+    symDlCtl = null;
+    if (e && e.name === 'AbortError'){ document.getElementById('symDlOverlay')?.remove(); return; }
+    symDlDone(false);
+  }
 }
 
 addEventListener('popstate', () => { if (document.getElementById('symModal')) closeSymbolModal(); });
@@ -3025,14 +3043,15 @@ function newsGoTo(i, animate){
   newsIdx = ((i % N) + N) % N;
   const target = Math.min(newsXForIdx(Math.min(newsIdx, N - 1)), newsMaxPos()); // корт дар марказ
   newsUpdateDots();
-  if (!animate){ newsPos = Math.min(target, newsMaxPos()); newsApply(); return; }
+  if (!animate){ newsPos = Math.min(target, newsMaxPos()); newsApply(); newsTypewriter(newsIdx); return; }
   newsCancelAnim();
   const from = newsPos, delta = target - newsPos, t0 = performance.now();
   const dur = Math.max(240, Math.min(700, 200 + Math.abs(delta) * 0.55));
   const step = t => {
     const k = Math.min(1, (t - t0) / dur), e = 1 - Math.pow(1 - k, 3);
     newsPos = from + delta * e; newsApply();
-    if (k < 1) newsRaf = requestAnimationFrame(step); else { newsRaf = 0; newsVel = 0; }
+    if (k < 1) newsRaf = requestAnimationFrame(step);
+    else { newsRaf = 0; newsVel = 0; newsTypewriter(newsIdx); }
   };
   newsRaf = requestAnimationFrame(step);
 }
@@ -3117,6 +3136,40 @@ function newsRender(){
   });
   newsInitGestures();
   newsStartAuto();
+}
+// ===== Аниматсияи «мактабгардӣ» (по буквам) барои кортҳои бе сурат =====
+let newsTwToken = 0, newsTwLastIdx = -1, newsTwDone = true;
+function newsTypeText(el, text, token, speed, done){
+  if (!el || !text){ if (done) done(); return; }
+  let i = 0;
+  const tick = () => {
+    if (token !== newsTwToken){ el.textContent = text; if (done) done(); return; } // бекор — матни пурра
+    i++;
+    el.textContent = text.slice(0, i) + (i < text.length ? '▌' : '');
+    if (i < text.length) setTimeout(tick, speed);
+    else { el.textContent = text; if (done) done(); }
+  };
+  tick();
+}
+function newsTypewriter(idx){
+  const card = document.querySelectorAll('.news-card-v3')[idx];
+  const n = NEWS_ITEMS[idx];
+  if (!card || !n) return;
+  if (!n.image && idx === newsTwLastIdx && !newsTwDone) return; // аллакай менависад
+  newsTwToken++;                                  // ҳамаи аниматсияҳои қаблӣ бекор мешаванд
+  const token = newsTwToken;
+  newsTwLastIdx = idx; newsTwDone = false;
+  if (n.image){ newsTwDone = true; return; }      // танҳо кортҳои бе сурат
+  const title = card.querySelector('.news-title');
+  const sub = card.querySelector('.news-sub') || card.querySelector('.news-desc-media');
+  const t = title ? title.textContent : '';
+  const s = sub ? sub.textContent : '';
+  // суръати адаптивӣ: матни кӯтоҳ — оҳиста-миёна, матни дароз — то ҷаҳиши худкор успее
+  const vT = t ? Math.max(14, Math.min(45, 3200 / t.length)) : 45;
+  const vS = s ? Math.max(10, Math.min(30, 4200 / s.length)) : 26;
+  newsTypeText(title, t, token, vT, () => {       // сарлавҳа — миёнасуръат
+    newsTypeText(sub, s, token, vS, () => { newsTwDone = true; }); // матн — зиёдатар зуд
+  });
 }
 function newsStartAuto(){
   clearInterval(newsTimer);

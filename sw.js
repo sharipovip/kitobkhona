@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v86-fastinstall';
+const CACHE_NAME = 'kitobkhona-v87-typo-cancel';
 const LOCAL_FILES = [
   './',
   './index.html',
