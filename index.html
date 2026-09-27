@@ -1761,9 +1761,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-track-v3{display:flex;gap:12px;width:max-content;will-change:transform;cursor:grab}
 .news-track-v3:active{cursor:grabbing}
 .news-card-v3{
-  position:relative;flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(252px,64vw,340px);
-  border-radius:32px 32px 32px 32px;overflow:hidden;cursor:pointer;background:#14243A;
-  outline:1px solid rgba(201,168,76,.10);outline-offset:-10px;
+  position:relative;flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(216px,55vw,300px);
+  /* канорҳо дар мисли экрани каҷи Samsung Ultra — дуғравии амудӣ 50% */
+  border-radius:34px / 50%;overflow:hidden;cursor:pointer;background:#14243A;
+  outline:1px solid rgba(201,168,76,.10);outline-offset:-9px;
   border:1.5px solid rgba(201,168,76,.32);box-shadow:0 12px 30px rgba(0,0,0,.42);
 }
 .news-media{position:absolute;inset:0;background:radial-gradient(130% 95% at 28% 18%, #22406B 0%, #14243A 72%)}
@@ -1773,7 +1774,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   pointer-events:none;-webkit-user-drag:none;opacity:0;transition:opacity .35s ease}
 .news-media img.ok{opacity:1}
 /* бе сурат: матни пурраи хабар дар ҷои сурат */
-.news-desc-media{position:absolute;inset:0;z-index:1;padding:48px 16px 84px;overflow:hidden;
+.news-desc-media{position:absolute;inset:0;z-index:1;padding:46px 18px 78px;overflow:hidden;
   background:linear-gradient(160deg,#1B3050 0%,#14243A 62%,#101E33 100%);
   font-size:13px;line-height:1.68;color:rgba(240,234,214,.92);
   display:-webkit-box;-webkit-line-clamp:11;-webkit-box-orient:vertical}
@@ -1798,7 +1799,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);transition:all .25s ease}
 .news-dot.on{width:16px;border-radius:99px;background:#E8C96D}
 /* скелетон ҳангоми боршавӣ */
-.news-skel{flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(252px,64vw,340px);border-radius:32px;overflow:hidden;
+.news-skel{flex:0 0 calc(100vw - 88px);max-width:430px;height:clamp(216px,55vw,300px);border-radius:34px / 50%;overflow:hidden;
   background:#14243A;border:1.5px solid rgba(201,168,76,.18)}
 .news-skel .sk-img{height:56%}
 .news-skel .sk-line{height:13px;margin:13px 15px;border-radius:6px}

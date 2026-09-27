@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v87-typo-cancel';
+const CACHE_NAME = 'kitobkhona-v88-ultra-edges';
 const LOCAL_FILES = [
   './',
   './index.html',
