@@ -1710,6 +1710,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   box-shadow:0 8px 22px rgba(201,168,76,.28);display:flex;align-items:center;justify-content:center;gap:7px;
 }
 .sym-dl a:active,.sym-dl button:active{transform:scale(.96)}
+/* Прогресси боргирии рамзҳои давлатӣ (overlay) */
+.sym-dl-ov{position:fixed;inset:0;z-index:99990;background:rgba(4,10,18,.74);display:flex;align-items:center;justify-content:center;padding:24px;
+  -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.sym-dl-box{width:100%;max-width:340px;background:linear-gradient(165deg,#1A2C46,#12203A);border:1.5px solid rgba(201,168,76,.45);
+  border-radius:20px;padding:20px 18px 16px;box-shadow:0 18px 46px rgba(0,0,0,.55);text-align:center}
+.sym-dl-ic{font-size:30px;margin-bottom:6px}
+.sym-dl-name{font-size:13px;font-weight:800;color:#F0EAD6;word-break:break-word;margin-bottom:14px}
+.sym-dl-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.sym-dl-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .25s ease}
+.sym-dl-pct{margin-top:9px;font-size:13px;font-weight:900;color:#E8C96D}
+.sym-dl-ph{font-size:11px;color:#8A9BB0;margin-top:3px;min-height:14px}
 /* Плеери Суруди Миллӣ */
 .sym-player{margin:2px 18px 14px;border:1.4px solid rgba(201,168,76,.4);border-radius:16px;
   background:rgba(10,20,36,.7);padding:13px 14px;display:flex;align-items:center;gap:12px}
@@ -1758,7 +1769,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   pointer-events:none;-webkit-user-drag:none;opacity:0;transition:opacity .35s ease}
 .news-media img.ok{opacity:1}
 /* бе сурат: матни пурраи хабар дар ҷои сурат */
-.news-desc-media{position:absolute;inset:0;z-index:1;padding:14px 16px 84px;overflow:hidden;
+.news-desc-media{position:absolute;inset:0;z-index:1;padding:48px 16px 84px;overflow:hidden;
   background:linear-gradient(160deg,#1B3050 0%,#14243A 62%,#101E33 100%);
   font-size:13px;line-height:1.68;color:rgba(240,234,214,.92);
   display:-webkit-box;-webkit-line-clamp:11;-webkit-box-orient:vertical}
@@ -2803,38 +2814,109 @@ function symSeek(e){
 }
 function symFmtTime(t){ t = Math.max(0, Math.floor(t||0)); return Math.floor(t/60) + ':' + String(t%60).padStart(2,'0'); }
 
-// Боргирӣи рамзҳои давлатӣ — ҲАМОН схемаи китобҳо (downloadFile аз config.js):
-// fetch → blob → AndroidBridge.saveFile (Kotlin-пул) → Web Share → a.download
+// Боргирӣи рамзҳои давлатӣ — схемаи китобҳо (fetch → blob → AndroidBridge.saveFile)
+// БО ПРОГРЕССИ РОҲАНАДА: интизор шавед + фоизи ҳақиқӣ
+function symDlShow(name){
+  document.getElementById('symDlOverlay')?.remove();
+  const ov = document.createElement('div');
+  ov.id = 'symDlOverlay'; ov.className = 'sym-dl-ov';
+  ov.innerHTML = `<div class="sym-dl-box">
+    <div class="sym-dl-ic">⬇️</div>
+    <div class="sym-dl-name">${esc(name)}</div>
+    <div class="sym-dl-bar"><div class="sym-dl-fill" id="symDlFill"></div></div>
+    <div class="sym-dl-pct" id="symDlPct">0%</div>
+    <div class="sym-dl-ph" id="symDlPh">Интизор шавед, файл боргирӣ мешавад...</div>
+  </div>`;
+  document.body.appendChild(ov);
+}
+function symDlSet(pct, phase){
+  const p = Math.max(0, Math.min(100, Math.round(pct)));
+  const f = document.getElementById('symDlFill'), t = document.getElementById('symDlPct'), ph = document.getElementById('symDlPh');
+  if (f) f.style.width = p + '%';
+  if (t) t.textContent = p + '%';
+  if (ph && phase) ph.textContent = phase;
+}
+function symDlDone(ok){
+  symDlSet(100, ok ? '✓ Боргирӣ шуд' : 'Боргирӣ имконпазир нест');
+  setTimeout(() => { document.getElementById('symDlOverlay')?.remove(); }, ok ? 1600 : 2400);
+}
+// base64 блок-ба-блок (файлҳои калон) бо прогресс
+function symBlobToB64(blob, onProgress){
+  return new Promise((resolve, reject) => {
+    const CH = 300000; // бисёруза аз 3 — base64-и блокҳо дуруст мечаспад
+    const parts = Math.max(1, Math.ceil(blob.size / CH));
+    const b64s = [];
+    let i = 0;
+    const readNext = () => {
+      if (i >= parts){ resolve(b64s.join('')); return; }
+      const fr = new FileReader();
+      fr.onload = () => {
+        const s = String(fr.result || '');
+        b64s.push(s.slice(s.indexOf(',') + 1));
+        i++;
+        if (onProgress) onProgress(i / parts);
+        setTimeout(readNext, 0);
+      };
+      fr.onerror = reject;
+      fr.readAsDataURL(blob.slice(i * CH, Math.min(blob.size, (i + 1) * CH)));
+    };
+    readNext();
+  });
+}
 async function symDownload(kind){
   const s = SYMBOLS[kind];
   if (!s || !s.dl){ return; }
+  symDlShow(s.dl.name);
   try {
-    toast('Омодасозии файл...');
-    const r = await fetch(s.dl.href);
+    // 1) пурборшунавӣ бо фоизи ҳақиқӣ (0–70%); no-store — ҳамеша аз шабака
+    const r = await fetch(s.dl.href, { cache: 'no-store' });
     if (!r.ok) throw new Error('HTTP ' + r.status);
-    const blob = await r.blob();
+    const total = +(r.headers.get('content-length') || 0);
+    let blob;
+    if (r.body && total){
+      const reader = r.body.getReader();
+      const chunks = []; let loaded = 0;
+      for(;;){
+        const { done, value } = await reader.read();
+        if (done) break;
+        chunks.push(value); loaded += value.length;
+        symDlSet(70 * loaded / total, 'Пурборшавӣ... ' + Math.min(100, Math.round(100 * loaded / total)) + '%');
+      }
+      blob = new Blob(chunks);
+    } else {
+      blob = await r.blob();
+      symDlSet(55, 'Пурборшавӣ...');
+    }
     const mime = blob.type || (kind === 'surud' ? 'audio/mpeg' : 'image/png');
-    // 1) телефон (Kotlin-сборка): ҳамон AndroidBridge, ки китобҳоро захира мекунад
+    // 2) телефон (Kotlin): ҳамон AndroidBridge-и китобҳо, кодикунӣ бо прогресс (70–95%)
     if (typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.saveFile === 'function'){
-      AndroidBridge.saveFile(await blobToBase64(blob), s.dl.name, mime);
-      toast('✓ ' + s.dl.name + ' боргирӣ шуд');
+      const b64 = await symBlobToB64(blob, p => symDlSet(70 + 25 * p, 'Омодасозӣ... ' + Math.round(p * 100) + '%'));
+      symDlSet(97, 'Ҳифз шуда истодааст...');
+      AndroidBridge.saveFile(b64, s.dl.name, mime);
+      symDlDone(true);
       return;
     }
-    // 2) Web Share (мобилӣ)
+    // 3) Web Share (мобилӣ)
+    symDlSet(90, 'Омодасозӣ...');
     if (navigator.canShare && navigator.share){
       try {
         const file = new File([blob], s.dl.name, { type: mime });
-        if (navigator.canShare({ files: [file] })){ await navigator.share({ title: s.title, files: [file] }); return; }
-      } catch(e){ if (e && e.name === 'AbortError') return; }
+        if (navigator.canShare({ files: [file] })){
+          await navigator.share({ title: s.title, files: [file] });
+          document.getElementById('symDlOverlay')?.remove();
+          return;
+        }
+      } catch(e){ if (e && e.name === 'AbortError'){ document.getElementById('symDlOverlay')?.remove(); return; } }
     }
-    // 3) браузер: blob + a.download
+    // 4) браузер: blob + a.download
     const a = document.createElement('a');
     a.href = URL.createObjectURL(blob); a.download = s.dl.name;
     document.body.appendChild(a); a.click();
     setTimeout(() => { URL.revokeObjectURL(a.href); a.remove(); }, 5000);
-    toast('✓ ' + s.dl.name + ' боргирӣ шуд');
-  } catch(e){ toast('Боргирӣ имконпазир нест'); }
+    symDlDone(true);
+  } catch(e){ symDlDone(false); }
 }
+
 addEventListener('popstate', () => { if (document.getElementById('symModal')) closeSymbolModal(); });
 
 // =========================================================================
@@ -2859,7 +2941,7 @@ function newsImgCandidates(u){
   if (!/\.webp($|\?)/i.test(u)){ // maorif.tj аллакай webp-и сабук медиҳад
     const m = u.match(/^(https?):\/\/([^\/]+)(\/.*)?$/);
     if (m){
-      const target = (m[1] === 'http' ? 'http://' : '') + m[2] + (m[3] || '');
+      const target = m[2] + (m[3] || ''); // weserv хостро мустақим мегирад
       list.push('https://images.weserv.nl/?url=' + encodeURIComponent(target) + '&w=560&q=72');
     }
   }
@@ -2880,6 +2962,9 @@ function newsCardHTML(n, i){
       onload="this.classList.add('ok')" onerror="newsImgStep(this)">`;
   } else if (n.desc){
     media = `<div class="news-desc-media">${esc(n.desc)}</div>`;
+  } else if (n.site){
+    // на ҳе сурат на матн — баннери расмии сомона (скриншоти маҳаллӣ)
+    media = `<img src="${esc(n.site)}" alt="" onload="this.classList.add('ok')" onerror="this.remove()">`;
   } else { media = ''; }
   return `
     <div class="news-card-v3" data-i="${i}">
@@ -3014,7 +3099,7 @@ function newsRender(){
   sc.querySelectorAll('.news-media img').forEach(img => {
     setTimeout(() => {
       if (img.isConnected && !img.classList.contains('ok') && !(img.complete && img.naturalWidth > 0)) newsImgStep(img);
-    }, 12000);
+    }, 8000);
   });
   newsInitGestures();
   newsStartAuto();
@@ -3054,7 +3139,7 @@ async function loadNews(){
   }
   // танҳо хабарҳои то 24 соати охир
   const DAY = 24*60*60*1000;
-  NEWS_ITEMS = (items || []).filter(n => n && n.title && n.url && n.published && (Date.now() - new Date(n.published).getTime()) < DAY).slice(0, 20);
+  NEWS_ITEMS = (items || []).filter(n => n && n.title && n.url && n.published && ((Date.now() - new Date(n.published).getTime()) < DAY || n.fallback === true)).slice(0, 20);
   newsRender();
 }
 

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v79-download-scheme';
+const CACHE_NAME = 'kitobkhona-v80-progress-sources';
 const LOCAL_FILES = [
   './',
   './index.html',

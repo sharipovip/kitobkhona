@@ -97,16 +97,28 @@ def first_image(raw_html, base):
     return src
 
 
-def in_window(dt):
+def in_window(dt, hours=None):
     if dt is None:
         return False
     try:
-        return datetime.now(timezone.utc) - dt <= timedelta(hours=NEWS_HOURS)
+        return datetime.now(timezone.utc) - dt <= timedelta(hours=hours or NEWS_HOURS)
     except Exception:
         return False
 
 
-def mk_item(title, url, source, dt, image='', desc='', external=None):
+SITE_SHOTS = {
+    'Президенти Тоҷикистон': 'assets/sites/president.jpg',
+    'АМИТ «Ховар»': 'assets/sites/khovar.jpg',
+    'Вазорати корҳои хориҷӣ': 'assets/sites/mfa.jpg',
+    'Вазорати маориф ва илм': 'assets/sites/maorif.jpg',
+    'Маркази миллии тестӣ': 'assets/sites/ntc.jpg',
+    'Китобхонаи миллии Тоҷикистон': 'assets/sites/kmt.jpg',
+    'Ҳокимияти Душанбе': 'assets/sites/dushanbe.jpg',
+    'Ҳокимияти Хатлон': 'assets/sites/khatlon.jpg',
+}
+
+
+def mk_item(title, url, source, dt, image='', desc='', external=None, fallback=False):
     if external is None:
         external = url.startswith('http://')
     return {
@@ -117,11 +129,13 @@ def mk_item(title, url, source, dt, image='', desc='', external=None):
         'image': image or '',
         'desc': cut(desc, 280),
         'external': bool(external),
+        'site': SITE_SHOTS.get(source, ''),
+        'fallback': bool(fallback),
     }
 
 
 # ---------------------------------------------------------------- RSS ---
-def parse_rss(xml, source, base):
+def parse_rss(xml, source, base, hours=None):
     items = []
     for m in re.finditer(r'<item>(.*?)</item>', xml, re.S):
         raw = m.group(1)
@@ -142,7 +156,7 @@ def parse_rss(xml, source, base):
                     dt = dt.replace(tzinfo=TZ_TJ)
             except Exception:
                 dt = None
-        if not in_window(dt):
+        if not in_window(dt, hours):
             continue
         body = (cdata.group(1) if cdata else '') or (desc.group(1) if desc else '')
         items.append(mk_item(title, url, source, dt,
@@ -152,7 +166,7 @@ def parse_rss(xml, source, base):
 
 
 # ----------------------------------------------------------- PRESIDENT ---
-def parse_president(json_text):
+def parse_president(json_text, hours=None, with_details=True):
     """API controlpanel.president.tj: data[] → title, id, publish_date."""
     try:
         d = json.loads(json_text)
@@ -170,16 +184,39 @@ def parse_president(json_text):
             dt = datetime.strptime(when[:19], '%Y-%m-%d %H:%M:%S').replace(tzinfo=TZ_TJ)
         except Exception:
             continue
-        if not in_window(dt):
+        if not in_window(dt, hours):
             continue
         items.append(mk_item(title, 'https://president.tj/event/news/%s' % nid,
                              'Президенти Тоҷикистон', dt,
                              desc=clean(it.get('description') or '')))
+    # матни пурраи хабар аз саҳифаи тафсилотӣ (API ба рӯйхат расм намедиҳад)
+    if with_details:
+        for it in items[:12]:
+            det = fetch('https://controlpanel.president.tj/api/event/show?id=%s' % it['url'].rsplit('/', 1)[-1], timeout=20)
+            if not det:
+                continue
+            try:
+                d = json.loads(det).get('data') or {}
+            except Exception:
+                continue
+            text = d.get('text') or ''
+            if text and not it['desc']:
+                it['desc'] = cut(clean(text), 280)
+            m = re.search(r'<img[^>]+src=["\']([^"\']+)["\']', text)
+            if m and not it['image']:
+                u = m.group(1).strip()
+                if u.startswith('//'):
+                    u = 'https:' + u
+                elif u.startswith('/'):
+                    u = 'https://president.tj' + u
+                if u.startswith('https://'):
+                    it['image'] = u
+            time.sleep(0.3)
     return items
 
 
 # -------------------------------------------------------------- MFA ---
-def parse_mfa(html):
+def parse_mfa(html, hours=None):
     """Список: <li> <a href=…/view/ID/slug>Заголовок</a> <div class="text">…</div> <span class="date">DD.MM.YYYY HH:MM</span>"""
     items = []
     for m in re.finditer(
@@ -194,7 +231,7 @@ def parse_mfa(html):
             dt = datetime.strptime(date_s.strip() + ' ' + (time_s or '12:00'), '%d.%m.%Y %H:%M').replace(tzinfo=TZ_TJ)
         except Exception:
             continue
-        if not in_window(dt):
+        if not in_window(dt, hours):
             continue
         items.append(mk_item(title, url, 'Вазорати корҳои хориҷӣ', dt, desc=clean(desc_raw)))
     return items
@@ -208,16 +245,21 @@ def js_unescape(s):
     simple = {'\\': '\\', "'": "'", '"': '"', 'n': '\n', 't': '\t', 'r': '\r', '/': '/', 'b': '\b', 'f': '\f'}
     while i < len(s):
         c = s[i]
-        if c == '\\' and i + 1 < len(s) and s[i + 1] in simple:
-            out.append(simple[s[i + 1]])
-            i += 2
-        else:
-            out.append(c)
-            i += 1
+        if c == '\\' and i + 1 < len(s):
+            nxt = s[i + 1]
+            if nxt in simple:
+                out.append(simple[nxt]); i += 2; continue
+            if nxt == 'u' and i + 5 < len(s):
+                try:
+                    out.append(chr(int(s[i + 2:i + 6], 16))); i += 6; continue
+                except ValueError:
+                    pass
+        out.append(c)
+        i += 1
     return ''.join(out)
 
 
-def parse_maorif(html):
+def parse_maorif(html, hours=None):
     """Новости встроены в страницу как Alpine.data('news', … JSON.parse('…'))."""
     m = re.search(r"JSON\.parse\('(.*?)'\)", html, re.S)
     if not m:
@@ -238,7 +280,7 @@ def parse_maorif(html):
                 hour=12)  # время не указано — берём полдень, чтобы не выпасть из окна
         except Exception:
             continue
-        if not in_window(dt):
+        if not in_window(dt, hours):
             continue
         image = ''
         try:
@@ -256,7 +298,7 @@ def parse_maorif(html):
 
 
 # ----------------------------------------------------------- DUSHANBE ---
-def parse_dushanbe(html):
+def parse_dushanbe(html, hours=None):
     """Главная dushanbe.tj: блоки <div class="item"> с датой и заголовком"""
     items = []
     for m in re.finditer(
@@ -271,7 +313,7 @@ def parse_dushanbe(html):
             d = datetime.strptime(date_s.strip(), '%Y-%m-%d').replace(tzinfo=TZ_TJ, hour=12)
         except Exception:
             continue
-        if not in_window(d):
+        if not in_window(d, hours):
             continue
         image = ''
         if img:
@@ -282,39 +324,71 @@ def parse_dushanbe(html):
 
 # ---------------------------------------------------------------- MAIN ---
 def main():
-    # (название, функция-парсер) — порядок задаёт чередование в ленте
+    # каждый источник: (имя, функция(hours) → список) — вызывается дважды:
+    # сначала с окном 24ч; если пусто — с окном 7 дней (запасные, fallback:true)
+    def src_president(h):
+        x = fetch('https://controlpanel.president.tj/api/home-event?event_type=news&lang_id=1', timeout=30)
+        return parse_president(x, hours=h) if x else []
+
+    def src_khovar(h):
+        x = fetch('https://khovar.tj/feed/', timeout=30)
+        return parse_rss(x, 'АМИТ «Ховар»', 'https://khovar.tj', hours=h) if x else []
+
+    def src_mfa(h):
+        x = fetch('https://mfa.tj/tg/main/ittiloot/khabarho-va-ruidodho', timeout=45, insecure=True)
+        return parse_mfa(x, hours=h) if x else []
+
+    def src_maorif(h):
+        x = fetch('https://maorif.tj/news/other', timeout=45)
+        return parse_maorif(x, hours=h) if x else []
+
+    def src_ntc(h):
+        x = fetch('https://ntc.tj/tj/?format=feed&type=rss', timeout=30)
+        return parse_rss(x, 'Маркази миллии тестӣ', 'https://ntc.tj', hours=h) if x else []
+
+    def src_kmt(h):
+        x = fetch('https://kmt.tj/feed/', timeout=75)
+        return parse_rss(x, 'Китобхонаи миллии Тоҷикистон', 'https://kmt.tj', hours=h) if x else []
+
+    def src_dushanbe(h):
+        x = fetch('https://dushanbe.tj', timeout=30)
+        return parse_dushanbe(x, hours=h) if x else []
+
+    def src_khatlon(h):
+        x = fetch('http://khatlon.tj/?feed=rss2', timeout=60)
+        return parse_rss(x, 'Ҳокимияти Хатлон', 'http://khatlon.tj', hours=h) if x else []
+
+    sources = [
+        ('Президент', src_president),
+        ('Ховар', src_khovar),
+        ('МЗС', src_mfa),
+        ('Маориф', src_maorif),
+        ('НТЦ', src_ntc),
+        ('КМТ', src_kmt),
+        ('Душанбе', src_dushanbe),
+        ('Хатлон', src_khatlon),
+    ]
+
     jobs = []
-
-    xml = fetch('https://controlpanel.president.tj/api/home-event?event_type=news&lang_id=1', timeout=30)
-    jobs.append(('Президент', parse_president(xml) if xml else []))
-
-    xml = fetch('https://khovar.tj/feed/', timeout=30)
-    jobs.append(('Ховар', parse_rss(xml, 'АМИТ «Ховар»', 'https://khovar.tj') if xml else []))
-
-    xml = fetch('https://mfa.tj/tg/main/ittiloot/khabarho-va-ruidodho', timeout=45, insecure=True)
-    jobs.append(('МЗС', parse_mfa(xml) if xml else []))
-
-    xml = fetch('https://maorif.tj/news/other', timeout=45)
-    jobs.append(('Маориф', parse_maorif(xml) if xml else []))
-
-    xml = fetch('https://ntc.tj/tj/?format=feed&type=rss', timeout=30)
-    jobs.append(('НТЦ', parse_rss(xml, 'Маркази миллии тестӣ', 'https://ntc.tj') if xml else []))
-
-    xml = fetch('https://kmt.tj/feed/', timeout=75)
-    jobs.append(('КМТ', parse_rss(xml, 'Китобхонаи миллии Тоҷикистон', 'https://kmt.tj') if xml else []))
-
-    xml = fetch('https://dushanbe.tj', timeout=30)
-    jobs.append(('Душанбе', parse_dushanbe(xml) if xml else []))
-
-    xml = fetch('http://khatlon.tj/?feed=rss2', timeout=60)
-    jobs.append(('Хатлон', parse_rss(xml, 'Ҳокимияти Хатлон', 'http://khatlon.tj') if xml else []))
-
-    for name, got in jobs:
-        log('%s: %d свежих новостей' % (name, len(got)))
-
-    # каждый источник: свежие вперёд
-    for _, lst in jobs:
-        lst.sort(key=lambda x: x['published'], reverse=True)
+    for name, fn in sources:
+        got = fn(NEWS_HOURS)
+        if not got:
+            # свежих нет — берём до 2 новейших за неделю, помечаем fallback
+            older = fn(24 * 7)
+            take = 2
+            if not older:
+                # совсем тихо — берём самую новую (до 90 дней), чтобы сайт был представлен
+                older = fn(24 * 90)
+                take = 1
+            older.sort(key=lambda x: x['published'], reverse=True)
+            for it in older[:take]:
+                it['fallback'] = True
+            got = older[:take]
+            log('%s: свежих нет → %d запасных' % (name, len(got)))
+        else:
+            log('%s: %d свежих новостей' % (name, len(got)))
+        got.sort(key=lambda x: x['published'], reverse=True)
+        jobs.append((name, got))
 
     # чередование round-robin: по одной новости от каждого источника по кругу
     mixed = []
@@ -341,7 +415,7 @@ def main():
         dedup.append(it)
 
     out = {
-        'version': 2,
+        'version': 3,
         'generatedAt': datetime.now(timezone.utc).isoformat(),
         'hours': NEWS_HOURS,
         'count': len(dedup),
@@ -351,9 +425,9 @@ def main():
     with open(tmp, 'w', encoding='utf-8') as f:
         json.dump(out, f, ensure_ascii=False, separators=(',', ':'))
     os.replace(tmp, OUT_FILE)
-    log('ГОТОВО: %d новостей за последние %d ч → %s' % (len(dedup), NEWS_HOURS, os.path.abspath(OUT_FILE)))
+    log('ГОТОВО: %d новостей → %s' % (len(dedup), os.path.abspath(OUT_FILE)))
     if not dedup:
-        log('Свежих новостей нет — файл всё равно записан (приложение скроет раздел).')
+        log('Новостей нет — файл всё равно записан (приложение скроет раздел).')
 
 
 if __name__ == '__main__':
