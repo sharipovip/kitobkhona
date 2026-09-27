@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v81-site-banners';
+const CACHE_NAME = 'kitobkhona-v83-keyword-photos';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -39,6 +39,26 @@ const LOCAL_FILES = [
   './assets/symbols/parcham.png',
   './assets/symbols/nishon.jpg',
   './assets/symbols/surudi_milli.mp3'
+    './assets/newsimg/khovar/1.jpg',
+    './assets/newsimg/khovar/2.jpg',
+    './assets/newsimg/khovar/3.jpg',
+    './assets/newsimg/khovar/4.jpg',
+    './assets/newsimg/khovar/5.jpg',
+    './assets/newsimg/khovar/6.jpg',
+    './assets/newsimg/khovar/7.jpg',
+    './assets/newsimg/mfa/1.jpg',
+    './assets/newsimg/mfa/2.jpg',
+    './assets/newsimg/mfa/3.jpg',
+    './assets/newsimg/mfa/4.jpg',
+    './assets/newsimg/mfa/5.jpg',
+    './assets/newsimg/mfa/6.jpg',
+    './assets/newsimg/president/1.jpg',
+    './assets/newsimg/president/2.jpg',
+    './assets/newsimg/president/3.jpg',
+    './assets/newsimg/president/4.jpg',
+    './assets/newsimg/president/5.jpg',
+    './assets/newsimg/president/6.jpg',
+    './assets/newsimg/president/7.jpg',,,,,,,,,
 ];
 
 const BOOKS_JSON_URL = 'books.json';

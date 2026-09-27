@@ -24,6 +24,7 @@ news_fetch.py — сборщик официальных новостей для 
 Запуск: python3 tools/news_fetch.py  (или автоматически .github/workflows/news.yml)
 """
 
+import hashlib
 import html as htmllib
 import json
 import os
@@ -106,6 +107,73 @@ def in_window(dt, hours=None):
         return False
 
 
+NEWS_IMG_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'assets', 'newsimg')
+SITE_IMG_FOLDERS = {
+    'Президенти Тоҷикистон': 'president',
+    'АМИТ «Ховар»': 'khovar',
+    'Вазорати корҳои хориҷӣ': 'mfa',
+    'Вазорати маориф ва илм': 'maorif',
+    'Маркази миллии тестӣ': 'ntc',
+    'Китобхонаи миллии Тоҷикистон': 'kmt',
+    'Ҳокимияти Душанбе': 'dushanbe',
+    'Ҳокимияти Хатлон': 'khatlon',
+}
+
+
+def site_image_for(source, url, text=''):
+    """Фото для новости без своей картинки.
+    Сначала — ПО КАЛИДВОЖАҲО: сурат бо мавзӯи хабар (ГЭС→нерӯгоҳ, кӯҳ→кӯҳҳо...).
+    Агар калидвожа ёфт нашуд — бо хеши суроҳа (устувор: ҳамеша ҳамон сурат)."""
+    folder = SITE_IMG_FOLDERS.get(source)
+    if folder:
+        d = os.path.join(NEWS_IMG_DIR, folder)
+        try:
+            files = sorted(f for f in os.listdir(d) if f.lower().endswith(('.jpg', '.jpeg', '.png')))
+        except OSError:
+            files = []
+        if files:
+            t = ' ' + (text or '').lower() + ' '
+            best, best_score = None, 0
+            for f in files:
+                kws = NEWS_IMG_KEYWORDS.get(folder + '/' + f, {})
+                score = sum(w for kw, w in kws.items() if kw in t)
+                if score > best_score:
+                    best, best_score = f, score
+            if best and best_score >= 3:
+                return 'assets/newsimg/%s/%s' % (folder, best)
+            h = int(hashlib.md5(url.encode('utf-8')).hexdigest(), 16)
+            return 'assets/newsimg/%s/%s' % (folder, files[h % len(files)])
+    return SITE_SHOTS.get(source, '')
+
+
+# Калидвожаҳо: ба ҳар сурат мавзӯъҳои худ — хабаре, ки дар сарлавҳа/матн
+# ин калидвожаҳоро дорад, ҲАМАН суратро мегирад (мутобиқати мавзӯъӣ)
+NEWS_IMG_KEYWORDS = {
+    # вазн 3 = мавзӯи асосӣ (қатъӣ), 2 = мувофиқ, 1 = танҳо ҳамчун захира
+    'president/1.jpg': {'парчам': 3, 'рамзҳои давлатӣ': 3},
+    'president/2.jpg': {'қаср': 3, 'дарбор': 3, 'ҳукумат': 1, 'мақомот': 1},
+    'president/3.jpg': {'памир': 3, 'бадахшон': 2, 'хоруғ': 2, 'дара': 1, 'кӯҳ': 1, 'водӣ': 1},
+    'president/4.jpg': {'маҷлис': 3, 'ҷаласа': 3, 'анҷуман': 3, 'суханронӣ': 3, 'вохӯрӣ': 3, 'самит': 3, 'форум': 3, 'иҷлос': 2},
+    'president/5.jpg': {'нерӯгоҳ': 5, 'энергетик': 5, 'барқ': 4, 'сарбанд': 4, 'обанбор': 4},
+    'president/6.jpg': {'роҳ': 4, 'пул': 4, 'асфалт': 4, 'сохтмон': 2, 'иншоот': 1},
+    'president/7.jpg': {'гандум': 3, 'ҳосил': 3, 'кишоварзӣ': 3, 'деҳот': 2, 'аграр': 2},
+    'khovar/1.jpg': {'редаксия': 3, 'нашриёт': 3, 'нашр': 2},
+    'khovar/2.jpg': {'телевизион': 3, 'видео': 3, 'оператор': 3, 'кино': 3, 'филм': 3, 'студия': 2},
+    'khovar/3.jpg': {'конференсия': 3, 'паём': 3, 'суханронӣ': 2, 'баромад': 2},
+    'khovar/4.jpg': {'рӯзнома': 3, 'маҷалла': 3, 'чоп': 3},
+    'khovar/5.jpg': {'моҳвора': 3, 'пахши мустақим': 3},
+    'khovar/6.jpg': {'мусоҳиба': 3, 'журналист': 3, 'ҳабарнигор': 3},
+    'khovar/7.jpg': {'студия': 2, 'хабарҳо': 1, 'шаб': 1},
+    'mfa/1.jpg': {'парчам': 3, 'сафорат': 3, 'дипломат': 2},
+    'mfa/2.jpg': {'мулоқот': 3, 'вазири давлатии корҳои хориҷӣ': 2, 'делегат': 2},
+    'mfa/3.jpg': {'смм': 3, 'маҷмаи умумӣ': 3, 'мубоҳиса': 2, 'байналмилал': 2, 'ташкилот': 1, 'иҷлос': 1},
+    'mfa/4.jpg': {'ҷаҳон': 2, 'кишварҳо': 2, 'сиёсат': 2},
+    'mfa/5.jpg': {'меҳмон': 3, 'фурудгоҳ': 3, 'истиқбол': 3},
+    'mfa/6.jpg': {'имзо': 3, 'шартнома': 3, 'санад': 2},
+}
+
+
+
 SITE_SHOTS = {
     'Президенти Тоҷикистон': 'assets/sites/president.jpg',
     'АМИТ «Ховар»': 'assets/sites/khovar.jpg',
@@ -129,7 +197,7 @@ def mk_item(title, url, source, dt, image='', desc='', external=None, fallback=F
         'image': image or '',
         'desc': cut(desc, 280),
         'external': bool(external),
-        'site': SITE_SHOTS.get(source, ''),
+        'site': site_image_for(source, url, (title or '') + ' ' + (desc or '')),
         'fallback': bool(fallback),
     }
 
