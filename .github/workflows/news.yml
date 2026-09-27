@@ -1,0 +1,45 @@
+name: Ахбороти расмӣ — обновление новостей
+
+# Каждый час собирает свежие (до 24 часов) новости с официальных сайтов
+# и коммитит news.json в репозиторий. Приложение читает его на главной.
+
+on:
+  schedule:
+    - cron: '10 * * * *'   # каждый час на 10-й минуте
+  workflow_dispatch:         # + кнопка «Run workflow»
+
+permissions:
+  contents: write
+
+concurrency:
+  group: news
+  cancel-in-progress: false
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Сбор новостей
+        run: python tools/news_fetch.py
+        env:
+          NEWS_HOURS: '24'
+          NEWS_MAX_ITEMS: '60'
+
+      - name: Коммит
+        run: |
+          git config user.name  "kitobkhona-bot"
+          git config user.email "action@github.com"
+          git add news.json
+          if git diff --cached --quiet; then
+            echo "Новостей нет/без изменений"
+          else
+            git commit -m "Ахборот: навсозии $(date -u +%Y-%m-%d' '%H:%M) UTC"
+            git push
+          fi

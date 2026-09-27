@@ -1162,7 +1162,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 /* Логотипи калон — то ~80% паҳнои экран, бе ҳалқа: тоза ва содда */
 /* РАЗМЕР ЛОГОТИПА: 80vw = 80% ширины экрана. Хочешь больше — поставь 85vw или 90vw,
    меньше — 70vw. 345px — предел для больших экранов (можно поднять до 400px) */
-#startupSplash img{width:min(80vw,345px);aspect-ratio:1;border-radius:50%;object-fit:cover;box-shadow:0 24px 60px rgba(0,0,0,.55);transform:rotate(2deg)}
+#startupSplash img{width:min(80vw,345px);aspect-ratio:1;border-radius:50%;object-fit:cover;box-shadow:0 24px 60px rgba(0,0,0,.55)}
 /* НАДПИСИ: КИТОБХОНА — тиллоӣ бо градиент; МАНБАИ ДОНИШ — бо хатҳои ороишӣ */
 #startupSplash b{
   margin-top:26px;font-size:27px;font-weight:900;letter-spacing:7px;text-indent:7px;
@@ -1656,6 +1656,130 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #FFA5A5;
 }
 </style>
+<style id="state-symbols-and-news-v77">
+/* ===== РАМЗҲОИ ДАВЛАТӢ дар сарлавҳа (ба ҷои тоҷ) ===== */
+.state-symbols-v3{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.sym-btn{
+  width:32px;height:32px;border-radius:50%;padding:0;overflow:hidden;cursor:pointer;
+  border:1.6px solid rgba(201,168,76,.55);background:#152840;
+  display:flex;align-items:center;justify-content:center;
+  transition:transform .15s ease, box-shadow .15s ease;
+  box-shadow:0 2px 8px rgba(0,0,0,.35);
+}
+.sym-btn:active{transform:scale(.88)}
+.sym-btn img{width:100%;height:100%;object-fit:cover;display:block}
+.sym-btn.sym-surud{background:linear-gradient(150deg,#F0D477,#C9A84C 55%,#8D5D16)}
+.sym-btn.sym-surud svg{width:19px;height:19px}
+@media(max-width:389px){
+  .state-symbols-v3{gap:4px}
+  .sym-btn{width:27px;height:27px}
+  .new-logo-text-v3 b{font-size:13.5px}
+}
+
+/* ===== Модали РАМЗҲОИ ДАВЛАТӢ ===== */
+.sym-modal{position:fixed;inset:0;z-index:9000;background:rgba(4,10,20,.82);backdrop-filter:blur(6px);display:none;align-items:flex-end;justify-content:center;animation:wmFadeIn .22s ease}
+.sym-modal.on{display:flex}
+.sym-panel{
+  width:100%;max-width:430px;max-height:88dvh;overflow-y:auto;
+  background:linear-gradient(180deg,#12233B,#0B1728);
+  border:1.5px solid rgba(201,168,76,.4);border-bottom:0;
+  border-radius:22px 22px 0 0;padding:0 0 18px;
+  animation:inappSlideUp .28s cubic-bezier(.16,1,.3,1);
+}
+.sym-head{position:sticky;top:0;z-index:2;display:flex;align-items:center;justify-content:space-between;gap:10px;
+  padding:14px 16px 10px;background:linear-gradient(180deg,#12233B 75%,rgba(18,35,59,0));}
+.sym-head-title{font-size:17px;font-weight:950;color:#E8C96D;letter-spacing:.3px}
+.sym-close{width:34px;height:34px;border-radius:50%;border:1.4px solid rgba(201,168,76,.45);
+  background:rgba(255,255,255,.06);color:#F0EAD6;font-size:15px;font-weight:900;cursor:pointer;flex-shrink:0}
+.sym-img-wrap{margin:2px 18px 12px;border-radius:16px;overflow:hidden;
+  border:1.6px solid rgba(201,168,76,.5);background:#fff;
+  box-shadow:0 14px 38px rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center}
+.sym-img-wrap img{width:100%;height:auto;display:block}
+.sym-img-wrap.tall img{max-height:44dvh;object-fit:contain}
+.sym-desc{margin:0 18px 12px;font-size:13px;line-height:1.65;color:#D7DEE9}
+.sym-desc b{color:#F0EAD6}
+.sym-law{margin:4px 18px 12px;border:1px solid rgba(201,168,76,.28);border-radius:14px;background:rgba(201,168,76,.06);overflow:hidden}
+.sym-law summary{padding:11px 14px;font-size:12.5px;font-weight:900;color:#E8C96D;cursor:pointer;list-style:none;display:flex;align-items:center;gap:8px}
+.sym-law summary::before{content:'§';font-size:15px;opacity:.8}
+.sym-law[open] summary{border-bottom:1px solid rgba(201,168,76,.2)}
+.sym-law .law-body{padding:10px 14px 12px;font-size:11.8px;line-height:1.6;color:#B9C4D4;white-space:pre-line}
+.sym-dl{margin:6px 18px 4px;display:flex;gap:10px}
+.sym-dl a{
+  flex:1;text-align:center;text-decoration:none;border-radius:14px;padding:12px 10px;
+  background:linear-gradient(135deg,#C9A84C,#E8C96D);color:#1B1206;font-weight:950;font-size:13px;
+  box-shadow:0 8px 22px rgba(201,168,76,.28);display:flex;align-items:center;justify-content:center;gap:7px;
+}
+.sym-dl a:active{transform:scale(.96)}
+/* Плеери Суруди Миллӣ */
+.sym-player{margin:2px 18px 14px;border:1.4px solid rgba(201,168,76,.4);border-radius:16px;
+  background:rgba(10,20,36,.7);padding:13px 14px;display:flex;align-items:center;gap:12px}
+.sym-play{
+  width:52px;height:52px;border-radius:50%;border:0;cursor:pointer;flex-shrink:0;
+  background:linear-gradient(150deg,#F0D477,#C9A84C 60%,#8D5D16);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 18px rgba(201,168,76,.4);transition:transform .15s ease;
+}
+.sym-play:active{transform:scale(.9)}
+.sym-play svg{width:22px;height:22px;fill:#12233B}
+.sym-track{flex:1;min-width:0}
+.sym-bar{height:5px;border-radius:99px;background:rgba(255,255,255,.14);overflow:hidden;cursor:pointer}
+.sym-bar-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#C9A84C,#F2D58A)}
+.sym-time{display:flex;justify-content:space-between;font-size:10.5px;color:#A8B8CC;margin-top:5px;font-variant-numeric:tabular-nums}
+.sym-eq{display:flex;align-items:flex-end;gap:2.5px;height:20px;margin-left:2px}
+.sym-eq i{width:3px;border-radius:2px;background:linear-gradient(180deg,#F2D58A,#C9A84C);height:30%}
+.sym-eq.on i{animation:symEq .9s ease-in-out infinite}
+.sym-eq.on i:nth-child(2){animation-delay:.22s}
+.sym-eq.on i:nth-child(3){animation-delay:.44s}
+.sym-eq.on i:nth-child(4){animation-delay:.1s}
+@keyframes symEq{0%,100%{height:22%}50%{height:100%}}
+.sym-lyrics{margin:0 18px;border-top:1px dashed rgba(201,168,76,.3);padding-top:12px}
+.sym-lyrics h4{margin:0 0 8px;font-size:12.5px;color:#E8C96D;font-weight:900}
+.sym-lyrics p{margin:0 0 10px;font-size:12.3px;line-height:1.7;color:#C9D2DF;font-style:italic;white-space:pre-line}
+
+/* ===== АХБОРОТИ РАСМӢ (то 24 соати охир) ===== */
+.news-v3{margin:14px 0 4px}
+.news-scroll-v3{
+  display:flex;gap:12px;overflow-x:auto;padding:4px 14px 12px;
+  scroll-snap-type:x mandatory;-webkit-overflow-scrolling:touch;scrollbar-width:none;
+  touch-action:pan-y;
+}
+.news-scroll-v3::-webkit-scrollbar{display:none}
+.news-card-v3{
+  flex:0 0 86%;max-width:340px;scroll-snap-align:center;cursor:pointer;
+  background:#14243A;border:1.5px solid rgba(201,168,76,.32);border-radius:18px;overflow:hidden;
+  box-shadow:0 10px 26px rgba(0,0,0,.35);transition:transform .18s ease,border-color .18s ease;
+  display:flex;flex-direction:column;
+}
+.news-card-v3:active{transform:scale(.975);border-color:#E8C96D}
+.news-img-wrap{position:relative;height:118px;background:linear-gradient(150deg,#1B3050,#122240);overflow:hidden;flex-shrink:0}
+.news-img-wrap img{width:100%;height:100%;object-fit:cover;display:block}
+.news-src{
+  position:absolute;top:8px;left:8px;z-index:2;font-size:9.5px;font-weight:900;letter-spacing:.4px;
+  padding:3px 9px;border-radius:99px;background:rgba(8,16,26,.85);color:#E8C96D;
+  border:1px solid rgba(201,168,76,.4);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);
+}
+.news-external{position:absolute;top:8px;right:8px;z-index:2;font-size:9.5px;font-weight:900;
+  padding:3px 8px;border-radius:99px;background:rgba(8,16,26,.85);color:#8FB8E8;border:1px solid rgba(120,170,230,.4)}
+.news-body{padding:11px 13px 12px;display:flex;flex-direction:column;gap:7px;flex:1}
+.news-title{font-size:13.2px;font-weight:800;color:#F0EAD6;line-height:1.45;
+  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+.news-meta{font-size:10.5px;color:#8A9BB0;display:flex;align-items:center;gap:5px;margin-top:auto}
+.news-noimg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:34px;opacity:.5}
+.news-dots-v3{display:flex;gap:6px;justify-content:center;padding:0 0 4px}
+.news-dot{width:6px;height:6px;border-radius:50%;background:rgba(201,168,76,.25);transition:all .25s ease}
+.news-dot.on{width:16px;border-radius:99px;background:#E8C96D}
+/* скелетон ҳангоми боршавӣ */
+.news-skel{flex:0 0 86%;max-width:340px;scroll-snap-align:center;border-radius:18px;overflow:hidden;
+  background:#14243A;border:1.5px solid rgba(201,168,76,.18)}
+.news-skel .sk-img{height:118px}
+.news-skel .sk-line{height:12px;margin:12px 13px;border-radius:6px}
+.news-skel .sk-line.short{width:55%}
+.sk-anim{background:linear-gradient(100deg,rgba(255,255,255,.05) 40%,rgba(255,255,255,.12) 50%,rgba(255,255,255,.05) 60%);
+  background-size:200% 100%;animation:skShimmer 1.3s linear infinite}
+@keyframes skShimmer{to{background-position:-200% 0}}
+.news-empty{margin:0 14px;border:1px dashed rgba(201,168,76,.35);border-radius:16px;padding:16px;
+  font-size:12px;color:#A8B8CC;text-align:center}
+</style>
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
@@ -1672,23 +1796,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   <!-- TOP BAR — точь-в-точь как на фото, subtitle изменен на Китоб манбаи дониш -->
   <header class="new-top-bar-v3">
     <div class="new-logo-v3">
-      <div class="new-logo-icon-v3 crown-brand-v3" aria-hidden="true">
-        <svg viewBox="0 0 44 40" width="38" height="35" fill="none">
-          <defs>
-            <linearGradient id="crownGold" x1="6" y1="5" x2="38" y2="35" gradientUnits="userSpaceOnUse"><stop stop-color="#FFF4B0"/><stop offset=".38" stop-color="#F0D477"/><stop offset=".72" stop-color="#C99735"/><stop offset="1" stop-color="#8D5D16"/></linearGradient>
-            <linearGradient id="crownFace" x1="22" y1="10" x2="22" y2="32" gradientUnits="userSpaceOnUse"><stop stop-color="#F9E79A"/><stop offset="1" stop-color="#B77D21"/></linearGradient>
-            <filter id="crownGlow" x="-30%" y="-30%" width="160%" height="170%"><feGaussianBlur stdDeviation="1.1" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
-          </defs>
-          <path d="M6.5 12.5 14 20l8-13 8 13 7.5-7.5-3.2 18.1H9.7L6.5 12.5Z" fill="url(#crownFace)" stroke="url(#crownGold)" stroke-width="1.6" stroke-linejoin="round" filter="url(#crownGlow)"/>
-          <path d="M10 26.2h24M10.4 30.5h23.2" stroke="#FFF0A0" stroke-width="1.15" stroke-linecap="round" opacity=".9"/>
-          <path d="M13.3 21.2 17 24l5-9 5 9 3.7-2.8" stroke="#FFF3AB" stroke-width="1" stroke-linejoin="round" opacity=".75"/>
-          <circle cx="6.5" cy="11.5" r="2.1" fill="#D84A47" stroke="#FFE99A" stroke-width=".8"/>
-          <circle cx="14" cy="18.8" r="1.75" fill="#F8F4E8" stroke="#D5AA45" stroke-width=".7"/>
-          <circle cx="22" cy="6" r="2.4" fill="#E9C962" stroke="#FFF4B0" stroke-width=".9"/>
-          <circle cx="30" cy="18.8" r="1.75" fill="#F8F4E8" stroke="#D5AA45" stroke-width=".7"/>
-          <circle cx="37.5" cy="11.5" r="2.1" fill="#3DA66A" stroke="#FFE99A" stroke-width=".8"/>
-          <path d="M16 34h12" stroke="url(#crownGold)" stroke-width="2" stroke-linecap="round"/>
-        </svg>
+      <!-- РАМЗҲОИ ДАВЛАТӢ: Парчам, Нишон, Суруди Миллӣ (ба ҷои тоҷ) -->
+      <div class="state-symbols-v3" role="group" aria-label="Рамзҳои давлатии Ҷумҳурии Тоҷикистон">
+        <button type="button" class="sym-btn" onclick="openSymbolModal('parcham')" title="Парчами давлатӣ" aria-label="Парчами давлатӣ">
+          <img src="assets/symbols/parcham.png" alt="Парчами давлатии ҶТ">
+        </button>
+        <button type="button" class="sym-btn" onclick="openSymbolModal('nishon')" title="Нишони давлатӣ" aria-label="Нишони давлатӣ">
+          <img src="assets/symbols/nishon.jpg" alt="Нишони давлатии ҶТ">
+        </button>
+        <button type="button" class="sym-btn sym-surud" onclick="openSymbolModal('surud')" title="Суруди Миллӣ" aria-label="Суруди Миллӣ">
+          <svg viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 18.5V5.8c0-.5.35-.9.84-.98l7-1.25c.6-.1 1.16.36 1.16.98v11.4" stroke="#fff" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"/>
+            <circle cx="6.6" cy="18.4" r="2.6" fill="#fff"/>
+            <circle cx="15.4" cy="16.9" r="2.6" fill="#fff"/>
+            <path d="M9 9.2l9-1.7" stroke="#fff" stroke-width="1.9" stroke-linecap="round"/>
+          </svg>
+        </button>
       </div>
       <div class="new-logo-text-v3"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div>
     </div>
@@ -1750,6 +1873,16 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
     <!-- Продолжить чтение — теперь сверху категории как просил -->
     <div class="continue-section" id="continueSection" style="display:none"><div class="continue-card" id="continueCard"></div></div>
+
+    <!-- 2.5 АХБОРОТИ РАСМӢ — аз сомонаҳои расмии давлатӣ, то 24 соати охир -->
+    <section class="news-v3" id="newsSection" style="display:none">
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">📰 Ахбороти расмӣ</div>
+        <div class="sec-link-v3" onclick="openMiniBrowser('https://khovar.tj','АМИТ «Ховар»')">Ҳамааш <span>›</span></div>
+      </div>
+      <div class="news-scroll-v3" id="newsScroll"></div>
+      <div class="news-dots-v3" id="newsDots"></div>
+    </section>
 
     <!-- 3 Категории — как на фото один в один иконки -->
     <section class="cat-v3">
@@ -2414,11 +2547,12 @@ const GOV_SITES = [
   { id: 'khovar', name: 'АМИТ «Ховар»', short: 'khovar.tj · Агентии иттилоотӣ', url: 'https://khovar.tj', domain: 'khovar.tj', icon: '📰', bg: 'linear-gradient(135deg, #122F3D 0%, #1B506B 100%)' },
   { id: 'mfa', name: 'Вазорати корҳои хориҷии ҶТ', short: 'mfa.tj · Сиёсати хориҷӣ ва равобит', url: 'https://mfa.tj', domain: 'mfa.tj', icon: '🌐', bg: 'linear-gradient(135deg, #152C4E 0%, #1F457E 100%)' },
   { id: 'dushanbe', name: 'Ҳокимияти ш. Душанбе', short: 'dushanbe.tj · Сомонаи шаҳрдорӣ', url: 'https://dushanbe.tj', domain: 'dushanbe.tj', icon: '🏙️', bg: 'linear-gradient(135deg, #242A38 0%, #3D4861 100%)' },
+  { id: 'khatlon', name: 'Ҳокимияти вилояти Хатлон', short: 'khatlon.tj · Вилояти Хатлон', url: 'http://khatlon.tj', domain: 'khatlon.tj', icon: '🏔️', external: true, bg: 'linear-gradient(135deg, #1E3A2F 0%, #2E5C46 100%)' },
   { id: 'ntc', name: 'Маркази миллии тестӣ (ИМТ)', short: 'ntc.tj · Дохилшавӣ ва имтиҳонҳо', url: 'https://ntc.tj/tj/', domain: 'ntc.tj', icon: '🎓', bg: 'linear-gradient(135deg, #2B331A 0%, #4D5C2E 100%)' }
 ];
 
 // nlt.tj хориҷ карда шуд (сервер ҷавоб намедиҳад); kmt.tj ба https гузашт (http дар iframe блок мешавад);
-// mmk.tj — X-Frame-Options: SAMEORIGIN → дар браузери берунӣ кушода мешавад
+// mmk.tj — X-Frame-Options: SAMEORIGIN → берунӣ; khatlon.tj — https-сертификаташ вайрон аст → берунӣ
 
 function govSiteCard(s, isCopy) {
   const action = s.external
@@ -2442,7 +2576,8 @@ function govSiteCard(s, isCopy) {
 // Пахши кӯтоҳ = кушодани сомона; кашолан бо панҷа = интихоби сомона.
 let govPos = 0;            // мавқеи ҳозира (px, мусбат)
 let govSetWidth = 0;       // паҳнои як маҷмӯа (барои даврзанӣ)
-let govSpeed = 22;         // px/сония
+let govSpeed = 10;         // px/сония — оҳиста (пештар 22 буд)
+let govVel = 0;            // суръати инерсия баъди кашолан (px/сония)
 let govDragging = false, govResumeAt = 0, govPointer = null, govSuppressClick = false, govRafOn = false, govLastTs = 0;
 function govReducedMotion(){ try{ return matchMedia('(prefers-reduced-motion: reduce)').matches; }catch(e){ return false; } }
 function govWrap(p){ const w = govSetWidth || 1; return ((p % w) + w) % w; }
@@ -2451,7 +2586,18 @@ function govMeasure(){ const t = document.getElementById('govTrack'); if (t && t
 function govTick(ts){
   const dt = govLastTs ? Math.min((ts - govLastTs) / 1000, 0.1) : 0; govLastTs = ts;
   if (govResumeAt && ts >= govResumeAt) govResumeAt = 0;
-  if (!govDragging && !govResumeAt && !govReducedMotion()) govPos += govSpeed * dt;
+  if (!govDragging){
+    if (Math.abs(govVel) > 4){ // инерсия — фавран баъди ҷойгузорӣ, то суръат фуро равад
+      govPos += govVel * dt;
+      govVel *= Math.pow(0.06, dt); // тез фуро меравад (~0.4с)
+      govApply();
+      requestAnimationFrame(govTick);
+      return;
+    }
+    govVel = 0;
+    // ҳаракати худкор танҳо баъди 2.6с оромӣ баъди кашолан бармегардад
+    if (!govResumeAt && !govReducedMotion()) govPos += govSpeed * dt;
+  }
   govApply();
   requestAnimationFrame(govTick);
 }
@@ -2464,11 +2610,17 @@ function govInitGestures(){
   });
   box.addEventListener('pointermove', e => {
     if (!govPointer || e.pointerId !== govPointer.id) return;
+    const now = performance.now();
     const dx = e.clientX - govPointer.startX;
     govPointer.moved = Math.max(govPointer.moved, Math.abs(dx));
     if (govPointer.moved > 6) {
       try { box.setPointerCapture(e.pointerId); } catch (err) {}
       govPos = govPointer.startPos - dx; // панҷа ба рост = мавод ба рост
+      // суръати кашолан барои инерсия
+      const dxNow = e.clientX - (govPointer.lastX !== undefined ? govPointer.lastX : e.clientX);
+      const dtNow = now - (govPointer.lastT || now);
+      if (dtNow > 0) govVel = Math.max(-2600, Math.min(2600, -dxNow / dtNow * 1000));
+      govPointer.lastX = e.clientX; govPointer.lastT = now;
       govApply();
     }
   });
@@ -2476,7 +2628,9 @@ function govInitGestures(){
     if (!govPointer || e.pointerId !== govPointer.id) return;
     const tap = govPointer.moved <= 6;
     govPointer = null; govDragging = false;
-    govResumeAt = performance.now() + 2200; // баъди кашолан 2.2 сония ҳаракат давом меёбад
+    // инерсия фақат ҳангоми кашолани ҷиддӣ; барои ҳаракати худкор баъди ~2.6с бармегардад
+    if (!tap && Math.abs(govVel) < 60) govVel = 0;
+    govResumeAt = performance.now() + 2600;
     if (!tap) { govSuppressClick = true; setTimeout(() => { govSuppressClick = false; }, 350); }
   };
   box.addEventListener('pointerup', govEnd);
@@ -2517,6 +2671,234 @@ function govWarmConnections(){
       document.head.appendChild(l);
     });
   }catch(e){}
+}
+
+// =========================================================================
+// РАМЗҲОИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН — Парчам, Нишон, Суруди Миллӣ
+// =========================================================================
+const SYMBOLS = {
+  parcham: {
+    title: 'Парчами давлатии Ҷумҳурии Тоҷикистон',
+    img: 'assets/symbols/parcham.png',
+    tall: false,
+    desc: 'Парчами давлатии Ҷумҳурии Тоҷикистон матои росткунҷа буда, дар рӯйи он се рахи рангаи ба таври уфуқӣ ҷойгирифта кашида шудааст, ки рахи боло ранги сурх дошта, паҳнои он ба рахи сабзи поён баробар аст, рахи сафеди мобайн якуним баробари паҳнои яке аз рахҳои ранга мебошад. Дар рӯи рахи сафед, аз ҷойи чӯбдаста дар мобайни Парчам бо зарҳал рамзи тоҷи тансиқшуда ва дар болои он ҳафт ситора дар шакли нимдоира тасвир шудааст. Таносуби бару дарозии умумии Парчам 1:2 метр аст.',
+    law: 'ИҚТИБОС АЗ ҚОНуНИ ҶУМҲУРИИ ТОҶИКИСТОН «ДАР БОРАИ РАМЗҲОИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН»\n\nБОБИ 2. ПАРЧАМИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН\n\nМоддаи 5. Тартиби афрохтани Парчами давлатии Ҷумҳурии Тоҷикистон\n\n1. Парчами давлатии Ҷумҳурии Тоҷикистон дар ҷойҳои зайл ба таври доимӣ афрохта мешавад:\n— дар боло ё пештоқи бино ва ё ба пояи махсус дар ҳавлии қароргоҳи расмии Президенти Ҷумҳурии Тоҷикистон, Маҷлиси миллии Маҷлиси Олии Ҷумҳурии Тоҷикистон, Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон, Ҳукумати Ҷумҳурии Тоҷикистон, судҳои Ҷумҳурии Тоҷикистон, мақомоти прокуратураи Ҷумҳурии Тоҷикистон, Бонки миллии Тоҷикистон, Комиссияи марказии интихобот ва раъйпурсии Ҷумҳурии Тоҷикистон, Ваколатдор оид ба ҳуқуқи инсон дар Ҷумҳурии Тоҷикистон, вазоратҳо, кумитаҳои давлатӣ ва мақомоти дигари идоракунии давлатии Ҷумҳурии Тоҷикистон, мақомоти маҳаллии ҳокимияти давлатӣ, мақомоти худидоракунии шаҳрак ва деҳот (ҷамоатҳо), намояндагиҳои дипломатӣ ва дигар ташкилотҳои Ҷумҳурии Тоҷикистон дар мамлакатҳои хориҷӣ ва ташкилотҳои байналмилалӣ;\n— дар болои биное, ки ҷаласаҳои якҷояи Маҷлиси миллӣ ва Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон, иҷлосияҳои Маҷлисҳои вакилони халқи Вилояти Мухтори Кӯҳистони Бадахшон, вилоятҳо, шаҳри Душанбе, шаҳрҳо, ноҳияҳо, маҷлисҳои ҷамоати шаҳрак ва деҳот гузаронида мешаванд;\n— дар қисмҳои ҳарбии Ҷумҳурии Тоҷикистон (мутобиқи оинномаҳои ҳарбӣ), гузаргоҳҳо, дидбонгоҳҳо ва нуқтаҳои гумрукии Сарҳади давлатии Ҷумҳурии Тоҷикистон.\n\n2. Парчами давлатии Ҷумҳурии Тоҷикистонро ҳамчунин дар ҷойҳои истироҳатии шаҳрвандон, боғҳо, хиёбонҳо, гулгаштҳо ба сифати рамзи давлатии Ҷумҳурии Тоҷикистон афрохтан мумкин аст. Шаҳрвандони Ҷумҳурии Тоҷикистон ҳуқуқ доранд бо арзи эҳтиром Парчами давлатиро истифода намоянд.\n\n3. Дар вақти афрохтани Парчами давлатии Ҷумҳурии Тоҷикистон ва парчами ташкилотҳои ҷамъиятӣ ё дигар шахсони ҳуқуқӣ паҳно ва баландии ин парчамҳо набояд аз паҳно ва баландии Парчами давлатӣ калон бошад. Ҳангоми афрохтани шумораи тоқи парчамҳо Парчами давлатӣ дар мобайн ва дар мавриди шумораи ҷуфти парчамҳо аз марказ дар тарафи чап ҷой дода мешавад.\n\nМоддаи 6. Ҷойгиркунии тасвири Парчами давлатии Ҷумҳурии Тоҷикистон\n\nТасвири Парчами давлатии Ҷумҳурии Тоҷикистон ҷойгир карда мешавад:\n— дар ҳавопаймоҳо, чархболҳо ва киштиҳое, ки дар қайди Ҷумҳурии Тоҷикистон мебошанд;\n— дар асъори миллии Ҷумҳурии Тоҷикистон, коғазҳои қиматнок ва лотереяҳои пулию молии давлатӣ;\n— дар нишони сарисинагӣ ва шаҳодатномаи узви Маҷлиси миллӣ ва вакили Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон;\n— дар нишони сарисинагӣ ва шаҳодатномаи вакили Маҷлиси маҳаллии вакилони халқ ва вакили ҷамоат;\n— дар нишони сарисинагии хизматчиёни давлатӣ;\n— дар ҷойҳои истироҳати шаҳрвандон, хиёбонҳо, гулгаштҳо, лавҳаҳои телевизионӣ ва дигар нашрияҳои давлатӣ ҳамчун рамзи давлатӣ;\n— дар аломатҳои қайди давлатии воситаҳои нақлиёт.\n\nАЛОМАТҲОИ ПАРЧАМИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН\n(Бо қарори Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон аз 14 марти соли 2007, №499 «Дар хусуси тасдиқи Парчами давлатии Ҷумҳурии Тоҷикистон» қабул шудааст)\n\nТоҷ ва ситораҳои парчам дар шакли росткунҷа ҷой дошта шудаанд, ки паҳлӯи амудиашон 0,8, паҳлӯи уфуқиашон 1,0 паҳнои рахи сафед аст. Ситораҳои панҷгӯша дар доираи қутраш 0,15 акс ёфта, дар нимдоираи радиусаш 0,5 паҳнои рахи сафед ҷой гирифтаанд. Тоҷи баландиаш 0,55 паҳнои рахи сафед ба асос ба таври нимдоираи радиусаш 1,2 паҳнои рахи сафед моил мегардад. Чор унсури камоншакл, ки болои тоҷро ташкил медиҳанд, дар марказ бо қисмати доираи қутраш 0,2 рахи сафед васл гардидаанд.',
+    dl: { href: 'assets/symbols/parcham.png', name: 'Парчами_давлатии_Тоҷикистон.png', label: '⬇ Боргирин парчам' }
+  },
+  nishon: {
+    title: 'Нишони давлатии Ҷумҳурии Тоҷикистон',
+    img: 'assets/symbols/nishon.jpg',
+    tall: true,
+    desc: 'Нишони давлатии Ҷумҳурии Тоҷикистон аз тасвири тоҷи тансиқшуда ва нимдоирае, ки аз ҳафт ситораи бо нурҳои офтоби аз паси кӯҳҳои барфпӯш тулӯъкунанда рӯи онро гирифтааст ва бо чамбаре иҳота карда шудааст, ки атрофашро аз тарафи рост хӯшаҳои гандум ва аз тарафи чап шохаҳои пахтаи шукуфон иҳота кардаанд, иборат мебошад. Болои чамбар бо тасмаи сераха печонида шуда, дар қисми поён болои лавҳ китоби кушодашуда ҷой гирифтааст.\n\nНишони давлатии Ҷумҳурии Тоҷикистон ранга буда, тоҷ, офтоб, кӯҳҳо, хӯшаҳои гандум, китоб ва лавҳ бо зарҳал тасвир ёфта, получу баргҳои ниҳолҳои пахта сабз, рахҳои тасмаҳо сурх, сафед, сабз ва муқоваи китоб сурх мебошад.',
+    law: 'ИҚТИБОС АЗ ҚОНуНИ ҶУМҲУРИИ ТОҶИКИСТОН «ДАР БОРАИ РАМЗҲОИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН»\n\nБОБИ 3. НИШОНИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН\n\nМоддаи 7. Истифодаи Нишони давлатии Ҷумҳурии Тоҷикистон\n\nНишони давлатии Ҷумҳурии Тоҷикистон дар шакли ранга, якранг ва ё сиёҳу сафед истифода бурда мешавад.\n\nМоддаи 8. Ҷойгиркунии тасвири Нишони давлатии Ҷумҳурии Тоҷикистон\n\n1. Тасвири Нишони давлатии Ҷумҳурии Тоҷикистон ҷойгир карда мешавад:\n— дар пештоқи биноҳои қароргоҳи расмии Президенти Ҷумҳурии Тоҷикистон, Маҷлиси миллии Маҷлиси Олии Ҷумҳурии Тоҷикистон, Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон, Ҳукумати Ҷумҳурии Тоҷикистон, судҳои Ҷумҳурии Тоҷикистон, Прокуратураи генералии Ҷумҳурии Тоҷикистон, Бонки миллии Тоҷикистон, Комиссияи марказии интихобот ва раъйпурсии Ҷумҳурии Тоҷикистон, Ваколатдор оид ба ҳуқуқи инсон дар Ҷумҳурии Тоҷикистон, вазоратҳо, кумитаҳои давлатӣ ва мақомоти дигари идоракунии давлатии Ҷумҳурии Тоҷикистон, мақомоти маҳаллии ҳокимияти давлатӣ, мақомоти худидоракунии шаҳрак ва деҳот (ҷамоатҳо), намояндагиҳои дипломатӣ, дигар ташкилотҳои Ҷумҳурии Тоҷикистон дар мамлакатҳои хориҷӣ ва ташкилотҳои байналмилалӣ;\n— дар толорҳои ҷаласаҳои якҷояи Маҷлиси миллӣ ва Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон, маҷлисҳои Ҳукумати Ҷумҳурии Тоҷикистон, маҷлисҳои судии судҳои Ҷумҳурии Тоҷикистон ва толорҳои мақомоти сабти асноди ҳолати шаҳрвандӣ;\n— дар утоқҳои кории Президенти Ҷумҳурии Тоҷикистон ва дигар биноҳое, ки барои гузаронидани чорабиниҳои расмӣ бо иштироки Президенти Ҷумҳурии Тоҷикистон таъин шудаанд;\n— дар мӯҳр, бланкҳо ва санадҳои Президенти Ҷумҳурии Тоҷикистон, Маҷлиси миллии Маҷлиси Олии Ҷумҳурии Тоҷикистон, Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон, Ҳукумати Ҷумҳурии Тоҷикистон, вазоратҳо ва кумитаҳои давлатӣ, судҳо, мақомоти прокуратура, идораҳои давлатии нотариалӣ, мақомоти сабти асноди ҳолати шаҳрвандӣ, инчунин корхонаю муассиса ва ташкилотҳои давлатӣ;\n— дар нашрияҳои давлатии Ҷумҳурии Тоҷикистон;\n— дар шиносномаи шаҳрванди Ҷумҳурии Тоҷикистон ва дигар шиносномаю шаҳодатномаҳое, ки аз тарафи мақомоти давлатӣ дода мешаванд;\n— дар сутунҳои марзӣ ва гузаргоҳҳои сарҳади давлатии Ҷумҳурии Тоҷикистон;\n— дар асъори миллии Ҷумҳурии Тоҷикистон, коғазҳои қиматнок ва лотереяҳои пулию молии давлатӣ;\n— дар ҳуҷҷатҳои тасдиқкунандаи мукофотҳои давлатии Ҷумҳурии Тоҷикистон;\n— дар нишонҳои фарқкунанда ва либоси расмии муқарраршудаи шахсоне, ки дар хизмати ҳарбӣ ё хизмати дигари давлатӣ мебошанд.\n\n2. Ҳангоми дар як вақт ҷой додани Нишони давлатии Ҷумҳурии Тоҷикистон ва нишонҳои ташкилотҳои ҷамъиятӣ ва дигар шахсони ҳуқуқӣ ҳаҷми ин нишонҳо аз ҳаҷми Нишони давлатии Ҷумҳурии Тоҷикистон набояд калон бошад ва Нишони давлатии Ҷумҳурии Тоҷикистон бояд аз тарафи чап ҷой дода шавад.\n\n3. Ҷойгиркунии тасвири Нишони давлатии Ҷумҳурии Тоҷикистон дар ҷойҳое, ки Қонуни мазкур пешбинӣ накардааст, манъ аст.\n\nАЛОМАТҲОИ НИШОНИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН\n(Бо қарори Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон аз 14 марти соли 2007, №500 «Дар хусуси тасдиқи Нишони давлатии Ҷумҳурии Тоҷикистон» қабул шудааст)',
+    dl: { href: 'assets/symbols/nishon.jpg', name: 'Нишони_давлатии_Тоҷикистон.jpg', label: '⬇ Боргирин нишон' }
+  },
+  surud: {
+    title: 'Суруди Миллии Ҷумҳурии Тоҷикистон',
+    audio: 'assets/symbols/surudi_milli.mp3',
+    desc: 'Суруди Миллии Ҷумҳурии Тоҷикистон ҳамчун рамзи давлатӣ аз матн ва оҳанг иборат буда, дар мавридҳои муқаррарнамудаи Қонун иҷро карда мешавад.\n\nШеъри Гулназар Келдӣ\nОҳанги Сулаймон Юдаков',
+    law: 'ИҚТИБОС АЗ ҚОНуНИ ҶУМҲУРИИ ТОҶИКИСТОН «ДАР БОРАИ РАМЗҲОИ ДАВЛАТИИ ҶУМҲУРИИ ТОҶИКИСТОН»\n\nБОБИ 4. СУРУДИ МИЛЛИИ ҶУМҲУРИИ ТОҶИКИСТОН\n\nМоддаи 9. Суруди Миллии Ҷумҳурии Тоҷикистон ва тартиби иҷрои он\n\n1. Суруди Миллии Ҷумҳурии Тоҷикистон ба тариқи оркестр (созӣ), хор, оркестрӣ-хорӣ ё худ ба тариқи созию овозӣ иҷро карда мешавад.\n2. Дар ҳолати иҷро кардани Суруди Миллӣ ба тариқи созию овозӣ он пурра сароида мешавад.\n3. Суруди Миллии Ҷумҳурии Тоҷикистон бояд саҳеҳ, мувофиқи матн ва оҳанг иҷро карда шавад.\n4. Ҳангоми ба тариқи расмӣ садо додани Суруди Миллии Ҷумҳурии Тоҷикистон ҳозирин аз ҷой бармехезанд.\n\nМоддаи 10. Мавридҳои иҷрои Суруди Миллии Ҷумҳурии Тоҷикистон\n\nСуруди Миллии Ҷумҳурии Тоҷикистон иҷро карда мешавад:\n— баъди савганд ёд кардани Президенти Ҷумҳурии Тоҷикистон пеш аз шурӯи вазифа;\n— дар оғозу анҷоми ҷаласаҳои якҷояи Маҷлиси миллӣ ва Маҷлиси намояндагони Маҷлиси Олии Ҷумҳурии Тоҷикистон, маҷлису ҷамъомадҳои тантанавӣ ва дигар ҷашнҳои иди умумихалқӣ;\n— ҳамарӯза ҳангоми оғозу анҷоми барномаҳои телевизион ва радиои давлатӣ;\n— ҳангоми баргузории ҷамъомаду ҷашнҳо ва чорабиниҳои дигари расмӣ;\n— ҳангоми тантанаҳои умумӣ дар мактабҳои таҳсилоти умумӣ, ибтидоӣ, миёна ва олии касбии Ҷумҳурии Тоҷикистон;\n— ҳангоми баргузории мусобиқаҳои варзишии байналмилалӣ ва дохилиҷумҳуриявӣ;\n— ҳангоми истиқбол ва гусели сарони давлатҳо ва ҳукуматҳои давлатҳои хориҷӣ.\n\n2. Суруди Миллии Ҷумҳурии Тоҷикистон ҳамзамон бо боло бардоштани Парчами давлатии Ҷумҳурии Тоҷикистон садо медиҳад ва ҳозирин ба Парчами давлатӣ рӯ меоваранд.',
+    lyrics: 'Диёри арҷманди мо,\nБа бахти мо сари азизи ту баланд бод,\nСаодати ту, давлати ту бегазанд бод.\nЗи дурии замонаҳо расидаем,\nБа зери парчами ту саф кашидаем, кашидаем.\n\nЗинда бош эй Ватан,\nТоҷикистони озоди ман!\n\nБарои нангу номи мо\nТу аз умеди рафтагони мо нишонаӣ,\nТу баҳри ворисон ҷаҳони ҷовидонаӣ,\nХазон намерасад ба навбаҳори ту,\nКи мазраи вафо бувад канори ту, канори ту.\n\nЗинда бош эй Ватан,\nТоҷикистони озоди ман!\n\nТу модари ягонаӣ,\nБақои ту бувад бақои хонадони мо,\nМароми ту бувад мароми ҷисму ҷони мо,\nЗи ту саодати абад насиби мост,\nТу ҳастиву ҳама ҷаҳон ҳабиби мост, ҳабиби мост.\n\nЗинда бош эй Ватан,\nТоҷикистони озоди ман!',
+    dl: { href: 'assets/symbols/surudi_milli.mp3', name: 'Суруди_Миллии_Тоҷикистон.mp3', label: '⬇ Боргирин суруд' }
+  }
+};
+
+let symAudio = null;
+function symStopAudio(){
+  if (symAudio){ try { symAudio.pause(); } catch(e){} }
+  const eq = document.querySelector('.sym-eq'); if (eq) eq.classList.remove('on');
+  const btns = document.querySelectorAll('.sym-play use');
+  btns.forEach(u => u.setAttribute('href', '#symPlay'));
+  if (symAudio) { symAudio.currentTime = 0; }
+}
+function openSymbolModal(kind){
+  const s = SYMBOLS[kind]; if (!s) return;
+  symStopAudio();
+  document.getElementById('symModal')?.remove();
+  const modal = document.createElement('div');
+  modal.id = 'symModal'; modal.className = 'sym-modal';
+  const mediaHtml = s.img
+    ? `<div class="sym-img-wrap${s.tall ? ' tall' : ''}"><img src="${s.img}" alt="${esc(s.title)}"></div>`
+    : `<div class="sym-player">
+        <button class="sym-play" type="button" onclick="symTogglePlay(this)" aria-label="Пахш кунед">
+          <svg viewBox="0 0 24 24"><use id="symUse" href="#symPlay"/></svg>
+        </button>
+        <div class="sym-track">
+          <div class="sym-bar" onclick="symSeek(event)"><div class="sym-bar-fill" id="symBarFill"></div></div>
+          <div class="sym-time"><span id="symTimeCur">0:00</span><span id="symTimeDur">1:55</span></div>
+        </div>
+        <div class="sym-eq" id="symEq"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <svg width="0" height="0" style="position:absolute"><defs>
+        <path id="symPlay" d="M8 5.5v13l10.5-6.5z"/>
+        <path id="symPause" d="M7 5h3.4v14H7zM13.6 5H17v14h-3.4z"/>
+      </defs></svg>`;
+  const dlHtml = s.dl ? `<div class="sym-dl"><a href="${s.dl.href}" download="${esc(s.dl.name)}">${s.dl.label}</a></div>` : '';
+  const lyricsHtml = s.lyrics ? `<div class="sym-lyrics"><h4>🎶 Матни Суруди Миллӣ</h4><p>${esc(s.lyrics)}</p></div>` : '';
+  modal.innerHTML = `
+    <div class="sym-panel" role="dialog" aria-modal="true" aria-label="${esc(s.title)}">
+      <div class="sym-head">
+        <div class="sym-head-title">${esc(s.title)}</div>
+        <button class="sym-close" type="button" onclick="closeSymbolModal()" aria-label="Пӯшидан">✕</button>
+      </div>
+      ${mediaHtml}
+      <div class="sym-desc">${esc(s.desc)}</div>
+      ${lyricsHtml}
+      <details class="sym-law"><summary>Иқтибос аз Қонун барои мутолиаи пурра</summary><div class="law-body">${esc(s.law)}</div></details>
+      ${dlHtml}
+    </div>`;
+  document.body.appendChild(modal);
+  requestAnimationFrame(()=> modal.classList.add('on'));
+  modal.addEventListener('click', e => { if (e.target === modal) closeSymbolModal(); });
+  history.pushState({ symModalOpen: true }, '');
+}
+function closeSymbolModal(){
+  symStopAudio();
+  const m = document.getElementById('symModal');
+  if (m){ m.classList.remove('on'); setTimeout(()=>m.remove(), 180); }
+}
+function symTogglePlay(btn){
+  btn = btn || document.querySelector('.sym-play');
+  if (!symAudio){
+    symAudio = new Audio(SYMBOLS.surud.audio);
+    symAudio.preload = 'metadata';
+    symAudio.addEventListener('timeupdate', () => {
+      const fill = document.getElementById('symBarFill');
+      const cur = document.getElementById('symTimeCur');
+      if (fill && symAudio.duration) fill.style.width = (100*symAudio.currentTime/symAudio.duration) + '%';
+      if (cur) cur.textContent = symFmtTime(symAudio.currentTime);
+    });
+    symAudio.addEventListener('loadedmetadata', () => {
+      const d = document.getElementById('symTimeDur');
+      if (d) d.textContent = symFmtTime(symAudio.duration);
+    });
+    symAudio.addEventListener('ended', () => { symStopAudio(); });
+  }
+  if (symAudio.paused){
+    symAudio.play().then(()=>{
+      btn.querySelector('use')?.setAttribute('href', '#symPause');
+      document.getElementById('symEq')?.classList.add('on');
+    }).catch(()=>{ toast('Аудио бор намешавад'); });
+  } else {
+    symAudio.pause();
+    btn.querySelector('use')?.setAttribute('href', '#symPlay');
+    document.getElementById('symEq')?.classList.remove('on');
+  }
+}
+function symSeek(e){
+  if (!symAudio || !symAudio.duration) return;
+  const bar = e.currentTarget;
+  const r = bar.getBoundingClientRect();
+  symAudio.currentTime = Math.max(0, Math.min(1, (e.clientX - r.left) / r.width)) * symAudio.duration;
+}
+function symFmtTime(t){ t = Math.max(0, Math.floor(t||0)); return Math.floor(t/60) + ':' + String(t%60).padStart(2,'0'); }
+addEventListener('popstate', () => { if (document.getElementById('symModal')) closeSymbolModal(); });
+
+// =========================================================================
+// АХБОРОТИ РАСМӢ — аз сомонаҳои расмӣ (news.json аз GitHub Actions)
+// =========================================================================
+let NEWS_ITEMS = [], newsIdx = 0, newsTimer = null, newsTouchAt = 0;
+function newsTimeAgo(iso){
+  const diff = Date.now() - new Date(iso).getTime();
+  if (isNaN(diff)) return '';
+  const m = Math.round(diff/60000);
+  if (m < 1) return 'ҳозир';
+  if (m < 60) return m + ' дақиқа пеш';
+  const h = Math.round(m/60);
+  if (h < 24) return h + ' соат пеш';
+  return Math.round(h/24) + ' рӯз пеш';
+}
+function newsShowSkeleton(){
+  const sec = document.getElementById('newsSection'), sc = document.getElementById('newsScroll');
+  if (!sec || !sc) return;
+  sec.style.display = 'block';
+  sc.innerHTML = Array.from({length:2}).map(()=>`
+    <div class="news-skel">
+      <div class="sk-img sk-anim"></div>
+      <div class="sk-line sk-anim"></div>
+      <div class="sk-line short sk-anim"></div>
+    </div>`).join('');
+  document.getElementById('newsDots').innerHTML = '';
+}
+function newsRender(){
+  const sec = document.getElementById('newsSection'), sc = document.getElementById('newsScroll'), dots = document.getElementById('newsDots');
+  if (!sec || !sc) return;
+  if (!NEWS_ITEMS.length){ sec.style.display = 'none'; return; }
+  sec.style.display = 'block';
+  sc.innerHTML = NEWS_ITEMS.map((n, i) => `
+    <div class="news-card-v3" onclick="newsOpen(${i})">
+      <div class="news-img-wrap">
+        <span class="news-src">${esc(n.source)}</span>
+        ${n.external ? '<span class="news-external">↗ берунӣ</span>' : ''}
+        ${n.image ? `<img src="${esc(n.image)}" alt="" loading="lazy" onerror="this.remove();this.parentNode.querySelector('.news-noimg')||(this.parentNode.insertAdjacentHTML('beforeend','<div class=\\'news-noimg\\'>📰</div>'))">` : '<div class="news-noimg">📰</div>'}
+      </div>
+      <div class="news-body">
+        <div class="news-title">${esc(n.title)}</div>
+        <div class="news-meta"><span>🕘</span><span>${newsTimeAgo(n.published)}</span></div>
+      </div>
+    </div>`).join('');
+  dots.innerHTML = NEWS_ITEMS.slice(0, 20).map((_, i) => `<div class="news-dot${i===0?' on':''}"></div>`).join('');
+  newsIdx = 0;
+  newsStartAuto();
+  // пауза ҳангоми дахли корбар
+  sc.addEventListener('pointerdown', () => { newsTouchAt = Date.now(); }, { passive: true });
+  sc.addEventListener('scroll', () => {
+    const card = sc.querySelector('.news-card-v3');
+    if (!card) return;
+    const w = card.getBoundingClientRect().width + 12;
+    const i = Math.min(NEWS_ITEMS.length-1, Math.max(0, Math.round(sc.scrollLeft / w)));
+    if (i !== newsIdx){ newsIdx = i; newsUpdateDots(); }
+    newsTouchAt = Date.now();
+  }, { passive: true });
+}
+function newsUpdateDots(){
+  document.querySelectorAll('#newsDots .news-dot').forEach((d, i) => d.classList.toggle('on', i === newsIdx));
+}
+function newsGo(i){
+  const sc = document.getElementById('newsScroll');
+  const card = sc?.querySelector('.news-card-v3');
+  if (!sc || !card) return;
+  newsIdx = (i + NEWS_ITEMS.length) % NEWS_ITEMS.length;
+  sc.scrollTo({ left: newsIdx * (card.getBoundingClientRect().width + 12), behavior: 'smooth' });
+  newsUpdateDots();
+}
+function newsStartAuto(){
+  clearInterval(newsTimer);
+  newsTimer = setInterval(() => {
+    // агар корбар дигар 8 сония дахл накарда бошад — ба навбатӣ мегузарем
+    if (Date.now() - newsTouchAt < 8000) return;
+    newsGo(newsIdx + 1);
+  }, 10000);
+}
+function newsOpen(i){
+  const n = NEWS_ITEMS[i]; if (!n) return;
+  if (n.external || /^http:\/\//i.test(n.url)) openExternalSite(n.url);
+  else openMiniBrowser(n.url, n.source + ' · ахборот');
+}
+async function loadNews(){
+  newsShowSkeleton();
+  let items = null;
+  try {
+    const raw = localStorage.getItem('kk_news_cache');
+    if (raw){
+      const c = JSON.parse(raw);
+      if (c && Date.now() - c.ts < 30*60*1000) items = c.items;
+    }
+  } catch(e){}
+  if (!items){
+    try {
+      const r = await fetch('news.json', { cache: 'no-store' });
+      if (r.ok){
+        const d = await r.json();
+        items = Array.isArray(d.items) ? d.items : [];
+        try { localStorage.setItem('kk_news_cache', JSON.stringify({ ts: Date.now(), items })); } catch(e){}
+      }
+    } catch(e){}
+  }
+  // танҳо хабарҳои то 24 соати охир
+  const DAY = 24*60*60*1000;
+  NEWS_ITEMS = (items || []).filter(n => n && n.title && n.url && n.published && (Date.now() - new Date(n.published).getTime()) < DAY).slice(0, 20);
+  newsRender();
 }
 
 // =========================================================================
@@ -2723,6 +3105,7 @@ document.addEventListener('DOMContentLoaded', () => {
 renderMyBooksSection();
 renderGovSites();
 syncMyBookButtons();
+loadNews(); // ахбороти расмӣ — баъди таърифи ҳамаи функсияҳо даъват мешавад
 </script>
 </body>
 </html>

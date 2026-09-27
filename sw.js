@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v74-brand-header-fix';
+const CACHE_NAME = 'kitobkhona-v77-symbols-news';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -34,7 +34,11 @@ const LOCAL_FILES = [
   './assets/sites/khovar.jpg',
   './assets/sites/mfa.jpg',
   './assets/sites/dushanbe.jpg',
-  './assets/sites/ntc.jpg'
+  './assets/sites/ntc.jpg',
+  './assets/sites/khatlon.jpg',
+  './assets/symbols/parcham.png',
+  './assets/symbols/nishon.jpg',
+  './assets/symbols/surudi_milli.mp3'
 ];
 
 const BOOKS_JSON_URL = 'books.json';
@@ -113,6 +117,21 @@ self.addEventListener('fetch', (event) => {
       if (net) return net;
       const cached = await caches.match(event.request, { ignoreSearch: true });
       return cached || await caches.match('./offline.html');
+    })());
+    return;
+  }
+  // Ахборот: ҳамеша аввал шабака — то навтарин вариант нишон дода шавад
+  if (url.pathname.endsWith('/news.json') || url.pathname === '/news.json') {
+    event.respondWith((async () => {
+      const network = fetch(event.request).then(response => {
+        if (response && response.status === 200) {
+          safeCachePut(event.request, response);
+        }
+        return response;
+      }).catch(() => null);
+      const net = await network;
+      if (net) return net;
+      return await caches.match(event.request) || Response.error();
     })());
     return;
   }
