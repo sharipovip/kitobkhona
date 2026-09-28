@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v96-smooth-reader';
+const CACHE_NAME = 'kitobkhona-v97-catalog-fast';
 const LOCAL_FILES = [
   './',
   './index.html',

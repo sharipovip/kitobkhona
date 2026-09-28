@@ -358,6 +358,38 @@
     box-shadow:0 3px 10px rgba(0,0,0,.3);
   }
   .rating-badge svg{width:11px;height:11px;display:block;flex:0 0 11px;color:#E8C96D}
+  .render-more {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 14px 0 22px;
+    color: var(--gold, #C9A84C);
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: .4px;
+  }
+  .size-mb {
+    position: absolute;
+    top: 19px;
+    left: 4px;
+    z-index: 4;
+    background: rgba(0,0,0,0.55);
+    padding: 2px 5px;
+    border-radius: 4px;
+    font-size: 8px;
+    color: #BFD3F2;
+    font-weight: 700;
+    pointer-events: none;
+    line-height: 1;
+    backdrop-filter: blur(2px);
+    letter-spacing: .2px;
+  }
+  .size-badge.fmt-pdf { background: rgba(0,0,0,0.65); color: #FF9D9D; }
+  .size-badge.fmt-epub { background: rgba(8,80,45,0.82); color: #8FE3AE; }
+  .size-badge.fmt-fb2 { background: rgba(115,66,8,0.82); color: #FFD9A0; }
+  .size-badge.fmt-doc, .size-badge.fmt-docx { background: rgba(18,58,138,0.82); color: #A8C8FF; }
+  .size-badge.fmt-mp4, .size-badge.fmt-m4v, .size-badge.fmt-webm { background: rgba(96,18,116,0.82); color: #F0B6FF; }
+  .size-badge.fmt-txt { background: rgba(50,50,50,0.82); color: #DDD; }
+  .size-badge.fmt-mp3 { background: rgba(140,20,40,0.82); color: #FFB3C0; }
   .size-badge {
     position: absolute;
     top: 4px;
@@ -1059,7 +1091,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   function coverCandidates(folder, file) {
-    const jpg = encodeURIComponent(file.replace(/\.pdf$/i, '.jpg'));
+    // ВАЖНО: обложка строится по имени ФАЙЛА книги (робот сохраняет covers/<папка>/<файл>.jpg).
+    // Пешвакӣ танҳо .pdf иваз мешуд — барои epub/fb2 URL бо «.epub» мемонад ва обложка 404 мешавад.
+    const jpg = encodeURIComponent(file.replace(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)$/i, '.jpg'));
     const clean = String(folder).replace(/^books\//, '');
     const base = `https://raw.githubusercontent.com/${DATA.repo || 'sharipovip/books'}/${DATA.branch || 'main'}`;
     return [
@@ -1159,8 +1193,21 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       return;
     }
     closeActiveActions();
+    if (window.__bookRenderObserver) { try { window.__bookRenderObserver.disconnect(); } catch(e) {} window.__bookRenderObserver = null; }
+    grid.innerHTML = '';
+    const renderList = list;
+    let renderStart = 0;
+    let renderingBatch = false;
+    const RENDER_BATCH = 48;
 
-    grid.innerHTML = list.map((b) => {
+    function appendBatch() {
+      if (renderingBatch) return;
+      renderingBatch = true;
+      try {
+        const sentinel = document.getElementById('renderMore');
+        if (sentinel) sentinel.remove();
+        // Порционный рендер: 48 корт дар як бор — саҳифа не ҳанг мекунад (гузоришҳои калон 700+ китоб)
+        const html = renderList.slice(renderStart, renderStart + RENDER_BATCH).map((b) => {
       const file = b.file || ((b.name || 'book') + '.pdf');
       const name = b.name || file.replace(/\.pdf$/i, '');
       const folderFull = b.folder || sub?.folder || '';
@@ -1173,6 +1220,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const bookId = rawBookId.replace(/^books\//i, '');
       const bgColor = randomColor();
       const sizeMB = b.size ? (b.size / (1024*1024)).toFixed(1) : null;
+      const fmt = (String(file).match(/\.([a-z0-9]+)$/i) || [])[1] || 'pdf';
 
       return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(b.folder || sub?.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
         <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
@@ -1181,7 +1229,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
           <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>
           <div class="rating-badge">⭐ ...</div>
-          ${sizeMB ? `<div class="size-badge">${sizeMB} МБ</div>` : ''}
+          <div class="size-badge fmt-${fmt.toLowerCase()}">${fmt.toUpperCase()}</div>
+          ${sizeMB ? `<div class="size-mb">${sizeMB} МБ</div>` : ''}
           
           <div class="bk-actions" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-bookid="${encodeURIComponent(bookId)}">
             <button class="btn btn-close-actions" onclick="event.stopPropagation(); closeActiveActions();">✕</button>
@@ -1194,8 +1243,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           </div>
         </div>
       </div>`;
-    }).join('');
+        }).join('');
+        grid.insertAdjacentHTML('beforeend', html);
+        renderStart += RENDER_BATCH;
+        bindNewCards();
+        if (renderStart < renderList.length) {
+          grid.insertAdjacentHTML('beforeend', '<div class="render-more" id="renderMore">⏳ Боркунии китобҳо...</div>');
+          const s = document.getElementById('renderMore');
+          const io = new IntersectionObserver((es) => {
+            if (es[0] && es[0].isIntersecting) { io.disconnect(); appendBatch(); }
+          }, { rootMargin: '700px' });
+          io.observe(s);
+          window.__bookRenderObserver = io;
+        }
+      } finally { renderingBatch = false; }
+    }
 
+    function bindNewCards() {
     hydrateBookCardCovers(grid);
 
     grid.querySelectorAll('img[data-cover-url]').forEach(img => {
@@ -1205,7 +1269,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       }
     });
 
-    const bookCards = Array.from(document.querySelectorAll('.bk'));
+    const bookCards = Array.from(grid.querySelectorAll('.bk:not([data-bound])'));
+    bookCards.forEach(c => c.dataset.bound = '1');
     const ratingDbId = id => String(id||'').replace(/^books\//i,'').split('/').map(part=>{try{return encodeURIComponent(decodeURIComponent(part))}catch(e){return encodeURIComponent(part)}}).join('/');
     const bookIds = bookCards.map(card => ratingDbId(decodeURIComponent(card.dataset.bookid))).filter(Boolean);
     const catalogStar='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3.5 14.1 9.1H20l-4.8 3.5 1.4 5.9-4.6-3.3-4.6 3.3 1.4-5.9L4 9.1h5.9z"/></svg>';
@@ -1214,9 +1279,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if(!badge)return;const value=stats?.avg_rating?`${parseFloat(stats.avg_rating).toFixed(1)} (${stats.ratings_count||0})`:'—';badge.innerHTML=catalogStar+`<span>${value}</span>`;
     });
     try{const cached=JSON.parse(localStorage.getItem('kk_catalog_rating_cache_v2')||'{}');applyStats(cached)}catch(e){}
-    getBookStatsBatch(bookIds).then(statsMap=>{applyStats(statsMap);try{localStorage.setItem('kk_catalog_rating_cache_v2',JSON.stringify(statsMap))}catch(e){}});
+    getBookStatsBatch(bookIds).then(statsMap=>{applyStats(statsMap);try{const prev=JSON.parse(localStorage.getItem('kk_catalog_rating_cache_v2')||'{}');localStorage.setItem('kk_catalog_rating_cache_v2',JSON.stringify(Object.assign({},prev,statsMap)))}catch(e){}});
 
-    document.querySelectorAll('.bk-actions').forEach(actions => {
+    grid.querySelectorAll('.bk-actions:not([data-bound])').forEach(actions => {
+      actions.dataset.bound = '1';
       const url = decodeURIComponent(actions.dataset.url);
       const name = decodeURIComponent(actions.dataset.name);
       const cover = decodeURIComponent(actions.dataset.cover);
@@ -1255,6 +1321,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         handleShare(url, name);
       });
     });
+    }
+
+    appendBatch();
   }
 
   
