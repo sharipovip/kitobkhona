@@ -431,18 +431,22 @@
     left: 50%;
     bottom: calc(92px + var(--safe-bottom));
     transform: translateX(-50%) translateY(20px);
-    z-index: 300;
-    background: var(--panel);
-    border: 1px solid var(--border);
+    z-index: 400;
+    /* v100: ВСЕГДА тёмная плашка + золотая рамка — видна на ЛЮБОМ цвете книги
+       (раньше брала var(--panel), в светлом режиме совпадала со страницей) */
+    background: #161616;
+    border: 1.5px solid rgba(201, 168, 76, 0.7);
     border-radius: 99px;
-    padding: 10px 15px;
-    color: var(--text);
-    font-size: 12px;
+    padding: 11px 16px;
+    color: #FFE9B8;
+    font-size: 13px;
+    font-weight: 750;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
     opacity: 0;
     transition: opacity 0.25s, transform 0.25s;
     max-width: 90%;
     text-align: center;
-    backdrop-filter: blur(18px);
+    pointer-events: none;
   }
   .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
 
@@ -725,26 +729,21 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       <div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div>
       <div class="load-status" id="loadStatus"></div>
     </div>
-    <!-- v99: плавающие лайки у правого края УДАЛЕНЫ — они перекрывали текст книги.
-         Реакции теперь в нижней панели (кнопка «Вокуниш»), как у PDF-ридера. -->
+    <!-- v100: лайки ВОЗВРАЩЕНЫ на правый край (по просьбе) — при «чистом экране»
+         (одно касание) они прячутся вместе с панелями и не мешают читать -->
+    <aside class="reader-reactions" id="readerReactions" aria-label="Вокунишҳо">
+      <button class="reaction-btn" data-reaction="like" title="Лайк"><span class="reaction-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="likeCount">0</span></button>
+      <button class="reaction-btn" data-reaction="love" title="Дӯст доштан"><span class="reaction-symbol heart-reaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="cnt" id="loveCount">0</span></button>
+      <button class="reaction-btn" data-reaction="dislike" title="Нописанд"><span class="reaction-symbol dislike-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="dislikeCount">0</span></button>
+    </aside>
   </main>
 
   
   <div class="reader-bottom-bar" id="bottomBar">
-    <div class="reaction-sheet" id="reactionSheet">
-      <div class="reaction-sheet-title">Вокунишҳо ба ин китоб</div>
-      <div class="reaction-bar">
-        <button class="reaction-btn" data-reaction="like" title="Лайк"><span class="reaction-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="likeCount">0</span></button>
-        <button class="reaction-btn" data-reaction="love" title="Дӯст доштан"><span class="reaction-symbol heart-reaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="cnt" id="loveCount">0</span></button>
-        <button class="reaction-btn" data-reaction="dislike" title="Нописанд"><span class="reaction-symbol dislike-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="dislikeCount">0</span></button>
-      </div>
-      <div class="reaction-sheet-hint">Баҳодиҳӣ — ситораҳо дар панели болоӣ ⭐</div>
-    </div>
     <div class="reader-action-nav">
       <label class="reader-nav-item page-entry"><span class="page-entry-box"><input id="quickPageInput" type="number" inputmode="numeric" min="1" placeholder="1/1" onfocus="prepareQuickPage()" onkeydown="if(event.key==='Enter'){event.preventDefault();quickGoPage();this.blur()}" onblur="quickGoPage()"><span id="quickPagePct">0%</span></span><small>Саҳифа</small></label>
       <button class="reader-nav-item" type="button" onclick="toggleReaderTheme()"><span class="ico" id="readerThemeIcon">☀</span><small>Мавзӯъ</small></button>
       <button class="reader-nav-item center brightness-dial" id="brightnessDial" type="button" aria-label="Дурахшонӣ"><span class="ico"><span id="brightnessDialValue">100%</span><span class="paper-color-dot" id="paperColorDot" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation();cyclePaperColor()" title="Ранги саҳифа"></span></span><small>Дурахшонӣ</small></button>
-      <button class="reader-nav-item" type="button" onclick="toggleReactionSheet()"><span class="ico">❤</span><small>Вокуниш</small></button>
       <button class="reader-nav-item" type="button" onclick="shareCurrent()"><span class="ico">↗</span><small>Мубодила</small></button>
       <button class="reader-nav-item" type="button" onclick="downloadCurrent()"><span class="ico">⇩</span><small>Зеркашӣ</small></button>
     </div>
@@ -965,7 +964,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 
   async function saveReaction(reaction) {
     const token = localStorage.getItem('kk_token');
-    if (!token) { toast('Ворид шавед'); return; }
+    if (!token) { toast('👤 Аввал ба профил ворид шавед', 3200); return; }
     const bookId = getBookId();
     if (!bookId) return;
     try {
@@ -1002,7 +1001,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 
   async function saveRating(rating) {
     const token = localStorage.getItem('kk_token');
-    if (!token) { toast('Ворид шавед'); return; }
+    if (!token) { toast('👤 Аввал ба профил ворид шавед', 3200); return; }
     const bookId = getBookId();
     if (!bookId) return;
     try {
@@ -1262,22 +1261,15 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     renderPage(n, d);
   }
 
-  // v99: ОДИН тап по книге = чистый экран (спрятать/показать панели) — как в PDF.
+  // v100: ОДИН тап по книге = чистый экран (спрятать/показать панели И лайки) — как в PDF.
   // EPUB вызывает это изнутри iframe: window.parent.__kkToggleBars()
   window.__kkToggleBars = function () {
     bars = !bars;
     if ($('topBar')) $('topBar').classList.toggle('hidden', !bars);
     if ($('bottomBar')) $('bottomBar').classList.toggle('hidden', !bars);
-    const rs = $('reactionSheet');
-    if (rs && !bars) rs.classList.remove('open');
+    // лайки у правого края тоже прячутся — не мешают читать
+    document.querySelectorAll('.reader-reactions').forEach(el => el.classList.toggle('hidden', !bars));
   };
-  function toggleReactionSheet(force) {
-    const s = $('reactionSheet');
-    if (!s) return;
-    const open = typeof force === 'boolean' ? force : !s.classList.contains('open');
-    s.classList.toggle('open', open);
-  }
-  window.toggleReactionSheet = toggleReactionSheet;
 
   $('readerMain').addEventListener('click', e => {
     if (e.target.closest('.page-nav-area') || e.target.closest('.reader-reactions') || e.target.closest('.reader-top-bar') || e.target.closest('.reader-bottom-bar')) return;

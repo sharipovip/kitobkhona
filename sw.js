@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v99-zoom-doc';
+const CACHE_NAME = 'kitobkhona-v100-likes-toast';
 const LOCAL_FILES = [
   './',
   './index.html',
