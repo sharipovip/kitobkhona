@@ -197,7 +197,7 @@ async function getOrFetchBookResponse(value,{onProgress}={}){
     const total=Number(response.headers.get('content-length')||0);let loaded=0,blob;
     if(response.body&&response.body.getReader){const reader=response.body.getReader(),chunks=[];while(true){const {done,value}=await reader.read();if(done)break;chunks.push(value);loaded+=value.byteLength;if(onProgress)onProgress(loaded,total)}blob=new Blob(chunks,{type:response.headers.get('content-type')||'application/pdf'});}
     else{blob=await response.blob();loaded=blob.size;if(onProgress)onProgress(loaded,total||loaded)}
-    const stored=new Response(blob,{status:200,headers:{'Content-Type':'application/pdf','Content-Length':String(blob.size),'X-Kitob-Canonical':key}});
+    const stored=new Response(blob,{status:200,headers:{'Content-Type':'application/pdf','Content-Length':String(blob.size),'X-Kitob-Canonical':encodeURIComponent(key)}});
     // Ҳифз дар кэш ХАТОР НАМЕДИҲАД корро: агар ҳаҷми кэш пур бошад (китобҳои калон),
     // китоб БОЗ ҲАМ кор мекунад — танҳо кэш навишта намешавад (пеш ин хато тамоми
     // боркуниро бекор мекард ва ридер дар «100%» меистод).

@@ -1048,7 +1048,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         if (badge) badge.style.display = 'none';
         img.style.filter = '';
       }
-      if (cover) ensureCoverDataUrl(cover, img);
+      // v99: ensureCoverDataUrl (загрузка каждой обложки в localStorage) УДАЛЁН —
+      // он подвешивал большие категории. Обложку грузит сам <img loading="lazy">
+      // с CDN; при ошибке onerror перебирает зеркала. Из кэша подставляем выше.
     });
   }
 
@@ -1095,11 +1097,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     // Пешвакӣ танҳо .pdf иваз мешуд — барои epub/fb2 URL бо «.epub» мемонад ва обложка 404 мешавад.
     const jpg = encodeURIComponent(file.replace(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)$/i, '.jpg'));
     const clean = String(folder).replace(/^books\//, '');
-    const base = `https://raw.githubusercontent.com/${DATA.repo || 'sharipovip/books'}/${DATA.branch || 'main'}`;
+    const repo = DATA.repo || 'sharipovip/books', branch = DATA.branch || 'main';
+    // v99: ЯКУМ манбаъ — CDN jsdelivr (барои телефонҳо хеле тезтар, чун raw.githubusercontent
+    // дар Тоҷикистон суст аст); агар 404/хато шуд — img ба зеркали оянда мегузарад (onerror).
     return [
-      `${base}/covers/${enc(clean)}/${jpg}`,
-      `${base}/covers/books/${enc(clean)}/${jpg}`,
-      `${base}/covers/${enc(folder)}/${jpg}`
+      `https://cdn.jsdelivr.net/gh/${repo}@${branch}/covers/${enc(clean)}/${jpg}`,
+      `https://fastly.jsdelivr.net/gh/${repo}@${branch}/covers/${enc(clean)}/${jpg}`,
+      `https://raw.githubusercontent.com/${repo}/${branch}/covers/${enc(clean)}/${jpg}`,
+      `https://raw.githubusercontent.com/${repo}/${branch}/covers/books/${enc(clean)}/${jpg}`,
+      `https://raw.githubusercontent.com/${repo}/${branch}/covers/${enc(folder)}/${jpg}`
     ];
   }
 
@@ -1229,7 +1235,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
       return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(b.folder || sub?.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
         <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
-          <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="this.style.display='none'">
+          <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(JSON.stringify(coverList))}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none'}">
           <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
           <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
           <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>

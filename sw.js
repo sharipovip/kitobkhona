@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v98-epub-tap';
+const CACHE_NAME = 'kitobkhona-v99-zoom-doc';
 const LOCAL_FILES = [
   './',
   './index.html',

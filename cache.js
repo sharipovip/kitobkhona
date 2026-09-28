@@ -135,14 +135,16 @@
   }
 
   function hydrateBookCardCovers(root) {
+    // v99: ТОЛЬКО кэш — если обложка уже в localStorage, подставляем мгновенно.
+    // Раньше здесь же каждая НЕкэшированная обложка скачивалась и писалась в
+    // localStorage (preloadCover) — в больших категориях это подвешивало каталог.
+    // Теперь некэшированные обложки грузит сам <img loading="lazy"> с CDN,
+    // а при ошибке перебирает зеркала (onerror в kitobho.html/index.html).
     const scope = root || document;
     scope.querySelectorAll('[data-cover-url]').forEach(function (img) {
       const url = img.getAttribute('data-cover-url');
       const cached = getCachedCover(url);
-      if (cached) img.setAttribute('src', cached);
-      else if (url) preloadCover(url).then(function (dataUrl) {
-        if (dataUrl) img.setAttribute('src', dataUrl);
-      });
+      if (cached && img.getAttribute('src') !== cached) img.setAttribute('src', cached);
     });
   }
 
