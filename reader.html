@@ -1493,11 +1493,19 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
   }
   async function fetchBookAnyCandidate() {
     const candidateUrls = [...new Set([cdnPdfUrl(url), url].filter(Boolean).map(canonicalBookUrl))];
-    let lastErr = null;
-    for (const cu of candidateUrls) {
-      try { return await fetchBookArrayBuffer(cu); } catch (e) { lastErr = e; }
-    }
-    throw lastErr || new Error('Файл ёфт нашуд');
+    if (candidateUrls.length < 2) return fetchBookArrayBuffer(candidateUrls[0] || url);
+    // ГОНКАИ МАНБЪҲО: асосӣ (jsdelivr CDN) фавран сар мешавад; агар дар 1.5 сония
+    // тайёр нашуд — ҳамзаман raw.githubusercontent низ. Кадоме аввал расад — ҳамон.
+    // Пеш манбаъҳо БАЪД аз ҳам меомаданд: агар CDN суст бошад, кушодан хеле дертар мешуд.
+    return new Promise((resolve, reject) => {
+      let done = false, left = 0, firstErr = null;
+      const attempt = cu => fetchBookArrayBuffer(cu)
+        .then(buf => { if (!done) { done = true; resolve(buf); } })
+        .catch(e => { if (!firstErr) firstErr = e; if (!done && --left === 0) reject(firstErr || new Error('Файл ёфт нашуд')); });
+      left = candidateUrls.length;
+      attempt(candidateUrls[0]);
+      setTimeout(() => { if (!done) attempt(candidateUrls[1]); }, 1500);
+    });
   }
   function setLoadText(t) { const el = $('loadStatus'); if (el) el.textContent = t || ''; }
   function hidePdfChrome() {
@@ -1654,6 +1662,40 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     const rendition = book.renderTo(area, { width: '100%', height: '100%', spread: 'none' });
     await rendition.display();
     window.__altPager = d => { if (d > 0) rendition.next(); else rendition.prev(); };
+    // ГУШОГИРӢ-И АСЛӢ: iframe-и EPUB ҳодисаҳои ламсро «мехӯрад» — тапу свайп то
+    // зонаҳои берунӣ намерасанд (аз ин рӯ танҳо саҳифаи аввал менамуд).
+    // Обработчикро ДОХИЛИ ҳуҷҷати iframe мегузорем баъди ҳар рендери баб.
+    let ifrLastX = 0, ifrLastY = 0, ifrLastT = 0;
+    rendition.on('rendered', () => {
+      const ifr = area.querySelector('iframe');
+      if (!ifr) return;
+      setTimeout(() => {
+        let doc = null;
+        try { doc = ifr.contentDocument; } catch (e) { return; }
+        if (!doc || doc.__kkPager) return;
+        doc.__kkPager = true;
+        // ТАП: чап 35% → саҳифаи қаблӣ, рост 65% → саҳифаи оянда
+        doc.addEventListener('click', ev => {
+          const w = ifr.clientWidth || 1;
+          const x = ev.clientX != null ? ev.clientX : w / 2;
+          if (x < w * 0.35) rendition.prev();
+          else if (x > w * 0.65) rendition.next();
+        });
+        // СВАЙП: уфқӣ → варақгардонӣ (амудӣ → скролли матн дар дохили iframe)
+        doc.addEventListener('touchstart', ev => {
+          if (ev.touches && ev.touches[0]) { ifrLastX = ev.touches[0].clientX; ifrLastY = ev.touches[0].clientY; ifrLastT = Date.now(); }
+        }, { passive: true });
+        doc.addEventListener('touchend', ev => {
+          if (!ev.changedTouches || !ev.changedTouches[0]) return;
+          const dx = ev.changedTouches[0].clientX - ifrLastX;
+          const dy = ev.changedTouches[0].clientY - ifrLastY;
+          const dt = Date.now() - ifrLastT;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && dt < 800) {
+            if (dx < 0) rendition.next(); else rendition.prev();
+          }
+        }, { passive: true });
+      }, 60);
+    });
     rendition.on('relocated', loc => {
       const pctEl = $('quickPagePct');
       if (pctEl && loc && loc.start && loc.start.percentage != null) pctEl.textContent = Math.round(loc.start.percentage * 100) + '%';

@@ -1119,7 +1119,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     } catch(e) {}
     let list = [];
     try {
-      const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store' });
+      // ТАЙМАУТ 15 сония: агар шабака хеле суст бошад, «боркунии абадӣ» намешавад —
+      // паём хато нишон дода мешавад (кэш мондани ҷузъҳои қаблӣ кор мекунад).
+      const ctrl = new AbortController();
+      const killTimer = setTimeout(() => ctrl.abort(), 15000);
+      const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
+      clearTimeout(killTimer);
       if (r.ok) {
         const j = await r.json();
         list = Array.isArray(j.books) ? j.books : [];
@@ -1262,12 +1267,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     function bindNewCards() {
     hydrateBookCardCovers(grid);
 
-    grid.querySelectorAll('img[data-cover-url]').forEach(img => {
-      const cover = img.getAttribute('data-cover-url') || '';
-      if (cover && CacheManager && typeof CacheManager.preloadCover === 'function') {
-        CacheManager.preloadCover(cover);
-      }
-    });
+    // preloadCover ҲАМЧУНИН хориҷ шуд: он ҳар обложкаро алоҳида мегирифт ва ба localStorage
+    // менавишт — дар категорияҳои калон (700+ китоб) ин барои телефон хеле вазнин буд.
+    // Акнун обложка оддӣ тавассути <img loading="lazy"> бор мешавад.
 
     const bookCards = Array.from(grid.querySelectorAll('.bk:not([data-bound])'));
     bookCards.forEach(c => c.dataset.bound = '1');
