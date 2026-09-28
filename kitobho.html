@@ -113,8 +113,8 @@
 
   .spine {
     flex: 0 0 auto;
-    width: 56px;
-    height: 72px;
+    width: 74px;
+    height: 46px;
     border: none;
     cursor: pointer;
     border-radius: 4px 4px 2px 2px;
@@ -131,26 +131,28 @@
     overflow: hidden;
   }
   .spine:hover { box-shadow: 0 6px 14px rgba(201,168,76,0.25), inset -2px 0 0 rgba(255,255,255,0.1); }
-  .spine.active { transform: scale(1.08) translateY(4px); box-shadow: 0 10px 20px rgba(201,168,76,0.35), inset -2px 0 0 rgba(255,255,255,0.2); }
-  .spine .icon { font-size: 18px; line-height: 1; flex-shrink: 0; }
+  .spine.active { box-shadow: 0 0 0 2px rgba(201,168,76,0.75), 0 4px 12px rgba(201,168,76,0.35); }
+  .spine .icon { display: none; }
   .spine .label-wrap {
     width: 100%;
     overflow: hidden;
     position: relative;
-    height: 16px;
     display: flex;
     align-items: center;
     justify-content: center;
   }
+  /* Номи категория — ОДДӢ, БЕ ҲАРАКАТ: сатҳи муқаррарӣ, то 2 сатр, марказон */
   .spine .label {
-    display: block;
-    font-size: 8px;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    font-size: 8.5px;
     font-weight: 700;
     letter-spacing: 0.2px;
-    line-height: 1.1;
+    line-height: 1.25;
     color: #fff;
-    white-space: nowrap;
-    animation: spineMarquee 12s linear infinite;
+    text-align: center;
+    padding: 0 2px;
   }
   @keyframes spineMarquee {
     0% { transform: translateX(100%); }
@@ -1484,9 +1486,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const active = i === 0 ? 'active' : '';
       const subsCount = (c.subs || []).length;
       const label = esc(displayCategoryName(c));
-      const categoryIcon = c.emoji || categoryIcons[c.id] || '◈';
       return `<button class="spine ${active}" data-cat-id="${c.id}" style="background:linear-gradient(180deg, ${c.color1 || '#1E3350'}, ${c.color2 || '#142236'});">
-        <div class="icon" aria-hidden="true">${categoryIcon}</div>
         <div class="label-wrap"><span class="label">${label}</span></div>
         <div class="count">${subsCount}</div>
       </button>`;

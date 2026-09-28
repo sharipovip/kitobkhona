@@ -3146,6 +3146,14 @@ function newsRender(){
       newsImgStep(img);
     }, 8000);
   });
+  // ПЕШАКЇ-БОРКУНИИ СУРАТҲО: кортҳои дур (lazy) аксар вақт танҳо ҳангоми свайп бор
+  // мешаванд — аз ин рӯ «фото фавран намоён» набуд. Мо суратҳоро пешакӣ мегузорем,
+  // то ҳангоми расидан ба корт он аллакай аз кэши браузер бошад.
+  setTimeout(() => {
+    NEWS_ITEMS.slice(0, 12).forEach(n => {
+      if (n && n.image) { try { const pre = new Image(); pre.decoding = 'async'; pre.src = n.image; } catch(e) {} }
+    });
+  }, 1200);
   newsInitGestures();
   newsStartAuto();
 }
@@ -3224,6 +3232,35 @@ async function loadNews(){
   NEWS_ITEMS = (items || []).filter(n => n && n.title && n.url && n.published && ((Date.now() - new Date(n.published).getTime()) < DAY || n.fallback === true)).slice(0, 20);
   newsRender();
 }
+
+// ХУДКОР НАВСОЗӢ (пинҳонӣ): ҳар 5 дақиқа news.json-и навро месанҷад.
+// Агар хабарҳо тағйир ёфтанд — лента бе скелетон ва бе гум кардани ҷойгиршавӣ
+// аз нав кашида мешавад. Ин барои он ки суратҳо ва хабарҳои нав БЕ навсозии
+// саҳифа худашон пайдо шаванд.
+function newsAutoRefresh(){
+  setInterval(async () => {
+    try {
+      if (document.hidden) return; // ҳангоми пинҳонӣ кор намекунем
+      const r = await fetch('news.json', { cache: 'no-store' });
+      if (!r.ok) return;
+      const d = await r.json();
+      const items = Array.isArray(d.items) ? d.items : [];
+      const DAY2 = 24*60*60*1000;
+      const fresh = items.filter(n => n && n.title && n.url && n.published && ((Date.now() - new Date(n.published).getTime()) < DAY2 || n.fallback === true)).slice(0, 20);
+      const sig = x => JSON.stringify((x||[]).map(n => [n.title, n.url, n.image, n.published]));
+      try { localStorage.setItem('kk_news_cache', JSON.stringify({ ts: Date.now(), items })); } catch(e) {}
+      if (!fresh.length) return;
+      if (sig(fresh) !== sig(NEWS_ITEMS)) {
+        const keep = newsIdx;
+        NEWS_ITEMS = fresh;
+        newsRender();
+        newsGoTo(Math.min(keep, NEWS_ITEMS.length - 1), false);
+      }
+    } catch(e) {}
+  }, 5*60*1000);
+}
+if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', newsAutoRefresh);
+else newsAutoRefresh();
 
 // =========================================================================
 // 4. IN-APP BROWSER (FULLSCREEN, PINCH ZOOM, BOTTOM CONTROLS)

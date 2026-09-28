@@ -198,7 +198,10 @@ async function getOrFetchBookResponse(value,{onProgress}={}){
     if(response.body&&response.body.getReader){const reader=response.body.getReader(),chunks=[];while(true){const {done,value}=await reader.read();if(done)break;chunks.push(value);loaded+=value.byteLength;if(onProgress)onProgress(loaded,total)}blob=new Blob(chunks,{type:response.headers.get('content-type')||'application/pdf'});}
     else{blob=await response.blob();loaded=blob.size;if(onProgress)onProgress(loaded,total||loaded)}
     const stored=new Response(blob,{status:200,headers:{'Content-Type':'application/pdf','Content-Length':String(blob.size),'X-Kitob-Canonical':key}});
-    if('caches' in window){const cache=await caches.open(KITOB_PDF_CACHE);await cache.put(key,stored.clone())}
+    // Ҳифз дар кэш ХАТОР НАМЕДИҲАД корро: агар ҳаҷми кэш пур бошад (китобҳои калон),
+    // китоб БОЗ ҲАМ кор мекунад — танҳо кэш навишта намешавад (пеш ин хато тамоми
+    // боркуниро бекор мекард ва ридер дар «100%» меистод).
+    if('caches' in window){try{const cache=await caches.open(KITOB_PDF_CACHE);await cache.put(key,stored.clone())}catch(e){try{const cache=await caches.open(KITOB_PDF_CACHE);await cache.delete(key)}catch(e2){}}}
     return stored;
   })();
   kitobPdfInflight.set(key,task);try{return (await task).clone()}finally{kitobPdfInflight.delete(key)}

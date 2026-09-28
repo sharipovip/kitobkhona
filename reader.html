@@ -643,6 +643,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 </style>
 
 <style id="bookFormatsCss">
+.load-status{margin-top:10px;font-size:11px;color:#C9A84C;letter-spacing:.3px;max-width:220px;text-align:center;line-height:1.4;min-height:14px}
 .book-scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:2;padding:20px 16px 110px;color:#E8E2D0;background:transparent;font-size:17px;line-height:1.78}
 .light-reading .book-scroll{color:#2A2416}
 .book-scroll .bhead0{margin:8px 2px 20px;padding-bottom:14px;border-bottom:1px solid rgba(201,168,76,.35)}
@@ -705,6 +706,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     <div class="page-nav-area page-nav-right" onclick="turnPage(1)"></div>
     <div class="loading on" id="loading">
       <div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div>
+      <div class="load-status" id="loadStatus"></div>
     </div>
     <aside class="reader-reactions" id="readerReactions" aria-label="Вокунишҳо">
       <button class="reaction-btn" data-reaction="like" title="Лайк"><span class="reaction-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="likeCount">0</span></button>
@@ -1497,20 +1499,19 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     }
     throw lastErr || new Error('Файл ёфт нашуд');
   }
+  function setLoadText(t) { const el = $('loadStatus'); if (el) el.textContent = t || ''; }
   function hidePdfChrome() {
     document.querySelectorAll('.page-nav-area').forEach(n => n.style.display = 'none');
     const inp = document.querySelector('.page-entry-box');
     if (inp) inp.style.visibility = 'hidden';
   }
   function mountScrollReader(inner) {
-    $('loading').classList.remove('on');
     hidePdfChrome();
     const slot = $('currentSlot');
     slot.innerHTML = '';
     slot.style.transform = 'none';
     const wrap = document.createElement('div');
     wrap.className = 'book-scroll';
-    wrap.innerHTML = inner;
     slot.appendChild(wrap);
     const pct = $('quickPagePct');
     if (pct) {
@@ -1521,7 +1522,33 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       wrap.addEventListener('scroll', upd, { passive: true });
       setTimeout(upd, 500);
     }
-    return wrap;
+    // Калон := порциями, то ҷалол амво браузер на ҳанг мекунад
+    const parts = Array.isArray(inner) ? inner : [String(inner || '')];
+    const total = parts.length;
+    let idx = 0;
+    const CHUNK = 220;
+    const firstN = Math.min(CHUNK, total);
+    for (let i = 0; i < firstN; i++) wrap.insertAdjacentHTML('beforeend', parts[i]);
+    idx = firstN;
+    if (idx >= total) { $('loading').classList.remove('on'); setLoadText(''); return wrap; }
+    // боқимонда — дар замина, бо нишондиҳандаи коркард
+    $('loading').classList.add('on');
+    setLoadProgress(Math.round(idx / total * 100));
+    setLoadText('Коркардри китоб...');
+    return new Promise(resolve => {
+      const step = () => {
+        if (!wrap.isConnected) { $('loading').classList.remove('on'); setLoadText(''); resolve(wrap); return; }
+        const till = Math.min(idx + CHUNK, total);
+        let html = '';
+        for (let i = idx; i < till; i++) html += parts[i];
+        wrap.insertAdjacentHTML('beforeend', html);
+        idx = till;
+        setLoadProgress(Math.round(idx / total * 100));
+        if (idx < total) requestAnimationFrame(step);
+        else { $('loading').classList.remove('on'); setLoadText(''); resolve(wrap); }
+      };
+      requestAnimationFrame(step);
+    });
   }
   function bookHeaderHtml(title, sub) {
     return '<div class="bhead0"><div class="bhead0t">' + escapeHtml(title || name || 'Китоб') + '</div>' + (sub ? '<div class="bhead0s">' + escapeHtml(sub) + '</div>' : '') + '</div>';
@@ -1595,7 +1622,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     const out = [];
     Array.from(doc.querySelectorAll('body')).forEach((b, i) => { if (i > 0) out.push('<hr class="bhr">'); blocks(b, out, 0); });
     if (!out.length) throw new Error('FB2: матн ёфт нашуд');
-    return { title: bookTitle, html: out.join('\n') };
+    return { title: bookTitle, parts: out };
   }
   // ---------- DOCX ----------
   async function renderDocxContent(buf) {
@@ -1603,16 +1630,20 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     if (!window.mammoth) throw new Error('Китобхонаи DOCX бор нашуд');
     const result = await window.mammoth.convertToHtml({ arrayBuffer: buf });
     const html = (result && result.value) ? result.value : '<p>(матн нест)</p>';
-    return '<div class="bdocx">' + html + '</div>';
+    // Порционный рендер: делим по открытии блочных тегов (теги не разрезаются)
+    const wrapped = '<div class="bdocx">' + html + '</div>';
+    return wrapped.split(/(?=<(?:p|h\d|table|img|ul|ol|blockquote)\b)/i);
   }
   // ---------- EPUB ----------
   async function renderEpub(buf) {
+    setLoadText('Омодасозии хонандаи EPUB...');
     await loadScriptOnce('assets/libs/jszip.min.js');
     await loadScriptOnce('assets/libs/epub.min.js');
     if (typeof JSZip === 'undefined') throw new Error('JSZip бор нашуд');
     if (typeof ePub !== 'function') throw new Error('Китобхонаи EPUB бор нашуд');
     $('loading').classList.remove('on');
-    hidePdfChrome();
+    setLoadText('');
+    // Тап-зонаҳо НЕ пинҳон: варақгардонии EPUB бо тап ва свайп (turnPage → __altPager)
     const slot = $('currentSlot');
     slot.innerHTML = '';
     slot.style.transform = 'none';
@@ -1631,6 +1662,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
   // ---------- DOC (word 97-2003): кушодан берун ё боркунӣ ----------
   async function renderDoc(buf) {
     $('loading').classList.remove('on');
+    setLoadText('');
     hidePdfChrome();
     const slot = $('currentSlot');
     slot.innerHTML = '';
@@ -1666,6 +1698,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
   // ---------- MP4 / видео ----------
   function renderVideo(buf, ext) {
     $('loading').classList.remove('on');
+    setLoadText('');
     hidePdfChrome();
     const slot = $('currentSlot');
     slot.innerHTML = '';
@@ -1687,16 +1720,26 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
   }
   async function openBookFormat(fmt) {
     try {
+      // Библиотекаҳои формат ҲАМЗАМОНА бо боркунии китоб сар мешаванд (тезтар)
+      let libsPromise = null;
+      if (fmt === 'epub') {
+        libsPromise = loadScriptOnce('assets/libs/jszip.min.js')
+          .then(() => loadScriptOnce('assets/libs/epub.min.js'));
+      } else if (fmt === 'docx') {
+        libsPromise = loadScriptOnce('assets/libs/mammoth.browser.min.js');
+      }
+      setLoadText('Боркунии китоб...');
       const buf = await fetchBookAnyCandidate();
-      if (fmt === 'epub') return await renderEpub(buf);
-      if (fmt === 'fb2') { const r = renderFb2Content(decodeBookText(buf)); return mountScrollReader(bookHeaderHtml(r.title, 'FB2' + '') + r.html); }
-      if (fmt === 'docx') { const html = await renderDocxContent(buf); return mountScrollReader(bookHeaderHtml(name, 'DOCX') + html); }
-      if (fmt === 'txt') return mountScrollReader(bookHeaderHtml(name, 'TXT') + '<pre class="btxt">' + escapeHtml(decodeBookText(buf)) + '</pre>');
+      if (fmt === 'epub') { if (libsPromise) await libsPromise; return await renderEpub(buf); }
+      if (fmt === 'fb2') { setLoadText('Коркардри FB2...'); const r = renderFb2Content(decodeBookText(buf)); return mountScrollReader([bookHeaderHtml(r.title, 'FB2')].concat(r.parts)); }
+      if (fmt === 'docx') { if (libsPromise) await libsPromise; setLoadText('Коркардри DOCX...'); const parts = await renderDocxContent(buf); return mountScrollReader([bookHeaderHtml(name, 'DOCX')].concat(parts)); }
+      if (fmt === 'txt') { const t = escapeHtml(decodeBookText(buf)); const lines = t.split('\n'); const parts = [bookHeaderHtml(name, 'TXT') + '<pre class="btxt">']; for (let li = 0; li < lines.length; li++) parts.push(lines[li] + (li < lines.length - 1 ? '\n' : '')); parts.push('</pre>'); return mountScrollReader(parts); }
       if (fmt === 'doc') return await renderDoc(buf);
       if (fmt === 'mp4' || fmt === 'm4v' || fmt === 'webm') return renderVideo(buf, fmt);
       openPdf();
     } catch (e) {
       $('loading').classList.remove('on');
+      setLoadText('');
       $('currentSlot').innerHTML = '<div class="error">Хатогӣ ҳангоми кушодани китоб<br>' + String(e.message || e) + '</div>';
     }
   }
