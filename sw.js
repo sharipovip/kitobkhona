@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v102-president-top';
+const CACHE_NAME = 'kitobkhona-v103-actions-cache';
 const LOCAL_FILES = [
   './',
   './index.html',

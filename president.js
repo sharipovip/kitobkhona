@@ -102,6 +102,40 @@
       });
   }
 
+  // ---------- кэш прочитанной новости (localStorage, без TTL) ----------
+  // Новость, открытая один раз, сохраняется на устройстве: в следующий раз
+  // её можно посмотреть и ПОДЕЛИТЬСЯ ею даже без интернета.
+  var ART_PREFIX = 'kk_prez_art_v1_';
+  function artCacheGet(id) {
+    try {
+      var raw = localStorage.getItem(ART_PREFIX + id);
+      if (!raw) return null;
+      var c = JSON.parse(raw);
+      if (c && c.a && c.a.title) return c;
+    } catch (e) {}
+    return null;
+  }
+  function artCachePrune() {
+    try {
+      var list = [];
+      for (var i = 0; i < localStorage.length; i++) {
+        var k = localStorage.key(i);
+        if (!k || k.indexOf(ART_PREFIX) !== 0) continue;
+        var ts = 0;
+        try { ts = (JSON.parse(localStorage.getItem(k)) || {}).ts || 0; } catch (e) {}
+        list.push({ k: k, ts: ts });
+      }
+      list.sort(function (a, b) { return a.ts - b.ts; }); // старые первыми
+      while (list.length > 30) { localStorage.removeItem(list.shift().k); }
+    } catch (e) {}
+  }
+  function artCachePut(id, a, ph) {
+    try {
+      localStorage.setItem(ART_PREFIX + id, JSON.stringify({ ts: Date.now(), a: a, ph: ph || { thumbs: [], big: [] } }));
+    } catch (e) {}
+    artCachePrune(); // квота localStorage — держим максимум 30 новостей
+  }
+
   // ---------- безопасный HTML (убираем скрипты/обработчики) ----------
   function sanitizeHtml(html) {
     var tpl = document.createElement('template');
@@ -217,6 +251,8 @@
     fetchCat: fetchCat,
     fetchPhotos: fetchPhotos,
     fetchArticle: fetchArticle,
+    articleCacheGet: artCacheGet,
+    articleCachePut: artCachePut,
     sanitizeHtml: sanitizeHtml,
     formatDate: formatDate,
     timeAgo: timeAgo,

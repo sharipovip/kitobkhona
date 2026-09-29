@@ -912,6 +912,7 @@ body:before {
 .ozmun-scroll-v3::-webkit-scrollbar{display:none}
 /* ===== 2.1 Хабарҳои Президент (prezident.tj) — компактный раздел ===== */
 .prez-v3{margin:2px 0 6px}
+@media (max-width:369px){ #prezSection .sec-link-v3{ display:none; } } /* узкий экран: только заголовок, чтобы всё влезло в одну строку */
 .prez-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 12px 9px;scrollbar-width:none}
 .prez-chips::-webkit-scrollbar{display:none}
 .prez-chip{flex:0 0 auto;border:1px solid rgba(201,168,76,.22);background:#152941;color:#A8B8CC;border-radius:99px;padding:6px 11px;font:inherit;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
@@ -1083,7 +1084,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 </style>
 <script src="config.js?v=65"></script>
 <script src="cache.js?v=43"></script>
-<script src="president.js?v=1"></script>
+<script src="president.js?v=2"></script>
 <script src="quotes-data.js?v=44"></script>
 
 <style>
@@ -1633,6 +1634,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   font-weight: 900; border-radius: 999px; padding: 9px 18px; font-size: 13px;
 }
 .inapp-offline-panel .off-btn:active { transform: scale(.95); }
+/* Верхние кнопки браузера: только ⟳ и ✕ (нижняя панель убрана) */
+.inapp-top-actions { position: absolute; top: calc(10px + env(safe-area-inset-top, 0px)); right: 10px; display: flex; gap: 8px; z-index: 30; }
+.inapp-top-btn { width: 38px; height: 38px; border-radius: 50%; border: 0; background: rgba(10,18,30,.55); color: #fff; font-size: 17px; cursor: pointer; box-shadow: 0 2px 10px rgba(0,0,0,.3); display: flex; align-items: center; justify-content: center; }
+.inapp-top-btn:active { transform: scale(.92); }
 .inapp-bottom-toolbar {
   height: 52px;
   background: #0F1F33;
@@ -1920,7 +1925,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <!-- 2.1 ХАБАРҲОИ ПРЕЗИДЕНТ — аз сомонаи расмии prezident.tj (API, дохили барнома) -->
     <section class="prez-v3" id="prezSection" style="display:none">
       <div class="sec-head-v3">
-        <div class="sec-title-v3" style="font-size:12.8px;line-height:1.25">🇹🇯 Хабарҳо аз сомонаи расмии<br>Президенти ҶТ</div>
+        <div class="sec-title-v3" style="font-size:clamp(10.5px,3vw,13.5px);line-height:1.25;white-space:nowrap;min-width:0;overflow:hidden;text-overflow:ellipsis">Хабарҳо аз сомонаи Президент</div>
         <div class="sec-link-v3" onclick="location.href='president.html?cat=news'">Ҳамаашро бинед <span>›</span></div>
       </div>
       <div class="prez-chips" id="prezChips"></div>
@@ -3336,7 +3341,7 @@ if (document.readyState === 'loading') document.addEventListener('DOMContentLoad
 else newsAutoRefresh();
 
 // =========================================================================
-// 4. IN-APP BROWSER (FULLSCREEN, PINCH ZOOM, BOTTOM CONTROLS)
+// 4. IN-APP BROWSER (FULLSCREEN, PINCH ZOOM, ✕ + ⟳ СВЕРХУ СПРАВА)
 // =========================================================================
 let currentInitialBrowserUrl = '';
 let browserZoomScale = 1.0;
@@ -3372,32 +3377,10 @@ function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle =
       </div>
     </div>
 
-    <!-- BOTTOM TOOLBAR -->
-    <div class="inapp-bottom-toolbar">
-      <button class="inapp-bottom-btn" type="button" title="Бозгашт" onclick="browserBack()">
-        <span>⬅</span>
-        <span>Қафо</span>
-      </button>
-
-      <button class="inapp-bottom-btn" type="button" title="Ба пеш" onclick="browserForward()">
-        <span>➡</span>
-        <span>Пеш</span>
-      </button>
-
-      <button class="inapp-bottom-btn" type="button" title="Навсозӣ" onclick="browserReload()">
-        <span>🔄</span>
-        <span>Навсозӣ</span>
-      </button>
-
-      <button class="inapp-bottom-btn" type="button" title="Ба саҳифаи аввал" onclick="browserHome()">
-        <span>🏠</span>
-        <span>Аввал</span>
-      </button>
-
-      <button class="inapp-bottom-btn inapp-bottom-btn-close" type="button" title="Пӯшидани браузер" onclick="closeMiniBrowser()">
-        <span>✕</span>
-        <span>Баромад</span>
-      </button>
+    <!-- Верхние кнопки: только обновление и закрытие (нижняя панель убрана) -->
+    <div class="inapp-top-actions">
+      <button class="inapp-top-btn" type="button" title="Навсозӣ" aria-label="Навсозӣ" onclick="browserReload()">⟳</button>
+      <button class="inapp-top-btn" type="button" title="Пӯшидан" aria-label="Пӯшидан" onclick="closeMiniBrowser()">✕</button>
     </div>
   `;
 

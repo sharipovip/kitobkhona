@@ -97,13 +97,51 @@
   .art-text blockquote { border-left:3px solid var(--gold); padding:2px 0 2px 10px; color:var(--muted); margin:0 0 11px; }
   .art-src { margin-top:14px; font-size:10px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
   .art-site { color:var(--gold2); font-weight:750; font-size:11px; text-decoration:none; border:1px solid rgba(201,168,76,.4); border-radius:99px; padding:5px 11px; background:rgba(201,168,76,.08); }
+  button.art-site { font:inherit; font-weight:750; font-size:11px; cursor:pointer; }
+  button.art-site:active, .art-site:active { transform:scale(.95); }
 
-  /* просмотр фото на весь экран */
+  /* просмотр фото на весь экран: без подписи, кнопки ⬇ 📤 сверху слева, ✕ сверху справа */
   .viewer { position:fixed; inset:0; z-index:200; background:rgba(5,8,14,.97); display:none; align-items:center; justify-content:center; flex-direction:column; }
   .viewer.open { display:flex; }
   .viewer img { max-width:96vw; max-height:82vh; border-radius:6px; }
-  .viewer-cap { color:var(--muted); font-size:11px; margin-top:12px; }
-  .viewer-x { position:absolute; top:calc(12px + var(--safe-top)); right:12px; width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.1); color:#fff; font-size:19px; }
+  .viewer-x { position:absolute; top:calc(12px + var(--safe-top)); right:12px; width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.1); color:#fff; font-size:19px; cursor:pointer; }
+  .viewer-acts { position:absolute; top:calc(12px + var(--safe-top)); left:12px; display:flex; gap:10px; }
+  .viewer-act { width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.1); color:#fff; font-size:17px; cursor:pointer; }
+  .viewer-act:active, .viewer-x:active { transform:scale(.9); }
+
+  /* прогресс скачивания — как у «Рамзҳои давлатӣ» */
+  .pdl-ov{position:fixed;inset:0;z-index:99990;background:rgba(4,10,18,.74);display:flex;align-items:center;justify-content:center;padding:24px;
+    -webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+  .pdl-box{width:100%;max-width:340px;background:linear-gradient(165deg,#1A2C46,#12203A);border:1.5px solid rgba(201,168,76,.45);
+    border-radius:20px;padding:20px 18px 16px;box-shadow:0 18px 46px rgba(0,0,0,.55);text-align:center}
+  .pdl-ic{font-size:30px;margin-bottom:6px}
+  .pdl-name{font-size:13px;font-weight:800;color:#F0EAD6;word-break:break-word;margin-bottom:14px}
+  .pdl-bar{height:10px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+  .pdl-fill{height:100%;width:0%;border-radius:99px;background:linear-gradient(90deg,#C9A84C,#E8C96D);transition:width .25s ease}
+  .pdl-pct{margin-top:9px;font-size:13px;font-weight:900;color:#E8C96D}
+  .pdl-ph{font-size:11px;color:#8A9BB0;margin-top:3px;min-height:14px}
+  .pdl-cancel{margin-top:12px;width:100%;border:1.5px solid rgba(201,168,76,.5);background:transparent;color:#E8C96D;
+    border-radius:13px;padding:10px;font-family:inherit;font-size:12.5px;font-weight:800;cursor:pointer}
+  .pdl-cancel:active{transform:scale(.97);background:rgba(201,168,76,.12)}
+
+  /* мини-браузер внутри приложения: iframe + только ⟳ и ✕ сверху справа */
+  .pbr { position:fixed; inset:0; z-index:300; background:#08101A; display:none; flex-direction:column; }
+  .pbr.open { display:flex; }
+  .pbr-wrap { flex:1; position:relative; background:#FFFFFF; overflow:hidden; }
+  .pbr-frame { width:100%; height:100%; border:0; background:#FFFFFF; display:block; }
+  .pbr-bar { position:absolute; top:0; left:0; right:0; height:3px; background:rgba(201,168,76,.15); z-index:10; overflow:hidden; }
+  .pbr-fill { position:absolute; top:0; bottom:0; left:0; width:45%; background:linear-gradient(90deg,#C9A84C,#E8C96D,#FFFFFF); border-radius:2px; animation:pbrLoad 1.2s infinite ease-in-out; }
+  @keyframes pbrLoad { 0%{left:-40%;width:40%} 50%{left:30%;width:60%} 100%{left:100%;width:40%} }
+  .pbr-btns { position:absolute; top:calc(10px + var(--safe-top)); right:10px; display:flex; gap:8px; z-index:30; }
+  .pbr-btn { width:38px; height:38px; border-radius:50%; border:0; background:rgba(10,18,30,.55); color:#fff; font-size:17px; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; }
+  .pbr-btn:active { transform:scale(.92); }
+
+  /* маленький тост (напр. «матн нусха шуд») */
+  .pz-toast { position:fixed; left:50%; bottom:calc(26px + var(--safe-bottom)); transform:translate(-50%,14px);
+    background:rgba(20,34,54,.97); border:1.5px solid rgba(201,168,76,.5); color:#F0EAD6;
+    border-radius:99px; padding:10px 18px; font-size:12.5px; font-weight:750; z-index:99999;
+    opacity:0; transition:opacity .25s, transform .25s; pointer-events:none; max-width:86vw; text-align:center; }
+  .pz-toast.on { opacity:1; transform:translate(-50%,0); }
 
   .empty { text-align:center; color:var(--muted); font-size:12.5px; padding:40px 14px; line-height:1.6; }
   .retry { margin-top:12px; border:0; border-radius:12px; padding:11px 18px; background:linear-gradient(160deg,var(--gold),#A8862E); color:#1C1608; font-weight:800; font-size:13px; cursor:pointer; }
@@ -113,7 +151,7 @@
   <div class="topbar">
     <button class="tb-btn" onclick="goBack()" aria-label="Бозгашт">←</button>
     <div class="tb-title"><b id="tbTitle">Хабарҳои Президент</b><span id="tbSub">prezident.tj · сомонаи расмӣ</span></div>
-    <button class="tb-btn" onclick="load()" aria-label="Навсозӣ">⟳</button>
+    <button class="tb-btn" onclick="load(true)" aria-label="Навсозӣ">⟳</button>
   </div>
 
   <div class="page">
@@ -121,20 +159,39 @@
     <div id="content"><div class="loader">Боркунӣ...</div></div>
   </div>
 
+  <!-- Просмотр фото: ⬇ скачать (как Рамзҳои давлатӣ), 📤 поделиться, ✕ закрыть. Подписи нет. -->
   <div class="viewer" id="viewer" onclick="this.classList.remove('open')">
+    <div class="viewer-acts">
+      <button class="viewer-act" id="vwDl" onclick="event.stopPropagation();vwDownload()" aria-label="Боркунӣ">⬇️</button>
+      <button class="viewer-act" id="vwSh" onclick="event.stopPropagation();vwShare()" aria-label="Пахш кардан">📤</button>
+    </div>
     <button class="viewer-x" onclick="event.stopPropagation();document.getElementById('viewer').classList.remove('open')">✕</button>
     <img id="viewerImg" alt="">
-    <div class="viewer-cap" id="viewerCap"></div>
+  </div>
+
+  <!-- Мини-браузер: только ⟳ и ✕ сверху справа -->
+  <div class="pbr" id="pbr">
+    <div class="pbr-wrap">
+      <div class="pbr-bar" id="pbrBar"><div class="pbr-fill"></div></div>
+      <iframe class="pbr-frame" id="pbrFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals"></iframe>
+    </div>
+    <div class="pbr-btns">
+      <button class="pbr-btn" type="button" aria-label="Навсозӣ" onclick="pbrReload()">⟳</button>
+      <button class="pbr-btn" type="button" aria-label="Пӯшидан" onclick="pbrClose()">✕</button>
+    </div>
   </div>
 
 <script src="config.js?v=65"></script>
-<script src="president.js?v=1"></script>
+<script src="president.js?v=2"></script>
 <script>
 (function () {
   var P = window.PresidentNews;
   var qs = new URLSearchParams(location.search);
   var articleId = qs.get('id');
   var catKey = qs.get('cat') || (articleId ? '' : 'news');
+  var curArt = null;   // текущая новость (для шаринга)
+  var curPh = null;    // её фото {thumbs, big}
+  var curPhoto = null; // фото, открытое в просмотрщике
   var esc = function (s) {
     return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
       return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
@@ -215,49 +272,280 @@
         });
       });
     }).catch(function () {
-      content.innerHTML = '<div class="empty">Пайвастшавӣ бо сомона муваққатан муваққатӣ дастрас нест 😔<br><button class="retry" onclick="load()">Такрор кардан</button></div>';
+      content.innerHTML = '<div class="empty">Пайвастшавӣ бо сомона муваққатан муваққатан дастрас нест 😔<br><button class="retry" onclick="load()">Такрор кардан</button></div>';
     });
   }
 
-  // ---------- детальный вид ----------
-  function renderArticle(id, key) {
+  // ---------- детальный вид (кэш-первым: открыл раз → всегда доступна) ----------
+  function renderArticle(id, key, force) {
     renderChips(key || 'news');
     var content = document.getElementById('content');
+    var cached = P.articleCacheGet(id);
+    if (cached && !force) { drawArticle(cached.a, cached.ph || { thumbs: [], big: [] }); return; }
     content.innerHTML = '<div class="loader">Боркунии хабар...</div>';
     Promise.all([P.fetchArticle(id), P.fetchPhotos(id)]).then(function (res) {
       var a = res[0], ph = res[1];
-      var cat = P.catByKey(key) || { label: 'Хабар', emoji: '📰' };
-      document.getElementById('tbTitle').textContent = 'Хабар';
-      var photosHtml = (ph.thumbs || []).length
-        ? '<div class="art-photos">' + ph.thumbs.map(function (t, i) {
-            return '<img class="art-ph" src="' + esc(t) + '" data-big="' + esc((ph.big || [])[i] || t) + '" alt="" loading="lazy">';
-          }).join('') + '</div>'
-        : '';
-      content.innerHTML =
-        '<div class="art">' +
-        '<div class="art-cat">' + cat.emoji + ' ' + esc(cat.label) + '</div>' +
-        '<div class="art-title">' + esc(a.title) + '</div>' +
-        '<div class="art-date">🕘 ' + esc(P.formatDate(a.publish)) + '</div>' +
-        photosHtml +
-        '<div class="art-text">' + P.sanitizeHtml(a.text || a.teaser) + '</div>' +
-        '<div class="art-src"><span>Хабар аз сомонаи prezident.tj</span>' +
-        '<a class="art-site" href="https://prezident.tj" onclick="event.preventDefault();window.open(\'' + (P.SITE_URL + (a.site_path || '')) + '\', \'_blank\', \'noopener,noreferrer\')">↗ Кушодан дар сомона</a></div>' +
-        '</div>';
-      content.querySelectorAll('.art-ph').forEach(function (img) {
-        img.addEventListener('click', function (ev) {
-          ev.stopPropagation();
-          document.getElementById('viewerImg').src = img.dataset.big;
-          document.getElementById('viewerCap').textContent = 'Барои пӯшидан ламс кунед';
-          document.getElementById('viewer').classList.add('open');
-        });
-      });
+      P.articleCachePut(id, a, ph); // сохраняем: следующий раз — из кэша, даже без интернета
+      drawArticle(a, ph);
     }).catch(function () {
-      content.innerHTML = '<div class="empty">Хабар бор карда нашуд 😔<br><button class="retry" onclick="load()">Такрор кардан</button></div>';
+      if (cached) { drawArticle(cached.a, cached.ph || { thumbs: [], big: [] }); return; } // сеть упала — есть кэш
+      content.innerHTML = '<div class="empty">Хабар бор карда нашуд 😔<br><button class="retry" onclick="load(true)">Такрор кардан</button></div>';
     });
   }
 
-  window.load = function () {
-    if (articleId) renderArticle(articleId, catKey);
+  function drawArticle(a, ph) {
+    curArt = a; curPh = ph; curPhoto = null;
+    var cat = P.catByKey(catKey) || { label: 'Хабар', emoji: '📰' };
+    document.getElementById('tbTitle').textContent = 'Хабар';
+    var content = document.getElementById('content');
+    var photosHtml = (ph.thumbs || []).length
+      ? '<div class="art-photos">' + ph.thumbs.map(function (t, i) {
+          return '<img class="art-ph" src="' + esc(t) + '" data-big="' + esc((ph.big || [])[i] || t) + '" alt="" loading="lazy">';
+        }).join('') + '</div>'
+      : '';
+    content.innerHTML =
+      '<div class="art">' +
+      '<div class="art-cat">' + cat.emoji + ' ' + esc(cat.label) + '</div>' +
+      '<div class="art-title">' + esc(a.title) + '</div>' +
+      '<div class="art-date">🕘 ' + esc(P.formatDate(a.publish)) + '</div>' +
+      photosHtml +
+      '<div class="art-text">' + P.sanitizeHtml(a.text || a.teaser) + '</div>' +
+      '<div class="art-src"><span>Хабар аз сомонаи prezident.tj</span>' +
+      '<button type="button" class="art-site" onclick="shareArticle()">📤 Пахш кардан</button>' +
+      '<a class="art-site" href="https://prezident.tj" onclick="event.preventDefault();pbrOpen(\'' + (P.SITE_URL + '/event/news/' + a.id) + '\')">↗ Кушодан дар сомона</a></div>' +
+      '</div>';
+    content.querySelectorAll('.art-ph').forEach(function (img, i) {
+      img.addEventListener('click', function (ev) {
+        ev.stopPropagation();
+        openViewer(i);
+      });
+    });
+  }
+
+  // ---------- просмотр фото ----------
+  function openViewer(i) {
+    var t = (curPh && curPh.thumbs) || [], b = (curPh && curPh.big) || [];
+    var src = b[i] || t[i];
+    if (!src) return;
+    var nm = String(src).split('?')[0].split('/').pop() || ('photo_' + i + '.jpg');
+    if (!/\.(jpe?g|png|webp|gif)$/i.test(nm)) nm += '.jpg';
+    curPhoto = { big: src, name: nm };
+    document.getElementById('viewerImg').src = src;
+    document.getElementById('viewer').classList.add('open');
+  }
+
+  // ---------- поделиться ----------
+  function plainText(html) {
+    var d = document.createElement('div');
+    d.innerHTML = P.sanitizeHtml(html);
+    var t = (d.textContent || '').replace(/\u00a0/g, ' ').replace(/[ \t]+/g, ' ').replace(/\n{3,}/g, '\n\n').trim();
+    return t;
+  }
+  function buildShareText(maxLen) {
+    if (!curArt) return '';
+    var src = 'Манбаъ: prezident.tj';
+    var head = curArt.title + '\n\n';
+    var tail = '\n\n' + src;
+    var budget = maxLen ? (maxLen - head.length - tail.length - 1) : Infinity;
+    var body = plainText(curArt.text || curArt.teaser || '');
+    if (body && budget && body.length > budget) body = body.slice(0, Math.max(60, budget)).trim() + '…';
+    return head + body + (body ? tail : src);
+  }
+  function pzToast(msg) {
+    var t = document.createElement('div');
+    t.className = 'pz-toast'; t.textContent = msg;
+    document.body.appendChild(t);
+    requestAnimationFrame(function () { t.classList.add('on'); });
+    setTimeout(function () { t.classList.remove('on'); setTimeout(function () { t.remove(); }, 350); }, 2200);
+  }
+  function shareTextOnly() {
+    var txt = buildShareText(4000);
+    if (!txt) return;
+    if (navigator.share) { navigator.share({ title: curArt.title, text: txt }).catch(function () {}); return; }
+    try { navigator.clipboard.writeText(txt); pzToast('Матн ба ҳофизаи муваққатӣ нусха шуд'); } catch (e) {}
+  }
+  // поделиться новостью как обычным текстом (заголовок + текст) — кнопка под статьёй
+  window.shareArticle = function () { shareTextOnly(); };
+  // поделиться фото новости (с заголовком и текстом как подписью)
+  window.vwShare = function () {
+    if (!curArt) return;
+    if (!curPhoto || !(navigator.canShare && navigator.share)) { shareTextOnly(); return; }
+    fetch(curPhoto.big).then(function (r) { if (!r.ok) throw 0; return r.blob(); })
+      .then(function (blob) {
+        var f = new File([blob], curPhoto.name, { type: blob.type || 'image/jpeg' });
+        if (navigator.canShare({ files: [f] })) {
+          return navigator.share({ title: curArt.title, text: buildShareText(950), files: [f] });
+        }
+        return navigator.share({ title: curArt.title, text: buildShareText(4000) });
+      })
+      .catch(function () { shareTextOnly(); });
+  };
+
+  // ---------- скачивание фото — схема «Рамзҳои давлатӣ» ----------
+  function pdlShow(name) {
+    document.getElementById('pdlOverlay')?.remove();
+    var ov = document.createElement('div');
+    ov.id = 'pdlOverlay'; ov.className = 'pdl-ov';
+    ov.innerHTML = '<div class="pdl-box">' +
+      '<div class="pdl-ic">⬇️</div>' +
+      '<div class="pdl-name">' + esc(name) + '</div>' +
+      '<div class="pdl-bar"><div class="pdl-fill" id="pdlFill"></div></div>' +
+      '<div class="pdl-pct" id="pdlPct">0%</div>' +
+      '<div class="pdl-ph" id="pdlPh">Интизор шавед, файл боркунӣ мешавад...</div>' +
+      '<button type="button" class="pdl-cancel" onclick="pdlCancel()">✕ Бекор кардан</button>' +
+      '</div>';
+    document.body.appendChild(ov);
+  }
+  function pdlSet(pct, phase) {
+    var p = Math.max(0, Math.min(100, Math.round(pct)));
+    var f = document.getElementById('pdlFill'), t = document.getElementById('pdlPct'), ph = document.getElementById('pdlPh');
+    if (f) f.style.width = p + '%';
+    if (t) t.textContent = p + '%';
+    if (ph && phase) ph.textContent = phase;
+  }
+  function pdlDone(ok) {
+    pdlSet(100, ok ? '✓ Боркунӣ шуд' : 'Боркунӣ имконпазир нест');
+    setTimeout(function () { document.getElementById('pdlOverlay')?.remove(); }, ok ? 1600 : 2400);
+  }
+  function blobToB64(blob, onProgress) {
+    return new Promise(function (resolve, reject) {
+      var CH = 300000; // base64 блоками — для больших файлов
+      var parts = Math.max(1, Math.ceil(blob.size / CH));
+      var b64s = [], i = 0;
+      var readNext = function () {
+        if (i >= parts) { resolve(b64s.join('')); return; }
+        var fr = new FileReader();
+        fr.onload = function () {
+          var s = String(fr.result || '');
+          b64s.push(s.slice(s.indexOf(',') + 1));
+          i++;
+          if (onProgress) onProgress(i / parts);
+          setTimeout(readNext, 0);
+        };
+        fr.onerror = reject;
+        fr.readAsDataURL(blob.slice(i * CH, Math.min(blob.size, (i + 1) * CH)));
+      };
+      readNext();
+    });
+  }
+  var pdlAbort = null;
+  window.pdlCancel = function () {
+    try { if (pdlAbort) pdlAbort.abort(); } catch (e) {}
+    document.getElementById('pdlOverlay')?.remove();
+    pdlAbort = null;
+    pzToast('Боркунӣ бекор шуд');
+  };
+  window.vwDownload = function () {
+    if (!curPhoto) return;
+    var url = curPhoto.big, name = curPhoto.name;
+    var ctl = ('AbortController' in window) ? new AbortController() : null;
+    pdlAbort = ctl;
+    pdlShow(name);
+    fetch(url, ctl ? { signal: ctl.signal } : {})
+      .then(function (r) {
+        if (!r.ok) throw new Error('HTTP ' + r.status);
+        var total = +(r.headers.get('content-length') || 0);
+        if (r.body && total) {
+          var reader = r.body.getReader(); var chunks = []; var loaded = 0;
+          var pump = function () {
+            return reader.read().then(function (res) {
+              if (res.done) return;
+              chunks.push(res.value); loaded += res.value.length;
+              pdlSet(70 * loaded / total, 'Пурборшавӣ... ' + Math.min(100, Math.round(100 * loaded / total)) + '%');
+              return pump();
+            });
+          };
+          return pump().then(function () { return new Blob(chunks); });
+        }
+        pdlSet(55, 'Пурборшавӣ...');
+        return r.blob();
+      })
+      .then(function (blob) {
+        pdlAbort = null;
+        var mime = blob.type || 'image/jpeg';
+        // 1) телефон (Kotlin): тот же мостик, что у Парчам/Нишон
+        if (typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.saveSymbolFile === 'function') {
+          return blobToB64(blob, function (p) { pdlSet(70 + 25 * p, 'Омодасозӣ... ' + Math.round(p * 100) + '%'); }).then(function (b64) {
+            pdlSet(97, 'Ҳифз шуда истодааст...');
+            AndroidBridge.saveSymbolFile(b64, name, mime);
+            pdlDone(true);
+          });
+        }
+        if (typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.saveFile === 'function') {
+          return blobToB64(blob, function (p) { pdlSet(70 + 25 * p, 'Омодасозӣ... ' + Math.round(p * 100) + '%'); }).then(function (b64) {
+            pdlSet(97, 'Ҳифз шуда истодааст...');
+            AndroidBridge.saveFile(b64, name, mime);
+            pdlDone(true);
+          });
+        }
+        // 2) Web Share (мобильный веб)
+        if (navigator.canShare && navigator.share) {
+          var file = new File([blob], name, { type: mime });
+          if (navigator.canShare({ files: [file] })) {
+            return navigator.share({ title: name, files: [file] }).then(function () {
+              document.getElementById('pdlOverlay')?.remove();
+            }).catch(function (e) {
+              if (e && e.name === 'AbortError') { document.getElementById('pdlOverlay')?.remove(); return; }
+              throw e;
+            });
+          }
+        }
+        // 3) браузер: blob + a.download
+        var aEl = document.createElement('a');
+        aEl.href = URL.createObjectURL(blob); aEl.download = name;
+        document.body.appendChild(aEl); aEl.click();
+        setTimeout(function () { URL.revokeObjectURL(aEl.href); aEl.remove(); }, 5000);
+        pdlDone(true);
+      })
+      .catch(function (e) {
+        pdlAbort = null;
+        if (e && e.name === 'AbortError') { document.getElementById('pdlOverlay')?.remove(); return; }
+        pdlDone(false);
+      });
+  };
+
+  // ---------- мини-браузер (только ⟳ и ✕) ----------
+  var pbrUrl = '';
+  window.pbrOpen = function (url) {
+    pbrUrl = url;
+    var el = document.getElementById('pbr');
+    var bar = document.getElementById('pbrBar');
+    var fr = document.getElementById('pbrFrame');
+    if (!el || !fr) return;
+    el.classList.add('open');
+    if (bar) bar.style.display = 'block';
+    fr.src = url;
+    try { history.pushState({ pbrOpen: true }, ''); } catch (e) {}
+  };
+  window.pbrClose = function () {
+    var el = document.getElementById('pbr');
+    var fr = document.getElementById('pbrFrame');
+    if (el) el.classList.remove('open');
+    if (fr) { try { fr.src = 'about:blank'; } catch (e) {} }
+  };
+  window.pbrReload = function () {
+    var fr = document.getElementById('pbrFrame');
+    var bar = document.getElementById('pbrBar');
+    if (!fr || !pbrUrl) return;
+    if (bar) bar.style.display = 'block';
+    fr.src = pbrUrl;
+  };
+  window.pbrLoaded = function () {
+    var bar = document.getElementById('pbrBar');
+    if (bar) bar.style.display = 'none';
+  };
+  // onload вешаем из скрипта: атрибут сработал бы ДО определения функции
+  (function () {
+    var f = document.getElementById('pbrFrame');
+    if (f) f.onload = function () { window.pbrLoaded(); };
+  })();
+  window.addEventListener('popstate', function () {
+    var el = document.getElementById('pbr');
+    if (el && el.classList.contains('open')) pbrClose();
+  });
+
+  window.load = function (force) {
+    if (articleId) renderArticle(articleId, catKey, force);
     else renderList(catKey || 'news');
   };
   load();
