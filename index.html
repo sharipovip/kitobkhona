@@ -918,7 +918,7 @@ body:before {
 .prez-chip.on{background:#0A1522;color:#E8C96D;border-color:rgba(201,168,76,.65);font-weight:800;box-shadow:inset 0 0 0 1px rgba(201,168,76,.25)}
 .prez-card{display:flex;align-items:center;gap:10px;margin:0 12px;background:#1A2D44;border:1px solid rgba(255,255,255,.055);border-radius:14px;padding:9px 10px;cursor:pointer;min-height:64px;transition:transform .15s}
 .prez-card:active{transform:scale(.985)}
-.prez-thumb-box{flex:0 0 50px;width:50px;height:50px;border-radius:10px;overflow:hidden;background:#22374F;display:none;align-items:center;justify-content:center}
+.prez-thumb-box{flex:0 0 58px;width:58px;height:58px;border-radius:10px;overflow:hidden;background:#22374F;display:none;align-items:center;justify-content:center}
 .prez-thumb-box.ok{display:flex}
 .prez-thumb{width:100%;height:100%;object-fit:cover;display:block}
 .prez-body{flex:1;min-width:0}
@@ -1917,16 +1917,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <div id="announcementBanner" style="display:none"><span id="announcementText"></span></div>
     <div id="quotesUpdatedBanner" style="display:none"></div>
 
-    <!-- 2 Озмунҳои ҷумҳуриявӣ — круглые красиво -->
-    <section class="ozmun-v3">
-      <div class="sec-head-v3"><div class="sec-title-v3">🏆 Озмунҳои ҷумҳуриявӣ</div></div>
-      <div class="ozmun-scroll-v3" id="ozmunList"></div>
-    </section>
-
     <!-- 2.1 ХАБАРҲОИ ПРЕЗИДЕНТ — аз сомонаи расмии prezident.tj (API, дохили барнома) -->
     <section class="prez-v3" id="prezSection" style="display:none">
       <div class="sec-head-v3">
-        <div class="sec-title-v3">🇹🇯 Хабарҳои Президент</div>
+        <div class="sec-title-v3" style="font-size:12.8px;line-height:1.25">🇹🇯 Хабарҳо аз сомонаи расмии<br>Президенти ҶТ</div>
         <div class="sec-link-v3" onclick="location.href='president.html?cat=news'">Ҳамаашро бинед <span>›</span></div>
       </div>
       <div class="prez-chips" id="prezChips"></div>
@@ -1938,6 +1932,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         </div>
         <div class="prez-arrow">›</div>
       </div>
+    </section>
+
+
+    <!-- 2 Озмунҳои ҷумҳуриявӣ — круглые красиво -->
+    <section class="ozmun-v3">
+      <div class="sec-head-v3"><div class="sec-title-v3">🏆 Озмунҳои ҷумҳуриявӣ</div></div>
+      <div class="ozmun-scroll-v3" id="ozmunList"></div>
     </section>
 
     <!-- Продолжить чтение — теперь сверху категории как просил -->
@@ -3161,6 +3162,41 @@ function newsInitGestures(){
   vp.addEventListener('pointercancel', e => { if (newsDrag && e.pointerId === newsDrag.id){ newsDrag = null; newsSettle(); } });
   addEventListener('resize', () => { if (NEWS_ITEMS.length){ newsSize(); newsGoTo(newsIdx, false); } });
 }
+// v102: новости «Президенти Тоҷикистон» — НАСТОЯЩИЕ фото из API prezident.tj
+// (по id из ссылки https://president.tj/event/news/<id>), а не наши созданные картинки.
+function enrichPresidentNewsPhotos(){
+  if (!window.PresidentNews) return;
+  const sc = document.getElementById('newsScroll');
+  if (!sc) return;
+  sc.querySelectorAll('.news-card-v3').forEach(card => {
+    const n = NEWS_ITEMS[+card.dataset.i];
+    if (!n || n.source !== 'Президенти Тоҷикистон') return;
+    const applyPhoto = (t) => {
+      const img = card.querySelector('.news-media img');
+      if (!img || !t) return;
+      const pre = new Image();        // предзагрузка настоящего фото prezident.tj (flickr)
+      pre.onload = () => {            // меняем карточку только когда фото реально загрузилось
+        if (!img.isConnected) return; // карточку уже пересобрали (ротация) — не трогаем
+        img.dataset.covers = JSON.stringify([t]); // повтор — та же настоящая фото
+        img.removeAttribute('data-banner');       // наши картинки больше не участвуют
+        img.src = t;                              // из кэша браузера — .ok появится сразу
+      };
+      pre.onerror = () => {};        // flickr недоступен — остаётся баннер, как было
+      pre.src = t;
+    };
+    if (n._prezPhoto) { applyPhoto(n._prezPhoto); return; } // фото уже знаем — карточку пересобрала ротация
+    if (n._prezTried) return; // одна попытка fetch на новость
+    const m = String(n.url || '').match(/event\/news\/(\d+)/);
+    if (!m) return;
+    n._prezTried = true;
+    window.PresidentNews.fetchPhotos(m[1]).then(ph => {
+      const t = ph && ph.thumbs && ph.thumbs[0];
+      if (!t) return;
+      n._prezPhoto = t;
+      applyPhoto(t);
+    }).catch(() => {});
+  });
+}
 function newsRender(){
   const sec = document.getElementById('newsSection'), sc = document.getElementById('newsScroll'), dots = document.getElementById('newsDots');
   if (!sec || !sc) return;
@@ -3192,6 +3228,7 @@ function newsRender(){
   }, 1200);
   newsInitGestures();
   newsStartAuto();
+  enrichPresidentNewsPhotos();
 }
 // ===== Аниматсияи «мактабгардӣ» (по буквам) барои кортҳои бе сурат =====
 let newsTwToken = 0, newsTwLastIdx = -1, newsTwDone = true;
@@ -3537,7 +3574,11 @@ loadNews(); // ахбороти расмӣ — баъди таърифи ҳам�
     });
     var flat = [];
     rounds.forEach(function (r) { flat = flat.concat(r); });
-    return flat;
+    // v102: сначала новости с НАСТОЯЩИМИ фото (API prezident.tj), потом остальные —
+    // раздел сразу показывает живые фотографии из новостей
+    var withPhoto = flat.filter(function (x) { return x.item.has_photos || x.item.thumb; });
+    var noPhoto = flat.filter(function (x) { return !(x.item.has_photos || x.item.thumb); });
+    return withPhoto.concat(noPhoto);
   }
 
   function renderChips(activeKey) {
@@ -3592,8 +3633,11 @@ loadNews(); // ахбороти расмӣ — баъди таърифи ҳам�
   function initByCat(byCat) {
     queue = buildQueue(byCat);
     if (!queue.length) { elSec.style.display = 'none'; return; }
-    // случайный старт при каждом открытии приложения
-    qIdx = Math.floor(Math.random() * queue.length);
+    // случайный старт при каждом открытии приложения — среди новостей С ФОТО
+    // (они первые в очереди), чтобы раздел сразу показывал живую фотографию
+    var photoCount = 0;
+    while (photoCount < queue.length && (queue[photoCount].item.has_photos || queue[photoCount].item.thumb)) photoCount++;
+    qIdx = Math.floor(Math.random() * (photoCount || queue.length));
     elSec.style.display = 'block';
     showCurrent();
     startRotation();

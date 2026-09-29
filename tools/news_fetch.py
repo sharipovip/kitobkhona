@@ -308,6 +308,19 @@ def parse_president(json_text, hours=None, with_details=True):
                     u = 'https://president.tj' + u
                 if u.startswith('https://'):
                     it['image'] = u
+            # v102: НАСТОЯЩИЕ фото новости из API (flickr) — вместо наших картинок.
+            # event/show картинку не даёт, а event-flickr-images — даёт (small/orig).
+            if not it['image']:
+                try:
+                    nid2 = it['url'].rsplit('/', 1)[-1]
+                    fl = fetch('https://controlpanel.president.tj/api/event-flickr-images?id=%s&lang_id=1' % nid2, timeout=20)
+                    if fl:
+                        fd = (json.loads(fl).get('data') or [])
+                        small = [p.get('src') for p in fd if p.get('type') == 'small' and p.get('src')]
+                        if small:
+                            it['image'] = small[0]
+                except Exception:
+                    pass
             time.sleep(0.3)
     return items
 
