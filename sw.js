@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v100-likes-toast';
+const CACHE_NAME = 'kitobkhona-v101-president-news';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -13,6 +13,8 @@ const LOCAL_FILES = [
   './Lenta.html',
   './config.js',
   './cache.js',
+  './president.js',
+  './president.html',
   './quotes-data.js',
   './splash_logo.png',
   './splash_logo.jpg',

@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Хабарҳои Президент · Китобхона</title>
+<style>
+  :root {
+    --bg:#0D1B2A; --bg2:#142236; --card:#1A2D44; --card2:#1E3350;
+    --text:#F0EAD6; --muted:#A8B8CC; --gold:#C9A84C; --gold2:#E8C96D;
+    --line:rgba(201,168,76,.22); --red:#D96B63;
+    --safe-top:env(safe-area-inset-top,0px); --safe-bottom:env(safe-area-inset-bottom,0px);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+  html,body { height:100%; }
+  body {
+    background:var(--bg); color:var(--text);
+    font-family:'Segoe UI',-apple-system,BlinkMacSystemFont,Roboto,sans-serif;
+    overflow-x:hidden;
+  }
+  .topbar {
+    position:fixed; top:0; left:0; right:0; z-index:50; max-width:430px; margin:0 auto;
+    height:calc(54px + var(--safe-top)); padding:var(--safe-top) 8px 0;
+    background:rgba(13,27,42,.98); border-bottom:1px solid var(--line);
+    display:flex; align-items:center; gap:8px;
+  }
+  .tb-btn {
+    width:38px; height:38px; border:0; border-radius:12px; background:transparent;
+    color:var(--gold2); font-size:20px; cursor:pointer; flex:0 0 38px;
+  }
+  .tb-title { flex:1; min-width:0; }
+  .tb-title b { display:block; font-size:14.5px; font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+  .tb-title span { display:block; font-size:10px; color:var(--muted); }
+  .page { max-width:430px; margin:0 auto; padding:calc(66px + var(--safe-top)) 12px calc(20px + var(--safe-bottom)); }
+
+  /* чипы категорий */
+  .chips {
+    display:flex; gap:7px; overflow-x:auto; padding:4px 2px 10px;
+    scrollbar-width:none; -ms-overflow-style:none;
+  }
+  .chips::-webkit-scrollbar { display:none; }
+  .chip {
+    flex:0 0 auto; border:1px solid var(--line); background:var(--card);
+    color:var(--muted); border-radius:99px; padding:7px 12px; font:inherit;
+    font-size:12px; font-weight:700; cursor:pointer; white-space:nowrap;
+    transition:background .2s,color .2s,border-color .2s;
+  }
+  .chip.on {
+    background:#0A1522; color:var(--gold2); border-color:rgba(201,168,76,.6);
+    font-weight:800; box-shadow:inset 0 0 0 1px rgba(201,168,76,.25);
+  }
+
+  .sec-note { font-size:10.5px; color:var(--muted); margin:2px 2px 10px; }
+  .loader { text-align:center; color:var(--muted); font-size:12.5px; padding:34px 10px; }
+
+  /* список новостей */
+  .item {
+    background:var(--card); border:1px solid rgba(255,255,255,.05); border-radius:14px;
+    padding:11px 12px; margin-bottom:9px; display:flex; gap:11px; cursor:pointer;
+    transition:transform .15s;
+  }
+  .item:active { transform:scale(.985); }
+  .item-thumb {
+    flex:0 0 62px; width:62px; height:62px; border-radius:10px; object-fit:cover;
+    background:var(--card2); display:none;
+  }
+  .item-thumb.ok { display:block; }
+  .item-thumb-ph {
+    flex:0 0 62px; width:62px; height:62px; border-radius:10px; background:var(--card2);
+    display:flex; align-items:center; justify-content:center; font-size:24px;
+  }
+  .item-body { flex:1; min-width:0; }
+  .item-title {
+    font-size:13.5px; font-weight:750; line-height:1.38; color:var(--text);
+    display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .item-meta { margin-top:6px; display:flex; align-items:center; gap:6px; font-size:10px; color:var(--muted); flex-wrap:wrap; }
+  .item-cat { color:var(--gold); font-weight:800; }
+  .item-photos { background:rgba(201,168,76,.14); color:var(--gold2); border-radius:99px; padding:1.5px 7px; font-weight:750; }
+
+  /* детальный вид */
+  .art { background:var(--card); border:1px solid rgba(255,255,255,.05); border-radius:16px; padding:16px 15px 18px; }
+  .art-cat { display:inline-flex; align-items:center; gap:5px; font-size:10.5px; font-weight:800; color:var(--gold2); background:rgba(201,168,76,.12); border:1px solid rgba(201,168,76,.3); border-radius:99px; padding:4px 10px; margin-bottom:10px; }
+  .art-title { font-size:17px; font-weight:800; line-height:1.42; margin-bottom:8px; }
+  .art-date { font-size:11px; color:var(--muted); margin-bottom:12px; }
+  .art-photos { display:flex; gap:7px; overflow-x:auto; margin:0 -3px 12px; padding:0 3px 4px; scrollbar-width:none; }
+  .art-photos::-webkit-scrollbar { display:none; }
+  .art-ph { flex:0 0 auto; height:118px; border-radius:11px; object-fit:cover; cursor:pointer; border:1px solid var(--line); }
+  .art-text { font-size:14px; line-height:1.72; color:var(--text); word-wrap:break-word; overflow-wrap:break-word; }
+  .art-text p { margin:0 0 11px; }
+  .art-text img { max-width:100%; height:auto; border-radius:10px; margin:8px 0; }
+  .art-text table { max-width:100%; display:block; overflow-x:auto; border-collapse:collapse; }
+  .art-text td,.art-text th { border:1px solid rgba(168,184,204,.35); padding:4px 7px; font-size:13px; }
+  .art-text a { color:var(--gold2); }
+  .art-text h1,.art-text h2,.art-text h3,.art-text h4 { margin:12px 0 8px; line-height:1.4; }
+  .art-text ul,.art-text ol { margin:0 0 11px 18px; }
+  .art-text blockquote { border-left:3px solid var(--gold); padding:2px 0 2px 10px; color:var(--muted); margin:0 0 11px; }
+  .art-src { margin-top:14px; font-size:10px; color:var(--muted); border-top:1px solid var(--line); padding-top:10px; display:flex; justify-content:space-between; align-items:center; gap:8px; flex-wrap:wrap; }
+  .art-site { color:var(--gold2); font-weight:750; font-size:11px; text-decoration:none; border:1px solid rgba(201,168,76,.4); border-radius:99px; padding:5px 11px; background:rgba(201,168,76,.08); }
+
+  /* просмотр фото на весь экран */
+  .viewer { position:fixed; inset:0; z-index:200; background:rgba(5,8,14,.97); display:none; align-items:center; justify-content:center; flex-direction:column; }
+  .viewer.open { display:flex; }
+  .viewer img { max-width:96vw; max-height:82vh; border-radius:6px; }
+  .viewer-cap { color:var(--muted); font-size:11px; margin-top:12px; }
+  .viewer-x { position:absolute; top:calc(12px + var(--safe-top)); right:12px; width:40px; height:40px; border-radius:50%; border:0; background:rgba(255,255,255,.1); color:#fff; font-size:19px; }
+
+  .empty { text-align:center; color:var(--muted); font-size:12.5px; padding:40px 14px; line-height:1.6; }
+  .retry { margin-top:12px; border:0; border-radius:12px; padding:11px 18px; background:linear-gradient(160deg,var(--gold),#A8862E); color:#1C1608; font-weight:800; font-size:13px; cursor:pointer; }
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <button class="tb-btn" onclick="goBack()" aria-label="Бозгашт">←</button>
+    <div class="tb-title"><b id="tbTitle">Хабарҳои Президент</b><span id="tbSub">prezident.tj · сомонаи расмӣ</span></div>
+    <button class="tb-btn" onclick="load()" aria-label="Навсозӣ">⟳</button>
+  </div>
+
+  <div class="page">
+    <div class="chips" id="chips"></div>
+    <div id="content"><div class="loader">Боркунӣ...</div></div>
+  </div>
+
+  <div class="viewer" id="viewer" onclick="this.classList.remove('open')">
+    <button class="viewer-x" onclick="event.stopPropagation();document.getElementById('viewer').classList.remove('open')">✕</button>
+    <img id="viewerImg" alt="">
+    <div class="viewer-cap" id="viewerCap"></div>
+  </div>
+
+<script src="config.js?v=65"></script>
+<script src="president.js?v=1"></script>
+<script>
+(function () {
+  var P = window.PresidentNews;
+  var qs = new URLSearchParams(location.search);
+  var articleId = qs.get('id');
+  var catKey = qs.get('cat') || (articleId ? '' : 'news');
+  var esc = function (s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  };
+
+  window.goBack = function () {
+    if (articleId && history.length > 1) { history.back(); return; }
+    location.href = 'index.html';
+  };
+
+  function renderChips(activeKey) {
+    var box = document.getElementById('chips');
+    box.innerHTML = P.CATS.map(function (c) {
+      return '<button class="chip' + (c.key === activeKey ? ' on' : '') + '" data-cat="' + c.key + '">' +
+        c.emoji + ' ' + esc(c.label) + '</button>';
+    }).join('');
+    box.querySelectorAll('.chip').forEach(function (b) {
+      b.addEventListener('click', function () {
+        location.href = 'president.html?cat=' + b.dataset.cat;
+      });
+    });
+  }
+
+  // ---------- список категории ----------
+  function renderList(key) {
+    var cat = P.catByKey(key) || P.CATS[0];
+    renderChips(cat.key);
+    document.getElementById('tbTitle').textContent = cat.emoji + ' ' + cat.label;
+    var content = document.getElementById('content');
+    content.innerHTML = '<div class="loader">Боркунӣ...</div>';
+    P.fetchCat(cat.key).catch(function () {
+      // API недоступен → резервный архив робота (books-репо)
+      return P.loadArchive().then(function (byCat) {
+        return (byCat[cat.key] || []).map(function (it) {
+          return { id: it.id, title: it.title, publish: it.publish, has_photos: !!it.thumb || it.has_photos, photos_count: it.photos_count || 0, thumb: it.thumb || '', site_path: it.site_path || '' };
+        });
+      });
+    }).then(function (items) {
+      if (!items || !items.length) {
+        content.innerHTML = '<div class="empty">Дар ин бахш ҳоло хабар нест</div>';
+        return;
+      }
+      content.innerHTML =
+        '<div class="sec-note">Хабарҳои нав — аз сомонаи расмии prezident.tj</div>' +
+        items.map(function (it, i) {
+          return '<div class="item" data-id="' + it.id + '" data-cat="' + cat.key + '">' +
+            '<img class="item-thumb" data-thumb-for="' + it.id + '" alt="">' +
+            (it.has_photos ? '<div class="item-thumb-ph" data-ph="' + it.id + '">🖼</div>' : '<div class="item-thumb-ph">📄</div>') +
+            '<div class="item-body">' +
+            '<div class="item-title">' + esc(it.title) + '</div>' +
+            '<div class="item-meta"><span class="item-cat">' + esc(cat.label) + '</span><span>·</span><span>' + esc(P.timeAgo(it.publish)) + '</span>' +
+            (it.has_photos ? '<span class="item-photos">📷 ' + it.photos_count + '</span>' : '') +
+            '</div></div></div>';
+        }).join('');
+      content.querySelectorAll('.item').forEach(function (el) {
+        el.addEventListener('click', function () {
+          location.href = 'president.html?cat=' + el.dataset.cat + '&id=' + el.dataset.id;
+        });
+      });
+      // превью: готовое из архива или в фоне — только у новостей с фото
+      items.forEach(function (it) {
+        if (it.thumb) {
+          var img0 = content.querySelector('[data-thumb-for="' + it.id + '"]');
+          var ph0 = content.querySelector('[data-ph="' + it.id + '"]');
+          if (img0) { img0.src = it.thumb; img0.classList.add('ok'); }
+          if (ph0) ph0.style.display = 'none';
+          return;
+        }
+        if (!it.has_photos) return;
+        P.fetchPhotos(it.id).then(function (ph) {
+          if (ph.thumbs && ph.thumbs[0]) {
+            var img = content.querySelector('[data-thumb-for="' + it.id + '"]');
+            if (img) { img.src = ph.thumbs[0]; img.classList.add('ok'); }
+            var phEl = content.querySelector('[data-ph="' + it.id + '"]');
+            if (phEl) phEl.style.display = 'none';
+          }
+        });
+      });
+    }).catch(function () {
+      content.innerHTML = '<div class="empty">Пайвастшавӣ бо сомона муваққатан муваққатӣ дастрас нест 😔<br><button class="retry" onclick="load()">Такрор кардан</button></div>';
+    });
+  }
+
+  // ---------- детальный вид ----------
+  function renderArticle(id, key) {
+    renderChips(key || 'news');
+    var content = document.getElementById('content');
+    content.innerHTML = '<div class="loader">Боркунии хабар...</div>';
+    Promise.all([P.fetchArticle(id), P.fetchPhotos(id)]).then(function (res) {
+      var a = res[0], ph = res[1];
+      var cat = P.catByKey(key) || { label: 'Хабар', emoji: '📰' };
+      document.getElementById('tbTitle').textContent = 'Хабар';
+      var photosHtml = (ph.thumbs || []).length
+        ? '<div class="art-photos">' + ph.thumbs.map(function (t, i) {
+            return '<img class="art-ph" src="' + esc(t) + '" data-big="' + esc((ph.big || [])[i] || t) + '" alt="" loading="lazy">';
+          }).join('') + '</div>'
+        : '';
+      content.innerHTML =
+        '<div class="art">' +
+        '<div class="art-cat">' + cat.emoji + ' ' + esc(cat.label) + '</div>' +
+        '<div class="art-title">' + esc(a.title) + '</div>' +
+        '<div class="art-date">🕘 ' + esc(P.formatDate(a.publish)) + '</div>' +
+        photosHtml +
+        '<div class="art-text">' + P.sanitizeHtml(a.text || a.teaser) + '</div>' +
+        '<div class="art-src"><span>Хабар аз сомонаи prezident.tj</span>' +
+        '<a class="art-site" href="https://prezident.tj" onclick="event.preventDefault();window.open(\'' + (P.SITE_URL + (a.site_path || '')) + '\', \'_blank\', \'noopener,noreferrer\')">↗ Кушодан дар сомона</a></div>' +
+        '</div>';
+      content.querySelectorAll('.art-ph').forEach(function (img) {
+        img.addEventListener('click', function (ev) {
+          ev.stopPropagation();
+          document.getElementById('viewerImg').src = img.dataset.big;
+          document.getElementById('viewerCap').textContent = 'Барои пӯшидан ламс кунед';
+          document.getElementById('viewer').classList.add('open');
+        });
+      });
+    }).catch(function () {
+      content.innerHTML = '<div class="empty">Хабар бор карда нашуд 😔<br><button class="retry" onclick="load()">Такрор кардан</button></div>';
+    });
+  }
+
+  window.load = function () {
+    if (articleId) renderArticle(articleId, catKey);
+    else renderList(catKey || 'news');
+  };
+  load();
+})();
+</script>
+</body>
+</html>

@@ -910,6 +910,24 @@ body:before {
 .ozmun-v3{margin:4px 0}
 .ozmun-scroll-v3{display:flex;gap:14px;overflow-x:auto;padding:2px 12px 14px;scrollbar-width:none}
 .ozmun-scroll-v3::-webkit-scrollbar{display:none}
+/* ===== 2.1 Хабарҳои Президент (prezident.tj) — компактный раздел ===== */
+.prez-v3{margin:2px 0 6px}
+.prez-chips{display:flex;gap:6px;overflow-x:auto;padding:2px 12px 9px;scrollbar-width:none}
+.prez-chips::-webkit-scrollbar{display:none}
+.prez-chip{flex:0 0 auto;border:1px solid rgba(201,168,76,.22);background:#152941;color:#A8B8CC;border-radius:99px;padding:6px 11px;font:inherit;font-size:11px;font-weight:700;white-space:nowrap;cursor:pointer;transition:background .2s,color .2s,border-color .2s}
+.prez-chip.on{background:#0A1522;color:#E8C96D;border-color:rgba(201,168,76,.65);font-weight:800;box-shadow:inset 0 0 0 1px rgba(201,168,76,.25)}
+.prez-card{display:flex;align-items:center;gap:10px;margin:0 12px;background:#1A2D44;border:1px solid rgba(255,255,255,.055);border-radius:14px;padding:9px 10px;cursor:pointer;min-height:64px;transition:transform .15s}
+.prez-card:active{transform:scale(.985)}
+.prez-thumb-box{flex:0 0 50px;width:50px;height:50px;border-radius:10px;overflow:hidden;background:#22374F;display:none;align-items:center;justify-content:center}
+.prez-thumb-box.ok{display:flex}
+.prez-thumb{width:100%;height:100%;object-fit:cover;display:block}
+.prez-body{flex:1;min-width:0}
+.prez-title{font-size:12.8px;font-weight:750;line-height:1.35;color:#F0EAD6;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.prez-meta{display:flex;align-items:center;gap:5px;font-size:9.5px;color:#A8B8CC;margin-top:5px;flex-wrap:wrap}
+.prez-cat{color:#E8C96D;font-weight:800}
+.prez-src{margin-left:auto;background:rgba(201,168,76,.13);color:#C9A84C;border-radius:99px;padding:1px 7px;font-weight:700}
+.prez-arrow{flex:0 0 auto;color:#C9A84C;font-size:20px;opacity:.8}
+@media(max-width:355px){.prez-chip{font-size:10px;padding:5px 9px}.prez-title{font-size:12px}}
 .ozmun-item-v3{width:76px;flex:0 0 76px;text-align:center;cursor:pointer;transition:.15s}
 .ozmun-item-v3:active{transform:scale(.96)}
 .ozmun-circle-v3{
@@ -1065,6 +1083,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 </style>
 <script src="config.js?v=65"></script>
 <script src="cache.js?v=43"></script>
+<script src="president.js?v=1"></script>
 <script src="quotes-data.js?v=44"></script>
 
 <style>
@@ -1902,6 +1921,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <section class="ozmun-v3">
       <div class="sec-head-v3"><div class="sec-title-v3">🏆 Озмунҳои ҷумҳуриявӣ</div></div>
       <div class="ozmun-scroll-v3" id="ozmunList"></div>
+    </section>
+
+    <!-- 2.1 ХАБАРҲОИ ПРЕЗИДЕНТ — аз сомонаи расмии prezident.tj (API, дохили барнома) -->
+    <section class="prez-v3" id="prezSection" style="display:none">
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">🇹🇯 Хабарҳои Президент</div>
+        <div class="sec-link-v3" onclick="location.href='president.html?cat=news'">Ҳамаашро бинед <span>›</span></div>
+      </div>
+      <div class="prez-chips" id="prezChips"></div>
+      <div class="prez-card" id="prezCard" role="button" tabindex="0">
+        <div class="prez-thumb-box" id="prezThumbBox"><img id="prezThumb" class="prez-thumb" alt=""></div>
+        <div class="prez-body">
+          <div class="prez-title" id="prezTitle">Боркунӣ...</div>
+          <div class="prez-meta"><span class="prez-cat" id="prezCat"></span><span>·</span><span id="prezDate"></span><span class="prez-src">prezident.tj</span></div>
+        </div>
+        <div class="prez-arrow">›</div>
+      </div>
     </section>
 
     <!-- Продолжить чтение — теперь сверху категории как просил -->
@@ -3467,6 +3503,111 @@ renderMyBooksSection();
 renderGovSites();
 syncMyBookButtons();
 loadNews(); // ахбороти расмӣ — баъди таърифи ҳамаи функсияҳо даъват мешавад
+
+/* ============================================================
+   ХАБАРҲОИ ПРЕЗИДЕНТ (prezident.tj) — компактный раздел:
+   чипы категорий + ротация заголовков каждые 10 сек.
+   Старт со СЛУЧАЙНОЙ новости, порядок — по кругу разных категорий.
+   Категория текущей новости подсвечивается (темнее/золотая).
+   ============================================================ */
+(function () {
+  if (!window.PresidentNews) return;
+  var P = window.PresidentNews;
+  var queue = [], qIdx = 0, timer = null;
+  var elSec = document.getElementById('prezSection');
+  var elChips = document.getElementById('prezChips');
+  var elCard = document.getElementById('prezCard');
+  if (!elSec || !elCard) return;
+
+  function esc(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+    });
+  }
+
+  // очередь: по кругу из разных категорий (1-я новость каждой, потом 2-я...)
+  function buildQueue(byCat) {
+    var rounds = [];
+    P.CATS.forEach(function (c) {
+      var items = byCat[c.key] || [];
+      items.forEach(function (it, i) {
+        if (!rounds[i]) rounds[i] = [];
+        rounds[i].push({ cat: c.key, item: it });
+      });
+    });
+    var flat = [];
+    rounds.forEach(function (r) { flat = flat.concat(r); });
+    return flat;
+  }
+
+  function renderChips(activeKey) {
+    elChips.innerHTML = P.CATS.map(function (c) {
+      return '<button class="prez-chip' + (c.key === activeKey ? ' on' : '') + '" data-cat="' + c.key + '">' +
+        c.emoji + ' ' + esc(c.label) + '</button>';
+    }).join('');
+    elChips.querySelectorAll('.prez-chip').forEach(function (b) {
+      b.addEventListener('click', function () {
+        location.href = 'president.html?cat=' + b.dataset.cat;
+      });
+    });
+  }
+
+  var currentCat = null;
+  function showCurrent() {
+    if (!queue.length) return;
+    var cur = queue[qIdx % queue.length];
+    var cat = P.catByKey(cur.cat);
+    var it = cur.item;
+    document.getElementById('prezTitle').textContent = it.title;
+    document.getElementById('prezCat').textContent = cat ? cat.label : '';
+    document.getElementById('prezDate').textContent = P.timeAgo(it.publish);
+    if (currentCat !== cur.cat) { currentCat = cur.cat; renderChips(cur.cat); }
+    elCard.onclick = function () { location.href = 'president.html?cat=' + cur.cat + '&id=' + it.id; };
+    // превью фото — в фоне, покажется когда догрузится (кэшируется в president.js)
+    var elThumbBox = document.getElementById('prezThumbBox');
+    var elThumb = document.getElementById('prezThumb');
+    var shown = false;
+    elThumbBox.classList.remove('ok');
+    if (it.has_photos || it.thumb) {
+      var applyThumb = function (src) {
+        if (shown || !src) return;
+        shown = true;
+        elThumb.onload = function () { elThumbBox.classList.add('ok'); };
+        elThumb.src = src;
+      };
+      if (it.thumb) applyThumb(it.thumb);
+      P.fetchPhotos(it.id).then(function (ph) { applyThumb(ph.thumbs && ph.thumbs[0]); });
+    }
+  }
+
+  function startRotation() {
+    if (timer) clearInterval(timer);
+    timer = setInterval(function () {
+      if (document.hidden) return; // на фоне не крутим
+      qIdx = (qIdx + 1) % queue.length;
+      showCurrent();
+    }, 10000); // 10 секунд
+  }
+
+  function initByCat(byCat) {
+    queue = buildQueue(byCat);
+    if (!queue.length) { elSec.style.display = 'none'; return; }
+    // случайный старт при каждом открытии приложения
+    qIdx = Math.floor(Math.random() * queue.length);
+    elSec.style.display = 'block';
+    showCurrent();
+    startRotation();
+  }
+
+  P.loadAll(function (byCat) {
+    // мгновенно из кэша (если есть)
+    if (queue.length === 0) initByCat(byCat);
+  }).then(function (res) {
+    initByCat(res.byCat);
+  }).catch(function () {
+    if (queue.length === 0) elSec.style.display = 'none';
+  });
+})();
 </script>
 </body>
 </html>
