@@ -1619,60 +1619,108 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       } catch (e) {}
     }
     if (cands.length === 1) return fetchBookArrayBuffer(cands[0]);
-    // v99 ГОНКАИ НАВ: ҳамаи манбаъҳо ҲАМЗАМОНА сар мешаванд. Ғолиб он аст, ки
-    // АВВАЛ якум порчаи файлро медиҳад — боқимонда фавран бекор карда мешаванд
-    // (пеш: raw танҳо баъди 1.5с медаромад ва манбаъҳо баъди ҳам мегаштанд).
+    // v104 ГОНКА ПО РЕАЛЬНОЙ СКОРОСТИ. Раньше побеждало зеркало, первым отдавшее
+    // первый кусок — но оно могло качать медленно, и вся книга шла через него
+    // (проблема вернулась). Теперь короткий ЗАМЕР: ~1.2с КАЖДОЕ зеркало реально
+    // качает (до 384КБ), затем продолжает только САМОЕ БЫСТРОЕ, остальные
+    // отключаются. Если победитель умрёт на середине — повтор того же источника.
     return new Promise((resolve, reject) => {
-      let winner = null, failed = 0, firstErr = null, done = false;
-      const ctrls = cands.map(() => new AbortController());
-      const settle = (fn, v) => { if (!done) { done = true; fn(v); } };
-      cands.forEach((cu, i) => {
-        const ctrl = ctrls[i];
-        (async () => {
-          const r = await fetch(cu, { cache: 'no-store', signal: ctrl.signal });
-          if (!r.ok) throw new Error('HTTP ' + r.status + ' · ' + new URL(cu).hostname);
-          const total = Number(r.headers.get('content-length') || 0);
-          if (!r.body || !r.body.getReader) {
-            const buf = await r.arrayBuffer();
-            if (winner && winner !== cu) return;
-            winner = cu;
-            ctrls.forEach((c, j) => { if (j !== i) { try { c.abort(); } catch (e) {} } });
-            try { saveCachedMeta(cu, buf.byteLength); } catch (e) {}
-            storeBookCache(cu, buf);
-            settle(resolve, buf);
-            return;
-          }
-          const rd = r.body.getReader();
-          const chunks = []; let loaded = 0;
+      let done = false, decided = false, winnerIdx = -1;
+      const CONTEST_MS = 1200, CONTEST_BYTES = 384 * 1024, CONNECT_GRACE_MS = 4000, STALL_MS = 20000;
+      const st = cands.map(cu => ({ cu, ctrl: new AbortController(), chunks: [], loaded: 0, t0: 0, speed: 0, total: 0, full: null, err: null, ended: false, rd: null }));
+      const startedAt = Date.now();
+      let decisionResolve = null;
+      const decisionMade = new Promise(r => { decisionResolve = r; });
+      let watchdog = null, wdLastLoaded = 0, wdLastMoveAt = Date.now();
+      const cleanup = () => { if (watchdog) { clearInterval(watchdog); watchdog = null; } };
+      const abortOthers = (keep) => { st.forEach((s, j) => { if (j !== keep) { try { s.ctrl.abort(); } catch (e) {} } }); };
+      const finish = (buf, i) => {
+        if (done) return; done = true; cleanup(); abortOthers(i);
+        try { saveCachedMeta(cands[i], buf.byteLength); } catch (e) {}
+        storeBookCache(cands[i], buf);
+        resolve(buf);
+      };
+      const giveUp = (e) => { if (done) return; done = true; cleanup(); abortOthers(-1); reject(e || new Error('Файл ёфт нашуд')); };
+      // победитель оборвался на середине — повтор того же источника (без гонки)
+      const recover = (s) => {
+        fetchBookArrayBuffer(s.cu).then(
+          b => { if (!done) { done = true; cleanup(); abortOthers(-1); resolve(b); } },
+          () => giveUp()
+        );
+      };
+      const decide = () => {
+        if (done || decided) return; decided = true;
+        const fullIdx = st.findIndex(s => s.full);
+        if (fullIdx >= 0) { finish(st[fullIdx].full, fullIdx); return; }
+        const endedIdx = st.findIndex(s => s.ended && s.loaded > 0);
+        if (endedIdx >= 0) {
+          const s = st[endedIdx];
+          new Blob(s.chunks).arrayBuffer().then(b => finish(b, endedIdx), () => giveUp());
+          return;
+        }
+        let best = -1, bestSpeed = 0;
+        st.forEach((s, i) => { if (!s.err && s.speed > bestSpeed) { bestSpeed = s.speed; best = i; } });
+        if (best < 0) { giveUp(st.map(s => s.err).filter(Boolean)[0]); return; }
+        winnerIdx = best;
+        abortOthers(best);
+        decisionResolve();
+      };
+      const runStream = async (s, i) => {
+        try {
+          const r = await fetch(s.cu, { cache: 'no-store', signal: s.ctrl.signal });
+          if (!r.ok) throw new Error('HTTP ' + r.status + ' · ' + new URL(s.cu).hostname);
+          s.t0 = Date.now();
+          s.total = Number(r.headers.get('content-length') || 0);
+          if (!r.body || !r.body.getReader) { s.full = await r.arrayBuffer(); return; }
+          s.rd = r.body.getReader();
           while (true) {
-            const { done: streamDone, value } = await rd.read();
-            if (streamDone) break;
-            chunks.push(value); loaded += value.byteLength;
-            if (!winner) {
-              // ЯКУМ ПОРЧА — ин манбаъ ғолиб аст, дигаронро мебандем
-              winner = cu;
-              ctrls.forEach((c, j) => { if (j !== i) { try { c.abort(); } catch (e) {} } });
-            } else if (winner !== cu) { try { rd.cancel(); } catch (e) {} return; }
-            setLoadProgress(total ? loaded / total * 100 : Math.min(90, 8 + loaded / 50000));
+            if (done) return;
+            const res = await s.rd.read();
+            if (res.done) { s.ended = true; break; }
+            s.chunks.push(res.value); s.loaded += res.value.byteLength;
+            if (!decided) {
+              s.speed = s.loaded / Math.max(50, Date.now() - s.t0); // реальная скорость (байт/мс)
+              setLoadProgress(s.total ? Math.min(25, s.loaded / s.total * 100) : 4);
+              if (s.loaded >= CONTEST_BYTES) {
+                await decisionMade;            // замер окончен — ждём решение
+                if (done || winnerIdx !== i) return;
+              }
+            } else if (winnerIdx !== i) return;
+            setLoadProgress(s.total ? Math.min(99, s.loaded / s.total * 100) : Math.min(90, 8 + s.loaded / 50000));
           }
-          if (winner !== cu) return;
-          const buf = await new Blob(chunks).arrayBuffer();
-          try { saveCachedMeta(cu, buf.byteLength); } catch (e) {}
-          storeBookCache(cu, buf);
-          settle(resolve, buf);
-        })().catch(e => {
-          if (done) return;
-          if (winner === cu) {
-            // ғолиб миёнароҳ канда шуд — такрор аз ҳамон манбаъ (бе гона, бо кэш)
-            fetchBookArrayBuffer(cu).then(b => settle(resolve, b), e2 => settle(reject, e2));
-            return;
+          if (done || (decided && winnerIdx !== i)) return;
+          const buf = await new Blob(s.chunks).arrayBuffer();
+          finish(buf, i);
+        } catch (e) {
+          s.err = e;
+          if (!done && decided && winnerIdx === i) recover(s);
+        }
+      };
+      st.forEach((s, i) => { runStream(s, i).catch(e => { s.err = s.err || e; }); });
+      // координатор замера: решаем, когда все набрали хват байт / время вышло
+      const tick = () => {
+        if (done || decided) return;
+        const now = Date.now();
+        const anyMeasured = st.some(s => s.loaded >= CONTEST_BYTES);
+        const t0s = st.filter(s => s.t0).map(s => s.t0);
+        const minT0 = t0s.length ? Math.min.apply(null, t0s) : 0;
+        const allSettled = st.every(s => s.err || s.full || s.ended || s.loaded >= CONTEST_BYTES || (now - startedAt > CONNECT_GRACE_MS));
+        if ((anyMeasured && minT0 && now - minT0 >= CONTEST_MS) || allSettled || now - startedAt > CONTEST_MS + CONNECT_GRACE_MS) { decide(); return; }
+        setTimeout(tick, 120);
+      };
+      setTimeout(tick, 120);
+      // вачдог: победитель замер (нет движения 20с) — перезапуск источника
+      watchdog = setInterval(() => {
+        if (done) { cleanup(); return; }
+        const w = winnerIdx >= 0 ? st[winnerIdx] : null;
+        if (w) {
+          if (w.loaded > wdLastLoaded) { wdLastLoaded = w.loaded; wdLastMoveAt = Date.now(); }
+          if (Date.now() - wdLastMoveAt > STALL_MS) {
+            cleanup();
+            try { w.ctrl.abort(); } catch (e) {} // → runStream catch → recover
           }
-          if (winner) return; // бекоршудагон ҳисоб намешаванд
-          failed++;
-          if (!firstErr) firstErr = e;
-          if (failed >= cands.length) settle(reject, firstErr || new Error('Файл ёфт нашуд'));
-        });
-      });
+        } else if (Date.now() - startedAt > 120000) { giveUp(new Error('Боркунӣ дароз мекашид')); }
+      }, 2000);
     });
   }
   function setLoadText(t) { const el = $('loadStatus'); if (el) el.textContent = t || ''; }
