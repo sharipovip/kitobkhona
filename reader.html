@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js?v=65"></script>
+<script src="config.js?v=66"></script>
 <script src="cache.js?v=43"></script>
 <style>
   
@@ -992,6 +992,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
           ts: Date.now()
         }));
       } catch(e) {}
+      try { window.invalidateBookStats && window.invalidateBookStats(getBookId()); } catch(e) {}
       toast('Реакция сабт шуд');
     } catch(e) {
       console.error('Save reaction error:', e);
@@ -1023,6 +1024,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
           ts: Date.now()
         }));
       } catch(e) {}
+      try { window.invalidateBookStats && window.invalidateBookStats(getBookId()); } catch(e) {}
       toast('Баҳо сабт шуд (⭐ ' + rating + '/10)');
     } catch(e) {
       console.error('Save rating error:', e);

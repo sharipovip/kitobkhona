@@ -697,10 +697,43 @@ async function edgeApiFetch(path, options, timeoutMs) {
     if (edgeResponse.ok || edgeResponse.status < 500) return edgeResponse;
   } catch (e) {}
   // Edge (Cloudflare) не ответил вовремя или дал серверную ошибку — переключаемся на Render.
-  // Используем устойчивый повтор, а не одну попытку: Render на бесплатном тарифе тоже может спать.
-  return fetchWithServerRetry(KITOB_CONFIG.NEON_API_BASE + cleanPath, opts, {attempts:5,timeoutMs:Math.max(timeoutMs||8000,12000)});
+  // v104 калибровка: максимум 2 попытки (было 5) — каждая попытка будит бесплатный
+  // сервер и тратит CPU-часы. Функция не меняется: Edge + 2 повтора ещё есть.
+  return fetchWithServerRetry(KITOB_CONFIG.NEON_API_BASE + cleanPath, opts, {attempts:2,timeoutMs:Math.max(timeoutMs||8000,12000)});
 }
 window.edgeApiFetch = edgeApiFetch;
+
+// ===== v104 калибровка: кэш статистики книг (30 минут, общий для всех страниц) =====
+// Рейтинги меняются редко — не спрашиваем сервер при каждом открытии страницы.
+// После собственной оценки/реакции читалка сбрасывает кэш этой книги (invalidateBookStats).
+const BOOK_STATS_TTL = 30*60*1000, BOOK_STATS_KEY = 'kk_book_stats_map_v1';
+function bookStatsMap(){ try { const m = JSON.parse(localStorage.getItem(BOOK_STATS_KEY) || 'null'); return (m && typeof m === 'object') ? m : {}; } catch(e){ return {}; } }
+function bookStatsSave(m){ try { localStorage.setItem(BOOK_STATS_KEY, JSON.stringify(m)); } catch(e){} }
+async function cachedBookStatsBatch(ids){
+  const want = [...new Set((ids || []).filter(Boolean))];
+  if (!want.length) return {};
+  const map = bookStatsMap(), now = Date.now(), miss = [], out = {};
+  want.forEach(id => {
+    const e = map[id];
+    if (e && now - e.ts < BOOK_STATS_TTL) { if (e.v) out[id] = e.v; }
+    else miss.push(id);
+  });
+  if (miss.length) {
+    try {
+      const r = await edgeApiFetch('/api/book-stats-batch', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ book_ids: miss.slice(0,200) }) });
+      if (r.ok) {
+        const data = await r.json();
+        const m2 = bookStatsMap();
+        miss.forEach(id => { m2[id] = { v: (data && data[id]) || null, ts: now }; if (m2[id].v) out[id] = m2[id].v; });
+        bookStatsSave(m2);
+      }
+    } catch(e) { console.warn('book-stats', e); }
+  }
+  return out;
+}
+function invalidateBookStats(bookId){ const id = String(bookId||'').replace(/^books\//i,''); if (!id) return; const m = bookStatsMap(); if (m[id]) { delete m[id]; bookStatsSave(m); } }
+window.cachedBookStatsBatch = cachedBookStatsBatch;
+window.invalidateBookStats = invalidateBookStats;
 
 function getDeviceFingerprint() {
   let fp = localStorage.getItem('kk_device_fp');
@@ -777,8 +810,15 @@ const AutoLogin = {
     const savedUsername = localStorage.getItem('kk_username');
     if (savedToken && savedUserId) {
       this.currentUser = { token: savedToken, userId: savedUserId, username: savedUsername || 'user' };
+      // v104 калибровка: фоновая проверка профиля не чаще раза в 12 часов
+      // (было — на каждой загрузке страницы = десятки запросов в день).
+      // Явный вход/логин проверяются как раньше, минуя этот лимит.
+      const profileCheckKey = 'kk_profile_check_ts_v1';
+      const profileCheckDue = Date.now() - Number(localStorage.getItem(profileCheckKey) || 0) > 12*60*60*1000;
       (async () => {
+        if (!profileCheckDue) return;
         try {
+          localStorage.setItem(profileCheckKey, String(Date.now()));
           const r = await edgeApiFetch('/api/profiles/' + savedUserId, { headers: { 'Authorization': 'Bearer ' + savedToken }, cache: 'no-store' }, 10000);
           if (!r.ok) {
             localStorage.removeItem('kk_token'); localStorage.removeItem('kk_user_id'); localStorage.removeItem('kk_username');
@@ -1403,7 +1443,8 @@ function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url |
 
 (function initReadingSyncV2(){
   const KEY='kk_reading_sync_v2',LEGACY='kk_pending_reading_sessions',ACTIVE='kk_reader_active_until';
-  const TEN_MIN=10*60*1000;let running=false,timer=null;
+  const TEN_MIN=10*60*1000,MIN_SYNC_MS=12*60*60*1000,LAST_OK='kk_reading_sync_last_ok_v1';/* v104: синк часов — не чаще раза в 12 часов */
+  let running=false,timer=null;
   const empty=()=>({version:2,records:{},inflight:null});
   function read(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return x&&x.version===2&&x.records?x:empty()}catch(e){return empty()}}
   function write(s){try{const keys=Object.keys(s.records||{});if(keys.length>200)keys.sort((a,b)=>(s.records[a].updatedAt||0)-(s.records[b].updatedAt||0)).slice(0,keys.length-200).forEach(k=>delete s.records[k]);localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
@@ -1416,8 +1457,8 @@ function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url |
   function isActive(){return Number(localStorage.getItem(ACTIVE)||0)>Date.now()}
   function choose(s,now){const personal=[],anonymous=[],keys=[];for(const [key,r] of Object.entries(s.records||{})){const dur=Number(r.duration)||0;if(dur>=600&&Number(r.readyAt||0)<=now){personal.push(r);keys.push(key)}else if(dur>0&&dur<600&&Number(r.anonymousDueAt||0)<=now){anonymous.push(r);keys.push(key)}}return{personal,anonymous,keys}}
   function makeInflight(s){const picked=choose(s,Date.now());if(!picked.keys.length)return null;const batch={batch_id:'read_'+id(),personal:picked.personal,anonymous:picked.anonymous,keys:picked.keys,retryAt:Date.now()};for(const k of picked.keys)delete s.records[k];s.inflight=batch;write(s);return batch}
-  async function flush(){if(running)return;if(isActive()){if(timer)clearTimeout(timer);timer=setTimeout(flush,60*1000);return}if(!navigator.onLine||!localStorage.getItem('kk_token')){if(timer)clearTimeout(timer);timer=setTimeout(flush,5*60*1000);return}running=true;try{const s=read(),batch=s.inflight||makeInflight(s);if(!batch||Number(batch.retryAt||0)>Date.now())return;const r=await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE+'/api/reading-sync',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({batch_id:batch.batch_id,personal:batch.personal,anonymous:batch.anonymous})},20000);if(!r.ok)throw Error('HTTP '+r.status);const current=read();if(current.inflight?.batch_id===batch.batch_id)current.inflight=null;write(current);const uid=localStorage.getItem('kk_user_id');if(uid){localStorage.removeItem('kk_avatar_eligibility_'+uid);if(typeof CacheManager!=='undefined'){CacheManager.invalidateKey('kk_cache_sessions');CacheManager.invalidateKey('kk_cache_sessions_'+encodeURIComponent(uid))}}}catch(e){const s=read();if(s.inflight)s.inflight.retryAt=Date.now()+60*1000;write(s)}finally{running=false;schedule()}}
-  function nextDue(){const s=read();if(s.inflight)return Number(s.inflight.retryAt||Date.now());let n=Infinity;for(const r of Object.values(s.records||{})){const d=Number(r.duration)||0;n=Math.min(n,d>=600?Number(r.readyAt||Infinity):Number(r.anonymousDueAt||Infinity))}return n}
+  async function flush(){if(running)return;if(isActive()){if(timer)clearTimeout(timer);timer=setTimeout(flush,60*1000);return}if(!navigator.onLine||!localStorage.getItem('kk_token')){if(timer)clearTimeout(timer);timer=setTimeout(flush,5*60*1000);return}const lastOk=Number(localStorage.getItem(LAST_OK)||0);if(lastOk&&Date.now()-lastOk<MIN_SYNC_MS){if(timer)clearTimeout(timer);timer=setTimeout(flush,Math.max(1000,lastOk+MIN_SYNC_MS-Date.now()));return}running=true;try{const s=read(),batch=s.inflight||makeInflight(s);if(!batch||Number(batch.retryAt||0)>Date.now())return;const r=await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE+'/api/reading-sync',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({batch_id:batch.batch_id,personal:batch.personal,anonymous:batch.anonymous})},20000);if(!r.ok)throw Error('HTTP '+r.status);const current=read();if(current.inflight?.batch_id===batch.batch_id)current.inflight=null;write(current);try{localStorage.setItem(LAST_OK,String(Date.now()))}catch(e){}const uid=localStorage.getItem('kk_user_id');if(uid){localStorage.removeItem('kk_avatar_eligibility_'+uid);if(typeof CacheManager!=='undefined'){CacheManager.invalidateKey('kk_cache_sessions');CacheManager.invalidateKey('kk_cache_sessions_'+encodeURIComponent(uid))}}}catch(e){const s=read();if(s.inflight)s.inflight.retryAt=Date.now()+30*60*1000;/* v104: 30 мин вместо 60 с — не будим сервер при сбое */write(s)}finally{running=false;schedule()}}
+  function nextDue(){const s=read();if(s.inflight)return Number(s.inflight.retryAt||Date.now());let n=Infinity;for(const r of Object.values(s.records||{})){const d=Number(r.duration)||0;n=Math.min(n,d>=600?Number(r.readyAt||Infinity):Number(r.anonymousDueAt||Infinity))}const lo=Number(localStorage.getItem(LAST_OK)||0);if(lo&&lo+MIN_SYNC_MS<n)n=lo+MIN_SYNC_MS;return n}
   function schedule(){if(timer)clearTimeout(timer);const due=nextDue();if(Number.isFinite(due))timer=setTimeout(flush,Math.max(1000,Math.min(24*60*60*1000,due-Date.now())))}
   function migrate(){try{const old=JSON.parse(localStorage.getItem(LEGACY)||'[]');if(Array.isArray(old))old.forEach(add);localStorage.removeItem(LEGACY)}catch(e){}}
   window.KKReadingSyncV2={add,active,closed,flush,state:read};migrate();window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{schedule();setTimeout(flush,1500)},{once:true});else{schedule();setTimeout(flush,1500)}

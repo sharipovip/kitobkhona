@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <link rel="manifest" href="manifest.json">
-<script src="config.js?v=65"></script>
+<script src="config.js?v=66"></script>
 <script src="cache.js?v=43"></script>
 <style>
   
@@ -1156,24 +1156,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   async function getBookStats(bookId) {
     if (!bookId) return null;
+    // v104: через общий 30-минутный кэш статистики (см. config.js)
     try {
-      const token = localStorage.getItem('kk_token');
-      const headers = token ? { 'Authorization': 'Bearer ' + token } : {};
-      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId));
-      if (!resp.ok) return null;
-      return await resp.json();
+      const m = await cachedBookStatsBatch([bookId]);
+      return m[bookId] || null;
     } catch(e) { return null; }
   }
 
   async function getBookStatsBatch(bookIds) {
     if (!bookIds.length) return {};
+    // v104: через общий 30-минутный кэш статистики (см. config.js)
     try {
-      const resp = await edgeApiFetch('/api/book-stats-batch', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ book_ids: bookIds })
-      });
-      return resp.ok ? await resp.json() : {};
+      return await cachedBookStatsBatch(bookIds);
     } catch(e) { return {}; }
   }
 

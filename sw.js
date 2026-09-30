@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v103-actions-cache';
+const CACHE_NAME = 'kitobkhona-v104-share-calibration';
 const LOCAL_FILES = [
   './',
   './index.html',
