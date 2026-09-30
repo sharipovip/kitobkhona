@@ -1,17 +1,18 @@
 <!DOCTYPE html>
 <html lang="tg"><head>
 <meta charset="UTF-8">
-<meta name="description" content="Китобхона — китобхонаи электронии тоҷикӣ. Китоб манбаи дониш">
+<meta name="description" content="Китобхонаи рақамии тоҷикӣ: китобҳоро аз рӯйи 20 категория ҷустуҷӯ кунед, ба рӯйхати худ илова намоед ва офлайн хонед.">
 <meta property="og:title" content="Китобхона · Манбаи дониш">
 <meta property="og:type" content="website">
-<meta property="og:image" content="./icons/icon-512.png">
+<meta property="og:image" content="./icon-512.png">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#0A1222">
-<title>Китобхона — Асосӣ</title>
+<meta name="theme-color" content="#0B1424">
+<meta name="application-name" content="Китобхона">
+<title>Китобхона — Китобхонаи рақамии тоҷикӣ</title>
 <link rel="prefetch" href="kitobho.html">
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<link rel="manifest" href="manifest.json">
+<link rel="manifest" href="manifest.json?v=2.1.0">
 <style id="index-page-styles">
 :root {
   --bg: #0D1B2A;
@@ -1838,6 +1839,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-empty{margin:0 14px;border:1px dashed rgba(201,168,76,.35);border-radius:16px;padding:16px;
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
+<link rel="stylesheet" href="home-refresh.css?v=2.1.0">
+<script defer src="home-refresh.js?v=2.1.0"></script>
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
@@ -1851,10 +1854,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <button class="announce-close" onclick="hideAnnouncementTop()">✕</button>
   </div>
 
-  <!-- TOP BAR — точь-в-точь как на фото, subtitle изменен на Китоб манбаи дониш -->
+  <!-- Header refresh 2.1: clear identity, state symbols, weather and accessible actions. -->
   <header class="new-top-bar-v3">
     <div class="new-logo-v3">
-      <!-- РАМЗҲОИ ДАВЛАТӢ: Парчам, Нишон, Суруди Миллӣ (ба ҷои тоҷ) -->
+      <div class="brand-lockup-v105" aria-label="Китобхона — Манбаи дониш">
+        <span class="brand-mark-v105" aria-hidden="true">📚</span>
+        <span class="brand-copy-v105"><b>КИТОБХОНА</b><small>МАНБАИ ДОНИШ</small></span>
+      </div>
+      <!-- Рамзҳои давлатии Ҷумҳурии Тоҷикистон -->
       <div class="state-symbols-v3" role="group" aria-label="Рамзҳои давлатии Ҷумҳурии Тоҷикистон">
         <button type="button" class="sym-btn" onclick="openSymbolModal('parcham')" title="Парчами давлатӣ" aria-label="Парчами давлатӣ">
           <img src="assets/symbols/parcham.png" alt="Парчами давлатии ҶТ">
@@ -1873,7 +1880,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </div>
     </div>
     <div class="new-top-actions-v3">
-      <div class="header-datetime-widget" id="headerWidget" onclick="openWeatherModal()" title="Обу ҳаво ва тақвим">
+      <div class="header-datetime-widget" id="headerWidget" onclick="openWeatherModal()" title="Обу ҳаво ва тақвим" role="button" tabindex="0" aria-label="Обу ҳаво ва тақвим">
         <div class="hdw-col">
           <span class="hdw-date" id="headerLiveDate">25.09.2026</span>
           <span class="hdw-time" id="headerLiveTime">--:--</span>
@@ -1881,14 +1888,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <span class="hdw-divider">|</span>
         <span class="hdw-weather" id="headerWeatherCity">☀️ Душанбе +24°</span>
       </div>
-      <div class="new-icon-btn-v3" id="searchToggleBtn" title="Ҷустуҷӯ">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8C96D" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/></svg>
-      </div>
+      <button type="button" class="new-icon-btn-v3" id="searchToggleBtn" title="Ҷустуҷӯ" aria-label="Ҷустуҷӯи китобҳо">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" aria-hidden="true"><circle cx="11" cy="11" r="6"/><path d="M15.5 15.5L20 20"/></svg>
+      </button>
       <div class="new-icon-btn-v3" id="notifBtn" title="Огоҳӣ">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8C96D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 6 7 6 7H0s6 0 6-7"/><path d="M9 21a3 3 0 0 0 6 0"/></svg>
         <span id="notifBadge" class="badge-v3" style="display:none">3</span>
       </div>
-      <div class="new-icon-btn-v3" id="themeBtn" style="display:none">🌙</div>
+      <button type="button" class="new-icon-btn-v3" id="themeBtn" style="display:none" title="Тағйир додани мавзӯъ" aria-label="Тағйир додани мавзӯъ">🌙</button>
     </div>
   </header>
 
@@ -1913,10 +1920,37 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     </section>
     <div class="hero-dots-v3" id="heroDots"></div>
 
+    <section class="home-shortcuts-v105" aria-label="Амалиёти зуд">
+      <a class="home-shortcut-v105" href="kitobho.html">
+        <span class="home-shortcut-icon-v105" aria-hidden="true">📚</span>
+        <span class="home-shortcut-copy-v105"><b>Каталоги китобҳо</b><small>Ҷустуҷӯ аз рӯйи 20 категория</small></span>
+      </a>
+      <button type="button" class="home-shortcut-v105 home-shortcut-install-v105" id="homeSearchAction">
+        <span class="home-shortcut-icon-v105" aria-hidden="true">⌕</span>
+        <span class="home-shortcut-copy-v105"><b>Ҷустуҷӯи китоб</b><small>Аз рӯйи ном, муаллиф ё мавзӯъ</small></span>
+      </button>
+      <a class="home-shortcut-v105" href="#myBooksSection">
+        <span class="home-shortcut-icon-v105" aria-hidden="true">📌</span>
+        <span class="home-shortcut-copy-v105"><b>Китобҳои ман</b><small>Рӯйхати шахсии шумо</small></span>
+      </a>
+      <a class="home-shortcut-v105" href="winners.html">
+        <span class="home-shortcut-icon-v105" aria-hidden="true">🏆</span>
+        <span class="home-shortcut-copy-v105"><b>Озмунҳо</b><small>Озмунҳои ҷумҳуриявӣ</small></span>
+      </a>
+      <div class="home-connectivity-v105" id="homeConnectivity" role="status" aria-live="polite" hidden>
+        <span class="home-connectivity-dot-v105" aria-hidden="true"></span><span id="homeConnectivityText">Пайвастшавӣ санҷида мешавад</span>
+      </div>
+      <button type="button" class="home-shortcut-v105 home-shortcut-install-v105" id="pwaInstallBtn" hidden>
+        <span class="home-shortcut-icon-v105" aria-hidden="true">⬇️</span>
+        <span class="home-shortcut-copy-v105"><b>Насб кардани барнома</b><small>Ба экрани асосӣ илова кунед</small></span>
+      </button>
+    </section>
+
     <!-- Search hidden -->
     <div class="search-section-v3" id="searchSection" style="display:none;">
       <form class="search-mini-v3" id="homeSearchForm"><span class="s-icon">🔍</span><input id="homeSearch" type="search" placeholder="Ҷустуҷӯи китоб..."><button type="button" onclick="document.getElementById('searchSection').style.display='none'" class="s-close">✕</button></form>
-      <div id="homeSearchResults" class="home-search-results-v3" style="display:none"></div>
+      <div id="homeSearchResults" class="home-search-results-v3" style="display:none" role="region" aria-live="polite" aria-label="Натиҷаҳои ҷустуҷӯ"></div>
+      <div id="homeSearchHistory" class="home-search-history-v105" hidden></div>
     </div>
 
     <div id="announcementBanner" style="display:none"><span id="announcementText"></span></div>
@@ -1959,6 +1993,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <section class="cat-v3">
       <div class="sec-head-v3"><div class="sec-title-v3">Категорияҳо</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
+      <button type="button" class="cat-show-more-v105" id="catShowMoreV105" aria-expanded="false" hidden>Ҳама категорияҳо <span aria-hidden="true">↓</span></button>
     </section>
 
     <!-- 4 Китобҳои Пешвои миллат -->
@@ -2275,7 +2310,10 @@ function renderCategories(cats){
     tarih:svg('<path d="M4 20h16M6 17h12M7 8v9m5-9v9m5-9v9M4 8h16L12 3z"/><path d="M9.5 12h5"/>'),
     digar:svg('<rect x="4" y="4" width="6" height="6" rx="1"/><rect x="14" y="4" width="6" height="6" rx="1"/><rect x="4" y="14" width="6" height="6" rx="1"/><rect x="14" y="14" width="6" height="6" rx="1"/>')
   };
-  grid.innerHTML=cats.slice(0,6).map(c=>`<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${icons[c.id]||icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
+  grid.classList.remove('expanded');
+  grid.innerHTML=cats.map((c,index)=>`<div class="cat-card-v3${index>=8?' cat-card-extra':''}" role="link" tabindex="0" aria-label="Категория: ${esc(c.name)}" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();this.click()}"><div class="cat-icon-v3">${icons[c.id]||icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
+  const more=$('catShowMoreV105');
+  if(more){more.hidden=cats.length<=8;more.setAttribute('aria-expanded','false');more.innerHTML=`Ҳамаи ${cats.length} категория <span aria-hidden="true">↓</span>`;}
 }
 async function loadHome(){
   try{
