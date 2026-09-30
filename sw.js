@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v106-home-refresh';
+const CACHE_NAME = 'kitobkhona-v105-offline-cache-fix';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -11,8 +11,6 @@ const LOCAL_FILES = [
   './chats.html',
   './chat.html',
   './Lenta.html',
-  './home-refresh.css',
-  './home-refresh.js',
   './config.js',
   './cache.js',
   './president.js',

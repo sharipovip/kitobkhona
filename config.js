@@ -8,7 +8,7 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '2.1.0';
+const APP_VERSION = '2.0.1';
 
 const KKH_THEMES = {
   dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
