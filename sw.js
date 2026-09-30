@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v104-share-calibration';
+const CACHE_NAME = 'kitobkhona-v105-offline-cache-fix';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -17,7 +17,7 @@ const LOCAL_FILES = [
   './president.html',
   './quotes-data.js',
   './splash_logo.png',
-  './splash_logo.jpg',
+  './assets/hero/01-president-official.jpg',
   './manifest.json',
   './search-index.json',
   './locations.js',
@@ -49,26 +49,26 @@ const BOOKS_JSON_URL = 'books.json';
 const SYNC_INTERVAL = 60 * 60 * 1000; // 1 час
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(LOCAL_FILES).catch((err) => {
-        console.warn('[SW] Failed to cache some files:', err);
-      });
-    })
-  );
-  self.skipWaiting();
+  event.waitUntil((async () => {
+    const cache = await caches.open(CACHE_NAME);
+    // Cache each asset independently: one missing/offline file must not cancel the
+    // entire atomic addAll() operation and leave the app with an empty offline cache.
+    const results = await Promise.allSettled(LOCAL_FILES.map((url) => cache.add(url)));
+    const failed = results.filter((result) => result.status === 'rejected').length;
+    if (failed) console.warn(`[SW] ${failed} precache item(s) could not be saved; the rest remain available.`);
+    await self.skipWaiting();
+  })());
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(
-    caches.keys().then((keys) => {
-      return Promise.all(
-        keys.filter((k) => k !== CACHE_NAME && k !== 'kitobkhona-pdf-cache-v1').map((k) => caches.delete(k))
-      );
-    })
-  );
-  self.clients.claim();
-  scheduleBooksJsonUpdate();
+  event.waitUntil((async () => {
+    const keys = await caches.keys();
+    await Promise.all(keys
+      .filter((key) => key !== CACHE_NAME && key !== 'kitobkhona-pdf-cache-v1')
+      .map((key) => caches.delete(key)));
+    await self.clients.claim();
+    scheduleBooksJsonUpdate();
+  })());
 });
 
 async function updateBooksJson() {

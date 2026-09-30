@@ -539,7 +539,11 @@
   // ---------- мини-браузер (только ⟳ и ✕) ----------
   var pbrUrl = '';
   window.pbrOpen = function (url) {
-    pbrUrl = url;
+    var safeUrl;
+    try { var parsed = new URL(String(url || ''), location.href); if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return; safeUrl = parsed.href; }
+    catch (e) { return; }
+    if (window.AndroidBridge && typeof AndroidBridge.openExternalUrl === 'function') { AndroidBridge.openExternalUrl(safeUrl); return; }
+    pbrUrl = safeUrl;
     var el = document.getElementById('pbr');
     var bar = document.getElementById('pbrBar');
     var fr = document.getElementById('pbrFrame');

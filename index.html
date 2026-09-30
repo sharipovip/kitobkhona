@@ -1082,8 +1082,8 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .announce-top.show{ transform:translateY(0) !important; opacity:1 !important; }
 
 </style>
-<script src="config.js?v=66"></script>
-<script src="cache.js?v=43"></script>
+<script src="config.js?v=67"></script>
+<script src="cache.js?v=44"></script>
 <script src="president.js?v=2"></script>
 <script src="quotes-data.js?v=44"></script>
 
@@ -3347,8 +3347,18 @@ let currentInitialBrowserUrl = '';
 let browserZoomScale = 1.0;
 
 function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle = 'Сомонаи давлатӣ', siteId = '') {
+  let safeUrl;
+  try {
+    const parsed = new URL(String(initialUrl || ''), location.href);
+    if (!['https:', 'http:'].includes(parsed.protocol)) return;
+    safeUrl = parsed.href;
+  } catch (e) { return; }
+  if (window.AndroidBridge && typeof AndroidBridge.openExternalUrl === 'function') {
+    AndroidBridge.openExternalUrl(safeUrl);
+    return;
+  }
   document.getElementById('inappBrowserModal')?.remove();
-  currentInitialBrowserUrl = initialUrl;
+  currentInitialBrowserUrl = safeUrl;
   browserZoomScale = 1.0;
 
   history.pushState({ inAppBrowserOpen: true }, '');
@@ -3365,7 +3375,7 @@ function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle =
 
       <!-- Саҳифа фавран нишон дода мешавад (оҳиста-оҳиста пурра мешавад) —
            дигар интизори пурракашолуд нест, танҳо хати раванд дар боло -->
-      <iframe class="inapp-iframe" id="browserFrame" src="${initialUrl}" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" onload="onBrowserFrameLoaded()"></iframe>
+      <iframe class="inapp-iframe" id="browserFrame" sandbox="allow-scripts allow-same-origin allow-forms allow-popups allow-modals" onload="onBrowserFrameLoaded()"></iframe>
 
       <div class="inapp-offline-panel" id="browserOfflinePanel">
         <div class="off-title">📡 Интернет дастрас нест</div>
@@ -3385,6 +3395,8 @@ function openMiniBrowser(initialUrl = 'https://www.president.tj', initialTitle =
   `;
 
   document.body.appendChild(modal);
+  const browserFrame = document.getElementById('browserFrame');
+  if (browserFrame) browserFrame.src = safeUrl;
   initBrowserPinchZoom();
   // Агар интернет набошад — офлайн-панел бо сурати сомона нишон дода мешавад
   if (!navigator.onLine) showBrowserOfflinePanel(initialTitle, siteId);
@@ -3415,7 +3427,11 @@ function browserRetryOnline() {
 
 // Сомонаҳое, ки дар фрейм кушода намешаванд (X-Frame-Options) — дар браузери берунӣ
 function openExternalSite(url) {
-  window.open(url, '_blank', 'noopener,noreferrer');
+  let safeUrl;
+  try { const parsed = new URL(String(url || ''), location.href); if (!['https:', 'http:'].includes(parsed.protocol)) return; safeUrl = parsed.href; }
+  catch (e) { return; }
+  if (window.AndroidBridge && typeof AndroidBridge.openExternalUrl === 'function') AndroidBridge.openExternalUrl(safeUrl);
+  else window.open(safeUrl, '_blank', 'noopener,noreferrer');
 }
 
 function browserBack() {
