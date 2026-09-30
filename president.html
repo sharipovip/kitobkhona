@@ -389,6 +389,18 @@
         .catch(function () { shareTextOnly(); });
       return;
     }
+    // 2) СТАРЫЙ APK: тот же мостик, что и «мубодилаи китоб» (shareFile) —
+    //    фото откроется в выборе программ, только без текстовой подписи
+    if (curPhoto && typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.shareFile === 'function' && !(navigator.canShare && navigator.share)) {
+      fetch(curPhoto.big).then(function (r) { if (!r.ok) throw 0; return r.blob(); })
+        .then(function (blob) {
+          return blobToB64(blob).then(function (b64) {
+            AndroidBridge.shareFile(b64, curPhoto.name, blob.type || 'image/jpeg');
+          });
+        })
+        .catch(function () { shareTextOnly(); });
+      return;
+    }
     if (!curPhoto || !(navigator.canShare && navigator.share)) { shareTextOnly(); return; }
     fetch(curPhoto.big).then(function (r) { if (!r.ok) throw 0; return r.blob(); })
       .then(function (blob) {
