@@ -1,3 +1,17 @@
+(function installResponsiveViewportGuard() {
+  if (typeof document === 'undefined' || document.getElementById('kkhResponsiveViewportGuard')) return;
+  var style = document.createElement('style');
+  style.id = 'kkhResponsiveViewportGuard';
+  style.textContent = [
+    'html, body { max-width: 100% !important; }',
+    'body { overflow-x: clip !important; }',
+    '@supports not (overflow-x: clip) { html, body { overflow-x: hidden !important; } }',
+    'img, video, canvas, iframe { max-width: 100% !important; }',
+    'main, section, article, .phone-wrapper, .main-content, .reader-wrapper, .page { min-width: 0; }'
+  ].join('\n');
+  (document.head || document.documentElement).appendChild(style);
+})();
+
 
 const KITOB_CONFIG = {
   EDGE_API_BASE: 'https://kitobkhona-edge.tojik.workers.dev',
@@ -8,7 +22,7 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '2.0.1';
+const APP_VERSION = '3.0.0';
 
 const KKH_THEMES = {
   dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
