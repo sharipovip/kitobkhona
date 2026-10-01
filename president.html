@@ -184,7 +184,7 @@
   <div class="viewer" id="viewer" onclick="this.classList.remove('open')">
     <div class="viewer-acts">
       <button class="viewer-act" id="vwDl" onclick="event.stopPropagation();vwDownload()" aria-label="Боркунӣ">⬇️</button>
-      <button class="viewer-act" id="vwSh" onclick="event.stopPropagation();vwShare()" aria-label="Пахш кардан">📤</button>
+      <button class="viewer-act" id="vwSh" onclick="window.vwShare(event)" aria-label="Пахш кардан">📤</button>
     </div>
     <button class="viewer-x" onclick="event.stopPropagation();document.getElementById('viewer').classList.remove('open')">✕</button>
     <img id="viewerImg" alt="">
@@ -327,7 +327,7 @@
     content.innerHTML =
       '<div class="art">' +
       '<div class="art-head"><div class="art-cat">' + cat.emoji + ' ' + esc(cat.label) + '</div>' +
-      '<button type="button" class="art-share" onclick="shareArticle()">📤 Мубодила кардан</button></div>' +
+      '<button type="button" class="art-share" onclick="window.shareArticle()">📤 Мубодила кардан</button></div>' +
       '<div class="art-title">' + esc(a.title) + '</div>' +
       '<div class="art-date">🕘 ' + esc(P.formatDate(a.publish)) + '</div>' +
       photosHtml +
@@ -341,6 +341,7 @@
         openViewer(i);
       });
     });
+    primeSharePhoto(articleSharePhoto(null));
   }
 
   // ---------- просмотр фото ----------
@@ -353,6 +354,7 @@
     curPhoto = { big: src, name: nm };
     document.getElementById('viewerImg').src = src;
     document.getElementById('viewer').classList.add('open');
+    primeSharePhoto(curPhoto);
   }
 
   // ---------- Поделиться новостью: текст + фотография, если платформа поддерживает ----------
@@ -425,13 +427,13 @@
       document.body.appendChild(area); area.select();
       var ok = false;
       try { ok = document.execCommand('copy'); } catch (e) {}
-      area.remove();
+      if (area.parentNode) area.parentNode.removeChild(area);
       if (!ok) throw new Error('copy failed');
     });
   }
   function showShareChooser(photo, text) {
     var old = document.getElementById('presidentShareOverlay');
-    if (old) old.remove();
+    if (old && old.parentNode) old.parentNode.removeChild(old);
     var overlay = document.createElement('div');
     overlay.id = 'presidentShareOverlay';
     overlay.className = 'share-choice-overlay';
@@ -447,11 +449,12 @@
     close.textContent = '✕'; close.setAttribute('aria-label', 'Пӯшидан');
     var onEscape;
     var dismiss = function () {
-      overlay.remove();
+      if (overlay.parentNode) overlay.parentNode.removeChild(overlay);
       if (onEscape) document.removeEventListener('keydown', onEscape);
     };
     close.addEventListener('click', dismiss);
-    head.append(title, close);
+    head.appendChild(title);
+    head.appendChild(close);
     var preview = document.createElement('p'); preview.className = 'share-choice-preview';
     preview.textContent = curArt ? curArt.title : 'Хабар';
     var actions = document.createElement('div'); actions.className = 'share-choice-actions';
@@ -484,7 +487,10 @@
     hint.textContent = photo
       ? 'Агар мубодилаи файл дастгирӣ нашавад, матн ва пайванди акс фиристода мешаванд.'
       : 'Барномаи ирсолро интихоб кунед.';
-    dialog.append(head, preview, actions, hint);
+    dialog.appendChild(head);
+    dialog.appendChild(preview);
+    dialog.appendChild(actions);
+    dialog.appendChild(hint);
     overlay.appendChild(dialog);
     overlay.addEventListener('click', function (event) { if (event.target === overlay) dismiss(); });
     onEscape = function (event) {
@@ -494,69 +500,157 @@
     document.body.appendChild(overlay);
     close.focus();
   }
-  function fetchShareBlob(photo) {
-    return fetch(photo.big, { mode: 'cors', cache: 'force-cache' }).then(function (response) {
-      if (!response.ok) throw new Error('HTTP ' + response.status);
-      return response.blob();
-    }).then(function (blob) {
-      if (!blob.size || blob.size > 30 * 1024 * 1024) throw new Error('image size is not shareable');
-      var mime = blob.type && blob.type.indexOf('image/') === 0 ? blob.type : 'image/jpeg';
-      return { blob: blob, mime: mime, name: photo.name };
+  var shareBlobCache = Object.create(null);
+  var shareBlobPending = Object.create(null);
+  function fetchShareBlob(photo, timeoutMs) {
+    var controller = null;
+    var options = { mode: 'cors', cache: 'force-cache' };
+    if (typeof AbortController === 'function') {
+      controller = new AbortController();
+      options.signal = controller.signal;
+    }
+    var request;
+    try {
+      request = fetch(photo.big, options).then(function (response) {
+        if (!response.ok) throw new Error('HTTP ' + response.status);
+        return response.blob();
+      }).then(function (blob) {
+        if (!blob.size || blob.size > 30 * 1024 * 1024) throw new Error('image size is not shareable');
+        var mime = blob.type && blob.type.indexOf('image/') === 0 ? blob.type : 'image/jpeg';
+        return { blob: blob, mime: mime, name: photo.name };
+      });
+    } catch (error) {
+      return Promise.reject(error);
+    }
+    var timer;
+    var timeout = new Promise(function (resolve, reject) {
+      timer = setTimeout(function () {
+        if (controller) { try { controller.abort(); } catch (e) {} }
+        reject(new Error('image share timed out'));
+      }, timeoutMs || 8000);
     });
+    return Promise.race([request, timeout]).finally(function () { clearTimeout(timer); });
   }
-  async function shareNews(preferredPhoto) {
-    if (!curArt) return;
+  function getShareBlob(photo, timeoutMs) {
+    if (!photo || !photo.big) return Promise.reject(new Error('photo unavailable'));
+    if (shareBlobCache[photo.big]) return Promise.resolve(shareBlobCache[photo.big]);
+    if (shareBlobPending[photo.big]) return shareBlobPending[photo.big];
+    var request = fetchShareBlob(photo, timeoutMs).then(function (image) {
+      shareBlobCache[photo.big] = image;
+      return image;
+    });
+    shareBlobPending[photo.big] = request;
+    request.then(function () { delete shareBlobPending[photo.big]; }, function () { delete shareBlobPending[photo.big]; });
+    return request;
+  }
+  function canShareImageFiles() {
+    if (typeof File !== 'function' || typeof navigator.canShare !== 'function') return false;
+    try {
+      var probe = new File([new Uint8Array([1])], 'share-test.jpg', { type: 'image/jpeg' });
+      return navigator.canShare({ files: [probe] });
+    } catch (e) { return false; }
+  }
+  function primeSharePhoto(photo) {
+    if (!photo || !canShareImageFiles()) return;
+    getShareBlob(photo, 7000).catch(function () {});
+  }
+  function hasNativeShareMethod(name) {
+    return typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge[name] === 'function';
+  }
+  function shareTextNatively(text, title) {
+    if (!hasNativeShareMethod('shareText')) return false;
+    try {
+      AndroidBridge.shareText(text, title);
+      return true;
+    } catch (e) {
+      console.warn('Native text share unavailable:', e);
+      return false;
+    }
+  }
+  function shareNews(preferredPhoto) {
+    if (!curArt) { pzToast('Хабар ҳанӯз омода нест'); return; }
     var photo = articleSharePhoto(preferredPhoto);
-    var text = buildShareText(photo ? 2400 : 4000, photo && photo.big);
     var title = curArt.title || 'Хабар';
+    var text = buildShareText(4000, photo && photo.big);
+    var nativeCaption = buildShareText(2400);
 
-    // Android app: use the native chooser with the article image and caption.
-    if (photo && typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.shareImageWithText === 'function') {
+    // Updated Android bridge downloads the public Flickr image itself; no WebView CORS/base64 wait.
+    if (photo && hasNativeShareMethod('shareRemoteImage')) {
       try {
-        var nativeImage = await fetchShareBlob(photo);
-        var b64 = await blobToB64(nativeImage.blob);
-        AndroidBridge.shareImageWithText(b64, nativeImage.name, nativeImage.mime, buildShareText(2400));
+        pzToast('Акс барои мубодила омода мешавад…');
+        AndroidBridge.shareRemoteImage(photo.big, photo.name, 'image/jpeg', nativeCaption, title);
         return;
-      } catch (e) { console.warn('Native image share unavailable:', e); }
-    }
-    // Older app bridge can still pass the image file to Android's native share sheet.
-    if (photo && typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge.shareFile === 'function') {
-      try {
-        var legacyImage = await fetchShareBlob(photo);
-        var legacyB64 = await blobToB64(legacyImage.blob);
-        AndroidBridge.shareFile(legacyB64, legacyImage.name, legacyImage.mime);
-        return;
-      } catch (e) { console.warn('Legacy image share unavailable:', e); }
+      } catch (e) { console.warn('Native remote image share unavailable:', e); }
     }
 
+    // Compatibility with already installed builds that only accept base64 images.
+    if (photo && hasNativeShareMethod('shareImageWithText')) {
+      pzToast('Акс барои мубодила омода мешавад…');
+      getShareBlob(photo, 8000).then(function (image) {
+        return blobToB64(image.blob).then(function (base64) {
+          AndroidBridge.shareImageWithText(base64, image.name, image.mime, nativeCaption);
+        });
+      }).catch(function (e) {
+        console.warn('Legacy native image share unavailable:', e);
+        pzToast('Акс дастнорас аст — матни хабар мубодила мешавад');
+        if (!shareTextNatively(text, title)) showShareChooser(photo, text);
+      });
+      return;
+    }
+
+    // Older Android bridge without the combined method can still share the photo file.
+    if (photo && hasNativeShareMethod('shareFile')) {
+      pzToast('Акс барои мубодила омода мешавад…');
+      getShareBlob(photo, 8000).then(function (image) {
+        return blobToB64(image.blob).then(function (base64) {
+          AndroidBridge.shareFile(base64, image.name, image.mime);
+        });
+      }).catch(function (e) {
+        console.warn('Legacy native file share unavailable:', e);
+        pzToast('Акс дастнорас аст — матни хабар мубодила мешавад');
+        if (!shareTextNatively(text, title)) showShareChooser(photo, text);
+      });
+      return;
+    }
+
+    // Android text-only fallback is invoked synchronously, so it does not wait on image networking.
+    if (shareTextNatively(text, title)) return;
+
+    // Web Share requires a live click gesture. Never await a photo download before this call.
     if (typeof navigator.share === 'function') {
-      if (photo && typeof File === 'function') {
+      var shareData = { title: title, text: text };
+      var cachedImage = photo && shareBlobCache[photo.big];
+      if (cachedImage && canShareImageFiles()) {
         try {
-          var webImage = await fetchShareBlob(photo);
-          var file = new File([webImage.blob], webImage.name, { type: webImage.mime });
-          if (navigator.canShare && navigator.canShare({ files: [file] })) {
-            await navigator.share({ title: title, text: buildShareText(2400), files: [file] });
-            return;
-          }
-        } catch (e) {
-          if (e && e.name === 'AbortError') return;
-          console.warn('Web image share unavailable; trying text share:', e);
-        }
+          var file = new File([cachedImage.blob], cachedImage.name, { type: cachedImage.mime });
+          if (navigator.canShare({ files: [file] })) shareData.files = [file];
+        } catch (e) { console.warn('Cached image cannot be shared as a file:', e); }
       }
       try {
-        await navigator.share({ title: title, text: text });
+        var result = navigator.share(shareData);
+        if (result && typeof result.then === 'function') {
+          result.then(function () {}, function (e) {
+            if (e && e.name === 'AbortError') return;
+            console.warn('Web share unavailable:', e);
+            showShareChooser(photo, text);
+          });
+        }
         return;
       } catch (e) {
         if (e && e.name === 'AbortError') return;
-        console.warn('Web text share unavailable:', e);
+        console.warn('Web share unavailable:', e);
       }
     }
 
-    // Desktop/older browsers get real share-target options instead of a clipboard-only action.
+    // Browsers without Web Share get real target options immediately.
     showShareChooser(photo, text);
   }
   window.shareArticle = function () { shareNews(articleSharePhoto(null)); };
-  window.vwShare = function () { if (curArt) shareNews(curPhoto); };
+  window.vwShare = function (event) {
+    if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
+    if (curArt) shareNews(curPhoto);
+    else pzToast('Хабар ҳанӯз омода нест');
+  };
 
   // ---------- скачивание фото — схема «Рамзҳои давлатӣ» ----------
   function pdlShow(name) {
