@@ -136,7 +136,7 @@
   .pbr-bar { position:absolute; top:0; left:0; right:0; height:3px; background:rgba(201,168,76,.15); z-index:10; overflow:hidden; }
   .pbr-fill { position:absolute; top:0; bottom:0; left:0; width:45%; background:linear-gradient(90deg,#C9A84C,#E8C96D,#FFFFFF); border-radius:2px; animation:pbrLoad 1.2s infinite ease-in-out; }
   @keyframes pbrLoad { 0%{left:-40%;width:40%} 50%{left:30%;width:60%} 100%{left:100%;width:40%} }
-  .pbr-btns { position:absolute; top:calc(18px + var(--safe-top)); right:10px; display:flex; flex-direction:column; gap:8px; z-index:30; }
+  .pbr-btns { position:absolute; top:calc(68px + var(--safe-top)); right:10px; display:flex; flex-direction:column; gap:8px; z-index:30; }
   .pbr-btn { width:38px; height:38px; border-radius:50%; border:0; background:rgba(10,18,30,.55); color:#fff; font-size:17px; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; }
   .pbr-btn:active { transform:scale(.92); }
 
@@ -184,7 +184,7 @@
   <div class="viewer" id="viewer" onclick="this.classList.remove('open')">
     <div class="viewer-acts">
       <button class="viewer-act" id="vwDl" onclick="event.stopPropagation();vwDownload()" aria-label="Боркунӣ">⬇️</button>
-      <button class="viewer-act" id="vwSh" onclick="window.vwShare(event)" aria-label="Пахш кардан">📤</button>
+      <button class="viewer-act" id="vwSh" type="button" aria-label="Пахш кардан">📤</button>
     </div>
     <button class="viewer-x" onclick="event.stopPropagation();document.getElementById('viewer').classList.remove('open')">✕</button>
     <img id="viewerImg" alt="">
@@ -327,21 +327,32 @@
     content.innerHTML =
       '<div class="art">' +
       '<div class="art-head"><div class="art-cat">' + cat.emoji + ' ' + esc(cat.label) + '</div>' +
-      '<button type="button" class="art-share" onclick="window.shareArticle()">📤 Мубодила кардан</button></div>' +
+      '<button type="button" class="art-share">📤 Мубодила кардан</button></div>' +
       '<div class="art-title">' + esc(a.title) + '</div>' +
       '<div class="art-date">🕘 ' + esc(P.formatDate(a.publish)) + '</div>' +
       photosHtml +
       '<div class="art-text">' + P.sanitizeHtml(a.text || a.teaser) + '</div>' +
       '<div class="art-src"><span>Хабар аз сомонаи prezident.tj</span>' +
-      '<a class="art-site" href="https://prezident.tj" onclick="event.preventDefault();pbrOpen(\'' + (P.SITE_URL + '/event/news/' + a.id) + '\')">↗ Кушодан дар сомона</a></div>' +
+      '<button type="button" class="art-site" data-site-url="' + esc(articleShareUrl()) + '">↗ Кушодан дар сомона</button></div>' +
       '</div>';
+    var articleShareButton = content.querySelector('.art-share');
+    if (articleShareButton) articleShareButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      window.shareArticle();
+    });
+    var articleSiteButton = content.querySelector('.art-site');
+    if (articleSiteButton) articleSiteButton.addEventListener('click', function (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      pbrOpen(articleSiteButton.getAttribute('data-site-url'));
+    });
     content.querySelectorAll('.art-ph').forEach(function (img, i) {
       img.addEventListener('click', function (ev) {
         ev.stopPropagation();
         openViewer(i);
       });
     });
-    primeSharePhoto(articleSharePhoto(null));
   }
 
   // ---------- просмотр фото ----------
@@ -567,90 +578,106 @@
       return false;
     }
   }
-  function shareNews(preferredPhoto) {
+  function tryWebShare(data, photo, text) {
+    try {
+      var result = navigator.share(data);
+      if (result && typeof result.then === 'function') {
+        result.then(function () {}, function (error) {
+          if (error && error.name === 'AbortError') return;
+          console.warn('Web share unavailable:', error);
+          showShareChooser(photo, text);
+        });
+      }
+      return true;
+    } catch (error) {
+      if (error && error.name === 'AbortError') return true;
+      console.warn('Web share unavailable:', error);
+      return false;
+    }
+  }
+  function shareArticleText() {
     if (!curArt) { pzToast('Хабар ҳанӯз омода нест'); return; }
-    var photo = articleSharePhoto(preferredPhoto);
     var title = curArt.title || 'Хабар';
-    var text = buildShareText(4000, photo && photo.big);
+    var text = buildShareText(4000);
+
+    // The news-text button must not wait for a photo download.
+    if (shareTextNatively(text, title)) return;
+    if (typeof navigator.share === 'function' && tryWebShare({
+      title: title,
+      text: text,
+      url: articleShareUrl()
+    }, null, text)) return;
+    showShareChooser(null, text);
+  }
+  function shareCurrentPhoto() {
+    if (!curArt || !curPhoto) { pzToast('Аввал акси хабарро кушоед'); return; }
+    var photo = articleSharePhoto(curPhoto);
+    if (!photo) { pzToast('Акси хабар дастрас нест'); return; }
+    var title = curArt.title || 'Хабар';
+    var text = buildShareText(2400, photo.big);
     var nativeCaption = buildShareText(2400);
 
-    // Updated Android bridge downloads the public Flickr image itself; no WebView CORS/base64 wait.
-    if (photo && hasNativeShareMethod('shareRemoteImage')) {
+    // Updated Android bridge shares a file from its Glide disk-download path.
+    if (hasNativeShareMethod('shareRemoteImage')) {
+      pzToast('Омодасозии акс барои мубодила…');
       try {
-        pzToast('Акс барои мубодила омода мешавад…');
         AndroidBridge.shareRemoteImage(photo.big, photo.name, 'image/jpeg', nativeCaption, title);
         return;
-      } catch (e) { console.warn('Native remote image share unavailable:', e); }
+      } catch (error) { console.warn('Native remote image share unavailable:', error); }
     }
 
-    // Compatibility with already installed builds that only accept base64 images.
-    if (photo && hasNativeShareMethod('shareImageWithText')) {
-      pzToast('Акс барои мубодила омода мешавад…');
+    // Keep the same AndroidBridge -> Base64 -> native share flow as reader.html/kitobho.html.
+    if (hasNativeShareMethod('shareImageWithText')) {
+      pzToast('Омодасозии акс барои мубодила…');
       getShareBlob(photo, 8000).then(function (image) {
         return blobToB64(image.blob).then(function (base64) {
           AndroidBridge.shareImageWithText(base64, image.name, image.mime, nativeCaption);
         });
-      }).catch(function (e) {
-        console.warn('Legacy native image share unavailable:', e);
-        pzToast('Акс дастнорас аст — матни хабар мубодила мешавад');
+      }).catch(function (error) {
+        console.warn('Native image share unavailable:', error);
         if (!shareTextNatively(text, title)) showShareChooser(photo, text);
       });
       return;
     }
-
-    // Older Android bridge without the combined method can still share the photo file.
-    if (photo && hasNativeShareMethod('shareFile')) {
-      pzToast('Акс барои мубодила омода мешавад…');
+    if (hasNativeShareMethod('shareFile')) {
+      pzToast('Омодасозии акс барои мубодила…');
       getShareBlob(photo, 8000).then(function (image) {
         return blobToB64(image.blob).then(function (base64) {
           AndroidBridge.shareFile(base64, image.name, image.mime);
         });
-      }).catch(function (e) {
-        console.warn('Legacy native file share unavailable:', e);
-        pzToast('Акс дастнорас аст — матни хабар мубодила мешавад');
+      }).catch(function (error) {
+        console.warn('Native file share unavailable:', error);
         if (!shareTextNatively(text, title)) showShareChooser(photo, text);
       });
       return;
     }
 
-    // Android text-only fallback is invoked synchronously, so it does not wait on image networking.
-    if (shareTextNatively(text, title)) return;
-
-    // Web Share requires a live click gesture. Never await a photo download before this call.
+    // Browser Web Share must be called in the original tap handler, before any await/fetch.
     if (typeof navigator.share === 'function') {
-      var shareData = { title: title, text: text };
-      var cachedImage = photo && shareBlobCache[photo.big];
+      var shareData = { title: title, text: text, url: articleShareUrl() };
+      var cachedImage = shareBlobCache[photo.big];
       if (cachedImage && canShareImageFiles()) {
         try {
           var file = new File([cachedImage.blob], cachedImage.name, { type: cachedImage.mime });
           if (navigator.canShare({ files: [file] })) shareData.files = [file];
-        } catch (e) { console.warn('Cached image cannot be shared as a file:', e); }
+        } catch (error) { console.warn('Cached photo cannot be shared as a file:', error); }
       }
-      try {
-        var result = navigator.share(shareData);
-        if (result && typeof result.then === 'function') {
-          result.then(function () {}, function (e) {
-            if (e && e.name === 'AbortError') return;
-            console.warn('Web share unavailable:', e);
-            showShareChooser(photo, text);
-          });
-        }
-        return;
-      } catch (e) {
-        if (e && e.name === 'AbortError') return;
-        console.warn('Web share unavailable:', e);
-      }
+      if (tryWebShare(shareData, photo, text)) return;
     }
-
-    // Browsers without Web Share get real target options immediately.
+    if (shareTextNatively(text, title)) return;
     showShareChooser(photo, text);
   }
-  window.shareArticle = function () { shareNews(articleSharePhoto(null)); };
+  window.shareArticle = shareArticleText;
   window.vwShare = function (event) {
     if (event && typeof event.stopPropagation === 'function') event.stopPropagation();
-    if (curArt) shareNews(curPhoto);
-    else pzToast('Хабар ҳанӯз омода нест');
+    shareCurrentPhoto();
   };
+  var viewerShareButton = document.getElementById('vwSh');
+  if (viewerShareButton) viewerShareButton.addEventListener('click', function (event) {
+    event.preventDefault();
+    event.stopPropagation();
+    shareCurrentPhoto();
+  });
 
   // ---------- скачивание фото — схема «Рамзҳои давлатӣ» ----------
   function pdlShow(name) {
@@ -781,7 +808,6 @@
     var safeUrl;
     try { var parsed = new URL(String(url || ''), location.href); if (parsed.protocol !== 'https:' && parsed.protocol !== 'http:') return; safeUrl = parsed.href; }
     catch (e) { return; }
-    if (window.AndroidBridge && typeof AndroidBridge.openExternalUrl === 'function') { AndroidBridge.openExternalUrl(safeUrl); return; }
     pbrUrl = safeUrl;
     var el = document.getElementById('pbr');
     var bar = document.getElementById('pbrBar');
@@ -789,7 +815,7 @@
     if (!el || !fr) return;
     el.classList.add('open');
     if (bar) bar.style.display = 'block';
-    fr.src = url;
+    fr.src = safeUrl;
     try { history.pushState({ pbrOpen: true }, ''); } catch (e) {}
   };
   window.pbrClose = function () {
