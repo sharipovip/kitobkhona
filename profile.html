@@ -1842,17 +1842,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     el('ownAge').textContent = ageText;
   }
 
+  function redirectToLogin() {
+    const params = new URLSearchParams({ mode: 'login', next: 'profile' });
+    if (targetUserId && /^\d+$/.test(String(targetUserId))) params.set('user', String(targetUserId));
+    location.replace('login.html?' + params.toString());
+  }
+
   async function loadProfile() {
     try {
-      const savedToken = localStorage.getItem('kk_token');
-      const savedUserId = localStorage.getItem('kk_user_id');
-      const result = await AutoLogin.autoLogin(false);
-      if (!result && !savedToken && !savedUserId) { showScreen('screen-guest'); return; }
-      currentUserId = String((result && result.userId) ? result.userId : (savedUserId || ''));
-      if (!currentUserId) { showScreen('screen-guest'); return; }
+      // Do not silently register a guest just because the Profile tab was opened.
+      const result = await AutoLogin.autoLogin(true);
+      if (!result) { redirectToLogin(); return; }
+      currentUserId = String(result.userId || localStorage.getItem('kk_user_id') || '');
+      if (!currentUserId) { redirectToLogin(); return; }
 
       const profileId = String(targetUserId || currentUserId);
-      if (!profileId) { showScreen('screen-guest'); return; }
+      if (!profileId) { redirectToLogin(); return; }
       const loadSequence = ++profileLoadSequence;
       currentProfileUserId = profileId;
       isOwnProfile = (profileId === currentUserId);

@@ -720,7 +720,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if (el('guestProgressBar')) el('guestProgressBar').style.width = '100%';
       if (el('guestProgressText')) el('guestProgressText').textContent = '100%';
       if (el('guestProgressStatus')) el('guestProgressStatus').textContent = '✓ Ҳисоб омода шуд';
-      setTimeout(() => location.replace('index.html?guest=ready'), 550);
+      setTimeout(() => location.replace(authSuccessTarget('guest')), 550);
     } catch(e) {
       clearInterval(timer);
       if (String(e.message||'').includes('заблокирован')) {
@@ -764,6 +764,20 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       el('ctaBtn').textContent = 'Бақайдгирӣ';
     }
   }
+
+  function authSuccessTarget(kind) {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('next') === 'profile') {
+      const userId = params.get('user');
+      return userId && /^\d+$/.test(userId)
+        ? 'profile.html?user=' + encodeURIComponent(userId)
+        : 'profile.html';
+    }
+    if (kind === 'guest') return 'index.html?guest=ready';
+    if (kind === 'registered') return 'index.html?registered=1';
+    return 'index.html';
+  }
+
   ['tabLogin','tabReg'].forEach(function(id) {
     el(id).addEventListener('click', function(){ if (id === 'tabLogin') setMode('login'); else setMode('reg'); });
   });
@@ -799,7 +813,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         if (role === 'admin') {
           window.location.href = 'admin.html';
         } else {
-          window.location.href = 'index.html';
+          window.location.href = authSuccessTarget('login');
         }
       }, 600);
     } catch (e) {
@@ -885,7 +899,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
       showMsg('Ҳисоб сохта шуд — шумо автоматӣ ворид шудед!', 'success');
       cta.textContent = 'Ворид шудед ✓';
-      setTimeout(function(){ window.location.replace('index.html?registered=1'); }, 900);
+      setTimeout(function(){ window.location.replace(authSuccessTarget('registered')); }, 900);
     } catch (e) {
       if (e.message.includes('409') || e.message.includes('exists')) showMsg('Ин логин ё почта аллакай истифода мешавад');
       else showMsg('Хатогӣ: ' + e.message, 'error');
@@ -953,6 +967,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     } catch (e) { el('resetStatus').textContent = 'Хатогӣ: ' + e.message; el('resetStatus').className = 'reset-status bad'; }
   }
 
+  const requestedMode = new URLSearchParams(window.location.search).get('mode');
+  if (requestedMode === 'login' || requestedMode === 'reg') {
+    showLoginForm();
+    setMode(requestedMode);
+  }
+
   (async function() {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
@@ -970,7 +990,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           if (role === 'admin') {
             window.location.href = 'admin.html';
           } else {
-            window.location.href = 'index.html';
+            window.location.href = authSuccessTarget('login');
           }
           return;
         }
