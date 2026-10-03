@@ -2224,8 +2224,23 @@ function pinButton(bookId, name, author, folder, file, cover) {
   return `<button type="button" class="pin-v3 ${active ? 'active' : ''}" data-pin data-book-id="${esc(cleanId)}" data-book-title="${esc(name)}" data-book-author="${esc(author || '')}" data-folder="${esc(folder || '')}" data-file="${esc(file || '')}" data-cover="${esc(cover || '')}" aria-label="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}" onclick="toggleMyBook(event,this)" title="${active ? 'Аз Китобҳои ман хориҷ кардан' : 'Ба Китобҳои ман илова кардан'}">${active ? '📌' : '➕'}</button>`;
 }
 
+function cleanBookCardTitle(value){
+  let title=String(value??'').replace(/\s+/g,' ').trim();
+  if(!title)return '';
+  // Парсер PDF иногда записывает в name только метку поля метаданных, например "Subject:".
+  title=title.replace(/^(?:subject|title|book\s*title|document\s*title|name|тема|название)\s*[:：]\s*/iu,'').trim();
+  if(!title||/^(?:subject|title|book\s*title|document\s*title|name|тема|название|untitled|unknown|n\/a|na|none|null|undefined|no\s+title|not\s+available)[\s:：.!?_-]*$/iu.test(title))return '';
+  return title;
+}
+function getBookCardTitle(book,file){
+  const candidates=[book?.name,book?.title,book?.book_title,book?.bookTitle,book?.display_name,book?.displayName];
+  for(const candidate of candidates){const title=cleanBookCardTitle(candidate);if(title)return title;}
+  let fileName=String(file||book?.filename||book?.file_name||'').split(/[\\/]/).pop()||'';
+  try{fileName=decodeURIComponent(fileName)}catch(e){}
+  return cleanBookCardTitle(fileName.replace(/\.pdf$/i,''))||'Китоб';
+}
 function bookCard(b,folder,badge=''){
-  const file=b.file||((b.name||'book')+'.pdf'),name=b.name||file.replace(/\.pdf$/i,''),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||cover,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';
+  const file=b.file||b.filename||b.file_name||((b.name||'book')+'.pdf'),name=getBookCardTitle(b,file),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||cover,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';
   const tag=badge||'НАВ';
   return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3" style="position:relative"><div class="book-tag-v3">${tag}</div><img src="${coverSrc}" alt="Обложка: ${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(coversJson)}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="${coverStyle}"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,.3)">${esc(name)}</span><div data-book-badge style="display:${state.show?'flex':'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff">${state.icon}</div></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.author||'')}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div><div style="display:flex;align-items:center;gap:4px">${pinButton(bookId,name,b.author,folder,file,cover)}${bookmarkButton(bookId,name,b.author)}</div></div></div></div>`;
 }
@@ -3711,5 +3726,5 @@ loadNews(); // ахбороти расмӣ — баъди таърифи ҳам�
   });
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a44f3329c8d4c3f6',t:'MTc5MTA2NDYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
