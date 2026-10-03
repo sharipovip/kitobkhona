@@ -1,8 +1,18 @@
-const CACHE_NAME = 'kitobkhona-v108-original-3.0.2';
+const CACHE_NAME = 'kitobkhona-v109-offline-library-3.0.3';
 const LOCAL_FILES = [
   './',
   './index.html',
   './kitobho.html',
+  './offline-books.html',
+  './book_reviews.html',
+  './chat старй.html',
+  './delete-account.html',
+  './donandai_asarho.html',
+  './furugi_subhi_donoi.html',
+  './html_studio_full.html',
+  './ilm_furugi_marifat.html',
+  './shohnomahoni.html',
+  './vatani_azizi_man.html',
   './reader.html',
   './profile.html',
   './login.html',
@@ -16,8 +26,26 @@ const LOCAL_FILES = [
   './president.js',
   './president.html',
   './quotes-data.js',
+  './books.json',
+  './news.json',
   './splash_logo.png',
   './assets/hero/01-president-official.jpg',
+  './assets/hero/01-president-official-200.jpg',
+  './assets/hero/02-istiqlol-flag.jpg',
+  './assets/hero/03-vahdat-diplomacy.jpg',
+  './assets/hero/04-kishovarzi.jpg',
+  './assets/hero/05-president-young.jpg',
+  './assets/hero/06-zaboni-millat.jpg',
+  './assets/hero/07-chehrahoyi-mondagor.jpg',
+  './assets/hero/08-davlatdori.jpg',
+  './assets/hero/09-suhanroni.jpg',
+  './assets/hero/10-nishon-tojikiston.jpg',
+  './assets/libs/pdf.min.js',
+  './assets/libs/pdf.worker.min.js',
+  './assets/libs/epub.min.js',
+  './assets/libs/jszip.min.js',
+  './assets/libs/mammoth.browser.min.js',
+  './assets/libs/LICENSE-pdfjs.txt',
   './manifest.json',
   './search-index.json',
   './locations.js',
@@ -25,7 +53,6 @@ const LOCAL_FILES = [
   './offline.html',
   './privacy-policy.html',
   './terms.html',
-  './delete-account.html',
   './favicon.ico',
   './icon-192.png',
   './icon-512.png',
@@ -39,7 +66,13 @@ const LOCAL_FILES = [
   './assets/sites/ntc.jpg',
   './assets/sites/khatlon.jpg',
   './assets/symbols/parcham.png',
-  './assets/symbols/nishon.jpg'
+  './assets/symbols/nishon.jpg',
+  './shohnoma_banner.jpg',
+  './ilm_banner.jpg',
+  './furugi_banner.jpg',
+  './vatan_banner.jpg',
+  './donandai_banner.jpg',
+  ...Array.from({ length: 42 }, (_, index) => `./assets/hero/${index + 1}.jpeg`)
 ];
 // МУҲИМ: surudi_milli.mp3 (1.8МБ) ва 50 сурати newsimg (2МБ) ба пешкэш НАМЕРОХАНД —
 // онҳо ҳангоми аввалин дархост аз тарафи fetch-обработчик кэш мешаванд.
@@ -56,6 +89,11 @@ self.addEventListener('install', (event) => {
     const results = await Promise.allSettled(LOCAL_FILES.map((url) => cache.add(url)));
     const failed = results.filter((result) => result.status === 'rejected').length;
     if (failed) console.warn(`[SW] ${failed} precache item(s) could not be saved; the rest remain available.`);
+    // Keep the local artwork used as a fallback by the cached homepage news cards.
+    try {
+      const news = await cache.match('./news.json', { ignoreSearch: true });
+      if (news) await cacheNewsFallbackImages(cache, news.clone());
+    } catch (e) {}
     await self.skipWaiting();
   })());
 });
@@ -91,6 +129,16 @@ function scheduleBooksJsonUpdate() {
   setInterval(updateBooksJson, SYNC_INTERVAL);
 }
 
+async function cacheNewsFallbackImages(cache, response) {
+  try {
+    const data = await response.json();
+    const paths = Array.from(new Set((Array.isArray(data.items) ? data.items : [])
+      .map(item => String(item && item.site || ''))
+      .filter(path => /^assets\/newsimg\/[A-Za-z0-9_-]+(?:\/[A-Za-z0-9_-]+)*\.(?:jpg|jpeg|png|webp)$/i.test(path) && !path.includes('..'))));
+    await Promise.allSettled(paths.map(path => cache.add('./' + path.replace(/^\.\//, ''))));
+  } catch (e) {}
+}
+
 function safeCachePut(request, response) {
   // response.clone() иногда падает с "Response body is already used" — судя по всему,
   // редкая гонка на уровне WebView/браузера, а не ошибка в этом коде. Раньше это была
@@ -124,18 +172,35 @@ self.addEventListener('fetch', (event) => {
     })());
     return;
   }
-  // Ахборот: ҳамеша аввал шабака — то навтарин вариант нишон дода шавад
+  // Ахборот: шабака аввал, аммо кэши охирин ҳангоми офлайн ё хатои сервер.
   if (url.pathname.endsWith('/news.json') || url.pathname === '/news.json') {
     event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(event.request, { ignoreSearch: true });
       const network = fetch(event.request).then(response => {
         if (response && response.status === 200) {
           safeCachePut(event.request, response);
+          cacheNewsFallbackImages(cache, response.clone()).catch(() => {});
+          return response;
         }
-        return response;
+        return null;
       }).catch(() => null);
-      const net = await network;
-      if (net) return net;
-      return await caches.match(event.request) || Response.error();
+      return await network || cached || Response.error();
+    })());
+    return;
+  }
+  // Китобхона ва ҷустуҷӯ: stale-while-revalidate, то файлҳои асосӣ офлайн фавран дастрас шаванд.
+  if (url.pathname.endsWith('/books.json') || url.pathname === '/books.json' ||
+      url.pathname.endsWith('/search-index.json') || url.pathname === '/search-index.json') {
+    event.respondWith((async () => {
+      const cache = await caches.open(CACHE_NAME);
+      const cached = await cache.match(event.request, { ignoreSearch: true });
+      const network = fetch(event.request).then(response => {
+        if (response && response.status === 200) safeCachePut(event.request, response);
+        return response && response.status === 200 ? response : null;
+      }).catch(() => null);
+      if (cached) { network.catch(() => {}); return cached; }
+      return await network || Response.error();
     })());
     return;
   }
@@ -153,7 +218,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   event.respondWith(
-    caches.match(event.request).then((cached) => {
+    caches.match(event.request, { ignoreSearch: true }).then((cached) => {
       const networkFetch = fetch(event.request).then((response) => {
         if (response && response.status === 200) {
           const clone = response.clone();

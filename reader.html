@@ -7,9 +7,9 @@
 <title>Китобхона — Хондан</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-<script src="config.js?v=69"></script>
-<script src="cache.js?v=43"></script>
+<script src="./assets/libs/pdf.min.js"></script>
+<script src="config.js?v=70"></script>
+<script src="cache.js?v=45"></script>
 <style>
   
   :root {
@@ -811,7 +811,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 </div>
 
 <script>
-  pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  pdfjsLib.GlobalWorkerOptions.workerSrc = './assets/libs/pdf.worker.min.js';
 
   const $ = id => document.getElementById(id);
   const qs = new URL(location.href).searchParams;
@@ -1103,7 +1103,9 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     try {
       const m = cachedMap();
       const canonical = canonicalBookUrl(pdfUrl || url);
-      const meta = { url: canonical, name, cover, ts: Date.now(), size: bytes };
+      const oldKey = Object.keys(m).find(k => canonicalBookUrl(m[k]?.url || k) === canonical);
+      const previous = oldKey ? m[oldKey] : {};
+      const meta = { ...previous, url: canonical, name, cover, ts: Date.now(), size: bytes || previous.size || 0 };
       m[canonical] = meta;
       localStorage.setItem('kk_cached_books', JSON.stringify(m));
     } catch(e) {}
@@ -1603,7 +1605,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
         // slice(0) — нусха: pdf.js метавонад асосии буферро «бегирад»
         await cache.put(key, new Response(buf.slice(0), {
           status: 200,
-          headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(buf.byteLength), 'X-Kitob-Canonical': encodeURIComponent(key) }
+          headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(buf.byteLength), 'X-Kitob-Canonical': encodeURIComponent(key), 'X-Kitob-Cached-At': String(Date.now()) }
         }));
       }
     } catch (e) {}

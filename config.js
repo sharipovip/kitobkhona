@@ -191,6 +191,8 @@ function canonicalBookUrl(value) {
 }
 window.canonicalBookUrl=canonicalBookUrl;
 const KITOB_PDF_CACHE = 'kitobkhona-pdf-cache-v1';
+const KITOB_BOOK_RETENTION_KEY = 'kk_cached_books_retention_days';
+const KITOB_BOOK_RETENTION_OPTIONS = [0, 7, 10, 14, 20, 30, 90];
 const kitobPdfInflight = new Map();
 async function getCachedBookResponse(value){
   if(!('caches' in window))return null;
@@ -211,7 +213,7 @@ async function getOrFetchBookResponse(value,{onProgress}={}){
     const total=Number(response.headers.get('content-length')||0);let loaded=0,blob;
     if(response.body&&response.body.getReader){const reader=response.body.getReader(),chunks=[];while(true){const {done,value}=await reader.read();if(done)break;chunks.push(value);loaded+=value.byteLength;if(onProgress)onProgress(loaded,total)}blob=new Blob(chunks,{type:response.headers.get('content-type')||'application/pdf'});}
     else{blob=await response.blob();loaded=blob.size;if(onProgress)onProgress(loaded,total||loaded)}
-    const stored=new Response(blob,{status:200,headers:{'Content-Type':'application/pdf','Content-Length':String(blob.size),'X-Kitob-Canonical':encodeURIComponent(key)}});
+    const stored=new Response(blob,{status:200,headers:{'Content-Type':response.headers.get('content-type')||'application/pdf','Content-Length':String(blob.size),'X-Kitob-Canonical':encodeURIComponent(key),'X-Kitob-Cached-At':String(Date.now())}});
     // Ҳифз дар кэш ХАТОР НАМЕДИҲАД корро: агар ҳаҷми кэш пур бошад (китобҳои калон),
     // китоб БОЗ ҲАМ кор мекунад — танҳо кэш навишта намешавад (пеш ин хато тамоми
     // боркуниро бекор мекард ва ридер дар «100%» меистод).
@@ -781,13 +783,76 @@ function getToastEl() {
 async function cachedBookBlob(url,onProgress){
   const response=await getOrFetchBookResponse(url,{onProgress});return await response.blob();
 }
-function rememberCachedBook(url,name,blob){try{const m=JSON.parse(localStorage.getItem('kk_cached_books')||'{}'),key=canonicalBookUrl(url);m[key]={url:key,name:name||'Китоб',cover:'',ts:Date.now(),size:blob.size};localStorage.setItem('kk_cached_books',JSON.stringify(m))}catch(e){}}
 // Васлкунанда ва MIME-и китоб аз URL (pdf/epub/fb2/doc/docx/mp4/txt/zip) — ҳеҷ «.pdf»-и барқароринашаванда
 const BOOK_MIMES={pdf:'application/pdf',epub:'application/epub+zip',fb2:'application/x-fictionbook+xml',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',mp4:'video/mp4',m4v:'video/mp4',webm:'video/webm',txt:'text/plain',zip:'application/zip'};
 function bookFileExt(url){const m=String(url||'').split('?')[0].match(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)\s*$/i);return m?m[1].toLowerCase():''}
 function bookFileName(name,url){const ext=bookFileExt(url)||'pdf';const base=(name||'kitob').replace(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)$/i,'');return base+'.'+ext}
 function bookMime(url){return BOOK_MIMES[bookFileExt(url)||'pdf']||'application/pdf'}
 window.bookFileName=bookFileName;window.bookMime=bookMime;
+
+const KITOB_ALLOWED_RETENTION = new Set(KITOB_BOOK_RETENTION_OPTIONS);
+function readCachedBookMetaMap(){try{const v=JSON.parse(localStorage.getItem('kk_cached_books')||'{}');return v&&typeof v==='object'&&!Array.isArray(v)?v:{}}catch(e){return{}}}
+function matchingCachedMeta(map,key){for(const [storedKey,value] of Object.entries(map||{})){if(value&&canonicalBookUrl(value.url||storedKey)===key)return value}return null}
+function rememberCachedBook(url,name,blob){
+  try{
+    const m=readCachedBookMetaMap(),key=canonicalBookUrl(url),old=matchingCachedMeta(m,key)||{};
+    m[key]={...old,url:key,name:name||old.name||'Китоб',cover:old.cover||'',ts:Date.now(),size:blob&&Number(blob.size)||old.size||0};
+    localStorage.setItem('kk_cached_books',JSON.stringify(m));
+  }catch(e){}
+}
+function getCachedBookRetentionDays(){
+  try{const value=Number(localStorage.getItem(KITOB_BOOK_RETENTION_KEY)||0);return KITOB_ALLOWED_RETENTION.has(value)?value:0}catch(e){return 0}
+}
+function setCachedBookRetentionDays(value){
+  const days=Number(value);if(!KITOB_ALLOWED_RETENTION.has(days))throw new Error('Номуҳлати нигоҳдорӣ нодуруст аст');
+  try{localStorage.setItem(KITOB_BOOK_RETENTION_KEY,String(days))}catch(e){}
+  return pruneExpiredCachedBooks();
+}
+function bookUrlParts(value){
+  try{const u=new URL(value),parts=u.pathname.split('/').filter(Boolean);let path=[];
+    if(u.hostname==='raw.githubusercontent.com')path=parts.slice(3);
+    else if(u.hostname==='cdn.jsdelivr.net')path=parts.slice(3);
+    const decoded=path.map(x=>{try{return decodeURIComponent(x)}catch(e){return x}}),file=decoded.pop()||'';
+    return{file,folder:decoded.join('/'),name:file.replace(/\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)$/i,'')};
+  }catch(e){return{file:'',folder:'',name:''}}
+}
+async function listCachedBooks(){
+  if(!('caches' in window))return[];
+  const cache=await caches.open(KITOB_PDF_CACHE),requests=await cache.keys(),metaMap=readCachedBookMetaMap(),metaByUrl=new Map();
+  Object.entries(metaMap).forEach(([key,value])=>{if(value){try{metaByUrl.set(canonicalBookUrl(value.url||key),value)}catch(e){}}});
+  const found=new Map();
+  for(const request of requests){
+    const key=canonicalBookUrl(request.url);if(!bookFileExt(key))continue;
+    let response=null;try{response=await cache.match(request)}catch(e){}
+    const parsed=bookUrlParts(key),meta=metaByUrl.get(key)||{},headers=response&&response.headers;
+    const size=Number(meta.size)||Number(headers&&headers.get('Content-Length'))||0;
+    const cachedAt=Number(meta.ts)||Number(headers&&headers.get('X-Kitob-Cached-At'))||0;
+    const entry={url:key,name:meta.name||parsed.name||'Китоб',cover:meta.cover||'',size,cachedAt,ext:bookFileExt(key),folder:meta.folder||parsed.folder||'',file:parsed.file||'',category:meta.category||'',subcategory:meta.subcategory||'',author:meta.author||''};
+    const previous=found.get(key);if(!previous||entry.cachedAt>previous.cachedAt||entry.size>previous.size)found.set(key,entry);
+  }
+  return Array.from(found.values()).sort((a,b)=>(b.cachedAt||0)-(a.cachedAt||0)||a.name.localeCompare(b.name));
+}
+async function removeCachedBook(value){
+  const key=canonicalBookUrl(value);if(!key)return false;
+  if('caches' in window){try{const cache=await caches.open(KITOB_PDF_CACHE);for(const req of await cache.keys())if(canonicalBookUrl(req.url)===key)await cache.delete(req)}catch(e){}}
+  const map=readCachedBookMetaMap();for(const storedKey of Object.keys(map))if(canonicalBookUrl(map[storedKey]?.url||storedKey)===key)delete map[storedKey];
+  try{localStorage.setItem('kk_cached_books',JSON.stringify(map))}catch(e){}
+  return true;
+}
+async function clearCachedBooks(){
+  if('caches' in window){try{await caches.delete(KITOB_PDF_CACHE)}catch(e){}}
+  try{localStorage.setItem('kk_cached_books','{}')}catch(e){}
+  return true;
+}
+async function pruneExpiredCachedBooks(){
+  const days=getCachedBookRetentionDays();if(!days)return{removed:0,days:0};
+  const limit=Date.now()-days*24*60*60*1000,books=await listCachedBooks(),expired=books.filter(book=>book.cachedAt>0&&book.cachedAt<limit);
+  await Promise.all(expired.map(book=>removeCachedBook(book.url)));
+  return{removed:expired.length,days};
+}
+window.KitobOffline={cacheName:KITOB_PDF_CACHE,retentionOptions:KITOB_BOOK_RETENTION_OPTIONS.slice(),listCachedBooks,removeCachedBook,clearCachedBooks,getRetentionDays:getCachedBookRetentionDays,setRetentionDays:setCachedBookRetentionDays,pruneExpired:pruneExpiredCachedBooks,formatBytes:function(bytes){const n=Number(bytes)||0;if(n<1024)return n+' Б';if(n<1024*1024)return(n/1024).toFixed(0)+' КБ';if(n<1024*1024*1024)return(n/1024/1024).toFixed(1)+' МБ';return(n/1024/1024/1024).toFixed(2)+' ГБ'}};
+function scheduleCachedBookRetentionCleanup(){const run=()=>pruneExpiredCachedBooks().catch(()=>{});if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(run,1200),{once:true});else setTimeout(run,1200)}
+scheduleCachedBookRetentionCleanup();
 
 async function shareFile(url, name) {
   url=canonicalBookUrl(url);const toastEl=getToastEl();

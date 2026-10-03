@@ -1082,9 +1082,9 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .announce-top.show{ transform:translateY(0) !important; opacity:1 !important; }
 
 </style>
-<script src="config.js?v=69"></script>
-<script src="cache.js?v=44"></script>
-<script src="president.js?v=2"></script>
+<script src="config.js?v=70"></script>
+<script src="cache.js?v=45"></script>
+<script src="president.js?v=4"></script>
 <script src="quotes-data.js?v=44"></script>
 
 <style>
@@ -1399,6 +1399,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #E8C96D;
   font-weight: 600;
 }
+.offline-library-v3{margin:8px 0 12px;padding:0 12px}
+.offline-library-card{display:flex;align-items:center;gap:11px;width:100%;min-height:76px;padding:12px 13px;border:1px solid rgba(201,168,76,.32);border-radius:16px;background:linear-gradient(135deg,rgba(25,47,72,.97),rgba(18,33,51,.97));color:var(--text);text-decoration:none;box-shadow:0 8px 22px rgba(0,0,0,.2);transition:transform .18s,border-color .18s}
+.offline-library-card:active{transform:scale(.985);border-color:var(--gold2)}
+.offline-library-icon{flex:0 0 42px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(201,168,76,.14);font-size:22px}
+.offline-library-copy{min-width:0;flex:1;display:flex;flex-direction:column;gap:3px}
+.offline-library-copy b{font-size:12.5px;font-weight:900;color:#E8C96D}
+.offline-library-copy span{font-size:10.5px;color:#F0EAD6;line-height:1.4;overflow-wrap:anywhere}
+.offline-library-copy small{font-size:9px;color:#A8B8CC;line-height:1.35}
+.offline-library-arrow{font-size:23px;color:#E8C96D;font-weight:800}
 .mybook-remove-btn {
   position: absolute;
   top: 6px;
@@ -1776,6 +1785,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
 /* ===== АХБОРОТИ РАСМӢ (то 24 соати охир) — калони пуррафото, матн болои фото ===== */
 .news-v3{margin:2px 0 2px}
+.news-cache-notice{margin:0 14px 6px;color:#E8C96D;font-size:9.5px;font-weight:800;line-height:1.35}
 #newsSection .sec-head-v3{padding:4px 12px 8px !important}
 #ozmunList{padding-bottom:2px !important}
 .news-scroll-v3{
@@ -1951,6 +1961,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
     <!-- 2.5 АХБОРОТИ РАСМӢ — аз сомонаҳои расмии давлатӣ, то 24 соати охир -->
     <section class="news-v3" id="newsSection" style="display:none">
+      <div class="news-cache-notice" id="newsCacheNotice" style="display:none"></div>
       <div class="news-scroll-v3" id="newsScroll"></div>
       <div class="news-dots-v3" id="newsDots"></div>
     </section>
@@ -1974,6 +1985,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div>
       </div>
       <div class="books-scroll-v3" id="myBooksList"></div>
+    </section>
+
+    <!-- Китобҳои боргирифташуда, ки дар дастгоҳ бе интернет боз мешаванд -->
+    <section class="offline-library-v3" id="offlineBooksHomeSection">
+      <div class="sec-head-v3">
+        <div class="sec-title-v3">📥 Китобҳои зеркашидашуда</div>
+        <a class="sec-link-v3" href="offline-books.html">Идора кардан <span>›</span></a>
+      </div>
+      <a class="offline-library-card" href="offline-books.html" aria-label="Кушодани китобҳои зеркашидашуда">
+        <span class="offline-library-icon">📚</span>
+        <span class="offline-library-copy"><b id="offlineHomeCount">Ҳисоб...</b><span id="offlineHomeSize">Ҳаҷм санҷида мешавад</span><small id="offlineHomeStatus">Кушоед, мубодила кунед, категория интихоб кунед ё кэшро идора намоед.</small></span>
+        <span class="offline-library-arrow">›</span>
+      </a>
     </section>
 
     <!-- 6 Китобҳои серхонтарин -->
@@ -2045,7 +2069,7 @@ window.addEventListener('resize',()=>scheduleHeroFit(hero[hi]?.fontSize));window
 function setHero(i){
   if(!hero.length)return;hi=i%hero.length;const h=hero[hi],inner=document.querySelector('.hero-v3-inner');
   if(inner)inner.classList.add('hero-changing');
-  setTimeout(()=>{const imgEl=$('heroImg');if(imgEl){imgEl.src=h.img;imgEl.alt='Пешвои миллат — '+h.topic;const right=imgEl.closest('.hero-v3-right');if(right)right.style.setProperty('--hero-image',`url("${String(h.img).replace(/"/g,'')}")`)}const kicker=$('heroKicker');if(kicker)kicker.innerHTML='Суханҳои Пешвои муаззами миллат дар бораи <b>'+h.topic+'</b>';const quoteEl=$('heroQuote');if(quoteEl){quoteEl.style.color=h.color||'#fff';quoteEl.style.fontFamily=h.fontFamily||"Georgia,'Times New Roman',serif";quoteEl.title='Манбаъ: '+(h.sourceTitle||'president.tj');quoteEl.textContent=h.quote;scheduleHeroFit(h.fontSize)}if($('heroDots'))$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot-v3 ${j===hi?'active':''}"></div>`).join('');requestAnimationFrame(()=>inner?.classList.remove('hero-changing'))},220);
+  setTimeout(()=>{const imgEl=$('heroImg');if(imgEl){imgEl.onerror=function(){imgEl.onerror=null;imgEl.src='assets/hero/01-president-official.jpg'};imgEl.src=h.img;imgEl.alt='Пешвои миллат — '+h.topic;const right=imgEl.closest('.hero-v3-right');if(right)right.style.setProperty('--hero-image',`url("${String(h.img).replace(/"/g,'')}")`)}const kicker=$('heroKicker');if(kicker)kicker.innerHTML='Суханҳои Пешвои муаззами миллат дар бораи <b>'+h.topic+'</b>';const quoteEl=$('heroQuote');if(quoteEl){quoteEl.style.color=h.color||'#fff';quoteEl.style.fontFamily=h.fontFamily||"Georgia,'Times New Roman',serif";quoteEl.title='Манбаъ: '+(h.sourceTitle||'president.tj');quoteEl.textContent=h.quote;scheduleHeroFit(h.fontSize)}if($('heroDots'))$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot-v3 ${j===hi?'active':''}"></div>`).join('');requestAnimationFrame(()=>inner?.classList.remove('hero-changing'))},220);
   clearTimeout(heroAuto);heroAuto=setTimeout(()=>setHero(hi+1),(h.displayDuration||12)*1000)
 }
 setHero(Math.floor(Math.random()*hero.length));
@@ -2112,7 +2136,7 @@ function readCachedBooksJson(){
 }
 async function loadBooksJson(){
   const cached=readCachedBooksJson();
-  if(cached&&cached.fresh){ DATA=cached.data; return DATA; }
+  if(cached&& (cached.fresh || navigator.onLine===false)){ DATA=cached.data; return DATA; }
   for(const u of BOOKS_JSON_URLS){
     try{ DATA=await fetchJsonFast(u); try{ localStorage.setItem('kk_booksjson_cache',JSON.stringify(DATA)); localStorage.setItem('kk_booksjson_ts',String(Date.now())); }catch(_){} return DATA; }catch(e){}
   }
@@ -2211,15 +2235,15 @@ async function toggleHomeFavorite(event,btn){event.preventDefault();event.stopPr
 function openReader(url,name,cover=''){ let decodedCover=''; try{ decodedCover=decodeURIComponent(cover||''); }catch(e){ decodedCover=''; } const coverParam=decodedCover&&!/^data:/i.test(decodedCover)?`&cover=${encodeURIComponent(decodedCover)}`:''; location.href=`reader.html?url=${url}&name=${name}${coverParam}`; }
 const manifestCache=new Map(); let searchTimer=null;
 const MANIFEST_TTL_OK=24*60*60*1000, MANIFEST_TTL_EMPTY=5*60*1000; // пурра: 1 шабона, холӣ: 5 дақиқа
-function readCachedManifest(key){
+function readCachedManifest(key,allowStale=false){
   try{
     const raw=localStorage.getItem('kk_manifest_cache'); if(!raw) return null;
     const parsed=JSON.parse(raw); const arr=parsed[key];
     if(!Array.isArray(arr)) return null;
     let ts=0; try{ const tmap=JSON.parse(localStorage.getItem('kk_manifest_ts')||'{}'); ts=Number(tmap[key]||0)||0; }catch(e){}
-    if(!ts) return null; // кэши кӯҳна бе вақт — аз нав бор мешаванд
+    if(!ts) return allowStale ? arr : null;
     const fresh = arr.length ? (Date.now()-ts)<MANIFEST_TTL_OK : (Date.now()-ts)<MANIFEST_TTL_EMPTY;
-    return fresh ? arr : null;
+    return fresh || allowStale ? arr : null;
   }catch(e){ return null; }
 }
 function writeCachedManifest(key,arr){
@@ -2231,9 +2255,12 @@ function writeCachedManifest(key,arr){
   }catch(e){}
 }
 async function loadManifest(sub){ const key=sub?.folder; if(!key) return []; if(manifestCache.has(key)) return manifestCache.get(key);
-  const cachedArr=readCachedManifest(key);
-  if(cachedArr){ manifestCache.set(key,cachedArr); return cachedArr; }
-  let arr=[]; try{ const r=await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(sub.folder)}/manifest.json?t=${Date.now()}`,{cache:'no-store'}); if(r.ok){ const j=await r.json(); arr=Array.isArray(j.books)?j.books:[]; } }catch(e){}
+  const freshArr=readCachedManifest(key),staleArr=readCachedManifest(key,true);
+  if(freshArr){ manifestCache.set(key,freshArr); return freshArr; }
+  if(navigator.onLine===false&&staleArr){ manifestCache.set(key,staleArr); return staleArr; }
+  let arr=[],loaded=false;
+  try{ const r=await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(sub.folder)}/manifest.json?t=${Date.now()}`,{cache:'no-store'}); if(r.ok){ const j=await r.json(); arr=Array.isArray(j.books)?j.books:[]; loaded=true; } }catch(e){}
+  if((!loaded||!arr.length)&&staleArr&&staleArr.length)arr=staleArr;
   manifestCache.set(key,arr); writeCachedManifest(key,arr); return arr; }
 let HOME_SEARCH_INDEX=null,HOME_SEARCH_INDEX_PROMISE=null;
 async function getHomeSearchIndex(){
@@ -2307,7 +2334,14 @@ async function loadHome(){
   }catch(e){ console.error('loadHome',e); }
   await loadPopularBooksCached();
 }
-async function loadPopularBooksCached(){ let books=CacheManager.get('kk_cache_popular_books'); if(!books){ try{ const r=await edgeApiFetch('/api/popular-books?period=all',{},8000); if(!r.ok) throw new Error('Failed'); books=await r.json(); CacheManager.set('kk_cache_popular_books',books);}catch(e){ console.warn(e); return;} } renderPopularBooks(books); }
+async function loadPopularBooksCached(){
+  const key='kk_cache_popular_books';let books=CacheManager.get(key);
+  if(books){renderPopularBooks(books);return}
+  const stale=CacheManager.getStale?CacheManager.getStale(key):null;
+  if(stale)renderPopularBooks(stale); // маълумоти кӯҳна ҳам бе интернет нишон дода мешавад
+  if(navigator.onLine===false)return;
+  try{const r=await edgeApiFetch('/api/popular-books?period=all',{},8000);if(!r.ok)throw new Error('Failed');books=await r.json();CacheManager.set(key,books);renderPopularBooks(books)}catch(e){if(!stale)console.warn(e)}
+}
 function formatReadingMinutes(value){const total=Math.max(0,Math.round(Number(value||0)));if(total<60)return total+' дақ';const h=Math.floor(total/60),m=total%60;return h+' соат'+(m?' '+m+' дақ':'')}
 let POPULAR_BOOKS=[];
 function normalizeBookTitle(value){return String(value||'').toLowerCase().replace(/\.pdf$/i,'').replace(/[_.-]+/g,' ').replace(/\s+/g,' ').trim()}
@@ -2606,6 +2640,21 @@ function renderMyBooksSection() {
   hydrateBookCardCovers(container);
   syncBookmarkButtons(container);
 }
+
+async function renderOfflineBooksHome(){
+  const countEl=document.getElementById('offlineHomeCount'),sizeEl=document.getElementById('offlineHomeSize'),statusEl=document.getElementById('offlineHomeStatus');
+  if(!countEl||!sizeEl||!statusEl)return;
+  try{
+    const list=window.KitobOffline?await KitobOffline.listCachedBooks():[];
+    const bytes=list.reduce((sum,book)=>sum+(Number(book.size)||0),0);
+    countEl.textContent=list.length?list.length+' китоб дар дастгоҳ ҳифз шуд':'Китоби ҳифзшуда ҳоло нест';
+    sizeEl.textContent='Ҳаҷми умумӣ: '+(window.KitobOffline?KitobOffline.formatBytes(bytes):bytes+' Б');
+    statusEl.textContent=navigator.onLine===false?'Ҳоло офлайнед · китобҳои кэшшуда дар саҳифаи идоракунӣ дастрасанд':(list.length?'Ҳамеша бе интернет боз мешаванд · кэшро идора кунед':'Як китобро кушоед ё зеркашӣ кунед, то офлайн дастрас шавад');
+  }catch(e){countEl.textContent='Китобҳои офлайн';sizeEl.textContent='Маълумоти кэш ҳоло дастрас нест';statusEl.textContent='Барои дидан ва идора кардан пахш кунед'}
+}
+window.addEventListener('online',renderOfflineBooksHome);
+window.addEventListener('offline',renderOfflineBooksHome);
+window.addEventListener('focus',renderOfflineBooksHome);
 
 // =========================================================================
 // 3. СОМОНАҲОИ РАСМИИ ДАВЛАТӢ (9 PORTALS)
@@ -2996,7 +3045,7 @@ addEventListener('popstate', () => { if (document.getElementById('symModal')) cl
 // =========================================================================
 // АХБОРОТИ РАСМӢ — аз сомонаҳои расмӣ (news.json аз GitHub Actions)
 // =========================================================================
-let NEWS_ITEMS = [], newsIdx = 0, newsTimer = null, newsTouchAt = 0;
+let NEWS_ITEMS = [], newsIdx = 0, newsTimer = null, newsTouchAt = 0, NEWS_FROM_CACHE = false;
 let newsPos = 0, newsVel = 0, newsCardW = 336, newsCenter = 0, newsDrag = null, newsRaf = 0;
 function newsTimeAgo(iso){
   const diff = Date.now() - new Date(iso).getTime();
@@ -3207,6 +3256,8 @@ function newsRender(){
   if (!sec || !sc) return;
   if (!NEWS_ITEMS.length){ sec.style.display = 'none'; return; }
   sec.style.display = 'block';
+  const notice=document.getElementById('newsCacheNotice');
+  if(notice){notice.style.display=NEWS_FROM_CACHE?'block':'none';notice.textContent=NEWS_FROM_CACHE?(navigator.onLine===false?'Офлайн · хабарҳои охирини ҳифзшуда нишон дода мешаванд':'Маълумоти кэшшуда · навгониҳои нав дастрас нестанд'):'';}
   sc.innerHTML = '<div class="news-track-v3" id="newsTrack">' + NEWS_ITEMS.map((n, i) => newsCardHTML(n, i)).join('') + '</div>';
   dots.innerHTML = NEWS_ITEMS.map((_, i) => `<div class="news-dot${i===0?' on':''}"></div>`).join('');
   newsSize();
@@ -3285,31 +3336,34 @@ function newsOpen(i){
   if (n.external || /^http:\/\//i.test(n.url)) openExternalSite(n.url);
   else openMiniBrowser(n.url, n.source + ' · ахборот');
 }
+function prepareHomeNews(items){
+  const valid=(Array.isArray(items)?items:[]).filter(n=>n&&n.title&&n.url&&n.published);
+  const day=24*60*60*1000,now=Date.now();
+  const recent=valid.filter(n=>{const time=new Date(n.published).getTime();return !Number.isNaN(time)&&((now-time<day&&now-time>=-day)||n.fallback===true)});
+  // Агар кэш/манбаъ зиёда аз 24 соат нав нашуда бошад ҳам, лента холӣ намемонад.
+  return{items:(recent.length?recent:valid).slice(0,20),stale:recent.length===0&&valid.length>0};
+}
 async function loadNews(){
   newsShowSkeleton();
-  let items = null;
-  try {
-    const raw = localStorage.getItem('kk_news_cache');
-    if (raw){
-      const c = JSON.parse(raw);
-      if (c && Date.now() - c.ts < 30*60*1000) items = c.items;
-    }
-  } catch(e){}
-  if (!items){
-    try {
-      const r = await fetch('news.json', { cache: 'no-store' });
-      if (r.ok){
-        const d = await r.json();
-        items = Array.isArray(d.items) ? d.items : [];
-        try { localStorage.setItem('kk_news_cache', JSON.stringify({ ts: Date.now(), items })); } catch(e){}
-      }
-    } catch(e){}
+  let cached=null,items=null,usedCached=false;
+  try{
+    const raw=localStorage.getItem('kk_news_cache');
+    if(raw){const value=JSON.parse(raw);if(value&&Array.isArray(value.items))cached=value;}
+  }catch(e){}
+  if(cached&&cached.ts&&Date.now()-cached.ts<30*60*1000){items=cached.items;usedCached=true;}
+  if(!items){
+    try{
+      const r=await fetch('news.json',{cache:'no-store'});
+      if(r.ok){const data=await r.json();items=Array.isArray(data.items)?data.items:[];usedCached=navigator.onLine===false;try{localStorage.setItem('kk_news_cache',JSON.stringify({ts:Date.now(),items:items}))}catch(e){}}
+    }catch(e){}
   }
-  // танҳо хабарҳои то 24 соати охир
-  const DAY = 24*60*60*1000;
-  NEWS_ITEMS = (items || []).filter(n => n && n.title && n.url && n.published && ((Date.now() - new Date(n.published).getTime()) < DAY || n.fallback === true)).slice(0, 20);
+  if(!items&&cached){items=cached.items;usedCached=true;}
+  const result=prepareHomeNews(items||[]);
+  NEWS_ITEMS=result.items;
+  NEWS_FROM_CACHE=(usedCached&&navigator.onLine===false)||result.stale||navigator.onLine===false;
   newsRender();
 }
+
 
 // ХУДКОР НАВСОЗӢ (пинҳонӣ): ҳар 5 дақиқа news.json-и навро месанҷад.
 // Агар хабарҳо тағйир ёфтанд — лента бе скелетон ва бе гум кардани ҷойгиршавӣ
@@ -3323,14 +3377,15 @@ function newsAutoRefresh(){
       if (!r.ok) return;
       const d = await r.json();
       const items = Array.isArray(d.items) ? d.items : [];
-      const DAY2 = 24*60*60*1000;
-      const fresh = items.filter(n => n && n.title && n.url && n.published && ((Date.now() - new Date(n.published).getTime()) < DAY2 || n.fallback === true)).slice(0, 20);
+      const prepared = prepareHomeNews(items);
+      const fresh = prepared.items;
       const sig = x => JSON.stringify((x||[]).map(n => [n.title, n.url, n.image, n.published]));
       try { localStorage.setItem('kk_news_cache', JSON.stringify({ ts: Date.now(), items })); } catch(e) {}
       if (!fresh.length) return;
-      if (sig(fresh) !== sig(NEWS_ITEMS)) {
+      if (sig(fresh) !== sig(NEWS_ITEMS) || NEWS_FROM_CACHE !== (prepared.stale || navigator.onLine===false)) {
         const keep = newsIdx;
         NEWS_ITEMS = fresh;
+        NEWS_FROM_CACHE = prepared.stale || navigator.onLine===false;
         newsRender();
         newsGoTo(Math.min(keep, NEWS_ITEMS.length - 1), false);
       }
@@ -3339,6 +3394,8 @@ function newsAutoRefresh(){
 }
 if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', newsAutoRefresh);
 else newsAutoRefresh();
+window.addEventListener('online',()=>loadNews());
+window.addEventListener('offline',()=>loadNews());
 
 // =========================================================================
 // 4. IN-APP BROWSER (FULLSCREEN, PINCH ZOOM, ✕ + ⟳ СВЕРХУ СПРАВА)
@@ -3532,10 +3589,12 @@ window.addEventListener('popstate', e => {
 // Boot render
 document.addEventListener('DOMContentLoaded', () => {
   renderMyBooksSection();
+  renderOfflineBooksHome();
   renderGovSites();
   syncMyBookButtons();
 });
 renderMyBooksSection();
+renderOfflineBooksHome();
 renderGovSites();
 syncMyBookButtons();
 loadNews(); // ахбороти расмӣ — баъди таърифи ҳамаи функсияҳо даъват мешавад

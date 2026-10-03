@@ -31,10 +31,7 @@
       if (!raw) return null;
       const parsed = JSON.parse(raw);
       if (parsed && Object.prototype.hasOwnProperty.call(parsed, 'value')) {
-        if (parsed.ts && Date.now() - parsed.ts > TTL) {
-          localStorage.removeItem(PREFIX + key);
-          return null;
-        }
+        if (parsed.ts && Date.now() - parsed.ts > TTL) return null;
         return parsed.value;
       }
       return parsed;
@@ -61,6 +58,20 @@
     const value = readStored(key);
     if (value !== null && value !== undefined) memory.set(key, { value: value, ts: Date.now() });
     return value;
+  }
+
+  function getStale(key) {
+    if (!key) return null;
+    if (memory.has(key)) {
+      const item = memory.get(key);
+      if (item && item.value !== undefined && item.value !== null) return item.value;
+    }
+    try {
+      const raw = localStorage.getItem(PREFIX + key);
+      if (!raw) return null;
+      const parsed = JSON.parse(raw);
+      return parsed && Object.prototype.hasOwnProperty.call(parsed, 'value') ? parsed.value : parsed;
+    } catch (e) { return null; }
   }
 
   function set(key, value) {
@@ -161,6 +172,7 @@
     _wsConnected: false,
     init: init,
     get: get,
+    getStale: getStale,
     set: set,
     invalidateKey: invalidateKey,
     subscribe: subscribe,

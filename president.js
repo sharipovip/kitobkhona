@@ -1,5 +1,5 @@
 /* ============================================================
-   president.js v101 — Хабарҳои сомонаи Президенти ҶТ (prezident.tj)
+   president.js v104 — Хабарҳои сомонаи Президенти ҶТ (prezident.tj)
    Данные берутся НАПРЯМУЮ с открытого API controlpanel.president.tj
    (CORS разрешён: Access-Control-Allow-Origin: *). Полный текст и фото
    (flickr) показываются ВНУТРИ приложения — на сайт заходить не нужно.
@@ -12,7 +12,7 @@
   var API = 'https://controlpanel.president.tj';
   var LANG_ID = 1; // тоҷикӣ
   var CACHE_KEY = 'kk_president_cache_v1';
-  var CACHE_TTL = 30 * 60 * 1000; // 30 дақиқа
+  var CACHE_TTL = 30 * 60 * 1000; // фақат вақти навсозиро нишон медиҳад; кэши куҳна офлайн нигоҳ дошта мешавад
   var ARCHIVE_URLS = [
     'https://cdn.jsdelivr.net/gh/sharipovip/books@main/president/index.json',
     'https://raw.githubusercontent.com/sharipovip/books/main/president/index.json'
@@ -182,21 +182,63 @@
     });
   }
 
-  // ---------- загрузка всех категорий: кэш → API → архив ----------
-  function readCache() {
+  // ---------- кэш: тоза ё куҳна, аммо ҳеҷ гоҳ танҳо аз сабаби синну сол нест намешавад ----------
+  function readCacheRecord() {
     try {
       var raw = localStorage.getItem(CACHE_KEY);
       if (!raw) return null;
       var c = JSON.parse(raw);
-      if (!c || !c.byCat || Date.now() - c.ts > CACHE_TTL) return null;
-      return c.byCat;
+      if (!c || !c.byCat || typeof c.byCat !== 'object') return null;
+      return c;
     } catch (e) { return null; }
+  }
+  function readCache() {
+    var record = readCacheRecord();
+    return record ? record.byCat : null;
   }
   function writeCache(byCat) {
     try { localStorage.setItem(CACHE_KEY, JSON.stringify({ ts: Date.now(), byCat: byCat })); } catch (e) {}
   }
+  function cachedCategory(catKey) {
+    var byCat = readCache();
+    return byCat && Array.isArray(byCat[catKey]) ? byCat[catKey] : null;
+  }
+  function archiveToItems(byCat, catKey) {
+    return ((byCat && byCat[catKey]) || []).map(function (it) {
+      return {
+        id: it.id, title: it.title, publish: it.publish || it.date || '',
+        has_photos: !!it.thumb || !!it.has_photos,
+        photos_count: it.photos_count || (it.thumb ? 1 : 0),
+        thumb: it.thumb || '', site_path: it.site_path || ''
+      };
+    });
+  }
 
-  // live=true → всегда попробовать свежие данные (кэш вернём мгновенно через onCache)
+  // ---------- як категория: нишон додани кэш фавран, баъд навсозӣ аз API ----------
+  function loadCategory(catKey, onCache) {
+    var cached = cachedCategory(catKey);
+    if (cached && typeof onCache === 'function') { try { onCache(cached); } catch (e) {} }
+    return fetchCat(catKey).then(function (items) {
+      var merged = readCache() || {};
+      if ((!items || !items.length) && cached && cached.length) return cached;
+      merged[catKey] = items || [];
+      writeCache(merged);
+      return merged[catKey];
+    }).catch(function () {
+      if (cached) return cached;
+      return fetchArchive().then(function (byCat) {
+        var items = archiveToItems(byCat, catKey);
+        if (Object.keys(byCat || {}).length) {
+          var merged = readCache() || {};
+          merged[catKey] = items;
+          writeCache(merged);
+        }
+        return items;
+      });
+    });
+  }
+
+  // live=true → кэш фавран нишон дода мешавад, навсозии API дар замина меравад.
   function loadAll(onCache) {
     var cached = readCache();
     if (cached && typeof onCache === 'function') { try { onCache(cached); } catch (e) {} }
@@ -210,13 +252,18 @@
       var byCat = {}, ok = 0;
       results.forEach(function (r) { if (r) { byCat[r[0]] = r[1]; ok++; } });
       if (ok > 0) {
-        // категориям, что не загрузились, берём из кэша (если есть)
-        if (cached) CATS.forEach(function (c) { if (!byCat[c.key] && cached[c.key]) byCat[c.key] = cached[c.key]; });
+        // Агар сервер категорияро холӣ баргардонад, хабарҳои ҳифзшудаи қаблиро нигоҳ медорем.
+        if (cached) CATS.forEach(function (c) {
+          if ((!Array.isArray(byCat[c.key]) || !byCat[c.key].length) && Array.isArray(cached[c.key]) && cached[c.key].length) byCat[c.key] = cached[c.key];
+        });
         writeCache(byCat);
         return { byCat: byCat, from: 'live' };
       }
       if (cached) return { byCat: cached, from: 'cache' };
-      return fetchArchive().then(function (byCat) { return { byCat: byCat, from: 'archive' }; });
+      return fetchArchive().then(function (archive) {
+        writeCache(archive);
+        return { byCat: archive, from: 'archive' };
+      });
     });
   }
 
@@ -248,6 +295,8 @@
     loadArchive: fetchArchive,
     catByKey: function (k) { return CAT_BY_KEY[k] || null; },
     loadAll: loadAll,
+    loadCategory: loadCategory,
+    cachedCategory: cachedCategory,
     fetchCat: fetchCat,
     fetchPhotos: fetchPhotos,
     fetchArticle: fetchArticle,
