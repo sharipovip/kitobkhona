@@ -214,7 +214,7 @@
     </div>
   </div>
 
-<script src="config.js?v=70"></script>
+<script src="config.js?v=71"></script>
 <script src="president.js?v=4"></script>
 <script>
 (function () {
@@ -439,9 +439,23 @@
   function plainText(value) {
     var holder = document.createElement('div');
     holder.innerHTML = P && P.sanitizeHtml ? P.sanitizeHtml(value || '') : String(value || '');
-    return String(holder.textContent || holder.innerText || '').replace(/\s+/g, ' ').trim();
+    var output = '';
+    var blockTags = /^(P|DIV|LI|UL|OL|H[1-6]|BLOCKQUOTE|TR|SECTION|ARTICLE|PRE)$/;
+    function collect(node) {
+      if (node.nodeType === 3) { output += node.nodeValue || ''; return; }
+      if (node.nodeType !== 1 && node.nodeType !== 11) return;
+      var tag = node.nodeType === 1 ? node.tagName.toUpperCase() : '';
+      if (tag === 'BR') { output += '\n'; return; }
+      var block = blockTags.test(tag);
+      if (block && output && !output.endsWith('\n')) output += '\n';
+      Array.prototype.forEach.call(node.childNodes || [], collect);
+      if (block && output && !output.endsWith('\n')) output += '\n';
+    }
+    collect(holder);
+    return output.replace(/\r\n?/g, '\n').replace(/\u00a0/g, ' ')
+      .replace(/[ \t]+\n/g, '\n').replace(/\n{3,}/g, '\n\n').trim();
   }
-  function buildShareText(maxLen, photos) {
+  function buildShareText(photos) {
     if (!curArt) return '';
     var link = articleShareUrl();
     var list = Array.isArray(photos) ? photos : (photos ? [{ big: photos }] : []);
@@ -449,11 +463,8 @@
     var source = 'Манбаъ: prezident.tj\n' + link;
     if (photoLinks.length) source += '\n\nАксҳои хабар:\n' + photoLinks.join('\n');
     var head = (curArt.title || 'Хабар') + '\n\n';
-    var tail = '\n\n' + source;
-    var budget = maxLen ? Math.max(60, maxLen - head.length - tail.length - 1) : Infinity;
     var body = plainText(curArt.text || curArt.teaser || '');
-    if (body && body.length > budget) body = body.slice(0, budget).trim() + '…';
-    return head + body + tail;
+    return head + body + '\n\n' + source;
   }
   function pzToast(msg) {
     var t = document.createElement('div');
@@ -503,7 +514,7 @@
     var preview = document.createElement('p'); preview.className = 'share-choice-preview'; preview.textContent = curArt ? curArt.title : 'Хабар';
     var actions = document.createElement('div'); actions.className = 'share-choice-actions';
     var articleUrl = articleShareUrl();
-    var textForApps = text || buildShareText(4000, photos);
+    var textForApps = text || buildShareText(photos);
     var addAction = function (label, action, className) {
       var button = document.createElement('button'); button.type = 'button';
       button.className = 'share-choice-action' + (className ? ' ' + className : '');
@@ -513,7 +524,7 @@
     };
     addAction('WhatsApp', function () { openShareTarget('https://wa.me/?text=' + encodeURIComponent(textForApps)); });
     addAction('Telegram', function () {
-      var telegramText = buildShareText(1800, photos);
+      var telegramText = buildShareText(photos);
       openShareTarget('https://t.me/share/url?url=' + encodeURIComponent(articleUrl) + '&text=' + encodeURIComponent(telegramText));
     });
     addAction('Почтаи электронӣ', function () { openShareTarget('mailto:?subject=' + encodeURIComponent(curArt ? curArt.title : 'Хабар') + '&body=' + encodeURIComponent(textForApps)); });
@@ -602,8 +613,8 @@
     if (!curArt) { pzToast('Хабар ҳанӯз омода нест'); return; }
     photos = (photos || []).map(articleSharePhoto).filter(Boolean).slice(0, MAX_SHARE_PHOTOS);
     var title = curArt.title || 'Хабар';
-    var caption = buildShareText(10000);
-    var fallbackText = buildShareText(10000, photos);
+    var caption = buildShareText();
+    var fallbackText = buildShareText(photos);
     if (photos.length > 1 && hasNativeShareMethod('shareRemoteImages')) {
       try {
         AndroidBridge.shareRemoteImages(JSON.stringify({

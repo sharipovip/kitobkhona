@@ -8,7 +8,7 @@
   <title>Китобҳои зеркашидашуда · Китобхона</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="manifest" href="./manifest.json">
-  <script src="./config.js?v=70"></script>
+  <script src="./config.js?v=71"></script>
   <style>
     :root{color-scheme:dark;--bg:#0D1B2A;--panel:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--line:rgba(201,168,76,.22);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -65,10 +65,10 @@
   <div class="modal" id="settingsModal" role="presentation">
     <section class="dialog" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
       <div class="dialog-head"><b id="settingsTitle">⚙ Танзимоти кэш</b><button class="dialog-close" id="closeSettings" type="button" aria-label="Пӯшидан">×</button></div>
-      <p>Муҳлати нигоҳдорӣ аз рӯзи охирини кушодан ё зеркашии китоб ҳисоб мешавад. Танзимоти пешфарз — китобҳо худкор нест карда намешаванд.</p>
+      <p>Муҳлати нигоҳдорӣ аз рӯзи охирини кушодан ё зеркашии китоб ҳисоб мешавад. Танзимоти — китобҳо худкор нест карда намешаванд.</p>
       <label for="retentionSelect">Муҳлати нигоҳдорӣ</label>
       <select id="retentionSelect">
-        <option value="0">Ҳамеша нигоҳ доштан — пешфарз</option>
+        <option value="0">Ҳамеша нигоҳ доштани китобҳо</option>
         <option value="7">7 рӯз</option>
         <option value="10">10 рӯз</option>
         <option value="14">14 рӯз</option>
@@ -79,6 +79,16 @@
       <div class="dialog-actions">
         <button class="action primary" id="saveRetention" type="button">Нигоҳ доштан</button>
         <button class="action remove" id="clearAll" type="button">Ҳама китобҳоро нест кардан</button>
+      </div>
+    </section>
+  </div>
+  <div class="modal" id="confirmModal" role="presentation">
+    <section class="dialog" role="alertdialog" aria-modal="true" aria-labelledby="confirmTitle" aria-describedby="confirmMessage">
+      <div class="dialog-head"><b id="confirmTitle">Тасдиқи амал</b><button class="dialog-close" id="confirmClose" type="button" aria-label="Пӯшидан">×</button></div>
+      <p id="confirmMessage"></p>
+      <div class="dialog-actions">
+        <button class="action" id="confirmCancel" type="button">Бекор кардан</button>
+        <button class="action remove" id="confirmProceed" type="button">Нест кардан</button>
       </div>
     </section>
   </div>
@@ -120,10 +130,50 @@
     async function refresh(){var list=$('bookList');list.innerHTML='<div class="empty">Рӯйхат санҷида мешавад...</div>';try{if(window.KitobOffline)await KitobOffline.pruneExpired();var raw=window.KitobOffline?await KitobOffline.listCachedBooks():[];var index=await loadCatalogIndex();allBooks=enrichBooks(raw,index).sort(function(a,b){return(b.cachedAt||0)-(a.cachedAt||0)||a.name.localeCompare(b.name)});updateSummary(allBooks);populateCategories(allBooks);render()}catch(e){console.warn('offline books',e);allBooks=[];updateSummary(allBooks);list.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><b>Кэши китобҳо дастрас нест</b><span>Ин дастгоҳ ё браузер ҳифзи офлайнро дастгирӣ намекунад.</span></div>'}}
     function openBook(book){var params=new URLSearchParams();params.set('url',book.url);params.set('name',book.name||'Китоб');if(book.cover&&!/^data:/i.test(book.cover))params.set('cover',book.cover);location.href='reader.html?'+params.toString()}
     $('bookSearch').addEventListener('input',render);$('categoryFilter').addEventListener('change',render);$('refreshBtn').addEventListener('click',refresh);$('settingsBtn').addEventListener('click',function(){$('retentionSelect').value=String(KitobOffline.getRetentionDays());$('settingsModal').classList.add('open')});
-    function closeSettings(){$('settingsModal').classList.remove('open')}$('closeSettings').addEventListener('click',closeSettings);$('settingsModal').addEventListener('click',function(e){if(e.target===$('settingsModal'))closeSettings()});document.addEventListener('keydown',function(e){if(e.key==='Escape')closeSettings()});
+    function closeSettings(){$('settingsModal').classList.remove('open')}
+    $('closeSettings').addEventListener('click',closeSettings);
+    $('settingsModal').addEventListener('click',function(e){if(e.target===$('settingsModal'))closeSettings()});
+    var confirmationResolver=null,confirmationTrigger=null;
+    function finishConfirmation(accepted){
+      var resolver=confirmationResolver,trigger=confirmationTrigger;
+      confirmationResolver=null;confirmationTrigger=null;$('confirmModal').classList.remove('open');
+      if(resolver)resolver(!!accepted);
+      if(trigger&&typeof trigger.focus==='function')setTimeout(function(){try{trigger.focus()}catch(e){}},0);
+    }
+    function askConfirmation(title,message,buttonText){
+      return new Promise(function(resolve){
+        if(confirmationResolver)finishConfirmation(false);
+        confirmationResolver=resolve;confirmationTrigger=document.activeElement;
+        $('confirmTitle').textContent=title;$('confirmMessage').textContent=message;
+        $('confirmProceed').textContent=buttonText||'Нест кардан';
+        $('confirmModal').classList.add('open');$('confirmCancel').focus();
+      });
+    }
+    $('confirmClose').addEventListener('click',function(){finishConfirmation(false)});
+    $('confirmCancel').addEventListener('click',function(){finishConfirmation(false)});
+    $('confirmProceed').addEventListener('click',function(){finishConfirmation(true)});
+    $('confirmModal').addEventListener('click',function(e){if(e.target===$('confirmModal'))finishConfirmation(false)});
+    document.addEventListener('keydown',function(e){if(e.key==='Escape'){if($('confirmModal').classList.contains('open'))finishConfirmation(false);else closeSettings()}});
     $('saveRetention').addEventListener('click',async function(){try{var result=await KitobOffline.setRetentionDays(Number($('retentionSelect').value));closeSettings();showToast(result.removed?'Танзимот нигоҳ дошта шуд · нест шуд: '+result.removed:'Муҳлати нигоҳдорӣ нигоҳ дошта шуд');await refresh()}catch(e){showToast('Танзимот нигоҳ дошта нашуд')}});
-    $('clearAll').addEventListener('click',async function(){if(!confirm('Ҳамаи китобҳои ҳифзшуда аз ин дастгоҳ нест карда шаванд?'))return;await KitobOffline.clearCachedBooks();closeSettings();showToast('Ҳамаи китобҳои ҳифзшуда нест шуданд');await refresh()});
-    $('bookList').addEventListener('click',async function(event){var button=event.target.closest('[data-action]');if(!button)return;var card=button.closest('.book-card'),book=allBooks.find(function(x){return x.url===card.dataset.url});if(!book)return;var action=button.dataset.action;if(action==='open')openBook(book);else if(action==='share'){if(typeof window.shareFile==='function')window.shareFile(book.url,book.name);else showToast('Мубодила ҳоло дастрас нест')}else if(action==='remove'){if(!confirm('«'+book.name+'» аз кэши ин дастгоҳ нест карда шавад?'))return;await KitobOffline.removeCachedBook(book.url);showToast('Китоб аз ҳифзшудаҳо хориҷ шуд');await refresh()}});
+    $('clearAll').addEventListener('click',async function(){
+      var approved=await askConfirmation('Ҳамаи китобҳоро нест кунед?','Ҳамаи китобҳои ҳифзшуда аз ҳамин дастгоҳ тоза мешаванд. Ин амалро баргардондан мумкин нест.','Ҳамаашро нест кардан');
+      if(!approved)return;
+      try{await KitobOffline.clearCachedBooks();closeSettings();showToast('Ҳамаи китобҳои ҳифзшуда нест шуданд');await refresh()}
+      catch(e){showToast('Кэш тоза карда нашуд')}
+    });
+    $('bookList').addEventListener('click',async function(event){
+      var button=event.target.closest('[data-action]');if(!button)return;
+      var card=button.closest('.book-card'),book=allBooks.find(function(x){return x.url===card.dataset.url});if(!book)return;
+      var action=button.dataset.action;
+      if(action==='open')openBook(book);
+      else if(action==='share'){if(typeof window.shareFile==='function')window.shareFile(book.url,book.name);else showToast('Мубодила ҳоло дастрас нест')}
+      else if(action==='remove'){
+        var approved=await askConfirmation('Китобро нест кунед?','«'+book.name+'» аз кэши ин дастгоҳ хориҷ карда мешавад.','Нест кардани китоб');
+        if(!approved)return;
+        try{await KitobOffline.removeCachedBook(book.url);showToast('Китоб аз ҳифзшудаҳо хориҷ шуд');await refresh()}
+        catch(e){showToast('Китоб нест карда нашуд')}
+      }
+    });
     window.addEventListener('online',updateConnection);window.addEventListener('offline',updateConnection);window.addEventListener('focus',refresh);
     updateConnection();refresh();
   })();
