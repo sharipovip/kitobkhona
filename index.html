@@ -2285,7 +2285,7 @@ async function getHomeSearchIndex(){
     try{const cached=JSON.parse(localStorage.getItem('kk_home_search_index_v1')||'null');if(cached?.items?.length&&cached.ts&&Date.now()-cached.ts<24*60*60*1000){HOME_SEARCH_INDEX=cached.items;return HOME_SEARCH_INDEX}}catch(e){}
     try{const r=await fetch('search-index.json',{cache:'force-cache'});if(!r.ok)throw Error('HTTP '+r.status);const data=await r.json();HOME_SEARCH_INDEX=Array.isArray(data.items)?data.items:[];try{localStorage.setItem('kk_home_search_index_v1',JSON.stringify({items:HOME_SEARCH_INDEX,ts:Date.now()}))}catch(e){}return HOME_SEARCH_INDEX}catch(e){}
     // Fallback to manifests only if the packaged index is unavailable.
-    if(!DATA)await loadBooksJson();const groups=await Promise.all((DATA.categories||[]).flatMap(cat=>(cat.subs||[]).map(async sub=>{const books=await loadManifest(sub);return books.map(book=>({name:book.name||String(book.file||'').replace(/\.pdf$/i,''),file:book.file,author:book.author||'',folder:sub.folder,category_id:cat.id,category:cat.name,subcategory:sub.name||sub.folder}))})));HOME_SEARCH_INDEX=groups.flat();return HOME_SEARCH_INDEX
+    if(!DATA)await loadBooksJson();const groups=await Promise.all((DATA.categories||[]).flatMap(cat=>(cat.subs||[]).map(async sub=>{const books=await loadManifest(sub);return books.map(book=>({name:getBookCardTitle(book,book.file),file:book.file,author:book.author||'',folder:sub.folder,category_id:cat.id,category:cat.name,subcategory:sub.name||sub.folder}))})));HOME_SEARCH_INDEX=groups.flat();return HOME_SEARCH_INDEX
   })().finally(()=>HOME_SEARCH_INDEX_PROMISE=null);
   return HOME_SEARCH_INDEX_PROMISE
 }
@@ -2294,7 +2294,7 @@ async function searchHome(q,force=false){
   box.style.display='block';box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⌕</div><div><div class="search-result-name">Ҷустуҷӯ...</div><div class="search-result-sub">Як лаҳза</div></div></div>';
   try{const index=await getHomeSearchIndex();const results=[];for(const item of index){const hay=[item.name,item.file,item.author,item.category,item.subcategory].filter(Boolean).join(' ').toLowerCase();if(hay.includes(q)){results.push(item);if(results.length>=20)break}}
     if(!results.length){box.innerHTML='<div class="search-result-item"><div class="search-result-icon">📭</div><div><div class="search-result-name">Ёфт нашуд</div><div class="search-result-sub">Калимаи дигар нависед</div></div></div>';return}
-    box.innerHTML=results.map(item=>{const file=item.file||item.name+'.pdf',url=rawUrl(item.folder,file);return `<div class="search-result-item" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(item.name||file.replace(/\.pdf$/i,''))}')"><div class="search-result-icon">📖</div><div><div class="search-result-name">${esc(item.name||file)}</div><div class="search-result-sub">${esc(item.category||'')} · ${esc(item.subcategory||item.folder||'')}</div></div></div>`}).join('')
+    box.innerHTML=results.map(item=>{const file=item.file||item.name+'.pdf',name=getBookCardTitle(item,file),url=rawUrl(item.folder,file);return `<div class="search-result-item" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}')"><div class="search-result-icon">📖</div><div><div class="search-result-name">${esc(name)}</div><div class="search-result-sub">${esc(item.category||'')} · ${esc(item.subcategory||item.folder||'')}</div></div></div>`}).join('')
   }catch(e){box.innerHTML='<div class="search-result-item"><div class="search-result-icon">⚠️</div><div><div class="search-result-name">Пайвастшавӣ</div><div class="search-result-sub">'+esc(e.message||e)+'</div></div></div>'}
 }
 const hsInput=$('homeSearch'); if(hsInput) hsInput.addEventListener('input',()=>{ clearTimeout(searchTimer); searchTimer=setTimeout(()=>searchHome(hsInput.value),350); });
@@ -2364,7 +2364,7 @@ function normalizeRawGithubUrl(value){
   try{const u=new URL(value);let path=u.pathname;for(let i=0;i<3;i++){try{const next=decodeURIComponent(path);if(next===path)break;path=next}catch(e){break}}u.pathname=path.split('/').map((part,i)=>i===0?'':encodeURIComponent(part)).join('/');return u.toString()}catch(e){return String(value||'')}
 }
 async function openPopularBook(index){
-  const b=POPULAR_BOOKS[index];if(!b)return;const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,'');
+  const b=POPULAR_BOOKS[index];if(!b)return;const name=getBookCardTitle({name:b.book_title},String(b.book_id||'Китоб'));
   let url='',cover=b.cover_url||'';
   try{const search=await getHomeSearchIndex();const wanted=normalizeBookTitle(name);const found=search.find(item=>normalizeBookTitle(item.name||item.file)===wanted);if(found){url=rawUrl(found.folder,found.file||found.name+'.pdf');const covers=coverCandidates(found.folder,found.file||found.name+'.pdf');cover=cover||covers[0]||''}}catch(e){}
   if(!url&&b.pdf_url)url=normalizeRawGithubUrl(b.pdf_url);
@@ -2374,7 +2374,7 @@ async function openPopularBook(index){
 function renderPopularBooks(books){
   const popEl=$('popBooks'),popSec=$('popSection');if(!popEl)return;POPULAR_BOOKS=Array.isArray(books)?books:[];
   if(!POPULAR_BOOKS.length){popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>';if(popSec)popSec.style.display='block';return}
-  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=b.book_title||String(b.book_id||'Китоб').split('/').pop().replace(/\.pdf$/i,''),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
+  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=getBookCardTitle({name:b.book_title},String(b.book_id||'Китоб')),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="${esc(name)}" loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b>${esc(name)}</b><span class="book-author-v3">${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
   hydrateBookCardCovers(popEl);syncBookmarkButtons(popEl);if(popSec)popSec.style.display='block';fetchAndUpdateRatings();
 }
 
@@ -2575,7 +2575,7 @@ async function openMyBook(index) {
   const b = list[index];
   if (!b) return;
 
-  const name = b.name || b.title || String(b.file || 'Китоб').replace(/\.pdf$/i, '');
+  const name = getBookCardTitle(b, b.file || b.filename || b.file_name);
   let url = b.url || '';
   let cover = b.cover || '';
 
@@ -2623,7 +2623,7 @@ function renderMyBooksSection() {
 
   container.innerHTML = list.map((b, idx) => {
     const file = b.file || ((b.name || 'book') + '.pdf');
-    const name = b.name || b.title || file.replace(/\.pdf$/i, '');
+    const name = getBookCardTitle(b, file);
     const folder = b.folder || 'books/Пешвои Миллат';
     const covers = coverCandidates(folder, file);
     const cover = b.cover || covers[0] || '';
@@ -3726,5 +3726,5 @@ loadNews(); // ахбороти расмӣ — баъди таърифи ҳам�
   });
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a44f3329c8d4c3f6',t:'MTc5MTA2NDYxOA=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
+</body>
 </html>

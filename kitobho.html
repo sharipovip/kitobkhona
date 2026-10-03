@@ -1191,6 +1191,21 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const m = cachedMap(); for(const key of Object.keys(m))if(canonicalBookUrl(key)===canonical)delete m[key]; setCachedMap(m);
   }
 
+  function cleanCatalogBookTitle(value) {
+    let title = String(value ?? '').replace(/\s+/g, ' ').trim();
+    if (!title) return '';
+    title = title.replace(/^(?:subject|title|book\s*title|document\s*title|name|тема|название)\s*[:：]\s*/iu, '').trim();
+    if (!title || /^(?:subject|title|book\s*title|document\s*title|name|тема|название|untitled|unknown|n\/a|na|none|null|undefined|no\s+title|not\s+available)[\s:：.!?_-]*$/iu.test(title)) return '';
+    return title;
+  }
+  function catalogBookTitle(book, file) {
+    const candidates = [book?.name, book?.title, book?.book_title, book?.bookTitle, book?.display_name, book?.displayName];
+    for (const candidate of candidates) { const title = cleanCatalogBookTitle(candidate); if (title) return title; }
+    let fileName = String(file || book?.filename || book?.file_name || '').split(/[\\/]/).pop() || '';
+    try { fileName = decodeURIComponent(fileName); } catch (e) {}
+    return cleanCatalogBookTitle(fileName.replace(/\.pdf$/i, '')) || 'Китоб';
+  }
+
   function renderBooks(list) {
     const grid = document.getElementById('booksGrid');
     if (!list || !list.length) {
@@ -1214,7 +1229,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         // Порционный рендер: 48 корт дар як бор — саҳифа не ҳанг мекунад (гузоришҳои калон 700+ китоб)
         const html = renderList.slice(renderStart, renderStart + RENDER_BATCH).map((b) => {
       const file = b.file || ((b.name || 'book') + '.pdf');
-      const name = b.name || file.replace(/\.pdf$/i, '');
+      const name = catalogBookTitle(b, file);
       const folderFull = b.folder || sub?.folder || '';
       const url = rawUrl(folderFull, file);
       const coverList = coverCandidates(folderFull, file);
