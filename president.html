@@ -462,7 +462,7 @@
     var photoLinks = list.map(function (p) { return p && p.big ? p.big : ''; }).filter(Boolean);
     var source = 'Манбаъ: prezident.tj\n' + link;
     if (photoLinks.length) source += '\n\nАксҳои хабар:\n' + photoLinks.join('\n');
-    var head = (curArt.title || 'Хабар') + '\n\n';
+    var head = '*' + String(curArt.title || 'Хабар').replace(/\*/g, '').replace(/\s+/g, ' ').trim() + '*\n\n';
     var body = plainText(curArt.text || curArt.teaser || '');
     return head + body + '\n\n' + source;
   }
@@ -497,53 +497,25 @@
       if (!ok) throw new Error('copy failed');
     });
   }
+  // НИКАКОГО внутреннего списка приложений: только системное «Поделиться».
+  // Если системного окна нет (обычный браузер без Web Share) — копируем текст.
   function showShareFallback(photos, text) {
-    photos = Array.isArray(photos) ? photos : (photos ? [photos] : []);
-    var old = document.getElementById('presidentShareOverlay');
-    if (old && old.parentNode) old.parentNode.removeChild(old);
-    var overlay = document.createElement('div');
-    overlay.id = 'presidentShareOverlay'; overlay.className = 'share-choice-overlay'; overlay.setAttribute('role', 'presentation');
-    var dialog = document.createElement('section');
-    dialog.className = 'share-choice-dialog'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); dialog.setAttribute('aria-labelledby', 'shareChoiceTitle');
-    var head = document.createElement('div'); head.className = 'share-choice-head';
-    var title = document.createElement('b'); title.id = 'shareChoiceTitle'; title.textContent = 'Хабарро мубодила кунед';
-    var close = document.createElement('button'); close.type = 'button'; close.className = 'share-choice-close'; close.textContent = '✕'; close.setAttribute('aria-label', 'Пӯшидан');
-    var onEscape;
-    var dismiss = function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); if (onEscape) document.removeEventListener('keydown', onEscape); };
-    close.addEventListener('click', dismiss); head.appendChild(title); head.appendChild(close);
-    var preview = document.createElement('p'); preview.className = 'share-choice-preview'; preview.textContent = curArt ? curArt.title : 'Хабар';
-    var actions = document.createElement('div'); actions.className = 'share-choice-actions';
-    var articleUrl = articleShareUrl();
-    var textForApps = text || buildShareText(photos);
-    var addAction = function (label, action, className) {
-      var button = document.createElement('button'); button.type = 'button';
-      button.className = 'share-choice-action' + (className ? ' ' + className : '');
-      button.textContent = label;
-      button.addEventListener('click', function () { dismiss(); action(); });
-      actions.appendChild(button);
-    };
-    addAction('WhatsApp', function () { openShareTarget('https://wa.me/?text=' + encodeURIComponent(textForApps)); });
-    addAction('Telegram', function () {
-      var telegramText = buildShareText(photos);
-      openShareTarget('https://t.me/share/url?url=' + encodeURIComponent(articleUrl) + '&text=' + encodeURIComponent(telegramText));
-    });
-    addAction('Почтаи электронӣ', function () { openShareTarget('mailto:?subject=' + encodeURIComponent(curArt ? curArt.title : 'Хабар') + '&body=' + encodeURIComponent(textForApps)); });
-    addAction('Нусха гирифтани матн', function () {
-      copyShareText(textForApps).then(function () { pzToast('Матни мубодила нусха шуд'); })
-        .catch(function () { pzToast('Матн нусха гирифта нашуд'); });
-    }, 'share-choice-primary');
-    photos.slice(0, 6).forEach(function (photo, i) {
-      addAction('Кушодани акс ' + (i + 1), function () { openShareTarget(photo.big); });
-    });
-    var hint = document.createElement('small'); hint.className = 'share-choice-hint';
-    hint.textContent = photos.length
-      ? 'Ин барнома мубодилаи файлҳои аксро дастгирӣ накард. Матн ва пайвандҳои аксро ирсол кунед ё аксро кушоед.'
-      : 'Барномаи ирсолро интихоб кунед.';
-    dialog.appendChild(head); dialog.appendChild(preview); dialog.appendChild(actions); dialog.appendChild(hint);
-    overlay.appendChild(dialog);
-    overlay.addEventListener('click', function (event) { if (event.target === overlay) dismiss(); });
-    onEscape = function (event) { if (event.key === 'Escape' && document.getElementById('presidentShareOverlay') === overlay) dismiss(); };
-    document.addEventListener('keydown', onEscape); document.body.appendChild(overlay); close.focus();
+    var fullText = text || buildShareText();
+    var title = curArt ? curArt.title : 'Хабар';
+    if (hasNativeShareMethod('shareText')) {
+      try { AndroidBridge.shareText(fullText, title); return; } catch (e) {}
+    }
+    if (typeof navigator.share === 'function') {
+      try {
+        var r = navigator.share({ title: title, text: fullText });
+        if (r && typeof r.catch === 'function') r.catch(function (err) {
+          if (!err || err.name !== 'AbortError') copyShareText(fullText).then(function () { pzToast('Матн нусха шуд'); }, function () { pzToast('Системаи мубодила дастрас нест'); });
+        });
+        return;
+      } catch (e) { if (e && e.name === 'AbortError') return; }
+    }
+    copyShareText(fullText).then(function () { pzToast('Системаи мубодила дастрас нест — матн нусха шуд'); },
+      function () { pzToast('Системаи мубодила дастрас нест'); });
   }
 
   var shareBlobCache = Object.create(null);
@@ -609,53 +581,50 @@
     }
   }
   var MAX_SHARE_PHOTOS = 10;
+  // Фото уходят КАК ФАЙЛЫ вместе с полным текстом в системное окно «Поделиться».
   function shareNewsWithPhotos(photos) {
     if (!curArt) { pzToast('Хабар ҳанӯз омода нест'); return; }
     photos = (photos || []).map(articleSharePhoto).filter(Boolean).slice(0, MAX_SHARE_PHOTOS);
     var title = curArt.title || 'Хабар';
-    var caption = buildShareText();
-    var fallbackText = buildShareText(photos);
-    if (photos.length > 1 && hasNativeShareMethod('shareRemoteImages')) {
+    var text = buildShareText();            // жирный заголовок + весь текст + источник, без ссылок на фото
+    if (!photos.length) {
+      if (shareTextNatively(text, title)) return;
+      if (typeof navigator.share === 'function' && tryWebShare({ title: title, text: text }, [], text)) return;
+      showShareFallback([], text); return;
+    }
+    // 1) Android-приложение: скачивает фото само и открывает системное окно с фото + текстом
+    if (hasNativeShareMethod('shareRemoteImages')) {
       try {
         AndroidBridge.shareRemoteImages(JSON.stringify({
-          title: title,
-          text: caption,
+          title: title, text: text,
           images: photos.map(function (photo) { return { url: photo.big, name: photo.name }; })
         }));
         return;
       } catch (error) { console.warn('Native multi-image share unavailable:', error); }
     }
     if (photos.length === 1 && hasNativeShareMethod('shareRemoteImage')) {
-      try { AndroidBridge.shareRemoteImage(photos[0].big, photos[0].name, 'image/jpeg', caption, title); return; }
+      try { AndroidBridge.shareRemoteImage(photos[0].big, photos[0].name, 'image/jpeg', text, title); return; }
       catch (error) { console.warn('Native image share unavailable:', error); }
     }
-    if (!photos.length && shareTextNatively(caption, title)) return;
-    if (photos.length > 1 && hasNativeShareMethod('shareText')) {
-      if (shareTextNatively(fallbackText, title)) { pzToast('Матни хабар ва пайвандҳои акс мубодила шуданд'); return; }
-    }
-    if (typeof navigator.share === 'function') {
-      if (!photos.length) {
-        if (tryWebShare({ title: title, text: caption, url: articleShareUrl() }, photos, fallbackText)) return;
-      } else {
-        var images = [], ready = true;
-        photos.forEach(function (photo) {
-          var cached = shareBlobCache[photo.big];
-          if (!cached) { ready = false; return; }
-          try { images.push(new File([cached.blob], cached.name, { type: cached.mime })); }
-          catch (e) { ready = false; }
+    // 2) Браузер/PWA: Web Share с файлами фото
+    if (typeof navigator.share === 'function' && typeof File === 'function' && navigator.canShare) {
+      pzToast('Аксҳо омода мешаванд…');
+      Promise.all(photos.map(function (photo) { return getShareBlob(photo, 15000); })).then(function () {
+        var images = photos.map(function (photo) {
+          var c = shareBlobCache[photo.big];
+          return new File([c.blob], c.name, { type: c.mime });
         });
-        if (ready && images.length === photos.length && navigator.canShare) {
-          try {
-            if (navigator.canShare({ files: images }) && tryWebShare({ title: title, text: caption, files: images }, photos, fallbackText)) return;
-          } catch (error) { console.warn('Selected photos cannot be shared as files:', error); }
-        }
-      }
+        if (navigator.canShare({ files: images })) {
+          var r = navigator.share({ title: title, text: text, files: images });
+          if (r && typeof r.catch === 'function') r.catch(function (err) { if (!err || err.name !== 'AbortError') showShareFallback([], text); });
+        } else { pzToast('Аксҳо ирсол нашуданд — матн фиристода мешавад'); showShareFallback([], text); }
+      }).catch(function () { pzToast('Аксҳо ирсол нашуданд — матн фиристода мешавад'); showShareFallback([], text); });
+      return;
     }
-    if (photos.length && !hasNativeShareMethod('shareText') && typeof navigator.share === 'function' && !fallbackText) {
-      if (tryWebShare({ title: title, text: caption, url: articleShareUrl() }, photos, fallbackText)) return;
-    }
-    if (shareTextNatively(fallbackText, title)) { pzToast(photos.length ? 'Матн ва пайвандҳои акс мубодила шуданд' : 'Матни хабар мубодила шуд'); return; }
-    showShareFallback(photos, fallbackText);
+    // 3) Фото файлами отправить невозможно — отправляем только текст через системное окно
+    pzToast('Аксҳо ирсол нашуданд — матн фиристода мешавад');
+    if (shareTextNatively(text, title)) return;
+    showShareFallback([], text);
   }
 
   function openArticleSharePicker() {
