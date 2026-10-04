@@ -277,7 +277,7 @@
             '<img class="item-thumb" data-thumb-for="' + id + '" alt="">' +
             (it.has_photos ? '<div class="item-thumb-ph" data-ph="' + id + '">🖼</div>' : '<div class="item-thumb-ph">📄</div>') +
             '<div class="item-body">' +
-            '<div class="item-title">' + esc(it.title) + '</div>' +
+            '<div class="item-title" data-no-translate>' + esc(it.title) + '</div>' +
             '<div class="item-meta"><span class="item-cat">' + esc(cat.label) + '</span><span>·</span><span>' + esc(P.timeAgo(it.publish)) + '</span>' +
             (it.has_photos ? '<span class="item-photos">📷 ' + esc(it.photos_count || '') + '</span>' : '') +
             '</div></div></div>';
@@ -355,10 +355,10 @@
       '<div class="art">' +
       '<div class="art-head"><div class="art-cat">' + cat.emoji + ' ' + esc(cat.label) + '</div>' +
       '<button type="button" class="art-share">📤 Мубодила кардан</button></div>' +
-      '<div class="art-title">' + esc(a.title) + '</div>' +
+      '<div class="art-title" data-no-translate>' + esc(a.title) + '</div>' +
       '<div class="art-date">🕘 ' + esc(P.formatDate(a.publish)) + '</div>' +
       photosHtml +
-      '<div class="art-text">' + P.sanitizeHtml(a.text || a.teaser) + '</div>' +
+      '<div class="art-text" data-no-translate>' + P.sanitizeHtml(a.text || a.teaser) + '</div>' +
       '<div class="art-src"><span>Хабар аз сомонаи prezident.tj</span>' +
       '<button type="button" class="art-site" data-site-url="' + esc(articleShareUrl()) + '">↗ Кушодан дар сомона</button></div>' +
       '</div>';

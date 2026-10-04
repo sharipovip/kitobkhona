@@ -2210,6 +2210,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   let typingTimer = null;
   let typingActiveSent = false;
   let chatIsOpen = true;
+  let chatAccessBlocked = false;
 
   // ===== LONG POLLING (без постоянных запросов) =====
   let longPollingActive = false;
@@ -2229,6 +2230,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   function startLongPolling() {
+    if (chatAccessBlocked) return;
     if (longPollingActive) return;
     longPollingActive = true;
     const myGeneration = ++pollGeneration;
@@ -2245,7 +2247,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function pollLoop(myGeneration) {
-    if (!longPollingActive || myGeneration !== pollGeneration) return;
+    if (chatAccessBlocked || !longPollingActive || myGeneration !== pollGeneration) return;
     if (document.hidden) {
       setTimeout(() => pollLoop(myGeneration), 5000);
       return;
@@ -2265,12 +2267,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         signal: pollAbortController.signal
       }, 35000);
       // пока ждали ответ, могла запуститься новая цепочка (или чат закрылся) — эта цепочка больше не актуальна
-      if (myGeneration !== pollGeneration) return;
+      if (chatAccessBlocked || myGeneration !== pollGeneration) return;
       if (!resp.ok) {
         setTimeout(() => pollLoop(myGeneration), 5000);
         return;
       }
       const newMessages = await resp.json();
+      if (chatAccessBlocked || myGeneration !== pollGeneration) return;
       if (newMessages.length) {
         const last = newMessages[newMessages.length - 1];
         lastMessageTimestamp = new Date(last.created_at).getTime();
@@ -2486,7 +2489,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function markChatRead() {
-    if (!peerId) return;
+    if (chatAccessBlocked || !peerId) return;
     try {
       await ChatAPI.markMessagesRead(peerId);
     } catch (e) {}
@@ -2509,9 +2512,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   async function refreshMessagesFromServer(keepScroll = true, cachedMsgs = null) {
     const msgContainer = document.getElementById('messages');
-    if (pendingOutgoingCount > 0) return;
+    if (chatAccessBlocked || pendingOutgoingCount > 0) return;
     try {
       const msgs = await ChatAPI.getMessages(currentUserId, peerId);
+      if (chatAccessBlocked) return;
       void markChatRead();
       if (!msgs || msgs.length === 0) {
         if (!cachedMsgs || cachedMsgs.length === 0) {
@@ -2540,6 +2544,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function fetchBlockStatus() {
+    if (chatAccessBlocked) return false;
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return false;
     try {
@@ -2558,10 +2563,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   async function loadMessages(keepScroll = true) {
     const msgContainer = document.getElementById('messages');
-    if (pendingOutgoingCount > 0) return;
+    if (chatAccessBlocked || pendingOutgoingCount > 0) return;
     try {
       if (!currentUserId) {
         const { data } = await AUTH.getUser();
+        if (chatAccessBlocked) return;
         if (!data.user) {
           msgContainer.innerHTML = '<div class="loading-msg">Логин шавед барои чат</div>';
           return;
@@ -2731,6 +2737,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function updateWordCounter() {
+    if (chatAccessBlocked) return;
     try {
       const token = localStorage.getItem('kk_token');
       if (!token) return;
@@ -2752,6 +2759,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function sendTypingState(typing) {
+    if (chatAccessBlocked) return;
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return;
     try {
@@ -2764,6 +2772,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function refreshTypingIndicator() {
+    if (chatAccessBlocked) return;
     const token = localStorage.getItem('kk_token');
     const indicator = document.getElementById('typingIndicator');
     const status = document.getElementById('friendStatusLabel');
@@ -2779,6 +2788,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   async function sendMessage() {
+    if (chatAccessBlocked) return;
     if (!chatIsOpen) {
       showToast('Чат баста шудааст');
       return;
@@ -2913,21 +2923,39 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     else location.href = 'chats.html';
   }
 
-  function blockChatForAge() {
+  function blockChatForAge(needsLogin = false) {
+    chatAccessBlocked = true;
+    stopLongPolling();
+    clearTimeout(typingTimer);
     const input=document.getElementById('msgInput'),send=document.getElementById('sendBtn');
-    if(input){input.disabled=true;input.placeholder='Паёмак танҳо барои 18+'}if(send)send.disabled=true;
-    const label=document.getElementById('friendStatusLabel');if(label)label.textContent='🔒 Танҳо барои 18+';
+    const lang=typeof getAppLanguage==='function'?getAppLanguage():'tg';
+    const text=lang==='ru'
+      ? 'Чат недоступен гостям и пользователям младше 18 лет. Заполните профиль, чтобы пользоваться чатом.'
+      : lang==='en'
+        ? 'Chat is unavailable to guests and users under 18. Complete your profile to use chat services.'
+        : 'Чат барои меҳмонон ва корбарони то 18-сола дастрас нест. Профили худро пурра намуда аз хизматрасониҳои чат истифода намоед.';
+    const profile=needsLogin
+      ? (lang==='ru'?'Войти':lang==='en'?'Sign in':'Ворид шудан')
+      : (lang==='ru'?'Заполнить профиль':lang==='en'?'Complete profile':'Таҳрири профил');
+    const profileHref=needsLogin?'login.html':'profile.html?edit=1';
+    if(input){input.disabled=true;input.placeholder=lang==='ru'?'Чат недоступен':lang==='en'?'Chat unavailable':'Чат дастрас нест';}
+    if(send)send.disabled=true;
+    const label=document.getElementById('friendStatusLabel');if(label)label.textContent=lang==='ru'?'🔒 Чат закрыт':lang==='en'?'🔒 Chat locked':'🔒 Чат баста';
+    const messages=document.getElementById('messages');
+    if(messages)messages.innerHTML=`<div class="loading-msg" style="white-space:normal;line-height:1.6;text-align:center;padding:18px">🔒 ${esc(text)}<br><button class="btn btn-primary" style="margin-top:14px" onclick="location.href='${profileHref}'">${esc(profile)}</button></div>`;
   }
 
   async function loadPeerAvatar() {
-    if (!peerId) return;
+    if (!peerId) return true;
     try {
       const profile = await NEON_API.getProfile(peerId);
       if (profile?.display_name) document.getElementById('headNameText').textContent = profile.display_name;
       document.getElementById('verifiedBadge').innerHTML = profile?.verified ? verifiedBadgeSvg() : '';
       if (profile?.avatar_url) document.getElementById('chatAvatar').innerHTML = `<img src="${esc(profile.avatar_url)}" alt="">`;
-      if (!profile?.birth_year || Number(profile.birth_year)>new Date().getFullYear()-18) blockChatForAge();
-    } catch (e) {}
+      const peerBirthYear=Number(profile?.birth_year||0);
+      if (!peerBirthYear || peerBirthYear>new Date().getFullYear()-18) { blockChatForAge(); return false; }
+      return true;
+    } catch (e) { return true; }
   }
 
   async function init() {
@@ -2939,7 +2967,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     let { data } = await AUTH.getUser();
     if (!data.user) {
       if (stopQuoteRotation) stopQuoteRotation();
-      msgsEl.innerHTML = '<div class="loading-msg">Логин шавед</div>';
+      blockChatForAge(true);
       return;
     }
     if (data.user.profile_unknown) {
@@ -2962,12 +2990,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
     if (stopQuoteRotation) stopQuoteRotation();
     currentUserId = data.user.id;
-    if (!data.user.birth_year || Number(data.user.birth_year)>new Date().getFullYear()-18) blockChatForAge();
-    void loadPeerAvatar();
+    const birthYear=Number(data.user.birth_year||0);
+    const isGuest=data.user.is_temporary===true||String(data.user.username||'').startsWith('guest_');
+    if (isGuest||!birthYear||birthYear>new Date().getFullYear()-18) { blockChatForAge(); return; }
+    const peerAllowed=await loadPeerAvatar();
+    if (!peerAllowed||chatAccessBlocked) return;
     void fetchBlockStatus();
     void markChatRead();
     void loadMessages(false);
-    startLongPolling(); // вместо startPolling
+    startLongPolling(); // instead of the legacy poller
   }
 
   document.addEventListener('visibilitychange', () => {
@@ -2977,7 +3008,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         typingActiveSent = false;
         sendTypingState(false);
       }
-    } else {
+    } else if (!chatAccessBlocked) {
       startLongPolling();
       void markChatRead();
       void loadMessages(true);
@@ -2985,7 +3016,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   });
 
   window.addEventListener('focus', () => {
-    void markChatRead();
+    if (!chatAccessBlocked) void markChatRead();
   });
 
   window.addEventListener('beforeunload', () => {

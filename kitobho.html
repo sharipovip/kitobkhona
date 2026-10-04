@@ -959,13 +959,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (saved === 'light') document.body.classList.add('light-theme');
   })();
 
+  const BOOKS_REPO = 'sharipovip/books';
+  const BOOKS_BRANCH = 'main';
+  const BOOKS_JSON_TTL_MS = 5 * 60 * 1000;
+  const BOOKS_JSON_CACHE_KEY = 'kk_booksjson_cache_v3';
   const BOOKS_JSON_URLS = [
-    'books.json?t=' + Date.now(),
-    'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t=' + Date.now()
+    'https://raw.githubusercontent.com/' + BOOKS_REPO + '/' + BOOKS_BRANCH + '/books.json?t=' + Date.now(),
+    'https://cdn.jsdelivr.net/gh/' + BOOKS_REPO + '@' + BOOKS_BRANCH + '/books.json?t=' + Date.now(),
+    'books.json?t=' + Date.now()
   ];
   const $ = id => document.getElementById(id);
   const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
   let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
+  let booksJsonLoadedAt = 0;
   let activeBookElement = null;
 
   function getCoverCacheMap() {
@@ -1063,28 +1069,49 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       return await r.json();
     } finally { clearTimeout(t); }
   }
-  async function loadBooksJson() {
+  function validBooksCatalog(value) {
+    return !!value && Array.isArray(value.categories);
+  }
+  function readBooksCatalogCache() {
     try {
-      const cached = localStorage.getItem('kk_booksjson_cache_v2');
-      if (cached) {
-        const parsed = JSON.parse(cached);
-        if (parsed) {
-          DATA = parsed;
-          return DATA;
-        }
-      }
+      const saved = JSON.parse(localStorage.getItem(BOOKS_JSON_CACHE_KEY) || 'null');
+      if (saved && validBooksCatalog(saved.data)) return { data: saved.data, ts: Number(saved.ts) || 0 };
     } catch(e) {}
+    // Existing installs stored books.json directly. Keep it as an offline fallback,
+    // but never treat this legacy entry as fresh: remote categories must be rechecked.
+    try {
+      const legacy = JSON.parse(localStorage.getItem('kk_booksjson_cache_v2') || 'null');
+      if (validBooksCatalog(legacy)) return { data: legacy, ts: 0 };
+    } catch(e) {}
+    return null;
+  }
+  function writeBooksCatalogCache(data) {
+    try { localStorage.setItem(BOOKS_JSON_CACHE_KEY, JSON.stringify({ ts: Date.now(), data })); } catch(e) {}
+  }
+  async function loadBooksJson(force = false) {
+    const now = Date.now();
+    if (!force && validBooksCatalog(DATA) && now - booksJsonLoadedAt < BOOKS_JSON_TTL_MS) return DATA;
+    const cached = readBooksCatalogCache();
+    if (!force && cached && ((cached.ts && now - cached.ts < BOOKS_JSON_TTL_MS) || navigator.onLine === false)) {
+      DATA = cached.data;
+      booksJsonLoadedAt = cached.ts || now;
+      return DATA;
+    }
     for (const u of BOOKS_JSON_URLS) {
       try {
-        DATA = await fetchJsonFast(u);
-        try { localStorage.setItem('kk_booksjson_cache_v2', JSON.stringify(DATA)); } catch(_) {}
+        const data = await fetchJsonFast(u, 6500);
+        if (!validBooksCatalog(data)) continue;
+        DATA = data;
+        booksJsonLoadedAt = Date.now();
+        writeBooksCatalogCache(DATA);
         return DATA;
       } catch(e) {}
     }
-    try {
-      DATA = JSON.parse(localStorage.getItem('kk_booksjson_cache_v2') || 'null');
-      if (DATA) return DATA;
-    } catch(e) {}
+    if (cached && validBooksCatalog(cached.data)) {
+      DATA = cached.data;
+      booksJsonLoadedAt = cached.ts || now;
+      return DATA;
+    }
     throw new Error('Пайвастшавӣ дастрас нест. Интернетро санҷед.');
   }
 
@@ -1109,49 +1136,97 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     ];
   }
 
-  async function fetchManifest(su) {
-    const key = su.folder;
-    if (manifestCache.has(key)) return manifestCache.get(key);
+  const MANIFEST_CACHE_TTL_MS = 3 * 60 * 1000;
+  const EMPTY_MANIFEST_CACHE_TTL_MS = 60 * 1000;
+  const SUPPORTED_BOOK_FILE = /\.(pdf|epub|fb2|docx?|mp4|m4v|webm|txt|zip)$/i;
+  function readManifestCacheEntry(key) {
     try {
-      const raw = localStorage.getItem('kk_manifest_cache_v2');
-      if (raw) {
-        const parsed = JSON.parse(raw);
-        const cached = parsed[key];
-        if (Array.isArray(cached)) {
-          manifestCache.set(key, cached);
-          return cached;
-        }
-      }
+      const parsed = JSON.parse(localStorage.getItem('kk_manifest_cache_v3') || 'null');
+      const saved = parsed && parsed[key];
+      if (saved && Array.isArray(saved.items)) return { items: saved.items, ts: Number(saved.ts) || 0 };
     } catch(e) {}
+    // Legacy cache values were plain arrays and had no timestamp; regard them as stale.
+    try {
+      const parsed = JSON.parse(localStorage.getItem('kk_manifest_cache_v2') || 'null');
+      if (parsed && Array.isArray(parsed[key])) return { items: parsed[key], ts: 0 };
+    } catch(e) {}
+    return null;
+  }
+  function isManifestEntryFresh(entry, now = Date.now()) {
+    if (!entry || !entry.ts) return false;
+    const ttl = entry.items.length ? MANIFEST_CACHE_TTL_MS : EMPTY_MANIFEST_CACHE_TTL_MS;
+    return now - entry.ts < ttl;
+  }
+  function writeManifestCacheEntry(key, items) {
+    const entry = { ts: Date.now(), items };
+    manifestCache.set(key, entry);
+    try {
+      const parsed = JSON.parse(localStorage.getItem('kk_manifest_cache_v3') || '{}');
+      parsed[key] = entry;
+      localStorage.setItem('kk_manifest_cache_v3', JSON.stringify(parsed));
+    } catch(e) {}
+    return entry;
+  }
+  async function fetchJsonWithTimeout(url, timeoutMs = 7000) {
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+      const response = await fetch(url, { cache: 'no-store', signal: controller.signal });
+      if (!response.ok) throw new Error('HTTP ' + response.status);
+      return await response.json();
+    } finally { clearTimeout(timer); }
+  }
+  async function fetchManifest(su, force = false) {
+    const key = String(su && su.folder || '');
+    if (!key) return [];
+    const now = Date.now();
+    let cached = manifestCache.get(key);
+    if (Array.isArray(cached)) cached = { items: cached, ts: 0 };
+    if (!cached) cached = readManifestCacheEntry(key);
+    if (!force && isManifestEntryFresh(cached, now)) {
+      manifestCache.set(key, cached);
+      return cached.items;
+    }
+    if (!cached) cached = readManifestCacheEntry(key);
+    if (navigator.onLine === false && cached && Array.isArray(cached.items)) {
+      manifestCache.set(key, cached);
+      return cached.items;
+    }
+
+    const repo = DATA?.repo || BOOKS_REPO;
+    const branch = DATA?.branch || BOOKS_BRANCH;
+    const base = `https://raw.githubusercontent.com/${repo}/${branch}/${enc(key)}/manifest.json`;
+    const cdn = `https://cdn.jsdelivr.net/gh/${repo}@${branch}/${enc(key)}/manifest.json`;
     let list = [];
-    try {
-      // ТАЙМАУТ 15 сония: агар шабака хеле суст бошад, «боркунии абадӣ» намешавад —
-      // паём хато нишон дода мешавад (кэш мондани ҷузъҳои қаблӣ кор мекунад).
-      const ctrl = new AbortController();
-      const killTimer = setTimeout(() => ctrl.abort(), 15000);
-      const r = await fetch(`https://raw.githubusercontent.com/${DATA.repo}/${DATA.branch}/${enc(su.folder)}/manifest.json?t=${Date.now()}`, { cache: 'no-store', signal: ctrl.signal });
-      clearTimeout(killTimer);
-      if (r.ok) {
-        const j = await r.json();
-        list = Array.isArray(j.books) ? j.books : [];
-      }
-    } catch(e) {}
-    if (!list.length) {
+    let manifestLoaded = false;
+    for (const url of [base + '?t=' + Date.now(), cdn + '?t=' + Date.now()]) {
       try {
-        const api = `https://api.github.com/repos/${DATA.repo}/contents/${enc(su.folder)}?ref=${encodeURIComponent(DATA.branch)}`;
-        const arr = await fetch(api).then(r => r.ok ? r.json() : []);
-        list = (Array.isArray(arr) ? arr : []).filter(x => x.type === 'file' && /\.pdf$/i.test(x.name))
-          .map(x => ({ name: x.name.replace(/\.pdf$/i, ''), file: x.name, size: x.size || 0 }));
+        const json = await fetchJsonWithTimeout(url, 8000);
+        if (Array.isArray(json.books)) {
+          list = json.books;
+          manifestLoaded = true;
+          break;
+        }
       } catch(e) {}
     }
-    manifestCache.set(key, list);
-    try {
-      const raw = localStorage.getItem('kk_manifest_cache_v2');
-      const parsed = raw ? JSON.parse(raw) : {};
-      parsed[key] = list;
-      localStorage.setItem('kk_manifest_cache_v2', JSON.stringify(parsed));
-    } catch(e) {}
-    return list;
+    // GitHub's anonymous Contents API is only a last-resort fallback (it is rate limited).
+    // A current generated manifest is the authoritative, cache-friendly source.
+    if (!manifestLoaded || !list.length) {
+      try {
+        const api = `https://api.github.com/repos/${repo}/contents/${enc(key)}?ref=${encodeURIComponent(branch)}`;
+        const arr = await fetchJsonWithTimeout(api, 6000);
+        if (Array.isArray(arr)) {
+          const fromApi = arr.filter(x => x.type === 'file' && SUPPORTED_BOOK_FILE.test(x.name))
+            .map(x => ({ name: x.name.replace(SUPPORTED_BOOK_FILE, ''), file: x.name, size: x.size || 0 }));
+          if (fromApi.length || !manifestLoaded) { list = fromApi; manifestLoaded = true; }
+        }
+      } catch(e) {}
+    }
+    if (!manifestLoaded && cached && Array.isArray(cached.items)) {
+      manifestCache.set(key, cached);
+      return cached.items;
+    }
+    return writeManifestCacheEntry(key, list).items;
   }
 
   async function getBookStats(bookId) {
@@ -1244,10 +1319,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
       return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(b.folder || sub?.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
         <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
-          <img src="${coverSrc}" alt="${esc(name)}" loading="lazy" data-i="0" data-covers='${esc(JSON.stringify(coverList))}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none'}">
+          <img src="${coverSrc}" alt="${esc(name)}" data-no-translate loading="lazy" data-i="0" data-covers='${esc(JSON.stringify(coverList))}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none'}">
           <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
           <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
-          <div class="bk-foil"><span class="marquee-text">${esc(name)}</span></div>
+          <div class="bk-foil"><span class="marquee-text" data-no-translate>${esc(name)}</span></div>
           <div class="rating-badge">⭐ ...</div>
           <div class="size-badge fmt-${fmt.toLowerCase()}">${fmt.toUpperCase()}</div>
           ${sizeMB ? `<div class="size-mb">${sizeMB} МБ</div>` : ''}
@@ -1688,7 +1763,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       books = list;
       renderBooks(list);
       fetchManifest(sub).then(fresh => {
-        if (fresh && fresh.length) {
+        if (Array.isArray(fresh)) {
           if (CacheManager) CacheManager.set(cacheKey, fresh);
           books = fresh;
           renderBooks(fresh);
@@ -1708,37 +1783,74 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   let globalBooksIndex = null;
+  let globalBooksIndexLoadedAt = 0;
   let globalBooksIndexPromise = null;
-
-  async function getGlobalBooksIndex() {
-    if (globalBooksIndex) return globalBooksIndex;
+  const GLOBAL_BOOK_INDEX_TTL_MS = 5 * 60 * 1000;
+  async function fetchRepositorySearchIndex() {
+    const repo = DATA?.repo || BOOKS_REPO;
+    const branch = DATA?.branch || BOOKS_BRANCH;
+    const urls = [
+      `https://raw.githubusercontent.com/${repo}/${branch}/search-index.json?t=${Date.now()}`,
+      `https://cdn.jsdelivr.net/gh/${repo}@${branch}/search-index.json?t=${Date.now()}`
+    ];
+    for (const url of urls) {
+      try {
+        const data = await fetchJsonWithTimeout(url, 8000);
+        if (data && Array.isArray(data.items)) return data.items;
+      } catch(e) {}
+    }
+    return null;
+  }
+  async function getGlobalBooksIndex(force = false) {
+    const now = Date.now();
+    if (!force && Array.isArray(globalBooksIndex) && now - globalBooksIndexLoadedAt < GLOBAL_BOOK_INDEX_TTL_MS) return globalBooksIndex;
     if (globalBooksIndexPromise) return globalBooksIndexPromise;
-    const cacheKey = 'kk_global_books_search_v2';
+    const cacheKey = 'kk_global_books_search_v3';
+    let cached = null;
     try {
-      const cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
-      if (cached && cached.ts && Date.now() - cached.ts < 6 * 60 * 60 * 1000 && Array.isArray(cached.items)) {
+      cached = JSON.parse(localStorage.getItem(cacheKey) || 'null');
+      if (!cached || !Array.isArray(cached.items)) cached = JSON.parse(localStorage.getItem('kk_global_books_search_v2') || 'null');
+    } catch (e) { cached = null; }
+    if (!force && cached && Array.isArray(cached.items) && cached.ts && now - cached.ts < GLOBAL_BOOK_INDEX_TTL_MS) {
+      globalBooksIndex = cached.items;
+      globalBooksIndexLoadedAt = cached.ts;
+      return globalBooksIndex;
+    }
+    if (navigator.onLine === false && cached && Array.isArray(cached.items)) {
+      globalBooksIndex = cached.items;
+      globalBooksIndexLoadedAt = cached.ts || now;
+      return globalBooksIndex;
+    }
+    globalBooksIndexPromise = (async () => {
+      const remoteItems = await fetchRepositorySearchIndex();
+      if (remoteItems) {
+        globalBooksIndex = remoteItems;
+      } else {
+        const subcategories = (DATA?.categories || []).flatMap(category => category.subs || []);
+        const groups = await Promise.all(subcategories.map(async categorySub => {
+          try {
+            const list = await fetchManifest(categorySub);
+            return (list || []).map(book => ({ ...book, folder: categorySub.folder || book.folder || '', category: categorySub.name || '' }));
+          } catch (e) { return []; }
+        }));
+        const seen = new Set();
+        globalBooksIndex = groups.flat().filter(book => {
+          const key = String(book.folder || '') + '/' + String(book.file || book.name || '');
+          if (seen.has(key)) return false;
+          seen.add(key);
+          return true;
+        });
+      }
+      globalBooksIndexLoadedAt = Date.now();
+      try { localStorage.setItem(cacheKey, JSON.stringify({ ts: globalBooksIndexLoadedAt, items: globalBooksIndex })); } catch (e) {}
+      return globalBooksIndex;
+    })().catch(() => {
+      if (cached && Array.isArray(cached.items)) {
         globalBooksIndex = cached.items;
+        globalBooksIndexLoadedAt = cached.ts || Date.now();
         return globalBooksIndex;
       }
-    } catch (e) {}
-    const subcategories = (DATA?.categories || []).flatMap(category => category.subs || []);
-    globalBooksIndexPromise = Promise.all(subcategories.map(async categorySub => {
-      try {
-        const list = await fetchManifest(categorySub);
-        return (list || []).map(book => ({ ...book, folder: categorySub.folder || book.folder || '', category: categorySub.name || '' }));
-      } catch (e) {
-        return [];
-      }
-    })).then(groups => {
-      const seen = new Set();
-      globalBooksIndex = groups.flat().filter(book => {
-        const key = String(book.folder || '') + '/' + String(book.file || book.name || '');
-        if (seen.has(key)) return false;
-        seen.add(key);
-        return true;
-      });
-      try { localStorage.setItem(cacheKey, JSON.stringify({ ts: Date.now(), items: globalBooksIndex })); } catch (e) {}
-      return globalBooksIndex;
+      return [];
     }).finally(() => { globalBooksIndexPromise = null; });
     return globalBooksIndexPromise;
   }

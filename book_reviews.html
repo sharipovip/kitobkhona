@@ -46,7 +46,7 @@ async function load(){
   try{
     const rows=await apiGet('book_comments',{eq:{column:'book_url',value:book_url},order:'created_at.desc',limit:50,select:'text,created_at,user_id,status'});
     const visible=(rows||[]).filter(c=>c.status==='visible'||c.status===undefined);
-    comments.innerHTML=visible.length?visible.map(c=>`<div class="comment">${esc(c.text)}<div class="meta">${new Date(c.created_at).toLocaleDateString('ru-RU')}</div></div>`).join(''):'<div class="meta">Ҳоло шарҳ нест</div>';
+    comments.innerHTML=visible.length?visible.map(c=>`<div class="comment" data-no-translate>${esc(c.text)}<div class="meta">${new Date(c.created_at).toLocaleDateString('ru-RU')}</div></div>`).join(''):'<div class="meta">Ҳоло шарҳ нест</div>';
   }catch(_){comments.innerHTML='<div class="meta">Ҳоло шарҳ нест</div>'}
 }
 renderStars();load();

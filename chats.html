@@ -996,11 +996,35 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try{
       const uid=localStorage.getItem('kk_user_id');if(!uid)return;
       const cachedProfile=CacheManager.get('kk_profile_'+uid)||JSON.parse(localStorage.getItem('kk_profile_cache')||'null')||{id:uid};
-      if(cachedProfile.birth_year&&Number(cachedProfile.birth_year)>new Date().getFullYear()-18)return;
+      const cachedBirthYear=Number(cachedProfile.birth_year||0);
+      const cachedGuest=cachedProfile.is_temporary===true||String(cachedProfile.username||'').startsWith('guest_');
+      if(cachedGuest||!cachedBirthYear||cachedBirthYear>new Date().getFullYear()-18)return;
       currentUser=cachedProfile;friendsCacheKey=CacheManager.KEYS.FRIENDS+'_v2_'+uid;requestsCacheKey=CacheManager.KEYS.REQUESTS+'_v2_'+uid;summaryCacheKey='kk_cache_chat_summary_'+uid;friendDetailsCacheKey='kk_cache_friend_details_v1_'+uid;
       const friends=CacheManager.get(friendsCacheKey),requests=CacheManager.get(requestsCacheKey),summary=CacheManager.get(summaryCacheKey);friendDetails=CacheManager.get(friendDetailsCacheKey)||[];
       if(Array.isArray(friends)&&Array.isArray(requests))renderChats(friends,requests,document.getElementById('chatsScroll'),summary&&summary.by_peer?summary:{total_unread:0,by_peer:{}});
     }catch(e){}
+  }
+
+  function getChatsCopy() {
+    const lang = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
+    if (lang === 'ru') return {
+      login: 'Войдите, чтобы просмотреть чаты', signIn: 'Войти',
+      locked: 'Чат недоступен гостям и пользователям младше 18 лет. Заполните профиль, чтобы пользоваться чатом.',
+      editProfile: 'Заполнить профиль', adultsOnly: 'Дружба и сообщения доступны только пользователям от 18 лет.',
+      server: 'Сервер пока недоступен.', retry: 'Попробовать снова'
+    };
+    if (lang === 'en') return {
+      login: 'Sign in to view chats', signIn: 'Sign in',
+      locked: 'Chat is unavailable to guests and users under 18. Complete your profile to use chat services.',
+      editProfile: 'Complete profile', adultsOnly: 'Friendship and messaging are available only to users aged 18 or older.',
+      server: 'The server is not available right now.', retry: 'Try again'
+    };
+    return {
+      login: 'Барои дидани чатҳо ворид шавед', signIn: 'Ворид шудан',
+      locked: 'Чат барои меҳмонон ва корбарони то 18-сола дастрас нест. Профили худро пурра намуда аз хизматрасониҳои чат истифода намоед.',
+      editProfile: 'Таҳрири профил', adultsOnly: 'Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.',
+      server: 'Сервер ҳоло дастрас нест.', retry: 'Аз нав кӯшиш кунед'
+    };
   }
 
   async function loadData() {
@@ -1012,7 +1036,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     try {
       let {data}=await AUTH.getUser();
       currentUser=data.user;
-      if(!currentUser){if(stopQuoteRotation)stopQuoteRotation();scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px"><p>Барои дидани чатҳо ворид шавед</p><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">Ворид шудан</button></div>`;return}
+      if(!currentUser){if(stopQuoteRotation)stopQuoteRotation();const copy=getChatsCopy();scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:30px">🔒 ${copy.locked}<br><button class="btn btn-primary" style="margin-top:12px" onclick="location.href='login.html'">${copy.signIn}</button></div>`;return}
       // profile_unknown: сервер ещё не ответил на запрос профиля (совсем не удалось, а не просто
       // медленно) — это НЕ значит, что пользователю нет 18 лет. Раньше в этом случае
       // ошибочно показывалась "доступно только 18+". Честно ждём ещё, продолжая показывать
@@ -1029,13 +1053,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         }
         if(stopQuoteRotation)stopQuoteRotation();
         if(!resolved){
-          scroll.innerHTML='<div class="empty-hint" style="text-align:center;margin-top:36px">Сервер ҳоло дастрас нест.<br><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">Аз нав кӯшиш кунед</button></div>';
+          const copy=getChatsCopy();scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:36px">${copy.server}<br><button class="btn btn-primary" style="margin-top:16px" onclick="location.reload()">${copy.retry}</button></div>`;
           return;
         }
       }
       if(stopQuoteRotation)stopQuoteRotation();
-      const adult=!!currentUser.birth_year&&Number(currentUser.birth_year)<=new Date().getFullYear()-18;
-      if(!adult){const guest=currentUser.is_temporary===true||String(currentUser.username||'').startsWith('guest_');scroll.innerHTML=guest?'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Чат барои меҳмон дастрас нест. Шумо метавонед профили худро пур кунед ва чат ба шумо дастрас мегардад.<br><button class="btn btn-primary guest-profile-pulse" style="margin-top:16px" onclick="location.href=\'profile.html?edit=1\'">Таҳрири профил</button></div>':'<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 Дӯстӣ ва паёмак танҳо барои корбарони 18-сола ва калонтар дастрас аст.</div>';return}
+      const birthYear=Number(currentUser.birth_year||0);
+      const adult=!!birthYear&&birthYear<=new Date().getFullYear()-18;
+      const guest=currentUser.is_temporary===true||String(currentUser.username||'').startsWith('guest_');
+      if(guest||!adult){
+        const copy=getChatsCopy();
+        scroll.innerHTML=`<div class="empty-hint" style="text-align:center;margin-top:36px">🔒 ${copy.locked}<br><button class="btn btn-primary guest-profile-pulse" style="margin-top:16px" onclick="location.href='profile.html?edit=1'">${copy.editProfile}</button></div>`;
+        return;
+      }
 
       friendsCacheKey=CacheManager.KEYS.FRIENDS+'_v2_'+currentUser.id;
       requestsCacheKey=CacheManager.KEYS.REQUESTS+'_v2_'+currentUser.id;

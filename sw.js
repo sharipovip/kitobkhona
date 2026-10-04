@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v110-full-share-3.0.4';
+const CACHE_NAME = 'kitobkhona-v111-live-book-index-3.0.5';
 const LOCAL_FILES = [
   './',
   './index.html',
