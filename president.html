@@ -214,8 +214,8 @@
     </div>
   </div>
 
-<script src="config.js?v=72"></script>
-<script src="president.js?v=5"></script>
+<script src="config.js?v=71"></script>
+<script src="president.js?v=4"></script>
 <script>
 (function () {
   var P = window.PresidentNews;
@@ -329,26 +329,14 @@
     renderChips(key || 'news');
     var content = document.getElementById('content');
     var cached = P.articleCacheGet(id);
-    // Current v2 cache was saved from an uncapped API response and is safe to
-    // show immediately. Legacy v1 entries are refreshed before sharing, since
-    // they may contain a text body truncated by an older release.
-    if (cached && !force && !cached._legacy) { drawArticle(cached.a, cached.ph || { thumbs: [], big: [] }); return; }
-    if (cached && cached._legacy && navigator.onLine === false && !force) {
-      drawArticle(cached.a, cached.ph || { thumbs: [], big: [] });
-      pzToast('Нусхаи захирашуда нишон дода шуд; барои матни пурра интернетро пайваст кунед.');
-      return;
-    }
-    content.innerHTML = '<div class="loader">' + (cached && cached._legacy ? 'Матни пурра бор карда мешавад...' : 'Боркунии хабар...') + '</div>';
+    if (cached && !force) { drawArticle(cached.a, cached.ph || { thumbs: [], big: [] }); return; }
+    content.innerHTML = '<div class="loader">Боркунии хабар...</div>';
     Promise.all([P.fetchArticle(id), P.fetchPhotos(id)]).then(function (res) {
       var a = res[0], ph = res[1];
-      P.articleCachePut(id, a, ph); // кеши v2: API матни пурра, бе буридан
+      P.articleCachePut(id, a, ph); // сохраняем: следующий раз — из кэша, даже без интернета
       drawArticle(a, ph);
     }).catch(function () {
-      if (cached) {
-        drawArticle(cached.a, cached.ph || { thumbs: [], big: [] });
-        if (cached._legacy) pzToast('Нусхаи кӯҳна нишон дода шуд; барои матни пурра пайвастшавиро санҷед.');
-        return;
-      }
+      if (cached) { drawArticle(cached.a, cached.ph || { thumbs: [], big: [] }); return; } // сеть упала — есть кэш
       content.innerHTML = '<div class="empty">Хабар бор карда нашуд 😔<br><button class="retry" onclick="load(true)">Такрор кардан</button></div>';
     });
   }
@@ -494,85 +482,20 @@
     var opened = window.open(url, '_blank', 'noopener,noreferrer');
     if (!opened) location.href = url;
   }
-  function copyTextWithExecCommand(text) {
-    var area = document.createElement('textarea');
-    area.value = text; area.setAttribute('readonly', '');
-    area.style.position = 'fixed'; area.style.opacity = '0';
-    document.body.appendChild(area); area.select();
-    var ok = false;
-    try { ok = document.execCommand('copy'); } catch (e) {}
-    if (area.parentNode) area.parentNode.removeChild(area);
-    if (!ok) throw new Error('copy failed');
-  }
   function copyShareText(text) {
-    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
-      return navigator.clipboard.writeText(text).catch(function () { copyTextWithExecCommand(text); });
-    }
-    try { copyTextWithExecCommand(text); return Promise.resolve(); }
-    catch (e) { return Promise.reject(e); }
-  }
-  function copyFullTextThenOpenTarget(text, targetUrl) {
-    // Start copying in this user gesture, then open the target without placing
-    // the article body into a URL query that browsers/apps may truncate.
-    var copied = copyShareText(text);
-    openShareTarget(targetUrl);
-    copied.then(function () {
-      pzToast('Матни пурра нусха шуд. Дар барнома онро гузошта фиристед.');
-    }).catch(function () {
-      pzToast('Матн нусха гирифта нашуд. Аз тугмаи «Нусха гирифтани матн» истифода баред.');
+    var promise;
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') promise = navigator.clipboard.writeText(text);
+    else promise = Promise.reject(new Error('clipboard unavailable'));
+    return promise.catch(function () {
+      var area = document.createElement('textarea');
+      area.value = text; area.setAttribute('readonly', '');
+      area.style.position = 'fixed'; area.style.opacity = '0';
+      document.body.appendChild(area); area.select();
+      var ok = false;
+      try { ok = document.execCommand('copy'); } catch (e) {}
+      if (area.parentNode) area.parentNode.removeChild(area);
+      if (!ok) throw new Error('copy failed');
     });
-  }
-  function shareFullTextToTarget(text, title, targetUrl) {
-    // Android ACTION_SEND and Web Share pass the full text as data, not as URL.
-    if (shareTextNatively(text, title || 'Хабар')) return;
-    if (typeof navigator.share === 'function') {
-      try {
-        var result = navigator.share({ title: title || 'Хабар', text: text });
-        if (result && typeof result.catch === 'function') result.catch(function (error) {
-          if (error && error.name === 'AbortError') return;
-          console.warn('Full-text share unavailable:', error);
-          copyFullTextThenOpenTarget(text, targetUrl);
-        });
-        return;
-      } catch (error) {
-        if (error && error.name === 'AbortError') return;
-        console.warn('Full-text share unavailable:', error);
-      }
-    }
-    copyFullTextThenOpenTarget(text, targetUrl);
-  }
-  // Generic Android ACTION_SEND to WhatsApp truncates long Unicode text in
-  // the app's receiver. Keep the chooser only for short messages; long text
-  // is routed through a WhatsApp-specific native deep link or full clipboard.
-  var WHATSAPP_GENERIC_INTENT_SAFE_CHARS = 900;
-  function shareWhatsAppText(text, title) {
-    var shareTitle = title || 'Хабар';
-    if (hasNativeShareMethod('shareWhatsAppText')) {
-      try {
-        var language = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
-        AndroidBridge.shareWhatsAppText(text, shareTitle, language);
-        return;
-      } catch (error) { console.warn('WhatsApp-specific share unavailable:', error); }
-    }
-    if (text.length <= WHATSAPP_GENERIC_INTENT_SAFE_CHARS) {
-      if (shareTextNatively(text, shareTitle)) return;
-      if (typeof navigator.share === 'function') {
-        try {
-          var result = navigator.share({ title: shareTitle, text: text });
-          if (result && typeof result.catch === 'function') result.catch(function (error) {
-            if (error && error.name === 'AbortError') return;
-            console.warn('WhatsApp text share unavailable:', error);
-            copyFullTextThenOpenTarget(text, 'https://wa.me/');
-          });
-          return;
-        } catch (error) {
-          if (error && error.name === 'AbortError') return;
-          console.warn('WhatsApp text share unavailable:', error);
-        }
-      }
-    }
-    // For long Unicode text, copying avoids WhatsApp's EXTRA_TEXT truncation.
-    copyFullTextThenOpenTarget(text, 'https://wa.me/');
   }
   function showShareFallback(photos, text) {
     photos = Array.isArray(photos) ? photos : (photos ? [photos] : []);
@@ -590,6 +513,7 @@
     close.addEventListener('click', dismiss); head.appendChild(title); head.appendChild(close);
     var preview = document.createElement('p'); preview.className = 'share-choice-preview'; preview.textContent = curArt ? curArt.title : 'Хабар';
     var actions = document.createElement('div'); actions.className = 'share-choice-actions';
+    var articleUrl = articleShareUrl();
     var textForApps = text || buildShareText(photos);
     var addAction = function (label, action, className) {
       var button = document.createElement('button'); button.type = 'button';
@@ -598,15 +522,12 @@
       button.addEventListener('click', function () { dismiss(); action(); });
       actions.appendChild(button);
     };
-    addAction('WhatsApp', function () { shareWhatsAppText(textForApps, curArt ? curArt.title : 'Хабар'); });
+    addAction('WhatsApp', function () { openShareTarget('https://wa.me/?text=' + encodeURIComponent(textForApps)); });
     addAction('Telegram', function () {
       var telegramText = buildShareText(photos);
-      shareFullTextToTarget(telegramText, curArt ? curArt.title : 'Хабар', 'https://t.me/');
+      openShareTarget('https://t.me/share/url?url=' + encodeURIComponent(articleUrl) + '&text=' + encodeURIComponent(telegramText));
     });
-    addAction('Почтаи электронӣ', function () {
-      var mailTitle = curArt ? curArt.title : 'Хабар';
-      shareFullTextToTarget(textForApps, mailTitle, 'mailto:?subject=' + encodeURIComponent(mailTitle));
-    });
+    addAction('Почтаи электронӣ', function () { openShareTarget('mailto:?subject=' + encodeURIComponent(curArt ? curArt.title : 'Хабар') + '&body=' + encodeURIComponent(textForApps)); });
     addAction('Нусха гирифтани матн', function () {
       copyShareText(textForApps).then(function () { pzToast('Матни мубодила нусха шуд'); })
         .catch(function () { pzToast('Матн нусха гирифта нашуд'); });
@@ -615,13 +536,9 @@
       addAction('Кушодани акс ' + (i + 1), function () { openShareTarget(photo.big); });
     });
     var hint = document.createElement('small'); hint.className = 'share-choice-hint';
-    hint.textContent = textForApps.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS
-      ? (photos.length
-        ? 'Матни хабар ва пайвандҳои акс пурра нусха мешаванд; онҳоро дар чат гузоред.'
-        : 'Матни дароз: WhatsApp матнро пурра нусха мекунад; онро дар чат гузоред.')
-      : (photos.length
-        ? 'Ин барнома мубодилаи файлҳои аксро дастгирӣ накард. Матн ва пайвандҳои аксро ирсол кунед ё аксро кушоед.'
-        : 'Барномаи ирсолро интихоб кунед.');
+    hint.textContent = photos.length
+      ? 'Ин барнома мубодилаи файлҳои аксро дастгирӣ накард. Матн ва пайвандҳои аксро ирсол кунед ё аксро кушоед.'
+      : 'Барномаи ирсолро интихоб кунед.';
     dialog.appendChild(head); dialog.appendChild(preview); dialog.appendChild(actions); dialog.appendChild(hint);
     overlay.appendChild(dialog);
     overlay.addEventListener('click', function (event) { if (event.target === overlay) dismiss(); });
@@ -698,13 +615,6 @@
     var title = curArt.title || 'Хабар';
     var caption = buildShareText();
     var fallbackText = buildShareText(photos);
-    // Skip the generic Android share chooser for long text: WhatsApp truncates
-    // Unicode EXTRA_TEXT near 1,000 characters. The full-text panel has a
-    // WhatsApp-specific deep link (or copy/paste fallback) instead.
-    if (fallbackText.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS) {
-      showShareFallback(photos, fallbackText);
-      return;
-    }
     if (photos.length > 1 && hasNativeShareMethod('shareRemoteImages')) {
       try {
         AndroidBridge.shareRemoteImages(JSON.stringify({
