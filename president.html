@@ -559,6 +559,22 @@
     if (!photo || !canShareImageFiles()) return;
     getShareBlob(photo, 7000).catch(function () {});
   }
+  // Если в установленном приложении мост AndroidBridge не создался (старая сборка),
+  // подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат.
+  (function () {
+    try {
+      if (!window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+      var bridge = window.AndroidBridge || {};
+      ['shareText', 'shareTextWithWhatsAppChooser', 'shareImageWithText', 'shareRemoteImage', 'shareRemoteImages', 'shareFile', 'openExternalUrl'].forEach(function (method) {
+        if (typeof bridge[method] === 'function') return;
+        bridge[method] = function () {
+          try { window.KitobkhonaNative.postMessage(JSON.stringify({ method: method, args: Array.prototype.slice.call(arguments) })); }
+          catch (e) { console.warn('Native feature is unavailable', e); }
+        };
+      });
+      window.AndroidBridge = bridge;
+    } catch (e) {}
+  })();
   function hasNativeShareMethod(name) {
     return typeof AndroidBridge !== 'undefined' && AndroidBridge && typeof AndroidBridge[name] === 'function';
   }
