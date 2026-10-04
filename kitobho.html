@@ -9,6 +9,28 @@
 
 <link rel="manifest" href="manifest.json">
 <script src="config.js?v=71"></script>
+<script>
+/* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
+   подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
+(function () {
+  try {
+    if (!window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+    var bridge = window.AndroidBridge || {};
+    var map = { saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile', shareFile: 'shareFile',
+      shareText: 'shareText', shareTextWithWhatsAppChooser: 'shareTextWithWhatsAppChooser', shareImageWithText: 'shareImageWithText',
+      shareRemoteImage: 'shareRemoteImage', shareRemoteImages: 'shareRemoteImages', saveUserId: 'saveUserId', saveAuthToken: 'saveAuthToken',
+      openExternalUrl: 'openExternalUrl', openOfficialSite: 'openOfficialSite' };
+    Object.keys(map).forEach(function (name) {
+      if (typeof bridge[name] === 'function') return;
+      bridge[name] = function () {
+        try { window.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) })); }
+        catch (e) { console.warn('Native feature is unavailable', e); }
+      };
+    });
+    window.AndroidBridge = bridge;
+  } catch (e) {}
+})();
+</script>
 <script src="cache.js?v=45"></script>
 <style>
   
