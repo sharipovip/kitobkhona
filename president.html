@@ -214,7 +214,7 @@
     </div>
   </div>
 
-<script src="config.js?v=71"></script>
+<script src="config.js?v=72"></script>
 <script src="president.js?v=5"></script>
 <script>
 (function () {
@@ -541,8 +541,38 @@
     }
     copyFullTextThenOpenTarget(text, targetUrl);
   }
+  // Generic Android ACTION_SEND to WhatsApp truncates long Unicode text in
+  // the app's receiver. Keep the chooser only for short messages; long text
+  // is routed through a WhatsApp-specific native deep link or full clipboard.
+  var WHATSAPP_GENERIC_INTENT_SAFE_CHARS = 900;
   function shareWhatsAppText(text, title) {
-    shareFullTextToTarget(text, title, 'https://wa.me/');
+    var shareTitle = title || 'Хабар';
+    if (hasNativeShareMethod('shareWhatsAppText')) {
+      try {
+        var language = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
+        AndroidBridge.shareWhatsAppText(text, shareTitle, language);
+        return;
+      } catch (error) { console.warn('WhatsApp-specific share unavailable:', error); }
+    }
+    if (text.length <= WHATSAPP_GENERIC_INTENT_SAFE_CHARS) {
+      if (shareTextNatively(text, shareTitle)) return;
+      if (typeof navigator.share === 'function') {
+        try {
+          var result = navigator.share({ title: shareTitle, text: text });
+          if (result && typeof result.catch === 'function') result.catch(function (error) {
+            if (error && error.name === 'AbortError') return;
+            console.warn('WhatsApp text share unavailable:', error);
+            copyFullTextThenOpenTarget(text, 'https://wa.me/');
+          });
+          return;
+        } catch (error) {
+          if (error && error.name === 'AbortError') return;
+          console.warn('WhatsApp text share unavailable:', error);
+        }
+      }
+    }
+    // For long Unicode text, copying avoids WhatsApp's EXTRA_TEXT truncation.
+    copyFullTextThenOpenTarget(text, 'https://wa.me/');
   }
   function showShareFallback(photos, text) {
     photos = Array.isArray(photos) ? photos : (photos ? [photos] : []);
@@ -585,9 +615,13 @@
       addAction('Кушодани акс ' + (i + 1), function () { openShareTarget(photo.big); });
     });
     var hint = document.createElement('small'); hint.className = 'share-choice-hint';
-    hint.textContent = photos.length
-      ? 'Ин барнома мубодилаи файлҳои аксро дастгирӣ накард. Матн ва пайвандҳои аксро ирсол кунед ё аксро кушоед.'
-      : 'Барномаи ирсолро интихоб кунед.';
+    hint.textContent = textForApps.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS
+      ? (photos.length
+        ? 'Матни хабар ва пайвандҳои акс пурра нусха мешаванд; онҳоро дар чат гузоред.'
+        : 'Матни дароз: WhatsApp матнро пурра нусха мекунад; онро дар чат гузоред.')
+      : (photos.length
+        ? 'Ин барнома мубодилаи файлҳои аксро дастгирӣ накард. Матн ва пайвандҳои аксро ирсол кунед ё аксро кушоед.'
+        : 'Барномаи ирсолро интихоб кунед.');
     dialog.appendChild(head); dialog.appendChild(preview); dialog.appendChild(actions); dialog.appendChild(hint);
     overlay.appendChild(dialog);
     overlay.addEventListener('click', function (event) { if (event.target === overlay) dismiss(); });
@@ -664,6 +698,13 @@
     var title = curArt.title || 'Хабар';
     var caption = buildShareText();
     var fallbackText = buildShareText(photos);
+    // Skip the generic Android share chooser for long text: WhatsApp truncates
+    // Unicode EXTRA_TEXT near 1,000 characters. The full-text panel has a
+    // WhatsApp-specific deep link (or copy/paste fallback) instead.
+    if (fallbackText.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS) {
+      showShareFallback(photos, fallbackText);
+      return;
+    }
     if (photos.length > 1 && hasNativeShareMethod('shareRemoteImages')) {
       try {
         AndroidBridge.shareRemoteImages(JSON.stringify({

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v113-full-news-share-3.0.5';
+const CACHE_NAME = 'kitobkhona-v114-whatsapp-full-text-3.0.5';
 const LOCAL_FILES = [
   './',
   './index.html',
