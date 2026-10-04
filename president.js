@@ -1,5 +1,5 @@
 /* ============================================================
-   president.js v104 — Хабарҳои сомонаи Президенти ҶТ (prezident.tj)
+   president.js v105 — Хабарҳои сомонаи Президенти ҶТ (prezident.tj)
    Данные берутся НАПРЯМУЮ с открытого API controlpanel.president.tj
    (CORS разрешён: Access-Control-Allow-Origin: *). Полный текст и фото
    (flickr) показываются ВНУТРИ приложения — на сайт заходить не нужно.
@@ -105,14 +105,23 @@
   // ---------- кэш прочитанной новости (localStorage, без TTL) ----------
   // Новость, открытая один раз, сохраняется на устройстве: в следующий раз
   // её можно посмотреть и ПОДЕЛИТЬСЯ ею даже без интернета.
-  var ART_PREFIX = 'kk_prez_art_v1_';
-  function artCacheGet(id) {
+  // v2 invalidates old article snapshots that may have been stored with a
+  // previous text-length cap. Keep v1 only as an offline fallback until refresh.
+  var ART_PREFIX = 'kk_prez_art_v2_';
+  var LEGACY_ART_PREFIX = 'kk_prez_art_v1_';
+  function readArticleCache(prefix, id) {
     try {
-      var raw = localStorage.getItem(ART_PREFIX + id);
+      var raw = localStorage.getItem(prefix + id);
       if (!raw) return null;
       var c = JSON.parse(raw);
-      if (c && c.a && c.a.title) return c;
-    } catch (e) {}
+      return c && c.a && c.a.title ? c : null;
+    } catch (e) { return null; }
+  }
+  function artCacheGet(id) {
+    var current = readArticleCache(ART_PREFIX, id);
+    if (current) return current;
+    var legacy = readArticleCache(LEGACY_ART_PREFIX, id);
+    if (legacy) { legacy._legacy = true; return legacy; }
     return null;
   }
   function artCachePrune() {
@@ -120,7 +129,7 @@
       var list = [];
       for (var i = 0; i < localStorage.length; i++) {
         var k = localStorage.key(i);
-        if (!k || k.indexOf(ART_PREFIX) !== 0) continue;
+        if (!k || (k.indexOf(ART_PREFIX) !== 0 && k.indexOf(LEGACY_ART_PREFIX) !== 0)) continue;
         var ts = 0;
         try { ts = (JSON.parse(localStorage.getItem(k)) || {}).ts || 0; } catch (e) {}
         list.push({ k: k, ts: ts });
@@ -132,6 +141,7 @@
   function artCachePut(id, a, ph) {
     try {
       localStorage.setItem(ART_PREFIX + id, JSON.stringify({ ts: Date.now(), a: a, ph: ph || { thumbs: [], big: [] } }));
+      localStorage.removeItem(LEGACY_ART_PREFIX + id);
     } catch (e) {}
     artCachePrune(); // квота localStorage — держим максимум 30 новостей
   }
