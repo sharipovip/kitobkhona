@@ -136,7 +136,7 @@
   .pbr-bar { position:absolute; top:0; left:0; right:0; height:3px; background:rgba(201,168,76,.15); z-index:10; overflow:hidden; }
   .pbr-fill { position:absolute; top:0; bottom:0; left:0; width:45%; background:linear-gradient(90deg,#C9A84C,#E8C96D,#FFFFFF); border-radius:2px; animation:pbrLoad 1.2s infinite ease-in-out; }
   @keyframes pbrLoad { 0%{left:-40%;width:40%} 50%{left:30%;width:60%} 100%{left:100%;width:40%} }
-  .pbr-btns { position:absolute; top:calc(68px + var(--safe-top)); right:10px; display:flex; flex-direction:column; gap:8px; z-index:30; }
+  .pbr-btns { position:absolute; top:calc(88px + var(--safe-top)); right:10px; display:flex; flex-direction:column; gap:8px; z-index:30; }
   .pbr-btn { width:38px; height:38px; border-radius:50%; border:0; background:rgba(10,18,30,.55); color:#fff; font-size:17px; cursor:pointer; box-shadow:0 2px 10px rgba(0,0,0,.3); display:flex; align-items:center; justify-content:center; }
   .pbr-btn:active { transform:scale(.92); }
 
@@ -546,10 +546,10 @@
   var WHATSAPP_GENERIC_INTENT_SAFE_CHARS = 900;
   function shareWhatsAppText(text, title) {
     var shareTitle = title || 'Хабар';
-    if (hasNativeShareMethod('shareTextWithWhatsAppChooser')) {
+    if (hasNativeShareMethod('shareTextWithSystemChooser')) {
       try {
         var language = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
-        AndroidBridge.shareTextWithWhatsAppChooser(text, shareTitle, language);
+        AndroidBridge.shareTextWithSystemChooser(text, shareTitle, language);
         return;
       } catch (error) { console.warn('Native Android Sharesheet unavailable:', error); }
     }
@@ -573,58 +573,21 @@
       .catch(function () { pzToast('Матн нусха гирифта нашуд. Аз тугмаи «Нусха гирифтани матн» истифода баред.'); });
   }
   function showShareFallback(photos, text) {
-    photos = Array.isArray(photos) ? photos : (photos ? [photos] : []);
-    var old = document.getElementById('presidentShareOverlay');
-    if (old && old.parentNode) old.parentNode.removeChild(old);
-    var overlay = document.createElement('div');
-    overlay.id = 'presidentShareOverlay'; overlay.className = 'share-choice-overlay'; overlay.setAttribute('role', 'presentation');
-    var dialog = document.createElement('section');
-    dialog.className = 'share-choice-dialog'; dialog.setAttribute('role', 'dialog'); dialog.setAttribute('aria-modal', 'true'); dialog.setAttribute('aria-labelledby', 'shareChoiceTitle');
-    var head = document.createElement('div'); head.className = 'share-choice-head';
-    var title = document.createElement('b'); title.id = 'shareChoiceTitle'; title.textContent = 'Хабарро мубодила кунед';
-    var close = document.createElement('button'); close.type = 'button'; close.className = 'share-choice-close'; close.textContent = '✕'; close.setAttribute('aria-label', 'Пӯшидан');
-    var onEscape;
-    var dismiss = function () { if (overlay.parentNode) overlay.parentNode.removeChild(overlay); if (onEscape) document.removeEventListener('keydown', onEscape); };
-    close.addEventListener('click', dismiss); head.appendChild(title); head.appendChild(close);
-    var preview = document.createElement('p'); preview.className = 'share-choice-preview'; preview.textContent = curArt ? curArt.title : 'Хабар';
-    var actions = document.createElement('div'); actions.className = 'share-choice-actions';
-    var textForApps = text || buildShareText(photos);
-    var addAction = function (label, action, className) {
-      var button = document.createElement('button'); button.type = 'button';
-      button.className = 'share-choice-action' + (className ? ' ' + className : '');
-      button.textContent = label;
-      button.addEventListener('click', function () { dismiss(); action(); });
-      actions.appendChild(button);
-    };
-    addAction('WhatsApp', function () { shareWhatsAppText(textForApps, curArt ? curArt.title : 'Хабар'); });
-    addAction('Telegram', function () {
-      var telegramText = buildShareText(photos);
-      shareFullTextToTarget(telegramText, curArt ? curArt.title : 'Хабар', 'https://t.me/');
+    // Never render an in-page list of WhatsApp/Telegram/mail buttons. Retry the
+    // phone's native Sharesheet; if unavailable, keep the complete text copied.
+    var fullText = text || buildShareText(photos);
+    var shareTitle = curArt ? curArt.title : 'Хабар';
+    var language = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
+    if (hasNativeShareMethod('shareTextWithSystemChooser')) {
+      try { AndroidBridge.shareTextWithSystemChooser(fullText, shareTitle, language); return; }
+      catch (error) { console.warn('Native system share unavailable:', error); }
+    }
+    if (shareTextNatively(fullText, shareTitle)) return;
+    copyShareText(fullText).then(function () {
+      pzToast('Матни пурра нусха шуд. Дар барнома онро гузошта фиристед.');
+    }).catch(function () {
+      pzToast('Матн нусха гирифта нашуд. Аз тугмаи «Нусха гирифтани матн» истифода баред.');
     });
-    addAction('Почтаи электронӣ', function () {
-      var mailTitle = curArt ? curArt.title : 'Хабар';
-      shareFullTextToTarget(textForApps, mailTitle, 'mailto:?subject=' + encodeURIComponent(mailTitle));
-    });
-    addAction('Нусха гирифтани матн', function () {
-      copyShareText(textForApps).then(function () { pzToast('Матни мубодила нусха шуд'); })
-        .catch(function () { pzToast('Матн нусха гирифта нашуд'); });
-    }, 'share-choice-primary');
-    photos.slice(0, 6).forEach(function (photo, i) {
-      addAction('Кушодани акс ' + (i + 1), function () { openShareTarget(photo.big); });
-    });
-    var hint = document.createElement('small'); hint.className = 'share-choice-hint';
-    hint.textContent = textForApps.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS
-      ? (photos.length
-        ? 'Матни хабар ва пайвандҳои акс пурра нусха мешаванд; онҳоро дар чат гузоред.'
-        : 'Матни дароз: WhatsApp матнро пурра нусха мекунад; онро дар чат гузоред.')
-      : (photos.length
-        ? 'Ин барнома мубодилаи файлҳои аксро дастгирӣ накард. Матн ва пайвандҳои аксро ирсол кунед ё аксро кушоед.'
-        : 'Барномаи ирсолро интихоб кунед.');
-    dialog.appendChild(head); dialog.appendChild(preview); dialog.appendChild(actions); dialog.appendChild(hint);
-    overlay.appendChild(dialog);
-    overlay.addEventListener('click', function (event) { if (event.target === overlay) dismiss(); });
-    onEscape = function (event) { if (event.key === 'Escape' && document.getElementById('presidentShareOverlay') === overlay) dismiss(); };
-    document.addEventListener('keydown', onEscape); document.body.appendChild(overlay); close.focus();
   }
 
   var shareBlobCache = Object.create(null);
@@ -698,10 +661,10 @@
     var fallbackText = buildShareText(photos);
     // For long news, keep the phone's system Sharesheet. The new native method
     // adds a WhatsApp-specific target inside that same Android chooser.
-    if (fallbackText.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS && hasNativeShareMethod('shareTextWithWhatsAppChooser')) {
+    if (fallbackText.length > WHATSAPP_GENERIC_INTENT_SAFE_CHARS && hasNativeShareMethod('shareTextWithSystemChooser')) {
       var shareLanguage = typeof getAppLanguage === 'function' ? getAppLanguage() : 'tg';
       try {
-        AndroidBridge.shareTextWithWhatsAppChooser(fallbackText, title, shareLanguage);
+        AndroidBridge.shareTextWithSystemChooser(fallbackText, title, shareLanguage);
         return;
       } catch (error) { console.warn('Native Sharesheet unavailable:', error); }
     }
@@ -1006,5 +969,5 @@
   load();
 })();
 </script>
-</body>
+<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a454d7cdd9845855',t:'MTc5MTEyMzc5MQ=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script></body>
 </html>
