@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v122-chehrahoi-mondagor-details';
+const CACHE_NAME = 'kitobkhona-v123-text-only-share-play-link';
 const LOCAL_FILES = [
   './',
   './index.html',

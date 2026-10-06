@@ -55,10 +55,8 @@
     .section-tools{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:7px;margin:0 0 11px;padding:8px 9px;border:1px solid rgba(232,201,109,.16);border-radius:11px;background:rgba(7,16,27,.25)}
     .section-tools label{display:flex;align-items:center;gap:7px;color:var(--muted,#aeb9c7);font-size:10px;font-weight:750;cursor:pointer}.section-tools input{width:17px;height:17px;accent-color:#2e83ff}
     .section-tools button{min-height:30px;padding:5px 8px;font-size:10px}
-    main article.guide-page p,main article.detail-page p{font-size:calc(13px * var(--maorif-text-scale,1))!important}
-    main article.guide-page li,main article.detail-page li{font-size:calc(12px * var(--maorif-text-scale,1))!important}
-    main article.guide-page h2,main article.detail-page h2{font-size:calc(20px * var(--maorif-text-scale,1))!important}
-    main article .keyline{font-size:calc(13px * var(--maorif-text-scale,1))!important}
+    html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
+    main article.guide-page p,main article.detail-page p,main article.guide-page li,main article.detail-page li{max-width:100%;overflow-wrap:anywhere}
     .quiz-jump-card{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 18px;padding:12px 14px;border:1px solid rgba(57,139,255,.32);border-radius:14px;background:linear-gradient(120deg,rgba(24,73,128,.24),rgba(20,34,51,.9))}.quiz-jump-copy{display:grid;gap:3px}.quiz-jump-card strong{color:#d7e9ff;font-size:12px}.quiz-jump-card span{color:var(--muted,#aeb9c7);font-size:10px;line-height:1.45}.quiz-jump-card a{flex:0 0 auto;padding:8px 10px;border-radius:9px;background:#1768cb;color:#fff;font-size:10px;font-weight:850;text-decoration:none}.quiz-jump-card a:focus-visible{outline:2px solid #9bc7ff;outline-offset:2px}
     .quiz-card{margin:24px 0 14px;padding:18px;border:1px solid rgba(232,201,109,.32);scroll-margin-top:72px;border-radius:18px;background:linear-gradient(150deg,rgba(26,44,64,.98),rgba(15,27,41,.98));box-shadow:0 12px 34px rgba(0,0,0,.18)}
     .quiz-card h2{margin:0 0 7px;color:var(--gold,#e8c96d);font:700 22px/1.2 Georgia,'Times New Roman',serif}.quiz-intro,.quiz-note{color:var(--muted,#aeb9c7);font-size:12px;line-height:1.55}
@@ -90,7 +88,7 @@
       <button type="button" data-font="reset">Аз нав</button>
     </div>
     <div class="maorif-share-tools">
-      <span class="maorif-tool-label">Мубодилаи тамоми маълумот ё қисмҳои интихобшуда</span>
+      <span class="maorif-tool-label">Мубодилаи тамоми маълумот ё қисмҳои интихобшуда · бо пайванди барнома</span>
       <button type="button" data-select-all>Ҳамаи қисмҳо</button>
       <button type="button" data-clear-all>Тоза кардан</button>
       <button type="button" class="share-main" data-share-selected>Мубодила</button>
@@ -107,17 +105,22 @@
   quizJump.innerHTML = `<div class="quiz-jump-copy"><strong>Санҷиши дониш — дастрас аз аввали саҳифа</strong><span>${quizCount} савол. Викторинаи пурра дар поёни мавод низ ҷойгир аст; ин тугма шуморо рост ба он мебарад.</span></div><a href="#self-check-quiz">Ба санҷиш гузаштан ↓</a>`;
   main.insertBefore(quizJump, contents || articles[0]);
 
-  // Text-only enlargement: the page layout and controls do not scale.
+  // Set font-size on reading paragraphs and list items only; never zoom the viewport or controls.
   const fontLabel = toolbar.querySelector('[data-font-label]');
   const fontStorageKey = 'maorif-detail-font-scale-v1';
+  const scalableText = Array.from(main.querySelectorAll('article.guide-page p,article.detail-page p,article.guide-page li,article.detail-page li'));
+  const baseFontSizes = scalableText.map(node => parseFloat(window.getComputedStyle(node).fontSize) || 13);
   let fontScale = 1;
   try { fontScale = Number(readStored(fontStorageKey) || 1) || 1; } catch (e) { fontScale = 1; }
   const setFontScale = value => {
     fontScale = Math.max(.9, Math.min(1.5, Math.round(value * 20) / 20));
-    document.documentElement.style.setProperty('--maorif-text-scale', String(fontScale));
+    scalableText.forEach((node, index) => {
+      const px = Math.round(baseFontSizes[index] * fontScale * 100) / 100;
+      node.style.setProperty('font-size', px + 'px');
+    });
     statusText(fontLabel, Math.round(fontScale * 100) + '%');
     writeStored(fontStorageKey, fontScale);
-  };
+  }; 
   setFontScale(fontScale);
   toolbar.querySelector('[data-font="up"]').addEventListener('click', () => setFontScale(fontScale + .05));
   toolbar.querySelector('[data-font="down"]').addEventListener('click', () => setFontScale(fontScale - .05));
@@ -221,19 +224,18 @@
 
   function articleText(article) {
     const clone = article.cloneNode(true);
-    clone.querySelectorAll('.section-tools,.page-no').forEach(node => node.remove());
+    clone.querySelectorAll('.section-tools,.page-no,.source-list,.subhead').forEach(node => node.remove());
     const heading = clone.querySelector('h2')?.textContent?.trim() || '';
     const text = clone.innerText || clone.textContent || '';
-    const sourceLinks = Array.from(article.querySelectorAll('a[href^="http"]'))
-      .map(a => `${a.textContent.trim()} — ${a.href}`).filter(Boolean);
-    return `${heading}\n${text.replace(heading, '').trim()}${sourceLinks.length ? '\n\nМанбаъҳо:\n' + sourceLinks.join('\n') : ''}`;
+    return `${heading}\n${text.replace(heading, '').trim()}`;
   }
   async function shareArticles(chosen) {
     if (!chosen || !chosen.length) {
       statusText(selectedStatus, 'Аввал як ё чанд қисмро интихоб кунед.');
       return;
     }
-    const text = `${safeTitle}\n\n${chosen.map(articleText).join('\n\n——————————\n\n')}\n\n${window.location.href.split('#')[0]}`;
+    const appStoreUrl = 'https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share';
+    const text = `${safeTitle}\n\n${chosen.map(articleText).join('\n\n——————————\n\n')}\n\nКитобхона — барномаи китобхонӣ дар Google Play:\n${appStoreUrl}`;
     const title = chosen.length === 1 ? (chosen[0].querySelector('h2')?.textContent || safeTitle) : safeTitle;
     try {
       if (window.AndroidBridge && typeof window.AndroidBridge.shareText === 'function') {
