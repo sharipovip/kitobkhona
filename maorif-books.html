@@ -112,7 +112,7 @@
     .volume-select{min-width:80px;max-width:140px;min-height:32px;padding:6px 24px 6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:10px}
     .missing-note{display:flex;align-items:center;gap:6px;margin-top:8px;padding:7px 8px;border:1px dashed rgba(232,201,109,.24);border-radius:9px;color:var(--muted);font-size:9px;line-height:1.4;background:rgba(201,168,76,.045)}
     .missing-note b{color:#e9c96c}
-    .guide-button{display:inline-flex;align-items:center;gap:7px;margin-top:7px;padding:8px 11px;border:1px solid rgba(232,201,109,.35);border-radius:10px;background:rgba(232,201,109,.1);color:var(--gold2);font-size:10px;font-weight:850;text-decoration:none}
+    .guide-button{display:inline-flex;align-items:center;gap:7px;margin-top:7px;padding:8px 11px;border:1px solid rgba(232,201,109,.35);border-radius:10px;background:rgba(232,201,109,.1);color:var(--gold2);font:850 10px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;text-decoration:none;cursor:pointer}
     .guide-button:hover,.guide-button:focus-visible{background:rgba(232,201,109,.18);outline:2px solid rgba(232,201,109,.5);outline-offset:2px}
     .catalog-note{display:flex;gap:9px;align-items:flex-start;margin:13px 0 4px,padding:12px;border:1px dashed rgba(201,168,76,.3);border-radius:14px;color:var(--muted);font-size:10px;line-height:1.5;background:rgba(201,168,76,.055)}
     .catalog-note span:first-child{font-size:16px}
@@ -232,7 +232,10 @@
     {
       number: 1, month: 'Феврал', title: 'Забони миллат — ҳастии миллат', author: 'Эмомалӣ Раҳмон',
       note: 'Ҷилдҳои 1 ва 2',
-      details: [{ label: 'Китоби 1', href: 'maorif-details-zaboni-millat-1.html' }],
+      details: [
+        { label: 'Китоби 1', href: 'maorif-details-zaboni-millat-1.html' },
+        { label: 'Китоби 2', href: 'maorif-details-zaboni-millat-2.html' }
+      ],
       files: [
         { label: 'Ҷилди 1', path: 'books/Пешвои Миллат/Забони Миллат - Ҳастии Миллат Китоби-1.pdf' },
         { label: 'Ҷилди 2', path: 'books/Пешвои Миллат/Забони Миллат - Ҳастии Миллат Китоби-2.pdf' }
@@ -246,10 +249,12 @@
     {
       number: 3, month: 'Апрел', title: 'Насиҳатнома', author: 'Унсурулмаолии Кайковус',
       note: 'Дар феҳристи электронӣ бо номи «Қобуснома»',
+      details: [{ label: 'Маълумоти муфассал', href: 'maorif-details-nasihatnoma.html' }],
       files: [{ label: 'Кушодани «Қобуснома»', title: 'Қобуснома. Унсурулмаолии Кайковус', path: 'books/Адабиёти классикӣ/Шеър/Қобуснома. Унсурулмаолии Кайковус.pdf' }]
     },
     {
       number: 4, month: 'Май', title: 'Баҳористон', author: 'Абдураҳмони Ҷомӣ',
+      details: [{ label: 'Маълумоти муфассал', href: 'maorif-details-bahoriston.html' }],
       files: [{ label: 'Хондан', path: 'books/Адабиёти классикӣ/Шеър/Баҳористон. Абдураҳмони Ҷомӣ.pdf' }]
     },
     {
@@ -259,11 +264,16 @@
     },
     {
       number: 6, month: 'Июл', title: 'Ҳасани аробакаш', author: 'Мирзо Турсунзода',
+      details: [{ label: 'Маълумоти муфассал', href: 'maorif-details-hasani-arobakash.html' }],
       files: [{ label: 'Хондан', path: 'books/Адабиёти муосир/Шеър/Ҳасани аробакаш. Мирзо Турсунзода.pdf' }]
     },
     {
       number: 7, month: 'Август', title: 'Тоҷикон', author: 'Бобоҷон Ғафуров',
       note: 'Ду китоб · ҳар ду ҷилд дастрас аст',
+      details: [
+        { label: 'Китоби 1', href: 'maorif-details-tojikon-1.html' },
+        { label: 'Китоби 2', href: 'maorif-details-tojikon-2.html' }
+      ],
       files: [
         { label: 'Китоби 1', title: 'Тоҷикон · китоби 1 · Бобоҷон Ғафуров', path: 'books/Таърих/Тоҷикон. Таърихи қадимтарин, қадим ва асри миёна. Китоби 1. Бобоҷон Ғафуров.pdf' },
         { label: 'Китоби 2', title: 'Тоҷикон · китоби 2 · Бобоҷон Ғафуров', path: 'books/Таърих/Тоҷикон. Охирҳои асри миёна ва давраи нав. Китоби 2. Бобоҷон Ғафуров.pdf' }
@@ -273,6 +283,7 @@
       number: 8, month: 'Сентябр', title: 'Шоҳнома', author: 'Абулқосим Фирдавсӣ',
       note: 'Дар феҳрист 10 ҷилд мавҷуд аст',
       series: true,
+      details: Array.from({ length: 10 }, (_, index) => ({ label: 'Ҷилди ' + (index + 1), href: 'maorif-details-shohnoma-' + (index + 1) + '.html' })),
       files: Array.from({ length: 10 }, (_, index) => ({
         label: 'Ҷилди ' + (index + 1),
         title: 'Шоҳнома · ҷилди ' + (index + 1) + ' · Абулқосим Фирдавсӣ',
@@ -310,18 +321,30 @@
     params.set('cover', coverUrl(file.path));
     return 'reader.html?' + params.toString();
   }
+  function renderGuideActions(item) {
+    const details = item.details || [];
+    if (!details.length) return '';
+    if (details.length <= 2) {
+      return details.map(detail => `<a class="guide-button" href="${escapeHtml(detail.href)}">📖 Маълумоти муфассал · ${escapeHtml(detail.label)}</a>`).join('');
+    }
+    return `<button class="guide-button" type="button" data-open-selected-guide="${item.number}">📖 Маълумоти муфассал · ҷилди интихобшуда</button>`;
+  }
   function renderRecommendation(item) {
     const coverPath = item.files && item.files.length ? item.files[0].path : '';
     const cover = coverPath ? `<img src="${escapeHtml(coverUrl(coverPath))}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">` : '';
+    const guideActions = renderGuideActions(item);
     let actions = '';
     if (item.unavailable) {
       actions = `<div class="missing-note"><span aria-hidden="true">⏳</span><span><b>Китоб ҳоло дастрас нест.</b> Барои пайваст кардани хонанда файл бояд ба феҳристи китобхона илова шавад.</span></div>${item.guideHref ? `<a class="guide-button" href="${escapeHtml(item.guideHref)}">📖 Маълумоти муфассал · 20 бахш</a>` : ''}`;
     } else if (item.files.length === 1) {
-      actions = `<div class="book-actions"><a class="read-button" href="${escapeHtml(readerHref(item.files[0], item))}" aria-label="Хондани ${escapeHtml(item.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>${escapeHtml(item.files[0].label)}</a></div>`;
+      actions = `<div class="book-actions"><a class="read-button" href="${escapeHtml(readerHref(item.files[0], item))}" aria-label="Хондани ${escapeHtml(item.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>${escapeHtml(item.files[0].label)}</a>${guideActions}</div>`;
     } else {
-      const options = item.files.map((file, index) => `<option value="${index}" data-reader-href="${escapeHtml(readerHref(file, item))}">${escapeHtml(file.label)}</option>`).join('');
-      const detailActions = (item.details || []).map(detail => `<a class="guide-button" href="${escapeHtml(detail.href)}">📖 Маълумоти муфассал · ${escapeHtml(detail.label)}</a>`).join('');
-      actions = `<div class="book-actions"><select class="volume-select" aria-label="${escapeHtml(item.title)} — ҷилд" data-volume="${item.number}">${options}</select><button class="read-button" type="button" data-open-volume="${item.number}" aria-label="Кушодани ҷилди интихобшуда"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>Кушодан</button>${detailActions}</div>`;
+      const options = item.files.map((file, index) => {
+        const guide = (item.details || [])[index];
+        const guideAttr = guide ? ` data-guide-href="${escapeHtml(guide.href)}"` : '';
+        return `<option value="${index}" data-reader-href="${escapeHtml(readerHref(file, item))}"${guideAttr}>${escapeHtml(file.label)}</option>`;
+      }).join('');
+      actions = `<div class="book-actions"><select class="volume-select" aria-label="${escapeHtml(item.title)} — ҷилд" data-volume="${item.number}">${options}</select><button class="read-button" type="button" data-open-volume="${item.number}" aria-label="Кушодани ҷилди интихобшуда"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>Кушодан</button>${guideActions}</div>`;
     }
     return `<article class="book-card" aria-label="${escapeHtml(item.month)}: ${escapeHtml(item.title)}">
       <div class="month-cell"><span class="month-number">${String(item.number).padStart(2,'0')}</span><span class="month-name">${escapeHtml(item.month)}</span></div>
@@ -362,6 +385,14 @@
     if (authorTrigger && authorTrigger.isConnected) authorTrigger.focus();
   }
   schedule.addEventListener('click', event => {
+    const selectedGuideButton = event.target.closest('[data-open-selected-guide]');
+    if (selectedGuideButton) {
+      const volumeSelect = schedule.querySelector(`select[data-volume="${selectedGuideButton.dataset.openSelectedGuide}"]`);
+      const option = volumeSelect && volumeSelect.options[volumeSelect.selectedIndex];
+      const href = option && option.dataset.guideHref;
+      if (href) location.href = href;
+      return;
+    }
     const authorButton = event.target.closest('[data-author-id]');
     if (authorButton) {
       event.preventDefault();
