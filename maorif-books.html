@@ -114,7 +114,23 @@
     .missing-note b{color:#e9c96c}
     .guide-button{display:inline-flex;align-items:center;gap:7px;margin-top:7px;padding:8px 11px;border:1px solid rgba(232,201,109,.35);border-radius:10px;background:rgba(232,201,109,.1);color:var(--gold2);font:850 10px/1.2 system-ui,-apple-system,"Segoe UI",sans-serif;text-decoration:none;cursor:pointer}
     .guide-button:hover,.guide-button:focus-visible{background:rgba(232,201,109,.18);outline:2px solid rgba(232,201,109,.5);outline-offset:2px}
-    .catalog-note{display:flex;gap:9px;align-items:flex-start;margin:13px 0 4px,padding:12px;border:1px dashed rgba(201,168,76,.3);border-radius:14px;color:var(--muted);font-size:10px;line-height:1.5;background:rgba(201,168,76,.055)}
+    .book-study-card{display:grid;gap:6px;margin-top:9px;padding:9px 10px;border:1px solid rgba(112,164,224,.2);border-radius:13px;background:linear-gradient(135deg,rgba(30,92,151,.12),rgba(201,168,76,.055))}
+    .book-study-head{display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--text);font-size:9px;font-weight:850;line-height:1.35}
+    .book-study-head [data-read-status]{display:flex;align-items:center;gap:6px;min-width:0}
+    .book-study-head [data-read-pct]{flex:0 0 auto;color:var(--gold2);font-size:9px;font-weight:900}
+    .study-dot{width:8px;height:8px;flex:0 0 8px;border-radius:50%;background:#748296;box-shadow:0 0 0 3px rgba(116,130,150,.12)}
+    .book-study-card.is-reading .study-dot{background:#4b9cff;box-shadow:0 0 0 3px rgba(75,156,255,.14)}
+    .book-study-card.is-read .study-dot{background:#46c88a;box-shadow:0 0 0 3px rgba(70,200,138,.14)}
+    .book-study-card.is-unavailable .study-dot{background:#e2b94f;box-shadow:0 0 0 3px rgba(226,185,79,.14)}
+    .study-track{height:5px;overflow:hidden;border-radius:99px;background:rgba(255,255,255,.09)}
+    .study-track span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#3f96ff,#6fc9a0);transition:width .35s ease}
+    .book-study-card.is-read .study-track span{background:linear-gradient(90deg,#32b979,#78dfa9)}
+    .book-study-card.is-unavailable .study-track{display:none}
+    .book-study-quiz{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:9px;line-height:1.4}
+    .book-study-quiz .study-quiz-icon{color:var(--gold2);font-size:11px}
+    .book-study-quiz strong{color:var(--text);font-weight:850}
+    .book-study-card.is-unavailable .book-study-quiz strong{color:var(--gold2)}
+    .catalog-note{display:flex;gap:9px;align-items:flex-start;margin:13px 0 4px;padding:12px;border:1px dashed rgba(201,168,76,.3);border-radius:14px;color:var(--muted);font-size:10px;line-height:1.5;background:rgba(201,168,76,.055)}
     .catalog-note span:first-child{font-size:16px}
     .catalog-note b{color:var(--gold2)}
     .signature{margin:13px 2px 0;color:var(--muted);font-size:9px;line-height:1.5;text-align:center}
@@ -137,7 +153,8 @@
     .source-foot{flex:0 0 auto;padding:9px 14px calc(9px + env(safe-area-inset-bottom));border-top:1px solid var(--line);display:flex;justify-content:center}
     .source-foot button{border:0;border-radius:11px;padding:9px 18px;background:linear-gradient(135deg,#e8c96d,#b88b34);color:#151b20;font-size:11px;font-weight:900;cursor:pointer}
     @media(min-width:600px){.app{border-left:1px solid rgba(201,168,76,.08);border-right:1px solid rgba(201,168,76,.08)}.content{padding-left:18px;padding-right:18px}.book-card{grid-template-columns:48px 74px minmax(0,1fr);gap:12px;padding:12px}.cover{width:74px;height:102px}.book-info h3{font-size:15px}}
-    @media(max-width:350px){.content{padding-left:10px;padding-right:10px}.book-card{grid-template-columns:35px 56px minmax(0,1fr);gap:7px;padding:8px}.cover{width:56px;height:82px}.book-info h3{font-size:12px}.book-author{font-size:9px}.read-button{padding:6px 8px;font-size:9px}.month-name{font-size:7px}.order-card{padding:14px}}
+    @media(min-width:760px){.app{width:min(100%,760px)}.content{padding:22px 24px calc(24px + env(safe-area-inset-bottom))}.hero{padding:27px 28px}.hero h1{max-width:590px;font-size:36px}.hero p{max-width:590px;font-size:13px}.order-card{padding:22px}.schedule{grid-template-columns:repeat(2,minmax(0,1fr));gap:13px}.book-card{grid-template-columns:38px 62px minmax(0,1fr);gap:9px;min-height:0;padding:11px}.cover{width:62px;height:88px}.book-info h3{font-size:14px}.book-study-card{padding:8px}.section-heading h2{font-size:21px}}
+    @media(max-width:350px){.content{padding-left:10px;padding-right:10px}.book-card{grid-template-columns:35px 56px minmax(0,1fr);gap:7px;padding:8px}.cover{width:56px;height:82px}.book-info h3{font-size:12px}.book-author{font-size:9px}.read-button{padding:6px 8px;font-size:9px}.month-name{font-size:7px}.order-card{padding:14px}.book-study-card{padding:7px}}
     @media(prefers-reduced-motion:reduce){*,*:before,*:after{scroll-behavior:auto!important;animation-duration:.01ms!important;transition-duration:.01ms!important}}
   </style>
 </head>
@@ -157,7 +174,7 @@
       <h1 id="pageTitle">Китобҳои тавсияшуда барои кормандони соҳаи маориф</h1>
       <p>Ҷадвали хондан ва санҷиши китобҳои илмӣ ва бадеӣ тибқи фармоиши Раёсати маорифи вилояти Хатлон.</p>
       <div class="hero-meta">
-        <span class="meta-pill">📚 8 асари тавсияшуда</span>
+        <span class="meta-pill">📚 8 асар · 19 китобу ҷилд</span>
         <span class="meta-pill">🗓 Феврал — сентябр</span>
         <span class="meta-pill">📍 Вилояти Хатлон</span>
       </div>
@@ -188,7 +205,7 @@
     <section aria-labelledby="scheduleTitle">
       <div class="section-heading">
         <div><h2 id="scheduleTitle">Ҷадвали китобхонӣ</h2><p>Китобҳоро аз рӯи моҳ интихоб карда, бевосита кушоед.</p></div>
-        <span class="count-badge">8 моҳ</span>
+        <span class="count-badge">8 моҳ · 19 китобу ҷилд</span>
       </div>
       <div class="schedule" id="bookSchedule" aria-live="polite"></div>
       <div class="catalog-note"><span aria-hidden="true">ℹ️</span><span><b>Дар бораи дастрасӣ.</b> Ном ва моҳҳои тавсияшуда мувофиқи ҳуҷҷати аслӣ нигоҳ дошта шудаанд. «Китобҳои захмин» достони Мӯъмин Қаноат аст (Душанбе, «Маориф», 1983); нусхаи пурраи PDF дар феҳристи китобхонаи электронӣ ёфт нашуд, бинобар ин ҳоло ҳамчун китоби дастрас нишон дода намешавад.</span></div>
@@ -324,10 +341,19 @@
   function renderGuideActions(item) {
     const details = item.details || [];
     if (!details.length) return '';
-    if (details.length <= 2) {
-      return details.map(detail => `<a class="guide-button" href="${escapeHtml(detail.href)}">📖 Маълумоти муфассал · ${escapeHtml(detail.label)}</a>`).join('');
+    if (details.length > 1 && item.files && item.files.length === details.length) {
+      return `<button class="guide-button" type="button" data-open-selected-guide="${item.number}">📖 Маълумоти муфассал · ҷилди интихобшуда</button>`;
     }
-    return `<button class="guide-button" type="button" data-open-selected-guide="${item.number}">📖 Маълумоти муфассал · ҷилди интихобшуда</button>`;
+    const detail = details[0];
+    const suffix = detail.label && detail.label !== 'Маълумоти муфассал' ? ` · ${escapeHtml(detail.label)}` : '';
+    return `<a class="guide-button" href="${escapeHtml(detail.href)}">📖 Маълумоти муфассал${suffix}</a>`;
+  }
+  function renderStudyStatus(item) {
+    return `<section class="book-study-card${item.unavailable ? ' is-unavailable' : ''}" data-study-status="${item.number}" aria-live="polite">
+      <div class="book-study-head"><span data-read-status><i class="study-dot" aria-hidden="true"></i><span>Ҳолати мутолиа муайян мешавад…</span></span><b data-read-pct>—</b></div>
+      <div class="study-track" role="progressbar" aria-label="Пешрафти хониши китоб" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0"><span data-read-bar></span></div>
+      <div class="book-study-quiz"><span class="study-quiz-icon" aria-hidden="true">✦</span><span data-quiz-status><strong>Санҷиш:</strong> ҳанӯз нагузаштааст</span></div>
+    </section>`;
   }
   function renderRecommendation(item) {
     const coverPath = item.files && item.files.length ? item.files[0].path : '';
@@ -349,11 +375,96 @@
     return `<article class="book-card" aria-label="${escapeHtml(item.month)}: ${escapeHtml(item.title)}">
       <div class="month-cell"><span class="month-number">${String(item.number).padStart(2,'0')}</span><span class="month-name">${escapeHtml(item.month)}</span></div>
       <div class="cover" aria-hidden="true"><span class="cover-fallback">📚</span>${cover}<span class="cover-mark">КИТОБХОНА</span></div>
-      <div class="book-info"><div class="book-topline"><span class="label">${escapeHtml(item.month)} · ТАВСИЯ</span><span class="available-tag">${item.unavailable ? 'ИНТИЗОРӢ' : 'ДАСТРАС'}</span></div><h3>${escapeHtml(item.title)}</h3><button class="book-author" type="button" data-author-id="${escapeHtml(AUTHOR_ID_BY_NAME[item.author] || '')}" aria-haspopup="dialog" aria-controls="authorModal" aria-label="Зиндагӣ ва эҷодиёти ${escapeHtml(item.author)}">${escapeHtml(item.author)}</button>${item.note ? `<p class="book-note">${escapeHtml(item.note)}</p>` : ''}${actions}</div>
+      <div class="book-info"><div class="book-topline"><span class="label">${escapeHtml(item.month)} · ТАВСИЯ</span><span class="available-tag">${item.unavailable ? 'ИНТИЗОРӢ' : 'ДАСТРАС'}</span></div><h3>${escapeHtml(item.title)}</h3><button class="book-author" type="button" data-author-id="${escapeHtml(AUTHOR_ID_BY_NAME[item.author] || '')}" aria-haspopup="dialog" aria-controls="authorModal" aria-label="Зиндагӣ ва эҷодиёти ${escapeHtml(item.author)}">${escapeHtml(item.author)}</button>${item.note ? `<p class="book-note">${escapeHtml(item.note)}</p>` : ''}${renderStudyStatus(item)}${actions}</div>
     </article>`;
   }
   const schedule = document.getElementById('bookSchedule');
   schedule.innerHTML = RECOMMENDATIONS.map(renderRecommendation).join('');
+  function safeLocalJson(key, fallback) {
+    try { const value = JSON.parse(localStorage.getItem(key) || 'null'); return value == null ? fallback : value; }
+    catch (e) { return fallback; }
+  }
+  function detailQuizId(item, index) {
+    const href = (item.details && item.details[index] && item.details[index].href) || item.guideHref || '';
+    const hash = href.includes('#') ? href.split('#').pop() : '';
+    if (hash) return hash;
+    const match = href.match(/maorif-details-(.+)\.html$/);
+    return match ? match[1] : '';
+  }
+  function readProgressFor(file) {
+    if (!file) return null;
+    const map = safeLocalJson('kk_reader_progress', {});
+    let target = rawBookUrl(file.path);
+    try { if (window.canonicalBookUrl) target = canonicalBookUrl(target); } catch (e) {}
+    try {
+      if (map[target]) return map[target];
+      for (const [key, value] of Object.entries(map)) {
+        let candidate = key;
+        try { if (window.canonicalBookUrl) candidate = canonicalBookUrl(key); } catch (e) {}
+        if (candidate === target && value) return value;
+      }
+    } catch (e) {}
+    return null;
+  }
+  function refreshStudyCard(number) {
+    const item = RECOMMENDATIONS.find(row => row.number === Number(number));
+    const card = schedule.querySelector(`[data-study-status="${number}"]`);
+    if (!item || !card) return;
+    const fileSelect = schedule.querySelector(`select[data-volume="${number}"]`);
+    const index = fileSelect ? fileSelect.selectedIndex : 0;
+    const file = item.files && item.files[index];
+    const readNode = card.querySelector('[data-read-status]');
+    const percentNode = card.querySelector('[data-read-pct]');
+    const progressBar = card.querySelector('[data-read-bar]');
+    const progressTrack = card.querySelector('.study-track');
+    let percent = 0;
+    if (item.unavailable || !file) {
+      card.classList.add('is-unavailable');
+      readNode.querySelector('span:last-child').textContent = item.unavailable ? 'PDF-и пурра дастрас нест' : 'Файл дастрас нест';
+      percentNode.textContent = '—';
+      progressBar.style.width = '0%';
+      progressTrack.setAttribute('aria-valuenow','0');
+    } else {
+      card.classList.remove('is-unavailable');
+      const progress = readProgressFor(file);
+      const page = Math.max(0, Number(progress && progress.page) || 0);
+      const pages = Math.max(0, Number(progress && progress.pages) || 0);
+      percent = pages ? Math.min(100, Math.round(page / pages * 100)) : 0;
+      card.classList.remove('is-reading','is-read');
+      let label = 'Хонда нашудааст';
+      if (pages && page >= pages) { label = 'Хонда шудааст'; card.classList.add('is-read'); }
+      else if (page > 0) { label = pages ? `Дар ҳоли хондан · ${page}/${pages} саҳифа` : 'Дар ҳоли хондан'; card.classList.add('is-reading'); }
+      readNode.querySelector('span:last-child').textContent = label;
+      percentNode.textContent = percent + '%';
+      progressBar.style.width = percent + '%';
+      progressTrack.setAttribute('aria-valuenow',String(percent));
+    }
+    const quizId = detailQuizId(item,index);
+    const history = quizId ? safeLocalJson('maorif-quiz-v1:' + quizId, []) : [];
+    const attempts = Array.isArray(history) ? history.filter(value => value && Number.isFinite(Number(value.percent))) : [];
+    const session = quizId ? safeLocalJson('maorif-quiz-session-v1:' + quizId, null) : null;
+    const statusNode = card.querySelector('[data-quiz-status]');
+    const pendingCount = session && Array.isArray(session.answers) ? session.answers.filter(value => value !== null && value !== undefined).length : null;
+    if (attempts.length) {
+      const best = Math.max(...attempts.map(value => Number(value.percent) || 0));
+      const latest = Number(attempts[attempts.length - 1].percent) || 0;
+      const pendingNote = pendingCount !== null ? ` · санҷиши нопурра: ${pendingCount} савол` : '';
+      statusNode.innerHTML = `<strong>Санҷиш:</strong> охирин ${latest}% · беҳтарин ${best}% · ${attempts.length} кӯшиш${pendingNote}`;
+    } else if (pendingCount !== null) {
+      statusNode.innerHTML = `<strong>Санҷиш:</strong> идома дорад · ${pendingCount} савол ҷавоб дода шуд`;
+    } else {
+      statusNode.innerHTML = '<strong>Санҷиш:</strong> ҳанӯз нагузаштааст';
+    }
+  }
+  function refreshAllStudyCards() { RECOMMENDATIONS.forEach(item => refreshStudyCard(item.number)); }
+  refreshAllStudyCards();
+  schedule.addEventListener('change', event => {
+    const select = event.target.closest('select[data-volume]');
+    if (select) refreshStudyCard(select.dataset.volume);
+  });
+  window.addEventListener('pageshow', refreshAllStudyCards);
+  window.addEventListener('focus', refreshAllStudyCards);
+  window.addEventListener('storage', refreshAllStudyCards);
   const authorModal = document.getElementById('authorModal');
   let authorTrigger = null;
   function openAuthorProfile(authorId, trigger) {

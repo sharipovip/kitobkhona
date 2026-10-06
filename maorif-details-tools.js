@@ -10,6 +10,7 @@
   const safeTitle = document.querySelector('h1')?.textContent?.trim() || config.title || 'Маълумоти муфассал';
   const quizKeyPrefix = 'maorif-quiz-v1:';
   const attemptsKey = quizKeyPrefix + config.id;
+  const sessionKey = 'maorif-quiz-session-v1:' + config.id;
   let localStore = null;
   try { localStore = window.localStorage; } catch (e) { localStore = null; }
   let storagePersistent = Boolean(localStore);
@@ -57,8 +58,15 @@
     .section-tools button{min-height:30px;padding:5px 8px;font-size:10px}
     html,body{-webkit-text-size-adjust:100%;text-size-adjust:100%}
     main article.guide-page p,main article.detail-page p,main article.guide-page li,main article.detail-page li{max-width:100%;overflow-wrap:anywhere}
+    main article.guide-page,main article.detail-page{border-color:rgba(126,164,210,.2);background:linear-gradient(150deg,rgba(29,48,69,.985),rgba(15,28,43,.99));box-shadow:0 12px 34px rgba(0,0,0,.17)}
+    main article.guide-page h2,main article.detail-page h2{color:#f1d884;letter-spacing:-.012em}
+    main article.guide-page p,main article.detail-page p{line-height:1.78;letter-spacing:.006em}
+    main article.guide-page .keyline,main article.detail-page .keyline{border-left-color:#5b9fff;background:linear-gradient(90deg,rgba(46,131,255,.11),rgba(232,201,109,.055));color:#dceaff!important}
+    main article.guide-page .page-no,main article.detail-page .page-no{padding:5px 7px;border:1px solid rgba(126,164,210,.16);border-radius:99px;background:rgba(7,16,27,.38);color:#aac8eb}
     .quiz-jump-card{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 18px;padding:12px 14px;border:1px solid rgba(57,139,255,.32);border-radius:14px;background:linear-gradient(120deg,rgba(24,73,128,.24),rgba(20,34,51,.9))}.quiz-jump-copy{display:grid;gap:3px}.quiz-jump-card strong{color:#d7e9ff;font-size:12px}.quiz-jump-card span{color:var(--muted,#aeb9c7);font-size:10px;line-height:1.45}.quiz-jump-card a{flex:0 0 auto;padding:8px 10px;border-radius:9px;background:#1768cb;color:#fff;font-size:10px;font-weight:850;text-decoration:none}.quiz-jump-card a:focus-visible{outline:2px solid #9bc7ff;outline-offset:2px}
     .quiz-card{margin:24px 0 14px;padding:18px;border:1px solid rgba(232,201,109,.32);scroll-margin-top:72px;border-radius:18px;background:linear-gradient(150deg,rgba(26,44,64,.98),rgba(15,27,41,.98));box-shadow:0 12px 34px rgba(0,0,0,.18)}
+    .quiz-intro-label{display:inline-flex;align-items:center;gap:7px;margin-bottom:8px;padding:5px 9px;border:1px solid rgba(91,157,255,.3);border-radius:999px;background:rgba(48,116,203,.13);color:#b8d8ff;font-size:10px;font-weight:900;letter-spacing:.04em}.quiz-intro-label:before{content:'✦';color:#8ec2ff}
+    .quiz-card h2{letter-spacing:-.015em}.quiz-start-actions{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0 2px}.quiz-start-actions button{flex:1 1 190px;min-height:42px!important;padding:10px 13px!important}.quiz-card button.quiz-start{border-color:transparent;background:linear-gradient(135deg,#f0d27b,#bd9140);color:#17202b}.quiz-card button.quiz-resume{border-color:rgba(86,159,255,.48);background:linear-gradient(135deg,rgba(42,119,213,.3),rgba(28,76,128,.22));color:#cce2ff}.quiz-auto-next{margin:2px 0 9px;padding:8px 10px;border:1px solid rgba(70,150,255,.24);border-radius:10px;background:rgba(34,99,173,.12);color:#b8d8ff;font-size:10px;font-weight:800;line-height:1.4}.quiz-auto-next[hidden]{display:none!important}.quiz-next{background:rgba(51,124,211,.18)!important;border-color:rgba(94,165,255,.4)!important;color:#d0e5ff!important}.quiz-progress{box-shadow:inset 0 0 0 1px rgba(255,255,255,.035)}.quiz-option{min-height:44px!important;padding:10px 12px!important;border-radius:12px!important;transition:transform .12s ease,border-color .12s ease,background .12s ease}.quiz-option:hover:not(:disabled){transform:translateY(-1px);border-color:rgba(132,187,255,.44)!important}.quiz-option.is-correct{box-shadow:0 0 0 1px rgba(87,162,255,.25),0 7px 18px rgba(18,97,201,.12)}.quiz-option.is-wrong{box-shadow:0 0 0 1px rgba(255,114,125,.22)}
     .quiz-card h2{margin:0 0 7px;color:var(--gold,#e8c96d);font:700 22px/1.2 Georgia,'Times New Roman',serif}.quiz-intro,.quiz-note{color:var(--muted,#aeb9c7);font-size:12px;line-height:1.55}
     .quiz-topline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:14px 0 8px}.quiz-progress-label{color:#fff;font-size:11px;font-weight:850}.quiz-progress{height:7px;overflow:hidden;border-radius:10px;background:rgba(255,255,255,.11)}.quiz-progress>span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#398bff,#75b7ff);transition:width .2s}
     .quiz-topic{display:inline-block;margin:12px 0 6px;padding:5px 8px;border:1px solid rgba(232,201,109,.24);border-radius:99px;color:#ecd991;font-size:10px;font-weight:800}.quiz-question{margin:5px 0 12px;color:#fff;font-size:16px;line-height:1.45;font-weight:800}
@@ -70,7 +78,7 @@
     .internal-browser-head{display:flex;align-items:center;gap:8px;padding:10px;border-bottom:1px solid rgba(232,201,109,.2)}.internal-browser-head strong{flex:1;color:#f6e6b4;font-size:12px}.internal-browser-head button{min-width:36px}.internal-browser-url{overflow:hidden;padding:6px 11px;color:#aeb9c7;font-size:10px;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.08)}.internal-browser iframe{width:100%;flex:1;border:0;background:#fff}.internal-browser-help{padding:8px 11px;color:#aeb9c7;font-size:10px;line-height:1.4}.internal-browser-help a{color:#e8c96d;font-weight:800}
     .copy-modal-panel{height:auto;max-height:90vh;padding:14px}.copy-modal h2{margin:0 0 8px;color:#e8c96d;font-size:16px}.copy-modal p{color:#aeb9c7;font-size:11px}.copy-modal textarea{width:100%;min-height:190px;resize:vertical;padding:10px;border:1px solid rgba(232,201,109,.28);border-radius:10px;background:#0c1825;color:#f4f0e8;font:12px/1.5 system-ui}.copy-modal-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
     @media(max-width:620px){.maorif-tools{grid-template-columns:1fr;gap:10px;padding:10px}.maorif-share-tools{gap:5px}.section-tools{align-items:flex-start}.section-tools label{flex:1;min-width:180px}.quiz-jump-card{align-items:flex-start;flex-direction:column}.quiz-jump-card a{width:100%;text-align:center}.quiz-card{padding:14px}.quiz-question{font-size:15px}.internal-browser{padding:0}.internal-browser-panel{width:100%;height:100dvh;max-height:100dvh;border-radius:0}.internal-browser-head{padding-top:calc(10px + env(safe-area-inset-top))}.copy-modal{padding:10px}.copy-modal-panel{width:100%}}
-    @media print{.maorif-tools,.section-tools,.quiz-card,.quiz-jump-card,.internal-browser,.copy-modal{display:none!important}main article.guide-page p,main article.detail-page p{font-size:10.4pt!important}main article.guide-page li,main article.detail-page li{font-size:10pt!important}main article.guide-page h2,main article.detail-page h2{font-size:17pt!important}}
+    @media print{.maorif-tools,.section-tools,.quiz-card,.quiz-jump-card,.internal-browser,.copy-modal{display:none!important}main article.guide-page,main article.detail-page{background:#fff!important;border-color:#bbb!important;box-shadow:none!important}main article.guide-page h2,main article.detail-page h2{color:#222!important;font-size:17pt!important}main article.guide-page p,main article.detail-page p{color:#111!important;font-size:10.4pt!important}main article.guide-page li,main article.detail-page li{font-size:10pt!important}main article.guide-page .keyline,main article.detail-page .keyline{border-left-color:#694c00!important;background:#f5f0df!important;color:#222!important}main article.guide-page .page-no,main article.detail-page .page-no{border-color:#aaa!important;background:#fff!important;color:#666!important}}
   `;
   const style = document.createElement('style');
   style.textContent = css;
@@ -116,7 +124,7 @@
     fontScale = Math.max(.9, Math.min(1.5, Math.round(value * 20) / 20));
     scalableText.forEach((node, index) => {
       const px = Math.round(baseFontSizes[index] * fontScale * 100) / 100;
-      node.style.setProperty('font-size', px + 'px');
+      node.style.setProperty('font-size', px + 'px', 'important');
     });
     statusText(fontLabel, Math.round(fontScale * 100) + '%');
     writeStored(fontStorageKey, fontScale);
@@ -125,6 +133,8 @@
   toolbar.querySelector('[data-font="up"]').addEventListener('click', () => setFontScale(fontScale + .05));
   toolbar.querySelector('[data-font="down"]').addEventListener('click', () => setFontScale(fontScale - .05));
   toolbar.querySelector('[data-font="reset"]').addEventListener('click', () => setFontScale(1));
+  // On iOS WebView/Safari, enforce the no-page-zoom policy; text remains adjustable via A+/A−.
+  ['gesturestart','gesturechange','gestureend'].forEach(type => document.addEventListener(type, event => event.preventDefault(), { passive: false }));
 
   const selectedStatus = toolbar.querySelector('[data-selection-status]');
   const selectedArticles = () => articles.filter(article => article.querySelector('.section-select')?.checked);
@@ -269,7 +279,7 @@
   const quiz = document.createElement('section');
   quiz.className = 'quiz-card';
   quiz.id = 'self-check-quiz';
-  quiz.innerHTML = `<div class="quiz-intro-label">Санҷиши дониш</div><h2>Санҷед ва мустаҳкам кунед</h2><p class="quiz-intro">Барои ҳар савол яке аз се ҷавобро интихоб кунед. Ҷавоби дуруст кабуд, ҷавоби нодуруст сурх нишон дода мешавад. Саволҳо танҳо аз ҳамин маълумоти муфассал таҳия шудаанд.</p><div data-quiz-start-area><p class="quiz-note" data-quiz-history></p><button type="button" data-quiz-start>Оғози санҷиш</button></div><div data-quiz-play hidden><div class="quiz-topline"><span class="quiz-progress-label" data-quiz-progress></span><span class="quiz-progress-label" data-quiz-percent></span></div><div class="quiz-progress"><span data-quiz-progressbar></span></div><span class="quiz-topic" data-quiz-topic></span><div class="quiz-question" data-quiz-question></div><div class="quiz-options" data-quiz-options></div><div class="quiz-feedback" data-quiz-feedback aria-live="polite"></div><p class="quiz-explanation" data-quiz-explanation></p><button type="button" class="quiz-next" data-quiz-next hidden>Саволи навбатӣ</button></div><div class="quiz-results" data-quiz-results hidden></div>`;
+  quiz.innerHTML = `<div class="quiz-intro-label">Санҷиши дониш</div><h2>Санҷед ва мустаҳкам кунед</h2><p class="quiz-intro">Барои ҳар савол яке аз се ҷавобро интихоб кунед. Ҷавоби дуруст кабуд ва ҷавоби интихобшудаи нодуруст сурх нишон дода мешавад. Ҳангоми ҷавоби дуруст саволи навбатӣ худкор мекушояд.</p><div data-quiz-start-area><p class="quiz-note" data-quiz-history></p><div class="quiz-start-actions"><button type="button" class="quiz-resume" data-quiz-resume hidden>Идома додан</button><button type="button" class="quiz-start" data-quiz-start>Оғози санҷиш · тартиби тасодуфӣ</button></div></div><div data-quiz-play hidden><div class="quiz-topline"><span class="quiz-progress-label" data-quiz-progress></span><span class="quiz-progress-label" data-quiz-percent></span></div><div class="quiz-progress"><span data-quiz-progressbar></span></div><span class="quiz-topic" data-quiz-topic></span><div class="quiz-question" data-quiz-question></div><div class="quiz-options" data-quiz-options></div><div class="quiz-feedback" data-quiz-feedback aria-live="polite"></div><div class="quiz-auto-next" data-quiz-auto-next hidden>Ҷавоби дуруст — ба саволи навбатӣ мегузарем…</div><p class="quiz-explanation" data-quiz-explanation></p><button type="button" class="quiz-next" data-quiz-next hidden>Саволи навбатӣ</button></div><div class="quiz-results" data-quiz-results hidden></div>`;
   const footer = main.querySelector('.footer-note');
   if (footer) main.insertBefore(quiz, footer); else main.appendChild(quiz);
 
@@ -281,31 +291,71 @@
   const explanation = quiz.querySelector('[data-quiz-explanation]');
   const nextButton = quiz.querySelector('[data-quiz-next]');
   const historyArea = quiz.querySelector('[data-quiz-history]');
+  const resumeButton = quiz.querySelector('[data-quiz-resume]');
+  const startButton = quiz.querySelector('[data-quiz-start]');
+  const autoNextNotice = quiz.querySelector('[data-quiz-auto-next]');
+  let autoNextTimer = null;
   const loadAttempts = () => {
     try {
       const parsed = JSON.parse(readStored(attemptsKey) || '[]');
       return Array.isArray(parsed) ? parsed.filter(item => item && Number.isFinite(Number(item.percent)) && Number.isFinite(Number(item.score)) && Number.isFinite(Number(item.total))) : [];
     } catch (e) { return []; }
   };
+  const clearStored = key => {
+    memoryStore.delete(key);
+    try { if (localStore) localStore.removeItem(key); } catch (e) { storagePersistent = false; }
+  };
+  const loadSession = () => {
+    const raw = readStored(sessionKey);
+    if (!raw) return null;
+    try {
+      const value = JSON.parse(raw);
+      const validOrder = Array.isArray(value.order) && value.order.length === questions.length && value.order.every(index => Number.isInteger(index) && index >= 0 && index < questions.length) && new Set(value.order).size === questions.length;
+      const validAnswers = Array.isArray(value.answers) && value.answers.length === questions.length && value.answers.every((answer, i) => answer === null || (Number.isInteger(answer) && answer >= 0 && answer < (questions[value.order[i]]?.options?.length || 0)));
+      if (!validOrder || !validAnswers) { clearStored(sessionKey); return null; }
+      const firstEmpty = value.answers.indexOf(null);
+      if (firstEmpty >= 0 && value.answers.slice(firstEmpty).some(answer => answer !== null)) { clearStored(sessionKey); return null; }
+      return { order: value.order.slice(), answers: value.answers.slice() };
+    } catch (e) { clearStored(sessionKey); return null; }
+  };
+  const saveSession = () => {
+    if (!order.length) return;
+    writeStored(sessionKey, JSON.stringify({ version: 1, order, answers: chosenAnswers }));
+  };
+  const shuffleQuestions = array => {
+    const shuffled = array.slice();
+    for (let i = shuffled.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+    }
+    return shuffled;
+  };
   const showHistory = () => {
     const attempts = loadAttempts();
-    if (!attempts.length) {
-      const storageNote = storagePersistent ? 'Натиҷаҳо дар ҳамин телефон/браузер нигоҳ дошта мешаванд.' : 'Нигоҳдории доимӣ дар ин муҳит дастрас нест; натиҷаҳо танҳо то пӯшидани саҳифа мемонанд.';
-      statusText(historyArea, `Саволҳо: ${questions.length}. ${storageNote}`);
-      return;
-    }
-    const best = Math.max(...attempts.map(a => a.percent));
-    const latest = attempts[attempts.length - 1];
-    const storageNote = storagePersistent ? '' : ' · танҳо дар ҳамин саҳифа нигоҳ дошта мешавад';
-    statusText(historyArea, `Кӯшишҳо: ${attempts.length} · беҳтарин натиҷа: ${best}% · охирин: ${latest.percent}% (${latest.score}/${latest.total})${storageNote}.`);
+    const session = loadSession();
+    const answered = session ? session.answers.filter(answer => answer !== null).length : 0;
+    resumeButton.hidden = !session;
+    resumeButton.textContent = session && answered === questions.length ? 'Натиҷаи санҷишро дидан' : `Идома додан · саволи ${answered + 1} аз ${questions.length}`;
+    startButton.textContent = session ? 'Аз нав оғоз кардани санҷиш' : 'Оғози санҷиш · тартиби тасодуфӣ';
+    const storageNote = storagePersistent ? 'Дар ҳамин телефон/браузер нигоҳ дошта мешавад.' : 'Нигоҳдории доимӣ дар ин муҳит дастрас нест; то пӯшидани саҳифа мемонад.';
+    const attemptNote = attempts.length ? `Кӯшишҳо: ${attempts.length} · беҳтарин натиҷа: ${Math.max(...attempts.map(a => Number(a.percent) || 0))}% · охирин: ${attempts[attempts.length - 1].percent}% (${attempts[attempts.length - 1].score}/${attempts[attempts.length - 1].total}).` : `Саволҳо: ${questions.length}.`;
+    const resumeNote = session ? ` Санҷиши нопурра ҳаст: ${answered}/${questions.length} савол ҷавоб дода шудааст. Ҳангоми идома танҳо саволҳои беҷавоб нишон дода мешаванд.` : '';
+    statusText(historyArea, `${attemptNote}${resumeNote} ${storageNote}`);
   };
   showHistory();
   if (questions.length < 30) {
     statusText(historyArea, 'Саволҳо ҳоло пурра омода нестанд. Барои ҳар мавод ҳадди ақал 30 савол пешбинӣ шудааст.');
-    quiz.querySelector('[data-quiz-start]').disabled = true;
+    startButton.disabled = true;
+    resumeButton.disabled = true;
   }
   let order = [], index = 0, chosenAnswers = [], selectedAnswer = null;
+  const stopAutoAdvance = () => {
+    if (autoNextTimer !== null) { window.clearTimeout(autoNextTimer); autoNextTimer = null; }
+    autoNextNotice.hidden = true;
+  };
   const renderQuestion = () => {
+    stopAutoAdvance();
+    if (index < 0 || index >= order.length) return;
     selectedAnswer = null;
     const q = questions[order[index]];
     statusText(quiz.querySelector('[data-quiz-progress]'), `Саволи ${index + 1} аз ${order.length}`);
@@ -324,37 +374,65 @@
       button.type = 'button'; button.className = 'quiz-option'; button.textContent = `${optionLabels[i] || (i + 1)}. ${option}`;
       button.addEventListener('click', () => {
         if (selectedAnswer !== null) return;
-        selectedAnswer = i; chosenAnswers[index] = i;
+        selectedAnswer = i; chosenAnswers[index] = i; saveSession();
         Array.from(optionArea.children).forEach((el, j) => {
           el.disabled = true;
           if (j === q.answer) el.classList.add('is-correct');
           if (j === i && i !== q.answer) el.classList.add('is-wrong');
         });
-        if (i === q.answer) { feedback.className = 'quiz-feedback good'; statusText(feedback, 'Дуруст — ҷавоб кабуд нишон дода шуд.'); }
-        else { feedback.className = 'quiz-feedback bad'; statusText(feedback, `Нодуруст. Ҷавоби дуруст: ${q.options[q.answer]}`); }
         statusText(explanation, q.explanation || '');
         nextButton.hidden = false;
-        nextButton.textContent = index === order.length - 1 ? 'Натиҷаро бинед' : 'Саволи навбатӣ';
+        nextButton.textContent = index === order.length - 1 ? 'Натиҷаро ҳоло бинед' : 'Ба саволи навбатӣ гузаштан';
+        if (i === q.answer) {
+          feedback.className = 'quiz-feedback good';
+          statusText(feedback, 'Дуруст — ҷавоб кабуд нишон дода шуд.');
+          statusText(autoNextNotice, 'Ҷавоби дуруст. Саволи навбатӣ ба таври худкор мекушояд…');
+          autoNextNotice.hidden = false;
+          const answeredAt = index;
+          autoNextTimer = window.setTimeout(() => {
+            if (index === answeredAt && selectedAnswer === i) advanceQuestion();
+          }, 1400);
+        } else {
+          feedback.className = 'quiz-feedback bad';
+          statusText(feedback, `Нодуруст. Ҷавоби дуруст: ${q.options[q.answer]}`);
+        }
       });
       optionArea.appendChild(button);
     });
   };
-  quiz.querySelector('[data-quiz-start]').addEventListener('click', () => {
-    order = questions.map((_, i) => i);
-    // Rotate deterministically by previous attempt count so repeated runs vary without losing coverage.
-    const offset = loadAttempts().length % order.length;
-    order = order.slice(offset).concat(order.slice(0, offset));
-    index = 0; chosenAnswers = [];
+  const beginNewQuiz = () => {
+    stopAutoAdvance();
+    order = shuffleQuestions(questions.map((_, i) => i));
+    index = 0; chosenAnswers = Array(order.length).fill(null);
     startArea.hidden = true; resultArea.hidden = true; playArea.hidden = false;
+    saveSession();
     renderQuestion();
     quiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+  startButton.addEventListener('click', beginNewQuiz);
+  resumeButton.addEventListener('click', () => {
+    const session = loadSession();
+    if (!session) { showHistory(); return; }
+    stopAutoAdvance();
+    order = session.order; chosenAnswers = session.answers;
+    index = chosenAnswers.findIndex(answer => answer === null);
+    startArea.hidden = true; resultArea.hidden = true; playArea.hidden = false;
+    if (index === -1) finishQuiz();
+    else {
+      renderQuestion();
+      quiz.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
   });
-  nextButton.addEventListener('click', () => {
+  const advanceQuestion = () => {
+    stopAutoAdvance();
     if (selectedAnswer === null) return;
     if (index < order.length - 1) { index += 1; renderQuestion(); }
     else finishQuiz();
-  });
+  };
+  nextButton.addEventListener('click', advanceQuestion);
   function finishQuiz() {
+    stopAutoAdvance();
+    clearStored(sessionKey);
     playArea.hidden = true;
     const orderedQuestions = order.map(questionIndex => questions[questionIndex]);
     const score = orderedQuestions.reduce((sum, q, i) => sum + (chosenAnswers[i] === q.answer ? 1 : 0), 0);

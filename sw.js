@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v124-19-detail-guides';
+const CACHE_NAME = 'kitobkhona-v125-study-progress-quiz';
 const LOCAL_FILES = [
   './',
   './index.html',
