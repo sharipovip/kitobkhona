@@ -112,7 +112,9 @@
     .volume-select{min-width:80px;max-width:140px;min-height:32px;padding:6px 24px 6px 8px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--text);font-size:10px}
     .missing-note{display:flex;align-items:center;gap:6px;margin-top:8px;padding:7px 8px;border:1px dashed rgba(232,201,109,.24);border-radius:9px;color:var(--muted);font-size:9px;line-height:1.4;background:rgba(201,168,76,.045)}
     .missing-note b{color:#e9c96c}
-    .catalog-note{display:flex;gap:9px;align-items:flex-start;margin:13px 0 4px;padding:12px;border:1px dashed rgba(201,168,76,.3);border-radius:14px;color:var(--muted);font-size:10px;line-height:1.5;background:rgba(201,168,76,.055)}
+    .guide-button{display:inline-flex;align-items:center;gap:7px;margin-top:7px;padding:8px 11px;border:1px solid rgba(232,201,109,.35);border-radius:10px;background:rgba(232,201,109,.1);color:var(--gold2);font-size:10px;font-weight:850;text-decoration:none}
+    .guide-button:hover,.guide-button:focus-visible{background:rgba(232,201,109,.18);outline:2px solid rgba(232,201,109,.5);outline-offset:2px}
+    .catalog-note{display:flex;gap:9px;align-items:flex-start;margin:13px 0 4px,padding:12px;border:1px dashed rgba(201,168,76,.3);border-radius:14px;color:var(--muted);font-size:10px;line-height:1.5;background:rgba(201,168,76,.055)}
     .catalog-note span:first-child{font-size:16px}
     .catalog-note b{color:var(--gold2)}
     .signature{margin:13px 2px 0;color:var(--muted);font-size:9px;line-height:1.5;text-align:center}
@@ -251,7 +253,7 @@
     {
       number: 5, month: 'Июн', title: 'Китобҳои захмин', author: 'Мӯъмин Қаноат',
       note: 'Достон · Душанбе, «Маориф», 1983; PDF-и пурра дар феҳрист нест',
-      unavailable: true
+      unavailable: true, guideHref: 'maorif-reading-guides.html#kitobhoi-zakhmin'
     },
     {
       number: 6, month: 'Июл', title: 'Ҳасани аробакаш', author: 'Мирзо Турсунзода',
@@ -311,7 +313,7 @@
     const cover = coverPath ? `<img src="${escapeHtml(coverUrl(coverPath))}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">` : '';
     let actions = '';
     if (item.unavailable) {
-      actions = '<div class="missing-note"><span aria-hidden="true">⏳</span><span><b>Китоб ҳоло дастрас нест.</b> Барои пайваст кардани хонанда файл бояд ба феҳристи китобхона илова шавад.</span></div>';
+      actions = `<div class="missing-note"><span aria-hidden="true">⏳</span><span><b>Китоб ҳоло дастрас нест.</b> Барои пайваст кардани хонанда файл бояд ба феҳристи китобхона илова шавад.</span></div>${item.guideHref ? `<a class="guide-button" href="${escapeHtml(item.guideHref)}">📖 Конспекти муфассал · 20 бахш</a>` : ''}`;
     } else if (item.files.length === 1) {
       actions = `<div class="book-actions"><a class="read-button" href="${escapeHtml(readerHref(item.files[0], item))}" aria-label="Хондани ${escapeHtml(item.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>${escapeHtml(item.files[0].label)}</a></div>`;
     } else {
