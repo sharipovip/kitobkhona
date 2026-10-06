@@ -59,7 +59,8 @@
     main article.guide-page li,main article.detail-page li{font-size:calc(12px * var(--maorif-text-scale,1))!important}
     main article.guide-page h2,main article.detail-page h2{font-size:calc(20px * var(--maorif-text-scale,1))!important}
     main article .keyline{font-size:calc(13px * var(--maorif-text-scale,1))!important}
-    .quiz-card{margin:24px 0 14px;padding:18px;border:1px solid rgba(232,201,109,.32);border-radius:18px;background:linear-gradient(150deg,rgba(26,44,64,.98),rgba(15,27,41,.98));box-shadow:0 12px 34px rgba(0,0,0,.18)}
+    .quiz-jump-card{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:12px 0 18px;padding:12px 14px;border:1px solid rgba(57,139,255,.32);border-radius:14px;background:linear-gradient(120deg,rgba(24,73,128,.24),rgba(20,34,51,.9))}.quiz-jump-copy{display:grid;gap:3px}.quiz-jump-card strong{color:#d7e9ff;font-size:12px}.quiz-jump-card span{color:var(--muted,#aeb9c7);font-size:10px;line-height:1.45}.quiz-jump-card a{flex:0 0 auto;padding:8px 10px;border-radius:9px;background:#1768cb;color:#fff;font-size:10px;font-weight:850;text-decoration:none}.quiz-jump-card a:focus-visible{outline:2px solid #9bc7ff;outline-offset:2px}
+    .quiz-card{margin:24px 0 14px;padding:18px;border:1px solid rgba(232,201,109,.32);scroll-margin-top:72px;border-radius:18px;background:linear-gradient(150deg,rgba(26,44,64,.98),rgba(15,27,41,.98));box-shadow:0 12px 34px rgba(0,0,0,.18)}
     .quiz-card h2{margin:0 0 7px;color:var(--gold,#e8c96d);font:700 22px/1.2 Georgia,'Times New Roman',serif}.quiz-intro,.quiz-note{color:var(--muted,#aeb9c7);font-size:12px;line-height:1.55}
     .quiz-topline{display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;margin:14px 0 8px}.quiz-progress-label{color:#fff;font-size:11px;font-weight:850}.quiz-progress{height:7px;overflow:hidden;border-radius:10px;background:rgba(255,255,255,.11)}.quiz-progress>span{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#398bff,#75b7ff);transition:width .2s}
     .quiz-topic{display:inline-block;margin:12px 0 6px;padding:5px 8px;border:1px solid rgba(232,201,109,.24);border-radius:99px;color:#ecd991;font-size:10px;font-weight:800}.quiz-question{margin:5px 0 12px;color:#fff;font-size:16px;line-height:1.45;font-weight:800}
@@ -70,8 +71,8 @@
     .internal-browser-panel,.copy-modal-panel{width:min(900px,100%);height:min(92vh,900px);display:flex;flex-direction:column;overflow:hidden;border:1px solid rgba(232,201,109,.38);border-radius:18px;background:#101f30;box-shadow:0 20px 70px rgba(0,0,0,.5)}
     .internal-browser-head{display:flex;align-items:center;gap:8px;padding:10px;border-bottom:1px solid rgba(232,201,109,.2)}.internal-browser-head strong{flex:1;color:#f6e6b4;font-size:12px}.internal-browser-head button{min-width:36px}.internal-browser-url{overflow:hidden;padding:6px 11px;color:#aeb9c7;font-size:10px;text-overflow:ellipsis;white-space:nowrap;border-bottom:1px solid rgba(255,255,255,.08)}.internal-browser iframe{width:100%;flex:1;border:0;background:#fff}.internal-browser-help{padding:8px 11px;color:#aeb9c7;font-size:10px;line-height:1.4}.internal-browser-help a{color:#e8c96d;font-weight:800}
     .copy-modal-panel{height:auto;max-height:90vh;padding:14px}.copy-modal h2{margin:0 0 8px;color:#e8c96d;font-size:16px}.copy-modal p{color:#aeb9c7;font-size:11px}.copy-modal textarea{width:100%;min-height:190px;resize:vertical;padding:10px;border:1px solid rgba(232,201,109,.28);border-radius:10px;background:#0c1825;color:#f4f0e8;font:12px/1.5 system-ui}.copy-modal-actions{display:flex;flex-wrap:wrap;gap:7px;margin-top:9px}
-    @media(max-width:620px){.maorif-tools{grid-template-columns:1fr;gap:10px;padding:10px}.maorif-share-tools{gap:5px}.section-tools{align-items:flex-start}.section-tools label{flex:1;min-width:180px}.quiz-card{padding:14px}.quiz-question{font-size:15px}.internal-browser{padding:0}.internal-browser-panel{width:100%;height:100dvh;max-height:100dvh;border-radius:0}.internal-browser-head{padding-top:calc(10px + env(safe-area-inset-top))}.copy-modal{padding:10px}.copy-modal-panel{width:100%}}
-    @media print{.maorif-tools,.section-tools,.quiz-card,.internal-browser,.copy-modal{display:none!important}main article.guide-page p,main article.detail-page p{font-size:10.4pt!important}main article.guide-page li,main article.detail-page li{font-size:10pt!important}main article.guide-page h2,main article.detail-page h2{font-size:17pt!important}}
+    @media(max-width:620px){.maorif-tools{grid-template-columns:1fr;gap:10px;padding:10px}.maorif-share-tools{gap:5px}.section-tools{align-items:flex-start}.section-tools label{flex:1;min-width:180px}.quiz-jump-card{align-items:flex-start;flex-direction:column}.quiz-jump-card a{width:100%;text-align:center}.quiz-card{padding:14px}.quiz-question{font-size:15px}.internal-browser{padding:0}.internal-browser-panel{width:100%;height:100dvh;max-height:100dvh;border-radius:0}.internal-browser-head{padding-top:calc(10px + env(safe-area-inset-top))}.copy-modal{padding:10px}.copy-modal-panel{width:100%}}
+    @media print{.maorif-tools,.section-tools,.quiz-card,.quiz-jump-card,.internal-browser,.copy-modal{display:none!important}main article.guide-page p,main article.detail-page p{font-size:10.4pt!important}main article.guide-page li,main article.detail-page li{font-size:10pt!important}main article.guide-page h2,main article.detail-page h2{font-size:17pt!important}}
   `;
   const style = document.createElement('style');
   style.textContent = css;
@@ -98,6 +99,13 @@
   const notice = main.querySelector('.notice');
   const contents = main.querySelector('.contents');
   main.insertBefore(toolbar, notice ? notice.nextSibling : (contents || articles[0]));
+
+  const quizCount = Array.isArray(config.questions) ? config.questions.length : 0;
+  const quizJump = document.createElement('section');
+  quizJump.className = 'quiz-jump-card';
+  quizJump.setAttribute('aria-label', 'Гузариш ба санҷиши дониш');
+  quizJump.innerHTML = `<div class="quiz-jump-copy"><strong>Санҷиши дониш — дастрас аз аввали саҳифа</strong><span>${quizCount} савол. Викторинаи пурра дар поёни мавод низ ҷойгир аст; ин тугма шуморо рост ба он мебарад.</span></div><a href="#self-check-quiz">Ба санҷиш гузаштан ↓</a>`;
+  main.insertBefore(quizJump, contents || articles[0]);
 
   // Text-only enlargement: the page layout and controls do not scale.
   const fontLabel = toolbar.querySelector('[data-font-label]');

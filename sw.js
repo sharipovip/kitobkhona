@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v121-details-tools-quizzes';
+const CACHE_NAME = 'kitobkhona-v122-chehrahoi-mondagor-details';
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -6,6 +6,7 @@ const LOCAL_FILES = [
   './maorif-authors.js',
   './maorif-reading-guides.html',
   './maorif-details-zaboni-millat-1.html',
+  './maorif-details-chehrahoi-mondagor.html',
   './maorif-details-quiz-data.js',
   './maorif-details-tools.js',
   './assets/documents/maorif-order-27/page-1.jpg',
