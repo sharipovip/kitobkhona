@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v116-maorif-books-carousel';
+const CACHE_NAME = 'kitobkhona-v116-shahname-volume-links';
 const LOCAL_FILES = [
   './',
   './index.html',
