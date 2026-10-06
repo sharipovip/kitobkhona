@@ -1870,6 +1870,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-empty{margin:0 14px;border:1px dashed rgba(201,168,76,.35);border-radius:16px;padding:16px;
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
+<style id="maorif-reading-section-style">
+  .maorif-reading-section{margin:10px 12px 18px}
+  .maorif-reading-card{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:13px;padding:15px 14px;border:1px solid rgba(232,201,109,.3);border-radius:19px;background:linear-gradient(125deg,#17334d 0%,#14263b 58%,#2d2417 100%);box-shadow:0 12px 26px rgba(0,0,0,.2);color:#F0EAD6;transition:transform .16s,border-color .16s}
+  .maorif-reading-card:active{transform:scale(.99);border-color:rgba(232,201,109,.55)}
+  .maorif-reading-card:before{content:"";position:absolute;z-index:-1;width:160px;height:160px;right:-65px;top:-80px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.22),transparent 70%)}
+  .maorif-reading-icon{width:47px;height:54px;flex:0 0 47px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,rgba(232,201,109,.22),rgba(201,168,76,.08));border:1px solid rgba(232,201,109,.28);font-size:24px}
+  .maorif-reading-copy{min-width:0;flex:1}
+  .maorif-reading-kicker{display:flex;align-items:center;gap:6px;color:#E8C96D;font-size:9px;line-height:1.35;font-weight:900;letter-spacing:.055em;text-transform:uppercase}
+  .maorif-reading-copy h3{margin:5px 0 4px;color:#fff4d8;font:700 15px/1.22 Georgia,'Times New Roman',serif}
+  .maorif-reading-copy p{margin:0;color:#b9c6d6;font-size:10px;line-height:1.45}
+  .maorif-reading-open{display:inline-flex;align-items:center;gap:4px;margin-top:8px;color:#E8C96D;font-size:10px;font-weight:900}
+  .maorif-reading-open span{font-size:17px;line-height:10px}
+  .maorif-source-link{display:inline-flex;align-items:center;gap:6px;margin:8px 2px 0;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:#C9A84C;font:700 9px system-ui;cursor:pointer}
+  .maorif-source-link:hover{color:#E8C96D;background:rgba(201,168,76,.08)}
+  @media(max-width:360px){.maorif-reading-section{margin-left:10px;margin-right:10px}.maorif-reading-card{gap:10px;padding:12px}.maorif-reading-icon{width:40px;height:46px;flex-basis:40px;font-size:21px}.maorif-reading-copy h3{font-size:13px}}
+</style>
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
@@ -1998,6 +2014,20 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <section class="books-v3" id="pesvoSection" style="display:none">
       <div class="sec-head-v3"><div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div><div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="books-scroll-v3" id="pesvoBooks"></div>
+    </section>
+
+    <!-- Китобҳои тавсияшуда барои кормандони маориф — дар асоси фармоиши №27 -->
+    <section class="maorif-reading-section" aria-labelledby="maorifReadingTitle">
+      <a class="maorif-reading-card" href="maorif-books.html" aria-label="Кушодани китобҳои тавсияшуда барои кормандони соҳаи маориф">
+        <span class="maorif-reading-icon" aria-hidden="true">📚</span>
+        <span class="maorif-reading-copy">
+          <span class="maorif-reading-kicker">Фармоиши №27 · 09.02.2026 · Хатлон</span>
+          <h3 id="maorifReadingTitle">Китобҳои тавсияшуда барои кормандони соҳаи маориф</h3>
+          <p>Ҷадвали хондан, китобҳои дастрас ва матни фармоиш.</p>
+          <span class="maorif-reading-open">Кушодани рӯйхат <span>›</span></span>
+        </span>
+      </a>
+      <a class="maorif-source-link" href="maorif-books.html?source=1"><span aria-hidden="true">▣</span> Манбаъ · нусхаи аслии фармоиш</a>
     </section>
 
     <!-- 4.1 Бахши махсус: Китобҳои ман -->

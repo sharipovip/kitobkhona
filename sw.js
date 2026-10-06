@@ -1,7 +1,10 @@
-const CACHE_NAME = 'kitobkhona-v114-whatsapp-full-text-3.0.5';
+const CACHE_NAME = 'kitobkhona-v115-maorif-recommended-books';
 const LOCAL_FILES = [
   './',
   './index.html',
+  './maorif-books.html',
+  './assets/documents/maorif-order-27/page-1.jpg',
+  './assets/documents/maorif-order-27/page-2.jpg',
   './kitobho.html',
   './offline-books.html',
   './book_reviews.html',
