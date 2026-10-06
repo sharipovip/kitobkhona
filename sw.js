@@ -1,10 +1,13 @@
-const CACHE_NAME = 'kitobkhona-v118-qanoat-reading-guide';
+const CACHE_NAME = 'kitobkhona-v121-details-tools-quizzes';
 const LOCAL_FILES = [
   './',
   './index.html',
   './maorif-books.html',
   './maorif-authors.js',
   './maorif-reading-guides.html',
+  './maorif-details-zaboni-millat-1.html',
+  './maorif-details-quiz-data.js',
+  './maorif-details-tools.js',
   './assets/documents/maorif-order-27/page-1.jpg',
   './assets/documents/maorif-order-27/page-2.jpg',
   './kitobho.html',

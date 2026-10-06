@@ -232,6 +232,7 @@
     {
       number: 1, month: 'Феврал', title: 'Забони миллат — ҳастии миллат', author: 'Эмомалӣ Раҳмон',
       note: 'Ҷилдҳои 1 ва 2',
+      details: [{ label: 'Китоби 1', href: 'maorif-details-zaboni-millat-1.html' }],
       files: [
         { label: 'Ҷилди 1', path: 'books/Пешвои Миллат/Забони Миллат - Ҳастии Миллат Китоби-1.pdf' },
         { label: 'Ҷилди 2', path: 'books/Пешвои Миллат/Забони Миллат - Ҳастии Миллат Китоби-2.pdf' }
@@ -313,12 +314,13 @@
     const cover = coverPath ? `<img src="${escapeHtml(coverUrl(coverPath))}" alt="" loading="lazy" decoding="async" onerror="this.style.display='none'">` : '';
     let actions = '';
     if (item.unavailable) {
-      actions = `<div class="missing-note"><span aria-hidden="true">⏳</span><span><b>Китоб ҳоло дастрас нест.</b> Барои пайваст кардани хонанда файл бояд ба феҳристи китобхона илова шавад.</span></div>${item.guideHref ? `<a class="guide-button" href="${escapeHtml(item.guideHref)}">📖 Конспекти муфассал · 20 бахш</a>` : ''}`;
+      actions = `<div class="missing-note"><span aria-hidden="true">⏳</span><span><b>Китоб ҳоло дастрас нест.</b> Барои пайваст кардани хонанда файл бояд ба феҳристи китобхона илова шавад.</span></div>${item.guideHref ? `<a class="guide-button" href="${escapeHtml(item.guideHref)}">📖 Маълумоти муфассал · 20 бахш</a>` : ''}`;
     } else if (item.files.length === 1) {
       actions = `<div class="book-actions"><a class="read-button" href="${escapeHtml(readerHref(item.files[0], item))}" aria-label="Хондани ${escapeHtml(item.title)}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>${escapeHtml(item.files[0].label)}</a></div>`;
     } else {
       const options = item.files.map((file, index) => `<option value="${index}" data-reader-href="${escapeHtml(readerHref(file, item))}">${escapeHtml(file.label)}</option>`).join('');
-      actions = `<div class="book-actions"><select class="volume-select" aria-label="${escapeHtml(item.title)} — ҷилд" data-volume="${item.number}">${options}</select><button class="read-button" type="button" data-open-volume="${item.number}" aria-label="Кушодани ҷилди интихобшуда"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>Кушодан</button></div>`;
+      const detailActions = (item.details || []).map(detail => `<a class="guide-button" href="${escapeHtml(detail.href)}">📖 Маълумоти муфассал · ${escapeHtml(detail.label)}</a>`).join('');
+      actions = `<div class="book-actions"><select class="volume-select" aria-label="${escapeHtml(item.title)} — ҷилд" data-volume="${item.number}">${options}</select><button class="read-button" type="button" data-open-volume="${item.number}" aria-label="Кушодани ҷилди интихобшуда"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 4.5c2.7-1.2 5.2-.7 7 1.2 1.8-1.9 4.3-2.4 7-1.2v14c-2.7-1.2-5.2-.7-7 1.2-1.8-1.9-4.3-2.4-7-1.2z"/><path d="M12 5.7v14"/></svg>Кушодан</button>${detailActions}</div>`;
     }
     return `<article class="book-card" aria-label="${escapeHtml(item.month)}: ${escapeHtml(item.title)}">
       <div class="month-cell"><span class="month-number">${String(item.number).padStart(2,'0')}</span><span class="month-name">${escapeHtml(item.month)}</span></div>
