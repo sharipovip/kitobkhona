@@ -87,8 +87,25 @@
     .book-topline .label{color:var(--gold);font-size:8px;font-weight:900;text-transform:uppercase;letter-spacing:.08em}
     .available-tag{margin-left:auto;flex:0 0 auto;color:#8bd8a9;font-size:8px;font-weight:800}
     .book-info h3{margin:0;color:var(--text);font:700 14px/1.28 Georgia,"Times New Roman",serif;overflow-wrap:anywhere}
-    .book-author{margin:4px 0 0;color:var(--muted);font-size:10px;line-height:1.35}
+    .book-author{display:inline-flex;align-items:center;gap:4px;margin:4px 0 0;padding:0;border:0;background:transparent;color:var(--muted);font:inherit;font-size:10px;line-height:1.35;text-align:left;text-decoration:underline dotted;text-underline-offset:2px;cursor:pointer}
+    .book-author:hover,.book-author:focus-visible{color:var(--gold2)}
+    .book-author:focus-visible{outline:2px solid var(--gold2);outline-offset:3px;border-radius:3px}
+    .book-author::after{content:"↗";color:var(--gold2);font-size:9px}
     .book-note{margin:5px 0 0;color:#c8b47c;font-size:9px;line-height:1.35}
+    .author-dialog .author-body{background:var(--bg);color:var(--text);padding:16px;scrollbar-width:thin}
+    .author-kicker{color:var(--gold2);font-size:9px;font-weight:900;letter-spacing:.12em;text-transform:uppercase}
+    .author-lead{margin:8px 0 16px;padding:12px 13px;border-left:3px solid var(--gold2);border-radius:0 12px 12px 0;background:var(--card);color:var(--text);font:italic 13px/1.55 Georgia,"Times New Roman",serif}
+    .bio-section{margin:0 0 13px;padding:13px;border:1px solid var(--line);border-radius:14px;background:var(--card)}
+    .bio-section h3{margin:0 0 9px;color:var(--gold2);font:800 11px/1.3 system-ui,sans-serif;letter-spacing:.04em}
+    .bio-section ul{margin:0;padding-left:18px}
+    .bio-section li{margin:0 0 8px;color:var(--text);font-size:11px;line-height:1.58}
+    .bio-section li:last-child{margin-bottom:0}
+    .bio-works{display:flex;flex-wrap:wrap;gap:6px;margin:0;padding:0;list-style:none}
+    .bio-works li{margin:0;padding:6px 9px;border:1px solid rgba(201,168,76,.24);border-radius:999px;background:rgba(201,168,76,.08);color:var(--text);font-size:10px;line-height:1.35}
+    .bio-sources{display:grid;gap:7px}
+    .bio-sources a{color:var(--gold2);font-size:10px;line-height:1.4;text-decoration:underline;text-underline-offset:2px}
+    .bio-disclaimer{margin:10px 2px 0;color:var(--muted);font-size:9px;line-height:1.5}
+    .author-footer-note{margin:0 auto;color:var(--muted);font-size:9px;line-height:1.4;text-align:center}
     .book-actions{display:flex;align-items:center;flex-wrap:wrap;gap:6px;margin-top:9px}
     .read-button{min-height:32px;display:inline-flex;align-items:center;justify-content:center;gap:6px;padding:7px 10px;border:1px solid rgba(232,201,109,.25);border-radius:10px;background:linear-gradient(135deg,#e8c96d,#b88b34);color:#141b22;font-size:10px;font-weight:900;cursor:pointer}
     .read-button svg{width:13px;height:13px}
@@ -172,7 +189,7 @@
         <span class="count-badge">8 моҳ</span>
       </div>
       <div class="schedule" id="bookSchedule" aria-live="polite"></div>
-      <div class="catalog-note"><span aria-hidden="true">ℹ️</span><span><b>Дар бораи дастрасӣ.</b> Ном ва моҳҳои тавсияшуда мувофиқи ҳуҷҷати аслӣ нигоҳ дошта шудаанд. Файли «Китобхон захмин» ҳоло ба феҳристи китобхонаи электронӣ пайваст нест; вақте ки он илова шавад, тугмаи хондан фаъол мегардад.</span></div>
+      <div class="catalog-note"><span aria-hidden="true">ℹ️</span><span><b>Дар бораи дастрасӣ.</b> Ном ва моҳҳои тавсияшуда мувофиқи ҳуҷҷати аслӣ нигоҳ дошта шудаанд. «Китобҳои захмин» достони Мӯъмин Қаноат аст (Душанбе, «Маориф», 1983); нусхаи пурраи PDF дар феҳристи китобхонаи электронӣ ёфт нашуд, бинобар ин ҳоло ҳамчун китоби дастрас нишон дода намешавад.</span></div>
     </section>
     <p class="signature">Манбаъ: фармоиши сардори Раёсати маорифи мақомоти иҷроияи ҳокимияти давлатии вилояти Хатлон аз 09.02.2026, №27.</p>
   </main>
@@ -198,6 +215,15 @@
   </div>
 </div>
 
+<div class="source-modal" id="authorModal" role="dialog" aria-modal="true" aria-labelledby="authorTitle" hidden>
+  <section class="source-dialog author-dialog">
+    <header class="source-head"><div><span class="author-kicker" id="authorLabel">Муаллиф</span><h2 id="authorTitle">Маълумот дар бораи муаллиф</h2><p id="authorSubtitle">Зиндагӣ ва эҷод</p></div><button type="button" class="source-close" id="closeAuthor" aria-label="Пӯшидан">×</button></header>
+    <div class="source-body author-body" id="authorBody" tabindex="0"></div>
+    <footer class="source-foot"><button type="button" id="closeAuthorFooter">Бозгашт ба рӯйхат</button></footer>
+  </section>
+</div>
+
+<script src="maorif-authors.js"></script>
 <script>
   const BOOK_ROOT = 'https://raw.githubusercontent.com/sharipovip/books/main/';
   const RECOMMENDATIONS = [
@@ -223,7 +249,8 @@
       files: [{ label: 'Хондан', path: 'books/Адабиёти классикӣ/Шеър/Баҳористон. Абдураҳмони Ҷомӣ.pdf' }]
     },
     {
-      number: 5, month: 'Июн', title: 'Китобхон захмин', author: 'Мӯъмин Қаноат',
+      number: 5, month: 'Июн', title: 'Китобҳои захмин', author: 'Мӯъмин Қаноат',
+      note: 'Достон · Душанбе, «Маориф», 1983; PDF-и пурра дар феҳрист нест',
       unavailable: true
     },
     {
@@ -249,6 +276,16 @@
       }))
     }
   ];
+
+  const AUTHOR_ID_BY_NAME = {
+    'Эмомалӣ Раҳмон': 'rahmon',
+    'Унсурулмаолии Кайковус': 'kaykovus',
+    'Абдураҳмони Ҷомӣ': 'jami',
+    'Мӯъмин Қаноат': 'qanoat',
+    'Мирзо Турсунзода': 'tursunzoda',
+    'Бобоҷон Ғафуров': 'ghafurov',
+    'Абулқосим Фирдавсӣ': 'firdawsi'
+  };
 
   function escapeHtml(value) {
     return String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[ch]));
@@ -284,12 +321,48 @@
     return `<article class="book-card" aria-label="${escapeHtml(item.month)}: ${escapeHtml(item.title)}">
       <div class="month-cell"><span class="month-number">${String(item.number).padStart(2,'0')}</span><span class="month-name">${escapeHtml(item.month)}</span></div>
       <div class="cover" aria-hidden="true"><span class="cover-fallback">📚</span>${cover}<span class="cover-mark">КИТОБХОНА</span></div>
-      <div class="book-info"><div class="book-topline"><span class="label">${escapeHtml(item.month)} · ТАВСИЯ</span><span class="available-tag">${item.unavailable ? 'ИНТИЗОРӢ' : 'ДАСТРАС'}</span></div><h3>${escapeHtml(item.title)}</h3><p class="book-author">${escapeHtml(item.author)}</p>${item.note ? `<p class="book-note">${escapeHtml(item.note)}</p>` : ''}${actions}</div>
+      <div class="book-info"><div class="book-topline"><span class="label">${escapeHtml(item.month)} · ТАВСИЯ</span><span class="available-tag">${item.unavailable ? 'ИНТИЗОРӢ' : 'ДАСТРАС'}</span></div><h3>${escapeHtml(item.title)}</h3><button class="book-author" type="button" data-author-id="${escapeHtml(AUTHOR_ID_BY_NAME[item.author] || '')}" aria-haspopup="dialog" aria-controls="authorModal" aria-label="Зиндагӣ ва эҷодиёти ${escapeHtml(item.author)}">${escapeHtml(item.author)}</button>${item.note ? `<p class="book-note">${escapeHtml(item.note)}</p>` : ''}${actions}</div>
     </article>`;
   }
   const schedule = document.getElementById('bookSchedule');
   schedule.innerHTML = RECOMMENDATIONS.map(renderRecommendation).join('');
+  const authorModal = document.getElementById('authorModal');
+  let authorTrigger = null;
+  function openAuthorProfile(authorId, trigger) {
+    const profile = window.MAORIF_AUTHOR_PROFILES && window.MAORIF_AUTHOR_PROFILES[authorId];
+    if (!profile) return;
+    authorTrigger = trigger || null;
+    document.getElementById('authorLabel').textContent = profile.label;
+    document.getElementById('authorTitle').textContent = profile.name;
+    document.getElementById('authorSubtitle').textContent = 'Зиндагӣ ва эҷодиёт';
+    const list = items => `<ul>${items.map(item => `<li>${escapeHtml(item)}</li>`).join('')}</ul>`;
+    const sources = profile.sources.map(source => {
+      const href = /^https?:\/\//i.test(source.url) ? source.url : '#';
+      return `<a href="${escapeHtml(href)}" target="_blank" rel="noopener noreferrer">${escapeHtml(source.label)} ↗</a>`;
+    }).join('');
+    document.getElementById('authorBody').innerHTML = `
+      <p class="author-lead">${escapeHtml(profile.lead)}</p>
+      <section class="bio-section"><h3>ЗИНДАГӢ ВА ТАҲСИЛ</h3>${list(profile.life)}</section>
+      <section class="bio-section"><h3>ЭҶОД ВА МАВЗӮЪҲО</h3>${list(profile.work)}</section>
+      <section class="bio-section"><h3>АСАРҲОИ ШИНОХТА</h3><ul class="bio-works">${profile.works.map(work => `<li>${escapeHtml(work)}</li>`).join('')}</ul></section>
+      <section class="bio-section"><h3>МАНБАЪҲОИ ИЛОВАГӢ</h3><div class="bio-sources">${sources}</div></section>
+      <p class="bio-disclaimer">Маълумот ба таври мухтасар аз манбаъҳои зикршуда ҷамъбаст шудааст. Дар мавриди санаҳои тақрибӣ ё ихтилофи маълумот, матни манбаъҳоро муқоиса кунед.</p>`;
+    authorModal.hidden = false;
+    document.body.style.overflow = 'hidden';
+    document.getElementById('closeAuthor').focus();
+  }
+  function closeAuthorProfile() {
+    authorModal.hidden = true;
+    document.body.style.overflow = '';
+    if (authorTrigger && authorTrigger.isConnected) authorTrigger.focus();
+  }
   schedule.addEventListener('click', event => {
+    const authorButton = event.target.closest('[data-author-id]');
+    if (authorButton) {
+      event.preventDefault();
+      openAuthorProfile(authorButton.dataset.authorId, authorButton);
+      return;
+    }
     const button = event.target.closest('[data-open-volume]');
     if (!button) return;
     const select = schedule.querySelector(`select[data-volume="${button.dataset.openVolume}"]`);
@@ -297,6 +370,10 @@
     const href = option && option.dataset.readerHref;
     if (href) location.href = href;
   });
+  document.getElementById('closeAuthor').addEventListener('click', closeAuthorProfile);
+  document.getElementById('closeAuthorFooter').addEventListener('click', closeAuthorProfile);
+  authorModal.addEventListener('click', event => { if (event.target === authorModal) closeAuthorProfile(); });
+  document.addEventListener('keydown', event => { if (event.key === 'Escape' && !authorModal.hidden) closeAuthorProfile(); });
 
   const modal = document.getElementById('sourceModal');
   const sourceButton = document.getElementById('sourceButton');
@@ -308,7 +385,9 @@
   modal.addEventListener('click', event => { if (event.target === modal) closeSource(); });
   document.addEventListener('keydown', event => { if (event.key === 'Escape' && !modal.hidden) closeSource(); });
   if (typeof CacheManager !== 'undefined') CacheManager.init();
-  if (new URLSearchParams(location.search).get('source') === '1') setTimeout(openSource, 250);
+  const pageParams = new URLSearchParams(location.search);
+  if (pageParams.get('source') === '1') setTimeout(openSource, 250);
+  if (pageParams.get('author')) setTimeout(() => openAuthorProfile(pageParams.get('author')), 250);
 </script>
 </body>
 </html>

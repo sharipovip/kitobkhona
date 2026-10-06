@@ -1,8 +1,9 @@
-const CACHE_NAME = 'kitobkhona-v116-shahname-volume-links';
+const CACHE_NAME = 'kitobkhona-v117-author-profiles';
 const LOCAL_FILES = [
   './',
   './index.html',
   './maorif-books.html',
+  './maorif-authors.js',
   './assets/documents/maorif-order-27/page-1.jpg',
   './assets/documents/maorif-order-27/page-2.jpg',
   './kitobho.html',
