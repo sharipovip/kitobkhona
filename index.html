@@ -1871,20 +1871,19 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
 <style id="maorif-reading-section-style">
-  .maorif-reading-section{margin:10px 12px 18px}
-  .maorif-reading-card{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:13px;padding:15px 14px;border:1px solid rgba(232,201,109,.3);border-radius:19px;background:linear-gradient(125deg,#17334d 0%,#14263b 58%,#2d2417 100%);box-shadow:0 12px 26px rgba(0,0,0,.2);color:#F0EAD6;transition:transform .16s,border-color .16s}
-  .maorif-reading-card:active{transform:scale(.99);border-color:rgba(232,201,109,.55)}
-  .maorif-reading-card:before{content:"";position:absolute;z-index:-1;width:160px;height:160px;right:-65px;top:-80px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.22),transparent 70%)}
-  .maorif-reading-icon{width:47px;height:54px;flex:0 0 47px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,rgba(232,201,109,.22),rgba(201,168,76,.08));border:1px solid rgba(232,201,109,.28);font-size:24px}
-  .maorif-reading-copy{min-width:0;flex:1}
-  .maorif-reading-kicker{display:flex;align-items:center;gap:6px;color:#E8C96D;font-size:9px;line-height:1.35;font-weight:900;letter-spacing:.055em;text-transform:uppercase}
-  .maorif-reading-copy h3{margin:5px 0 4px;color:#fff4d8;font:700 15px/1.22 Georgia,'Times New Roman',serif}
-  .maorif-reading-copy p{margin:0;color:#b9c6d6;font-size:10px;line-height:1.45}
-  .maorif-reading-open{display:inline-flex;align-items:center;gap:4px;margin-top:8px;color:#E8C96D;font-size:10px;font-weight:900}
-  .maorif-reading-open span{font-size:17px;line-height:10px}
-  .maorif-source-link{display:inline-flex;align-items:center;gap:6px;margin:8px 2px 0;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:#C9A84C;font:700 9px system-ui;cursor:pointer}
-  .maorif-source-link:hover{color:#E8C96D;background:rgba(201,168,76,.08)}
-  @media(max-width:360px){.maorif-reading-section{margin-left:10px;margin-right:10px}.maorif-reading-card{gap:10px;padding:12px}.maorif-reading-icon{width:40px;height:46px;flex-basis:40px;font-size:21px}.maorif-reading-copy h3{font-size:13px}}
+  .maorif-books-v3{margin:18px 0 22px}
+  .maorif-books-v3 .sec-head-v3{margin:0 12px 5px;align-items:flex-start}
+  .maorif-books-v3 .sec-title-v3{max-width:100%;font-size:14px;line-height:1.3;white-space:normal}
+  .maorif-books-v3 .sec-title-v3:active{color:#F1D779}
+  .maorif-books-row{gap:9px!important;padding:3px 12px 12px!important;scroll-snap-type:x proximity}
+  .maorif-book-tile{flex:0 0 88px;width:88px;min-width:88px;overflow:hidden;border:1px solid rgba(255,255,255,.08);border-radius:12px;background:#111E33;color:#E8E4D9;text-decoration:none;scroll-snap-align:start;cursor:pointer;transition:transform .16s,border-color .16s}
+  .maorif-book-tile:active{transform:scale(.96);border-color:rgba(232,201,109,.6)}
+  .maorif-book-cover{height:118px;position:relative;overflow:hidden;display:grid;place-items:center;background:linear-gradient(145deg,#263e54,#142236 60%,#60481f)}
+  .maorif-book-cover img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
+  .maorif-cover-fallback{position:absolute;inset:0;display:none;place-items:center;padding:6px;color:#f4d884;text-align:center;font-size:10px;font-weight:800;line-height:1.25;background:radial-gradient(circle at 50% 32%,rgba(232,201,109,.24),transparent 45%),linear-gradient(150deg,#263e54,#142236 60%,#60481f)}
+  .maorif-book-caption{min-height:39px;padding:6px 6px 7px;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden;text-align:center;color:#E8E4D9;font-size:9px;font-weight:750;line-height:1.25}
+  .maorif-unavailable{position:absolute;left:3px;right:3px;bottom:3px;padding:3px 2px;border-radius:5px;background:rgba(8,16,26,.88);color:#f1d779;font-size:7px;font-weight:800;text-align:center}
+  @media(max-width:350px){.maorif-books-v3 .sec-title-v3{font-size:13px}.maorif-book-tile{flex-basis:82px;width:82px;min-width:82px}.maorif-book-cover{height:110px}}
 </style>
 </head>
 <body>
@@ -2016,20 +2015,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="books-scroll-v3" id="pesvoBooks"></div>
     </section>
 
-    <!-- Китобҳои тавсияшуда барои кормандони маориф — дар асоси фармоиши №27 -->
-    <section class="maorif-reading-section" aria-labelledby="maorifReadingTitle">
-      <a class="maorif-reading-card" href="maorif-books.html" aria-label="Кушодани китобҳои тавсияшуда барои кормандони соҳаи маориф">
-        <span class="maorif-reading-icon" aria-hidden="true">📚</span>
-        <span class="maorif-reading-copy">
-          <span class="maorif-reading-kicker">Фармоиши №27 · 09.02.2026 · Хатлон</span>
-          <h3 id="maorifReadingTitle">Китобҳои тавсияшуда барои кормандони соҳаи маориф</h3>
-          <p>Ҷадвали хондан, китобҳои дастрас ва матни фармоиш.</p>
-          <span class="maorif-reading-open">Кушодани рӯйхат <span>›</span></span>
-        </span>
-      </a>
-      <a class="maorif-source-link" href="maorif-books.html?source=1"><span aria-hidden="true">▣</span> Манбаъ · нусхаи аслии фармоиш</a>
-    </section>
-
     <!-- 4.1 Бахши махсус: Китобҳои ман -->
     <section class="books-v3" id="myBooksSection">
       <div class="sec-head-v3">
@@ -2064,6 +2049,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <div class="sec-title-v3">🏛️ Сомонаҳои давлатӣ</div>
       </div>
       <div class="gov-scroll-v3" id="govSitesList"></div>
+    </section>
+
+    <!-- Рӯйи уфуқии китобҳои тавсияшуда — танҳо сарлавҳа ва муқоваҳо -->
+    <section class="books-v3 maorif-books-v3" id="maorifBooksHome" aria-labelledby="maorifBooksHeading">
+      <div class="sec-head-v3">
+        <a class="sec-title-v3" id="maorifBooksHeading" href="maorif-books.html" aria-label="Китобҳои тавсияшуда барои кормандони соҳаи маориф">Китобҳои тавсияшуда барои кормандони соҳаи маориф</a>
+      </div>
+      <div class="books-scroll-v3 maorif-books-row" id="maorifRecommendedBooks" aria-label="Китобҳои тавсияшуда"></div>
     </section>
 
   </main>
@@ -2306,6 +2299,52 @@ async function loadHomeFavorites(){const token=localStorage.getItem('kk_token');
 function syncBookmarkButtons(root=document){root.querySelectorAll('[data-bookmark]').forEach(btn=>{const active=favoriteBookIds.has(btn.dataset.bookId);btn.classList.toggle('active',active);btn.innerHTML=active?BOOKMARK_FILLED:BOOKMARK_OUTLINE;btn.setAttribute('aria-label',active?'Аз дӯстдошта хориҷ кардан':'Ба дӯстдошта илова кардан')})}
 async function toggleHomeFavorite(event,btn){event.preventDefault();event.stopPropagation();const token=localStorage.getItem('kk_token');if(!token){toast('Барои истифодаи дӯстдошта ворид шавед');return}const id=btn.dataset.bookId,active=favoriteBookIds.has(id);btn.disabled=true;try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(active?'/'+encodeURIComponent(id):''),{method:active?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!active?{'Content-Type':'application/json'}:{})},body:active?undefined:JSON.stringify({book_id:id,book_title:btn.dataset.bookTitle,book_author:btn.dataset.bookAuthor})});if(!r.ok)throw Error('HTTP '+r.status);active?favoriteBookIds.delete(id):favoriteBookIds.add(id);syncBookmarkButtons();toast(active?'Аз дӯстдошта хориҷ шуд':'Ба дӯстдошта илова шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд',true)}finally{btn.disabled=false}}
 function openReader(url,name,cover=''){ let decodedCover=''; try{ decodedCover=decodeURIComponent(cover||''); }catch(e){ decodedCover=''; } const coverParam=decodedCover&&!/^data:/i.test(decodedCover)?`&cover=${encodeURIComponent(decodedCover)}`:''; location.href=`reader.html?url=${url}&name=${name}${coverParam}`; }
+
+const MAORIF_HOME_ROOT='https://raw.githubusercontent.com/sharipovip/books/main/';
+const MAORIF_HOME_ITEMS=[
+  {title:'Забони миллат · Ҷилди 1',readerName:'Забони миллат — ҳастии миллат · ҷилди 1 · Эмомалӣ Раҳмон',path:'books/Пешвои Миллат/Забони Миллат - Ҳастии Миллат Китоби-1.pdf'},
+  {title:'Забони миллат · Ҷилди 2',readerName:'Забони миллат — ҳастии миллат · ҷилди 2 · Эмомалӣ Раҳмон',path:'books/Пешвои Миллат/Забони Миллат - Ҳастии Миллат Китоби-2.pdf'},
+  {title:'Чеҳраҳои мондагор',readerName:'Чеҳраҳои мондагор · Эмомалӣ Раҳмон',path:'books/Пешвои Миллат/Чеҳраҳои мондагор.pdf'},
+  {title:'Насиҳатнома',readerName:'Қобуснома · Унсурулмаолии Кайковус',path:'books/Адабиёти классикӣ/Шеър/Қобуснома. Унсурулмаолии Кайковус.pdf'},
+  {title:'Баҳористон',readerName:'Баҳористон · Абдураҳмони Ҷомӣ',path:'books/Адабиёти классикӣ/Шеър/Баҳористон. Абдураҳмони Ҷомӣ.pdf'},
+  {title:'Китобхон захмин',unavailable:true},
+  {title:'Ҳасани аробакаш',readerName:'Ҳасани аробакаш · Мирзо Турсунзода',path:'books/Адабиёти муосир/Шеър/Ҳасани аробакаш. Мирзо Турсунзода.pdf'},
+  {title:'Тоҷикон · Китоби 1',readerName:'Тоҷикон · китоби 1 · Бобоҷон Ғафуров',path:'books/Таърих/Тоҷикон. Таърихи қадимтарин, қадим ва асри миёна. Китоби 1. Бобоҷон Ғафуров.pdf'},
+  {title:'Тоҷикон · Китоби 2',readerName:'Тоҷикон · китоби 2 · Бобоҷон Ғафуров',path:'books/Таърих/Тоҷикон. Охирҳои асри миёна ва давраи нав. Китоби 2. Бобоҷон Ғафуров.pdf'},
+  ...Array.from({length:10},(_,index)=>({
+    title:'Шоҳнома · Ҷилди '+(index+1),
+    readerName:'Шоҳнома · ҷилди '+(index+1)+' · Абулқосим Фирдавсӣ',
+    path:'books/Адабиёти классикӣ/Шеър/Шоҳнома. Ҷилди '+(index+1)+'. Абулқосим Фирдавсӣ.pdf'
+  }))
+];
+function maorifHomeEncodedPath(path){return String(path).split('/').map(part=>encodeURIComponent(part)).join('/')}
+function maorifHomeCoverCandidates(path){
+  const parts=String(path).split('/');
+  const original=parts.pop()||'',dot=original.lastIndexOf('.'),file=(dot>0?original.slice(0,dot):original)+'.jpg';
+  const folder=parts.join('/'),clean=folder.startsWith('books/')?folder.slice(6):folder;
+  const encFolder=value=>String(value).split('/').map(part=>encodeURIComponent(part)).join('/');
+  return [MAORIF_HOME_ROOT+'covers/'+encFolder(clean)+'/'+encodeURIComponent(file),MAORIF_HOME_ROOT+'covers/books/'+encFolder(clean)+'/'+encodeURIComponent(file),MAORIF_HOME_ROOT+'covers/'+encFolder(folder)+'/'+encodeURIComponent(file)];
+}
+function maorifCoverError(img){
+  const covers=JSON.parse(img.dataset.covers||'[]');
+  const next=(Number(img.dataset.coverIndex)||0)+1;
+  if(covers[next]){img.dataset.coverIndex=String(next);img.src=covers[next];return;}
+  img.style.display='none';
+  const fallback=img.parentElement&&img.parentElement.querySelector('.maorif-cover-fallback');
+  if(fallback)fallback.style.display='grid';
+}
+function renderMaorifHomeBooks(){
+  const row=document.getElementById('maorifRecommendedBooks');if(!row)return;
+  row.innerHTML=MAORIF_HOME_ITEMS.map(item=>{
+    if(item.unavailable)return `<div class="maorif-book-tile" aria-disabled="true"><div class="maorif-book-cover"><span class="maorif-cover-fallback" style="display:grid">📚</span><span class="maorif-unavailable">Дастрас нест</span></div><div class="maorif-book-caption">${esc(item.title)}</div></div>`;
+    const url=MAORIF_HOME_ROOT+maorifHomeEncodedPath(item.path);
+    const covers=maorifHomeCoverCandidates(item.path),cover=covers[0];
+    const params=new URLSearchParams({url,name:item.readerName,cover});
+    return `<a class="maorif-book-tile" href="${esc('reader.html?'+params.toString())}" aria-label="Хондани ${esc(item.title)}"><div class="maorif-book-cover"><img src="${esc(cover)}" alt="Муқоваи ${esc(item.title)}" data-no-translate data-cover-url="${esc(cover)}" data-covers="${esc(JSON.stringify(covers))}" data-cover-index="0" loading="lazy" decoding="async" onerror="maorifCoverError(this)"><span class="maorif-cover-fallback">${esc(item.title)}</span></div><div class="maorif-book-caption">${esc(item.title)}</div></a>`;
+  }).join('');
+  hydrateBookCardCovers(row);
+}
+renderMaorifHomeBooks();
 const manifestCache=new Map(), manifestCacheTs=new Map(); let searchTimer=null;
 const MANIFEST_TTL_OK=5*60*1000, MANIFEST_TTL_EMPTY=60*1000; // китобҳои нав онлайн тезтар пайдо шаванд
 function readCachedManifest(key,allowStale=false){
