@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=72"></script>
+  <script src="config.js?v=73"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=45"></script>
   <style>
@@ -1180,6 +1180,13 @@ body.light-theme .rstats-kpi{background:rgba(255,255,255,.55)}
 .rstats-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:9px;color:var(--muted);line-height:1.4}
 .rstats-foot button{height:28px;padding:0 10px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--gold2,var(--gold));font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:inherit}
 .rstats-empty{font-size:11px;color:var(--muted);line-height:1.5;padding:4px 2px}
+.rstats.collapsed{cursor:pointer;padding:10px 12px 9px}.rstats.collapsed:active{transform:scale(.995)}
+.rstats-toggle{height:26px;padding:0 10px;border-radius:99px;border:1px solid var(--line);background:rgba(201,168,76,.12);color:var(--gold2,var(--gold));font-size:10px;font-weight:800;cursor:pointer;font-family:inherit;white-space:nowrap}
+.rstats-ranges .rstats-toggle{padding:0 8px;margin-left:2px}
+.rstats-mini{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;margin-top:6px}
+.rstats-mini-kpis{display:flex;gap:14px;flex-wrap:wrap}.rstats-mini-kpis div{min-width:0}.rstats-mini-kpis b{display:block;font-size:14px;color:var(--gold2,var(--gold));line-height:1.1}.rstats-mini-kpis span{display:block;font-size:8.5px;color:var(--muted);font-weight:700;margin-top:2px;white-space:nowrap}
+.rstats-mini-spark{text-align:right}.rstats-mini-spark span{display:block;font-size:8px;color:var(--muted);margin-top:1px}.rstats-spark{width:84px;height:26px;display:block;margin-left:auto}
+@media(max-width:340px){.rstats-mini{grid-template-columns:1fr}.rstats-mini-spark{text-align:left}.rstats-spark{margin-left:0}}
 </style>
 <style id="users-directory-style">.directory-user{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--line);cursor:pointer}.directory-user:active{background:var(--gold-soft)}.directory-avatar{width:42px;height:42px;border-radius:50%;background:var(--card-2);display:grid;place-items:center;overflow:hidden;flex:0 0 42px}.directory-avatar img{width:100%;height:100%;object-fit:cover}.directory-main{flex:1;min-width:0}.directory-name{display:flex;align-items:center;font-weight:700;font-size:12.5px}.directory-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>
 <style id="app-scrollbar-policy">
@@ -2019,6 +2026,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   // ===== v126: Омори хониш (маҳаллӣ + воридот аз ҳисоб) =====
   const RSTATS_RANGE_KEY='kk_rstats_range';
   let rstatsRange=Number(localStorage.getItem(RSTATS_RANGE_KEY))||30;
+  let rstatsExpanded=false; // v127: дар оғоз печонида
   const RSTATS_WD=['Дш','Сш','Чш','Пш','Ҷм','Шб','Яш'];
   function rsHours(sec){const h=sec/3600;return h>=10?Math.round(h)+' с':h>=1?(Math.round(h*10)/10).toString().replace('.',',')+' с':Math.round(sec/60)+' дақ'}
   function rsHoursLong(sec){const h=Math.floor(sec/3600),m=Math.round((sec%3600)/60);return h?`${h} соат${m?' '+m+' дақ':''}`:`${m} дақиқа`}
@@ -2041,7 +2049,16 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     let series=sum.series,unit='day';
     if(rstatsRange===365){const m=sum.months,keys=[];const now=new Date();for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);keys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'))}series=keys.map(k=>({d:k,s:m[k]||0}));unit='month'}
     const rangeTotal=series.reduce((a,p)=>a+p.s,0),topMax=sum.topBooks[0]?.s||1;
-    box.innerHTML=`<div class="rstats-head"><div><b>📊 Омори хониш</b><span>дар дастгоҳ ҳисоб мешавад · ${sum.firstDay?'аз '+rsDayLabel(sum.firstDay):''}</span></div><div class="rstats-ranges">${ranges}</div></div>
+    // v127: ҳангоми кушодани профил танҳо қисми хурд (3 рақам + хати 14 рӯз) нишон дода мешавад; ламс → пурра кушода мешавад
+    box.classList.toggle('collapsed',!rstatsExpanded);
+    if(!rstatsExpanded){
+      const last14=sum.series.slice(-14),mx=Math.max(60,...last14.map(p=>p.s));
+      const spark=`<svg class="rstats-spark" viewBox="0 0 84 26" aria-hidden="true">${last14.map((p,i)=>{const h=p.s>0?Math.max(2,22*p.s/mx):1.5;return `<rect x="${i*6}" y="${(24-h).toFixed(1)}" width="4.4" height="${h.toFixed(1)}" rx="1.2" fill="${i===last14.length-1?'#4ADE80':'url(#rsGoldMini)'}" opacity="${p.s>0?1:.3}"/>`}).join('')}<defs><linearGradient id="rsGoldMini" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8C96D"/><stop offset="1" stop-color="#9C7A2A"/></linearGradient></defs></svg>`;
+      box.innerHTML=`<div class="rstats-head"><div><b>📊 Омори хониш</b><span>${sum.firstDay?'аз '+rsDayLabel(sum.firstDay)+' · ':''}дар дастгоҳ ҳисоб мешавад</span></div><button type="button" class="rstats-toggle" id="rstatsToggle" aria-expanded="false">Пурра ▾</button></div>
+        <div class="rstats-mini"><div class="rstats-mini-kpis"><div><b>${rsHours(sum.totalSeconds)}</b><span>ҳамагӣ</span></div><div><b>${sum.books}</b><span>китоб</span></div><div><b>${sum.streak}</b><span>рӯзи пайдарпай</span></div></div><div class="rstats-mini-spark">${spark}<span>14 рӯзи охир</span></div></div>`;
+      bindRstats();return;
+    }
+    box.innerHTML=`<div class="rstats-head"><div><b>📊 Омори хониш</b><span>дар дастгоҳ ҳисоб мешавад · ${sum.firstDay?'аз '+rsDayLabel(sum.firstDay):''}</span></div><div class="rstats-ranges">${ranges}<button type="button" class="rstats-toggle" id="rstatsToggle" aria-expanded="true" title="Кам кардан">▴</button></div></div>
       <div class="rstats-kpis"><div class="rstats-kpi"><b>${rsHours(sum.totalSeconds)}</b><span>ҳамагӣ хониш</span></div><div class="rstats-kpi"><b>${sum.books}</b><span>китоб${sum.completed?' · '+sum.completed+' тамом':''}</span></div><div class="rstats-kpi"><b>${sum.streak}</b><span>рӯзи пайдарпай</span></div><div class="rstats-kpi"><b>${sum.activeDays}</b><span>рӯзи фаъол</span></div></div>
       <div class="rstats-sub"><span>${rstatsRange===365?'12 моҳи охир':rstatsRange+' рӯзи охир'}: <b style="color:var(--text)">${rsHoursLong(rangeTotal)}</b></span><span>${sum.bestDay?'беҳтарин рӯз: '+rsDayLabel(sum.bestDay.d)+' · '+rsHours(sum.bestDay.s):''}</span></div>
       ${rsBars(series,unit)}
@@ -2049,7 +2066,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="rstats-foot"><div>Маълумот дар дастгоҳ нигоҳ дошта мешавад${imported?' · воридот аз ҳисоб: '+imported.toLocaleDateString():''}</div><button type="button" id="rstatsImport">⟳ Навсозӣ аз ҳисоб</button></div>`;
     bindRstats();
   }
-  function bindRstats(){const box=el('readingStats');box.querySelectorAll('.rstats-range').forEach(b=>b.addEventListener('click',()=>{rstatsRange=Number(b.dataset.range)||30;localStorage.setItem(RSTATS_RANGE_KEY,String(rstatsRange));renderReadingStats()}));box.querySelector('#rstatsImport')?.addEventListener('click',()=>importReadingHistory(currentUserId,true))}
+  function bindRstats(){const box=el('readingStats');box.onclick=rstatsExpanded?null:(ev=>{if(ev.target.closest('#rstatsImport'))return;rstatsExpanded=true;renderReadingStats()});box.querySelector('#rstatsToggle')?.addEventListener('click',ev=>{ev.stopPropagation();rstatsExpanded=!rstatsExpanded;renderReadingStats();if(rstatsExpanded)try{box.scrollIntoView({block:'nearest',behavior:'smooth'})}catch(e){}});box.querySelectorAll('.rstats-range').forEach(b=>b.addEventListener('click',()=>{rstatsRange=Number(b.dataset.range)||30;localStorage.setItem(RSTATS_RANGE_KEY,String(rstatsRange));renderReadingStats()}));box.querySelector('#rstatsImport')?.addEventListener('click',()=>importReadingHistory(currentUserId,true))}
   // Воридоти таърихи хониш аз ҳисоб (то 1000 сессияи охир) ва якҷоякунӣ бо журнали маҳаллӣ (бе дубора ҳисобкунӣ)
   let rstatsImporting=false;
   async function importReadingHistory(userId,force){

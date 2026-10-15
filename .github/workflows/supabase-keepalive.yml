@@ -1,0 +1,51 @@
+name: Supabase keep-alive (ҳар 5 рӯз)
+
+# v127: лоиҳаҳои ройгони Supabase пас аз ~7 рӯзи бефаъолиятӣ таваққуф мешаванд (аватарҳо кушода намешаванд).
+# Ин вазифа ҳар 5 рӯз дархостҳои GET ба Supabase мефиристад (REST + Storage + Auth).
+# АСОСӢ: Cron Trigger дар kitobkhona-edge (wrangler.jsonc → "0 6 */5 * *", бо калиди service_role — дархости боэътимод).
+# Ин workflow — нусхаи ЭҲТИЁТӢ. Барои дархости аутентификатсияшуда дар Settings → Secrets → Actions илова кунед:
+#   SUPABASE_KEEPALIVE_KEY = калиди anon (Supabase Dashboard → Project Settings → API → anon public).
+#   (SUPABASE_URL — ихтиёрӣ; пешфарз URL-и лоиҳа.)  Бе secret ҳам дархост фиристода мешавад (ҷавоб 401 = лоиҳа бедор аст).
+# Эзоҳ: GitHub workflow-ҳои ҷадвалиро пас аз 60 рӯзи бефаъолиятии репозиторий хомӯш мекунад — news.yml ҳар соат commit мекунад,
+# бинобар ин репозиторий фаъол мемонад.
+
+on:
+  schedule:
+    - cron: '23 6 */5 * *'   # рӯзҳои 1, 6, 11, 16, 21, 26, 31 — соати 06:23 UTC (фосила ≤ 5 рӯз)
+  workflow_dispatch:         # + тугмаи «Run workflow» барои санҷиши дастӣ
+
+permissions:
+  contents: read
+
+concurrency:
+  group: supabase-keepalive
+  cancel-in-progress: false
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    env:
+      SUPABASE_URL: ${{ secrets.SUPABASE_URL || 'https://dwkdzfqooprxytlepaoo.supabase.co' }}
+      SUPABASE_KEY: ${{ secrets.SUPABASE_KEEPALIVE_KEY }}
+    steps:
+      - name: Supabase ping (REST, Storage, Auth)
+        shell: bash
+        run: |
+          set -u
+          if [ -z "${SUPABASE_KEY}" ]; then
+            echo "::notice::Secret SUPABASE_KEEPALIVE_KEY гузошта нашудааст — дархост бе калид фиристода мешавад (ҷавоби 401 ҳам маънои «лоиҳа бедор аст»-ро дорад)."
+            AUTH=()
+          else
+            AUTH=(-H "apikey: ${SUPABASE_KEY}" -H "Authorization: Bearer ${SUPABASE_KEY}")
+          fi
+          fail=0
+          for path in "/rest/v1/" "/storage/v1/bucket" "/auth/v1/health"; do
+            code=$(curl -sS -o /tmp/body.txt -w '%{http_code}' --retry 3 --retry-delay 10 --max-time 30 "${AUTH[@]}" "${SUPABASE_URL}${path}" || echo 000)
+            echo "GET ${path} → ${code}"
+            case "$code" in
+              000|5*) echo "::warning::Supabase ${path} ҷавоб надод (${code})"; fail=1;;
+            esac
+          done
+          echo "Supabase keep-alive $(date -u +'%Y-%m-%d %H:%M UTC') — анҷом ёфт"
+          exit $fail

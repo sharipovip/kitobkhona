@@ -8,7 +8,7 @@
   <title>Адабиёти тавсияшуда · синфҳои 1–11 · Китобхона</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="manifest" href="./manifest.json">
-  <script src="./config.js?v=72"></script>
+  <script src="./config.js?v=73"></script>
   <style>
     :root{color-scheme:dark;--bg:#0D1B2A;--panel:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--line:rgba(201,168,76,.22);
       --ok:#3DBE7A;--ok-bg:rgba(61,190,122,.14);--part:#5AA9FF;--part-bg:rgba(90,169,255,.14);--rel:#F0B35B;--rel-bg:rgba(240,179,91,.14);--txt:#C58BFF;--txt-bg:rgba(197,139,255,.15);--no:#8E9BB0;--no-bg:rgba(142,155,176,.14);
@@ -297,7 +297,7 @@
     try{ const resp=await fetch(link.url,{cache:'no-cache'}); if(resp.ok) t=await resp.json(); }catch(e){}
     if(!t){ try{ const m=await caches.match(link.url); if(m) t=await m.json(); }catch(e){} }
     if(!t){ $('rt').innerHTML='<p>Матн бор нашуд. Интернетро санҷед ва бори дигар кӯшиш кунед.</p>'; return; }
-    textMeta={id:t.id,title:t.title,author:t.author}; textStart=Date.now();
+    textMeta={id:t.id,title:t.title,author:t.author}; textStart=Date.now(); textSessionStart();
     let body=`<h2>${esc(t.title)}</h2><div class="by">${esc(t.author)}${t.year?' · '+esc(t.year):''}</div>`;
     if(t.kind==='poem') body+=t.stanzas.map(st=>`<div class="stanza">${st.map(l=>`<div>${esc(l)}</div>`).join('')}</div>`).join('');
     else body+=t.paragraphs.map(p=>`<p>${esc(p)}</p>`).join('');
@@ -306,9 +306,24 @@
   }
   function updateProgress(){ const b=$('rBody'); const max=b.scrollHeight-b.clientHeight; const p=max>0?Math.round(b.scrollTop/max*100):100; $('rProgress').textContent=p+'%'; if(textMeta) try{localStorage.setItem('kk_tavsiya_pos_'+textMeta.id,String(b.scrollTop))}catch(e){} }
   $('rBody').addEventListener('scroll',()=>{ if(updateProgress._t) return; updateProgress._t=setTimeout(()=>{updateProgress._t=0;updateProgress()},150); },{passive:true});
+  // v127: ҳисоби вақти хониши матнҳо мисли reader.html — ҳар 30 с «фаъол» (KKReadingSyncV2.active),
+  // ҳар 10 дақиқа сабти порча (checkpoint), ҳангоми пинҳон шудани саҳифа таваққуф, ҳангоми пӯшидан — сабти боқимонда.
+  let textTimer=null,textSegStart=0;
+  function textRecord(sec){
+    if(!textMeta||sec<=0) return;
+    try{ const b=$('rBody'); const max=b.scrollHeight-b.clientHeight; const pct=max>0?b.scrollTop/max:1;
+      const rec={book_id:'tavsiya/matn/'+textMeta.id,book_title:textMeta.title,book_author:textMeta.author,duration:sec,pages_read:Math.round(pct*10),total_pages:10,status:pct>=.95?'completed':'paused'};
+      if(window.KKReadingSyncV2&&typeof KKReadingSyncV2.add==='function') KKReadingSyncV2.add(rec); else if(window.KKReadingLog&&typeof KKReadingLog.add==='function') KKReadingLog.add(rec);
+    }catch(e){}
+  }
+  function textCheckpoint(force){ if(!textSegStart) return; const now=Date.now(),sec=Math.floor((now-textSegStart)/1000); if(sec<=0||(!force&&sec<600)) return; textRecord(sec); textSegStart=now; }
+  function textSessionStart(){ if(!textMeta||textTimer) return; textSegStart=Date.now(); try{ window.KKReadingSyncV2?.active(); }catch(e){} textTimer=setInterval(()=>{ if(document.hidden) return; try{ window.KKReadingSyncV2?.active(); }catch(e){} textCheckpoint(false); },30*1000); }
+  function textSessionStop(){ if(textTimer){ clearInterval(textTimer); textTimer=null; } textCheckpoint(true); textSegStart=0; try{ window.KKReadingSyncV2?.closed(); }catch(e){} }
+  document.addEventListener('visibilitychange',()=>{ if(!textMeta) return; if(document.hidden) textSessionStop(); else textSessionStart(); });
+  window.addEventListener('pagehide',()=>{ if(textMeta) textSessionStop(); });
   window.closeText=function(){
     const r=$('reader'); r.classList.remove('open'); r.setAttribute('aria-hidden','true'); document.body.style.overflow='';
-    if(textMeta&&textStart){ const sec=Math.round((Date.now()-textStart)/1000); if(sec>=20){ try{ const b=$('rBody'); const max=b.scrollHeight-b.clientHeight; const pct=max>0?b.scrollTop/max:1; const rec={book_id:'tavsiya/matn/'+textMeta.id,book_title:textMeta.title,book_author:textMeta.author,duration:sec,pages_read:Math.round(pct*10),total_pages:10,status:pct>=.95?'completed':'paused'}; if(window.KKReadingSyncV2&&typeof KKReadingSyncV2.add==='function') KKReadingSyncV2.add(rec); else if(window.KKReadingLog&&typeof KKReadingLog.add==='function') KKReadingLog.add(rec); }catch(e){} } }
+    textSessionStop();
     textMeta=null; textStart=0;
   };
 

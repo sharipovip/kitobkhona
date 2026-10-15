@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v126-tavsiya-offline';
+const CACHE_NAME = 'kitobkhona-v127-tavsiya-rows';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [

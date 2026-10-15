@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="./assets/libs/pdf.min.js"></script>
-<script src="config.js?v=72"></script>
+<script src="config.js?v=73"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -852,13 +852,21 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 
   function getBookId() {
     try {
-      const u = new URL(url);
+      const u = new URL(url, location.href);
       const path = u.pathname.split('/').filter(Boolean);
+      // v127: файлҳои худи барнома (tavsiya/pdf/*.pdf ва ғ.) — ID = роҳи нисбӣ аз решаи барнома,
+      // то ки хониши онҳо мисли китобҳои каталог (рейтинг, омор, 50 соат) ҳисоб шавад.
+      if (u.origin === location.origin) {
+        const base = location.pathname.replace(/[^/]*$/, '');
+        let rel = u.pathname.startsWith(base) ? u.pathname.slice(base.length) : u.pathname.replace(/^\/+/, '');
+        try { rel = decodeURIComponent(rel); } catch (e2) {}
+        return (rel.replace(/^books\//, '') || name || 'Китоб').slice(0, 300);
+      }
       const contentPath = path.slice(3).join('/');
       let clean = contentPath.replace(/^books\//, '');
       if (!clean) {
-        const fileName = path.slice(3).pop() || '';
-        return fileName;
+        const fileName = path.slice(3).pop() || path.pop() || '';
+        return fileName || name;
       }
       return clean;
     } catch(e) {

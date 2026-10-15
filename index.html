@@ -946,7 +946,7 @@ body:before {
 .oz-badge.oz-now{background:#16A34A;color:#fff;font-size:9px}
 @keyframes ozPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.65)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
 .oz-sheet-wrap{position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.66);backdrop-filter:blur(4px)}
-.oz-sheet{width:min(100%,520px);max-height:88vh;overflow:auto;background:#142236;color:#F0EAD6;border-radius:22px 22px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:0;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));animation:ozUp .22s ease}
+.oz-sheet{width:min(100%,480px);max-width:100%;box-sizing:border-box;max-height:88vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:#142236;color:#F0EAD6;border-radius:22px 22px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:0;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));animation:ozUp .22s ease}
 @keyframes ozUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
 .oz-grip{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.2);margin:2px auto 12px}
 .oz-title{font-size:16px;font-weight:900;line-height:1.3}.oz-sub{font-size:10.5px;color:#A8B8CC;margin-top:4px;line-height:1.4}
@@ -960,8 +960,9 @@ body:before {
 .oz-stage-dot{width:12px;height:12px;border-radius:50%;background:#3A4C66;margin-top:4px;border:2px solid #142236;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
 .oz-stage.cur .oz-stage-dot{background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.25)}.oz-stage.past{opacity:.55}.oz-stage.past .oz-stage-dot{background:#C9A84C}
 .oz-stage-name{font-size:12px;font-weight:800;line-height:1.35}.oz-stage.cur .oz-stage-name{color:#86EFAC}.oz-stage-meta{font-size:10.5px;color:#A8B8CC;margin-top:3px;line-height:1.45}
-.oz-contacts{display:grid;gap:7px}.oz-contact{text-align:left;border:1px solid rgba(201,168,76,.22);background:#1A2D44;color:#F0EAD6;border-radius:13px;padding:9px 11px;cursor:pointer;font:inherit}
-.oz-contact b{display:block;font-size:12px}.oz-contact span{display:block;font-size:10px;color:#A8B8CC;margin-top:2px}
+.oz-contacts{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}.oz-contact{min-width:0;max-width:100%;overflow:hidden;text-align:left;border:1px solid rgba(201,168,76,.22);background:#1A2D44;color:#F0EAD6;border-radius:13px;padding:9px 11px;cursor:pointer;font:inherit}
+.oz-contact b{display:block;font-size:12px}.oz-contact span{display:block;font-size:10px;color:#A8B8CC;margin-top:2px;overflow-wrap:anywhere;word-break:break-word}.oz-sheet *{min-width:0}.oz-sheet .oz-title,.oz-sheet .oz-sub,.oz-sheet .oz-p,.oz-sheet .oz-ol,.oz-sheet .oz-stage-meta,.oz-sheet .oz-status,.oz-sheet .oz-src{overflow-wrap:anywhere}
+@media(min-width:640px){.oz-sheet-wrap{align-items:center;padding:16px}.oz-sheet{border-radius:22px;border-bottom:1px solid rgba(201,168,76,.25);max-height:86vh}}
 .oz-btn{display:block;width:100%;min-height:44px;border-radius:14px;border:1px solid rgba(201,168,76,.25);background:transparent;color:#F0EAD6;font-weight:900;font-size:13px;cursor:pointer;margin-top:10px;font-family:inherit}
 .oz-btn-gold{background:linear-gradient(135deg,#E8C96D,#C9A84C);color:#1A1200;border:0;margin-top:16px}
 .oz-src{font-size:9.5px;color:#8497ad;margin-top:12px;line-height:1.5}
@@ -984,6 +985,7 @@ body.light-theme .oz-sheet{background:#FFFFFF;color:#1E2A3A}body.light-theme .oz
 .tavsiya-row-v3{margin:2px 12px 10px;display:grid;grid-template-columns:44px minmax(0,1fr) 20px;gap:10px;align-items:center;padding:10px 12px;border-radius:16px;cursor:pointer;position:relative;overflow:hidden;
   background:linear-gradient(120deg,rgba(201,168,76,.18),rgba(17,30,51,.95) 55%,rgba(26,45,68,.95));border:1px solid rgba(201,168,76,.38);box-shadow:0 8px 22px rgba(0,0,0,.18);transition:transform .15s}
 .tavsiya-row-v3:active{transform:scale(.985)}
+.tavsiya-row-maorif{margin-top:-2px}.tavsiya-row-maorif::before{background:linear-gradient(#8DF0B4,#22A35A)}.tavsiya-row-maorif .tavsiya-ic-v3{background:linear-gradient(145deg,rgba(141,240,180,.22),rgba(34,163,90,.08));border-color:rgba(141,240,180,.35)}
 .tavsiya-row-v3::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(#E8C96D,#C9A84C)}
 .tavsiya-ic-v3{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:23px;background:rgba(201,168,76,.16);border:1px solid rgba(201,168,76,.3)}
 .tavsiya-txt-v3{min-width:0}.tavsiya-txt-v3 b{display:block;font-size:12.5px;color:#F0EAD6;line-height:1.3}.tavsiya-txt-v3 span{display:block;font-size:10px;color:#A8B8CC;margin-top:3px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
@@ -1120,7 +1122,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .announce-top.show{ transform:translateY(0) !important; opacity:1 !important; }
 
 </style>
-<script src="config.js?v=72"></script>
+<script src="config.js?v=73"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -1908,22 +1910,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-empty{margin:0 14px;border:1px dashed rgba(201,168,76,.35);border-radius:16px;padding:16px;
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
-<style id="maorif-reading-section-style">
-  .maorif-reading-section{margin:10px 12px 18px}
-  .maorif-reading-card{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:13px;padding:15px 14px;border:1px solid rgba(232,201,109,.3);border-radius:19px;background:linear-gradient(125deg,#17334d 0%,#14263b 58%,#2d2417 100%);box-shadow:0 12px 26px rgba(0,0,0,.2);color:#F0EAD6;transition:transform .16s,border-color .16s}
-  .maorif-reading-card:active{transform:scale(.99);border-color:rgba(232,201,109,.55)}
-  .maorif-reading-card:before{content:"";position:absolute;z-index:-1;width:160px;height:160px;right:-65px;top:-80px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.22),transparent 70%)}
-  .maorif-reading-icon{width:47px;height:54px;flex:0 0 47px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,rgba(232,201,109,.22),rgba(201,168,76,.08));border:1px solid rgba(232,201,109,.28);font-size:24px}
-  .maorif-reading-copy{min-width:0;flex:1}
-  .maorif-reading-kicker{display:flex;align-items:center;gap:6px;color:#E8C96D;font-size:9px;line-height:1.35;font-weight:900;letter-spacing:.055em;text-transform:uppercase}
-  .maorif-reading-copy h3{margin:5px 0 4px;color:#fff4d8;font:700 15px/1.22 Georgia,'Times New Roman',serif}
-  .maorif-reading-copy p{margin:0;color:#b9c6d6;font-size:10px;line-height:1.45}
-  .maorif-reading-open{display:inline-flex;align-items:center;gap:4px;margin-top:8px;color:#E8C96D;font-size:10px;font-weight:900}
-  .maorif-reading-open span{font-size:17px;line-height:10px}
-  .maorif-source-link{display:inline-flex;align-items:center;gap:6px;margin:8px 2px 0;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:#C9A84C;font:700 9px system-ui;cursor:pointer}
-  .maorif-source-link:hover{color:#E8C96D;background:rgba(201,168,76,.08)}
-  @media(max-width:360px){.maorif-reading-section{margin-left:10px;margin-right:10px}.maorif-reading-card{gap:10px;padding:12px}.maorif-reading-icon{width:40px;height:46px;flex-basis:40px;font-size:21px}.maorif-reading-copy h3{font-size:13px}}
-</style>
+
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
@@ -2042,14 +2029,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="news-dots-v3" id="newsDots"></div>
     </section>
 
-    <!-- 3 Категории — как на фото один в один иконки -->
-    <section class="cat-v3">
-      <div class="sec-head-v3"><div class="sec-title-v3">Категорияҳо</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
-      <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
-      <!-- v126: Рӯйхати адабиёти тавсияшуда барои синфҳои 1–11 (саҳифаи алоҳида, офлайн ҳам кор мекунад) -->
+    <!-- 3 v127: Рӯйхатҳои тавсияшуда (бахши «Категорияҳо» бо хоҳиши соҳиб гирифта шуд — категорияҳо дар kitobho.html ҳастанд) -->
+    <section class="cat-v3" id="tavsiyaSection">
+      <!-- Рӯйхати адабиёти тавсияшуда барои хонандагони синфҳои 1–11 (саҳифаи алоҳида, офлайн ҳам кор мекунад) -->
       <div class="tavsiya-row-v3" id="tavsiyaRow" role="button" tabindex="0" onclick="location.href='adabiyoti-tavsiyashuda.html'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='adabiyoti-tavsiyashuda.html'}">
         <div class="tavsiya-ic-v3">🎓</div>
-        <div class="tavsiya-txt-v3"><b>Адабиёти тавсияшуда · синфҳои 1–11</b><span>Рӯйхати расмии хониш — кадом китобҳо дар барнома ҳастанд ва дигаронро аз куҷо ёбем</span></div>
+        <div class="tavsiya-txt-v3"><b>Китобҳои тавсияшуда барои хонандагон · синфҳои 1–11</b><span>Рӯйхати расмии хониш — кадом китобҳо дар барнома ҳастанд ва дигаронро аз куҷо ёбем</span></div>
+        <div class="tavsiya-chev-v3">›</div>
+      </div>
+      <!-- Китобҳои тавсияшуда барои кормандони соҳаи маориф — фармоиши №27 аз 09.02.2026 (Хатлон); хониш мисли дигар китобҳо ҳисоб мешавад -->
+      <div class="tavsiya-row-v3 tavsiya-row-maorif" id="maorifRow" role="button" tabindex="0" onclick="location.href='maorif-books.html'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='maorif-books.html'}">
+        <div class="tavsiya-ic-v3">📚</div>
+        <div class="tavsiya-txt-v3"><b>Китобҳои тавсияшуда барои кормандони соҳаи маориф</b><span>Фармоиши №27 · 09.02.2026 · Хатлон — ҷадвали хондан, китобҳои дастрас ва матни фармоиш</span></div>
         <div class="tavsiya-chev-v3">›</div>
       </div>
     </section>
@@ -2058,20 +2049,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <section class="books-v3" id="pesvoSection" style="display:none">
       <div class="sec-head-v3"><div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div><div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="books-scroll-v3" id="pesvoBooks"></div>
-    </section>
-
-    <!-- Китобҳои тавсияшуда барои кормандони маориф — дар асоси фармоиши №27 -->
-    <section class="maorif-reading-section" aria-labelledby="maorifReadingTitle">
-      <a class="maorif-reading-card" href="maorif-books.html" aria-label="Кушодани китобҳои тавсияшуда барои кормандони соҳаи маориф">
-        <span class="maorif-reading-icon" aria-hidden="true">📚</span>
-        <span class="maorif-reading-copy">
-          <span class="maorif-reading-kicker">Фармоиши №27 · 09.02.2026 · Хатлон</span>
-          <h3 id="maorifReadingTitle">Китобҳои тавсияшуда барои кормандони соҳаи маориф</h3>
-          <p>Ҷадвали хондан, китобҳои дастрас ва матни фармоиш.</p>
-          <span class="maorif-reading-open">Кушодани рӯйхат <span>›</span></span>
-        </span>
-      </a>
-      <a class="maorif-source-link" href="maorif-books.html?source=1"><span aria-hidden="true">▣</span> Манбаъ · нусхаи аслии фармоиш</a>
     </section>
 
     <!-- 4.1 Бахши махсус: Китобҳои ман -->
@@ -2253,7 +2230,8 @@ function openContestSheet(c,page){
   else status=`<div class="oz-status">Ҷадвали даврҳои нав ҳанӯз эълон нашудааст</div>`;
   const stages=t.stages.map(s=>{ const a=ozDay(s.start),b=ozDay(s.end); const past=b&&b<today; const cur=t.next&&s.n===t.next.n&&s.start===t.next.start; return `<div class="oz-stage${past?' past':''}${cur?' cur':''}"><div class="oz-stage-dot"></div><div><div class="oz-stage-name">${esc(s.name)}${s.final?' 🏆':''}</div><div class="oz-stage-meta">📅 ${ozRange(s)}${s.approx?' · тахминӣ':''}${s.place?`<br>📍 ${esc(s.place)}`:''}</div></div></div>`; }).join('');
   const how=(c.how||[]).map((h,i)=>`<li>${esc(h)}</li>`).join('');
-  const contacts=(c.contacts||[]).map(k=>`<button type="button" class="oz-contact" onclick="openContestLink(${JSON.stringify(k.url)},${JSON.stringify(k.label)})"><b>${esc(k.label)}</b><span>${esc(k.note||'')} · ${esc(k.url.replace(/^https?:\/\//,'').replace(/\/$/,''))}</span></button>`).join('');
+  // v127: тугмаҳои тамос бо data-атрибутҳо (onclick бо нохунакҳои дугона кор намекард) + танҳо номи сомона нишон дода мешавад
+  const contacts=(c.contacts||[]).map((k,i)=>{ let host=''; try{ host=new URL(k.url).hostname.replace(/^www\./,''); }catch(e){ host=String(k.url||''); } return `<button type="button" class="oz-contact" data-oz-link="${i}"><b>${esc(k.label)}</b><span>${esc(k.note||'')}${k.note?' · ':''}${esc(host)} ↗</span></button>`; }).join('');
   const wrap=document.createElement('div'); wrap.id='ozSheet'; wrap.className='oz-sheet-wrap'; wrap.onclick=e=>{ if(e.target===wrap) wrap.remove(); };
   wrap.innerHTML=`<div class="oz-sheet" role="dialog" aria-modal="true"><div class="oz-grip"></div>
     <div class="oz-title">${esc(c.name)}</div><div class="oz-sub">${esc(c.decree||'')}</div>
@@ -2265,6 +2243,7 @@ function openContestSheet(c,page){
     <button type="button" class="oz-btn oz-btn-gold" onclick="location.href='${esc(page||c.page)}'">📜 Низомномаи пурраи Озмун</button>
     <button type="button" class="oz-btn" onclick="document.getElementById('ozSheet').remove()">Пӯшидан</button>
     <div class="oz-src">${(c.sources||[]).map(esc).join(' · ')}</div></div>`;
+  wrap.querySelectorAll('[data-oz-link]').forEach(btn=>{ btn.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); const k=(c.contacts||[])[Number(btn.dataset.ozLink)]; if(!k) return; wrap.remove(); setTimeout(()=>openContestLink(k.url,k.label),30); }); });
   document.body.appendChild(wrap);
 }
 
