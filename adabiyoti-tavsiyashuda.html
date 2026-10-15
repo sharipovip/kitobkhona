@@ -1,0 +1,340 @@
+<!doctype html>
+<html lang="tg">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0D1B2A">
+  <meta name="description" content="Рӯйхати адабиёти тавсияшуда барои хонандагони синфҳои 1–11 — кадом китобҳо дар Китобхона ҳастанд ва онҳоро дар куҷо ёфтан мумкин аст">
+  <title>Адабиёти тавсияшуда · синфҳои 1–11 · Китобхона</title>
+  <link rel="icon" href="./favicon.ico">
+  <link rel="manifest" href="./manifest.json">
+  <script src="./config.js?v=72"></script>
+  <style>
+    :root{color-scheme:dark;--bg:#0D1B2A;--panel:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--line:rgba(201,168,76,.22);
+      --ok:#3DBE7A;--ok-bg:rgba(61,190,122,.14);--part:#5AA9FF;--part-bg:rgba(90,169,255,.14);--rel:#F0B35B;--rel-bg:rgba(240,179,91,.14);--txt:#C58BFF;--txt-bg:rgba(197,139,255,.15);--no:#8E9BB0;--no-bg:rgba(142,155,176,.14);
+      --safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
+    body.light-theme{color-scheme:light;--bg:#F5F1E8;--panel:#FFFFFF;--card:#FFFFFF;--card2:#F3EDDD;--text:#1E2A3A;--muted:#5C6B80;--line:rgba(160,120,30,.25);--gold2:#9A7420;--no:#6B778A}
+    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+    html,body{min-height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
+    body{padding-bottom:calc(28px + var(--safe-bottom))}
+    button,input,select{font:inherit}
+    .topbar{position:sticky;top:0;z-index:30;min-height:calc(58px + var(--safe-top));padding:calc(7px + var(--safe-top)) 12px 8px;display:flex;align-items:center;gap:10px;background:rgba(13,27,42,.96);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+    body.light-theme .topbar{background:rgba(245,241,232,.96)}
+    .back,.icon-btn{width:40px;height:40px;flex:0 0 40px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.045);color:var(--gold2);font-size:20px;cursor:pointer;display:grid;place-items:center}
+    .head-copy{min-width:0;flex:1}.head-copy b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.head-copy span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
+    main{width:min(100%,520px);margin:0 auto;padding:13px 12px 24px}
+    .hero{position:relative;overflow:hidden;border:1px solid rgba(201,168,76,.35);border-radius:20px;padding:15px 16px 14px;background:linear-gradient(135deg,#1B3A5C,#13263d 60%,#1C2A45);box-shadow:0 12px 32px rgba(0,0,0,.22)}
+    body.light-theme .hero{background:linear-gradient(135deg,#FFF6DD,#F7EFD9 60%,#F2E9D2)}
+    .hero:after{content:"🎓";position:absolute;right:14px;top:10px;font-size:46px;opacity:.16;pointer-events:none}
+    .hero-label{font-size:10.5px;letter-spacing:.06em;color:var(--muted);font-weight:800}
+    .hero h1{margin:5px 0 4px;font-size:17px;line-height:1.3}
+    .hero p{margin:0;color:var(--muted);font-size:11.5px;line-height:1.55}
+    .hero-stats{display:flex;gap:8px;margin-top:11px;flex-wrap:wrap}
+    .stat{flex:1 1 90px;border:1px solid var(--line);border-radius:13px;padding:8px 10px;background:rgba(0,0,0,.14)}
+    body.light-theme .stat{background:rgba(255,255,255,.6)}
+    .stat b{display:block;font-size:19px;color:var(--gold2);font-weight:900;line-height:1.1}.stat span{font-size:10px;color:var(--muted);font-weight:700}
+    .bar{height:6px;border-radius:99px;background:rgba(255,255,255,.1);margin-top:11px;overflow:hidden}.bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,var(--ok),var(--gold2));transition:width .8s ease}
+    .legend{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+    .legend span{font-size:9.5px;font-weight:800;padding:3px 8px;border-radius:99px;border:1px solid transparent}
+    .pill-exact{color:var(--ok);background:var(--ok-bg);border-color:rgba(61,190,122,.35)!important}
+    .pill-part{color:var(--part);background:var(--part-bg);border-color:rgba(90,169,255,.35)!important}
+    .pill-related{color:var(--rel);background:var(--rel-bg);border-color:rgba(240,179,91,.35)!important}
+    .pill-text{color:var(--txt);background:var(--txt-bg);border-color:rgba(197,139,255,.35)!important}
+    .pill-none{color:var(--no);background:var(--no-bg);border-color:rgba(142,155,176,.3)!important}
+    .sticky-tools{position:sticky;top:calc(58px + var(--safe-top));z-index:25;background:var(--bg);padding:10px 0 6px;margin:0 -2px}
+    .search-row{display:flex;gap:8px}
+    .search{min-width:0;flex:1;height:42px;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text);padding:0 12px;outline:none}.search:focus{border-color:var(--gold)}
+    .grades{display:flex;gap:7px;overflow-x:auto;padding:9px 2px 4px;scrollbar-width:none}.grades::-webkit-scrollbar{display:none}
+    .grade-chip{flex:0 0 auto;min-width:46px;height:40px;border-radius:13px;border:1px solid var(--line);background:var(--panel);color:var(--text);font-weight:900;font-size:13px;cursor:pointer;display:flex;flex-direction:column;align-items:center;justify-content:center;line-height:1;padding:0 9px}
+    .grade-chip small{font-size:8.5px;color:var(--muted);font-weight:700;margin-top:3px}
+    .grade-chip.active{background:linear-gradient(135deg,var(--gold),#A8862E);color:#1A1200;border-color:var(--gold2)}.grade-chip.active small{color:#3A2C00}
+    .filters{display:flex;gap:6px;overflow-x:auto;padding:4px 2px 6px;scrollbar-width:none}.filters::-webkit-scrollbar{display:none}
+    .filter-chip{flex:0 0 auto;height:30px;padding:0 11px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:11px;font-weight:800;cursor:pointer}
+    .filter-chip.active{color:var(--text);background:var(--card2);border-color:var(--gold)}
+    .section-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:14px 2px 8px}.section-row h2{font-size:14px;margin:0}.section-row span{font-size:10px;color:var(--muted);font-weight:700}
+    .summer-head{display:flex;align-items:center;gap:8px;margin:16px 2px 8px;padding:9px 12px;border-radius:14px;background:linear-gradient(90deg,rgba(240,179,91,.18),transparent);border:1px solid rgba(240,179,91,.25)}
+    .summer-head h3{margin:0;font-size:12.5px}.summer-head span{font-size:10px;color:var(--muted)}
+    .list{display:grid;gap:8px}
+    .item{display:grid;grid-template-columns:34px minmax(0,1fr) auto;gap:10px;align-items:center;border:1px solid rgba(255,255,255,.06);border-radius:16px;background:var(--card);padding:10px 11px;cursor:pointer;box-shadow:0 6px 16px rgba(0,0,0,.14);transition:transform .12s}
+    body.light-theme .item{border-color:rgba(0,0,0,.07)}
+    .item:active{transform:scale(.985)}
+    .num{width:34px;height:34px;border-radius:11px;display:grid;place-items:center;font-weight:900;font-size:12.5px;background:rgba(201,168,76,.13);color:var(--gold2);border:1px solid var(--line)}
+    .item.is-none .num{opacity:.55}
+    .t{min-width:0}.t b{display:block;font-size:12.8px;line-height:1.35;font-weight:800}.t .a{display:block;color:var(--muted);font-size:10.8px;margin-top:3px;line-height:1.35}
+    .tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:5px}.tag{font-size:9px;color:var(--muted);border:1px solid rgba(255,255,255,.1);border-radius:99px;padding:1px 7px;font-weight:700}
+    body.light-theme .tag{border-color:rgba(0,0,0,.12)}
+    .status{font-size:9.5px;font-weight:900;padding:5px 8px;border-radius:99px;border:1px solid transparent;white-space:nowrap;text-align:center;line-height:1.15;max-width:86px}
+    .empty{border:1px dashed rgba(201,168,76,.3);border-radius:17px;padding:24px 18px;text-align:center;background:rgba(20,34,54,.55);color:var(--muted);font-size:12px;line-height:1.6}
+    body.light-theme .empty{background:rgba(255,255,255,.6)}
+    .footnote{margin:16px 3px 0;color:#8497ad;font-size:9.5px;line-height:1.55}
+    .loader{width:34px;height:34px;margin:30px auto;border:3px solid rgba(201,168,76,.2);border-top-color:var(--gold2);border-radius:50%;animation:spin .8s linear infinite}@keyframes spin{to{transform:rotate(360deg)}}
+    /* bottom sheet */
+    .sheet-wrap{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.66);backdrop-filter:blur(4px)}
+    .sheet-wrap.open{display:flex}
+    .sheet{width:min(100%,520px);max-height:88vh;overflow:auto;background:var(--panel);border-radius:22px 22px 0 0;border:1px solid var(--line);border-bottom:0;padding:10px 16px calc(18px + var(--safe-bottom));animation:up .22s ease}
+    @keyframes up{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+    .grip{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.2);margin:2px auto 12px}
+    .sheet h3{margin:0;font-size:16px;line-height:1.3}.sheet .a{color:var(--muted);font-size:12px;margin-top:4px}
+    .sheet .meta{display:flex;flex-wrap:wrap;gap:5px;margin-top:9px}
+    .box{margin-top:12px;border:1px solid var(--line);border-radius:15px;padding:11px 12px;background:var(--card)}
+    .box .k{font-size:10px;color:var(--muted);font-weight:800;letter-spacing:.04em;margin-bottom:5px}
+    .box .n{font-size:12.5px;font-weight:800;line-height:1.35}.box .d{font-size:11px;color:var(--muted);margin-top:4px;line-height:1.5}
+    .btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:46px;border-radius:14px;border:0;font-weight:900;font-size:13.5px;cursor:pointer;margin-top:10px;padding:0 14px}
+    .btn-gold{background:linear-gradient(135deg,var(--gold2),var(--gold));color:#1A1200}
+    .btn-ghost{background:transparent;border:1px solid var(--line);color:var(--text);min-height:42px;font-size:12.5px}
+    .hint{margin-top:12px;border-radius:15px;padding:11px 12px;background:rgba(240,179,91,.1);border:1px solid rgba(240,179,91,.28);font-size:11.5px;line-height:1.55;color:var(--text)}
+    .hint b{display:block;color:var(--rel);font-size:10px;letter-spacing:.05em;margin-bottom:4px}
+    .more-list{display:grid;gap:8px;margin-top:8px}
+    .more{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:8px;align-items:center;border:1px solid var(--line);border-radius:13px;padding:9px 11px;background:var(--card)}
+    .more .n{font-size:11.8px;font-weight:800;line-height:1.3}.more .d{font-size:10px;color:var(--muted);margin-top:3px}
+    .more button{height:34px;padding:0 12px;border-radius:10px;border:1px solid var(--line);background:rgba(201,168,76,.12);color:var(--gold2);font-weight:900;font-size:11px;cursor:pointer}
+    /* text reader */
+    .reader{position:fixed;inset:0;z-index:1100;display:none;flex-direction:column;background:#111A26;color:#EEE6D2}
+    .reader.open{display:flex}
+    .reader[data-mode="sepia"]{background:#F4E9D2;color:#2B2117}.reader[data-mode="light"]{background:#FFFFFF;color:#1A2230}
+    .reader-top{display:flex;align-items:center;gap:8px;padding:calc(8px + var(--safe-top)) 10px 8px;border-bottom:1px solid rgba(128,128,128,.25);background:inherit;position:sticky;top:0}
+    .reader-top .icon-btn{background:rgba(128,128,128,.12);color:inherit;border-color:rgba(128,128,128,.25)}
+    .reader-title{flex:1;min-width:0}.reader-title b{display:block;font-size:13px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.reader-title span{display:block;font-size:10px;opacity:.65;margin-top:2px}
+    .reader-body{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;padding:10px 18px calc(40px + var(--safe-bottom))}
+    .rt{max-width:640px;margin:0 auto;font-family:Georgia,"Times New Roman",serif;font-size:var(--rs,18px);line-height:1.68}
+    .rt h2{font-family:system-ui,sans-serif;font-size:1.15em;margin:12px 0 2px;line-height:1.3}.rt .by{font-family:system-ui,sans-serif;font-size:.75em;opacity:.7;margin-bottom:18px}
+    .rt p{margin:0 0 1em;text-indent:1.4em;text-align:justify;hyphens:auto}
+    .rt .stanza{margin:0 0 1.1em;padding-left:.6em}.rt .stanza div{text-indent:0;white-space:pre-wrap}
+    .rt .src{font-family:system-ui,sans-serif;font-size:.7em;opacity:.65;border-top:1px solid rgba(128,128,128,.3);padding-top:10px;margin-top:28px;line-height:1.5}
+    .reader-bar{display:flex;gap:8px;justify-content:center;padding:8px 10px calc(8px + var(--safe-bottom));border-top:1px solid rgba(128,128,128,.25)}
+    .reader-bar button{height:38px;min-width:46px;padding:0 12px;border-radius:12px;border:1px solid rgba(128,128,128,.3);background:rgba(128,128,128,.12);color:inherit;font-weight:900;cursor:pointer}
+    .reader-bar .progress{flex:1;display:flex;align-items:center;font-size:11px;opacity:.7;justify-content:center}
+    .toast{position:fixed;left:50%;bottom:calc(24px + var(--safe-bottom));transform:translateX(-50%) translateY(20px);background:#223A58;color:#fff;padding:10px 16px;border-radius:14px;font-size:12px;opacity:0;pointer-events:none;transition:.25s;z-index:2000;max-width:90vw;text-align:center}
+    .toast.show{opacity:1;transform:translateX(-50%)}
+    @media(min-width:520px){body{padding-top:10px}.topbar{border:1px solid var(--line);border-radius:16px;margin:0 auto;width:min(100% - 20px,520px)}}
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <button class="back" type="button" onclick="goBack()" aria-label="Бозгашт">←</button>
+    <div class="head-copy"><b>🎓 Адабиёти тавсияшуда</b><span>Синфҳои 1–11 · рӯйхати расмии хониш</span></div>
+    <button class="icon-btn" id="infoBtn" type="button" aria-label="Маълумот" title="Маълумот">ⓘ</button>
+  </header>
+
+  <main>
+    <section class="hero" id="hero">
+      <div class="hero-label">РӮЙХАТИ АДАБИЁТИ ТАВСИЯШУДА</div>
+      <h1>Китобҳо барои хониши берун аз синф, синфҳои 1–11</h1>
+      <p>Синфро интихоб кунед. Агар китоб дар Китобхона бошад — якбора мехонед; агар набошад — мегӯем, ки онро дар куҷо ёфтан мумкин аст.</p>
+      <div class="hero-stats">
+        <div class="stat"><b id="stTotal">—</b><span>асар дар рӯйхат</span></div>
+        <div class="stat"><b id="stAvail">—</b><span>дар барнома дастрас</span></div>
+        <div class="stat"><b id="stText">—</b><span>матн дар барнома</span></div>
+      </div>
+      <div class="bar"><i id="bar"></i></div>
+      <div class="legend">
+        <span class="pill-exact">● Дар барнома ҳаст</span><span class="pill-part">● Қисми китоби дигар</span><span class="pill-related">● Китоби наздик</span><span class="pill-text">● Матн дар барнома</span><span class="pill-none">● Дар барнома нест</span>
+      </div>
+    </section>
+
+    <div class="sticky-tools">
+      <div class="search-row">
+        <input id="q" class="search" type="search" placeholder="Ҷустуҷӯи китоб ё муаллиф дар ҳамаи синфҳо..." autocomplete="off" aria-label="Ҷустуҷӯ">
+      </div>
+      <div class="grades" id="grades"></div>
+      <div class="filters" id="filters">
+        <button class="filter-chip active" data-f="all" type="button">Ҳама</button>
+        <button class="filter-chip" data-f="avail" type="button">✅ Дар барнома</button>
+        <button class="filter-chip" data-f="text" type="button">📜 Матн</button>
+        <button class="filter-chip" data-f="none" type="button">❔ Дар барнома нест</button>
+      </div>
+    </div>
+
+    <div id="content"><div class="loader"></div></div>
+
+    <div class="footnote" id="foot">Манбаъ: «Рӯйхати адабиётҳои тавсияшуда барои хонандагони синфҳои 1–11». Китобҳои иловагӣ аз бойгонии кушоди zarowadk.com (нашрияҳои «Маориф», «Адиб», «Истиқбол») ва матнҳои ҷамъиятӣ (public domain) аз Викитека гирифта шудаанд.</div>
+  </main>
+
+  <div class="sheet-wrap" id="sheetWrap" onclick="if(event.target===this)closeSheet()">
+    <div class="sheet" id="sheet" role="dialog" aria-modal="true"></div>
+  </div>
+
+  <div class="reader" id="reader" data-mode="dark" aria-hidden="true">
+    <div class="reader-top">
+      <button class="icon-btn" type="button" onclick="closeText()" aria-label="Пӯшидан">←</button>
+      <div class="reader-title"><b id="rTitle"></b><span id="rAuthor"></span></div>
+      <button class="icon-btn" type="button" onclick="cycleMode()" aria-label="Ранги саҳифа" id="modeBtn">◐</button>
+    </div>
+    <div class="reader-body" id="rBody"><div class="rt" id="rt"></div></div>
+    <div class="reader-bar">
+      <button type="button" onclick="fontStep(-1)" aria-label="Хурд кардан">A−</button>
+      <div class="progress" id="rProgress">0%</div>
+      <button type="button" onclick="fontStep(1)" aria-label="Калон кардан">A+</button>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+
+<script>
+(function(){
+  const $=id=>document.getElementById(id);
+  const esc=s=>String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');
+  const STATUS={exact:'Дар барнома',part:'Қисми китоб',related:'Китоби наздик',text:'Матн',none:'Дар барнома нест'};
+  const TYPE_LABEL={exact:'✅ Дар барнома ҳаст',part:'📘 Қисми китоби дигар',related:'📙 Китоби наздик / ҳамон муаллиф',text:'📜 Матн дар барнома',none:'❔ Дар барнома нест'};
+  let DATA=null,grade=1,filter='all',query='';
+  try{ if(typeof setAppTheme==='function') setAppTheme(typeof getAppTheme==='function'?getAppTheme():(localStorage.getItem('kk_theme')||'dark'),false); else document.body.classList.toggle('light-theme',(localStorage.getItem('kk_theme')||'dark')==='light'); }catch(e){}
+
+  window.goBack=function(){ if(history.length>1&&document.referrer&&document.referrer.indexOf(location.host)>=0) history.back(); else location.href='index.html'; };
+  function toast(t){const el=$('toast');el.textContent=t;el.classList.add('show');clearTimeout(toast._t);toast._t=setTimeout(()=>el.classList.remove('show'),2400);}
+  window.toast=toast;
+
+  async function loadData(){
+    const url='data/tavsiya.json?v=1';
+    try{ const r=await fetch(url,{cache:'no-cache'}); if(r.ok){ const j=await r.json(); try{localStorage.setItem('kk_tavsiya_cache_v1',JSON.stringify(j))}catch(e){} return j; } }catch(e){}
+    try{ if('caches' in window){ const m=await caches.match(url,{ignoreSearch:true}); if(m) return await m.json(); } }catch(e){}
+    try{ const c=JSON.parse(localStorage.getItem('kk_tavsiya_cache_v1')||'null'); if(c) return c; }catch(e){}
+    throw new Error('offline');
+  }
+
+  function allItems(){ const out=[]; for(const g of DATA.grades){ for(const it of g.main) out.push({...it,grade:g.grade}); for(const it of g.summer) out.push({...it,grade:g.grade}); } return out; }
+  function isAvail(it){ return ['exact','part','related'].includes(it.match.type)||(it.more||[]).some(m=>['exact','part','related'].includes(m.type)); }
+  function passFilter(it){
+    if(filter==='avail') return isAvail(it);
+    if(filter==='text') return it.match.type==='text'||(it.more||[]).some(m=>m.type==='text');
+    if(filter==='none') return it.match.type==='none';
+    return true;
+  }
+  const norm=s=>String(s||'').toLowerCase().replace(/[«»"“”()'’`.,;:!?-]/g,' ').replace(/\s+/g,' ').trim();
+  function passQuery(it){ if(!query) return true; const q=norm(query); const hay=norm(it.title+' '+(it.author||'')+' '+(it.collection||'')+' '+(it.match&&it.match.name||'')); return q.split(' ').every(w=>hay.includes(w)); }
+
+  function renderHero(){
+    const s=DATA.stats||{}; const total=Object.values(s).reduce((a,b)=>a+b,0); const avail=(s.exact||0)+(s.part||0)+(s.related||0);
+    $('stTotal').textContent=total; $('stAvail').textContent=avail; $('stText').textContent=(s.text||0);
+    requestAnimationFrame(()=>{ $('bar').style.width=Math.round(avail/Math.max(1,total)*100)+'%'; });
+  }
+  function renderGrades(){
+    $('grades').innerHTML=DATA.grades.map(g=>{ const n=g.main.length+g.summer.length; return `<button class="grade-chip${g.grade===grade?' active':''}" data-g="${g.grade}" type="button">${g.grade}<small>${n} асар</small></button>`; }).join('');
+    $('grades').querySelectorAll('.grade-chip').forEach(b=>b.addEventListener('click',()=>{ grade=Number(b.dataset.g); try{localStorage.setItem('kk_tavsiya_grade',String(grade))}catch(e){} query=''; $('q').value=''; renderGrades(); render(); window.scrollTo({top:Math.min(window.scrollY,260),behavior:'smooth'}); }));
+    const act=$('grades').querySelector('.grade-chip.active'); if(act&&act.scrollIntoView) act.scrollIntoView({inline:'center',block:'nearest'});
+  }
+  function pill(type){ return `<span class="status pill-${type}">${STATUS[type]||''}</span>`; }
+  function tags(it){
+    const t=[]; if(it.note) t.push(it.note); if(it.kind==='collection') t.push('маҷмӯа'); if(it.collection) t.push(it.collection); if(it.publisher) t.push(it.publisher); if(it.lang==='ru') t.push('ба русӣ');
+    return t.length?`<div class="tags">${t.slice(0,3).map(x=>`<span class="tag">${esc(x)}</span>`).join('')}</div>`:'';
+  }
+  function card(it){
+    return `<div class="item${it.match.type==='none'?' is-none':''}" data-id="${it.id}" role="button" tabindex="0">
+      <div class="num">${it.n}</div>
+      <div class="t"><b>${esc(it.title)}</b>${it.author?`<span class="a">${esc(it.author)}</span>`:''}${tags(it)}</div>
+      ${pill(it.match.type)}
+    </div>`;
+  }
+  function render(){
+    const box=$('content');
+    if(query){
+      const hits=allItems().filter(it=>passQuery(it)&&passFilter(it));
+      if(!hits.length){ box.innerHTML=`<div class="empty"><div style="font-size:30px;margin-bottom:6px">🔍</div>Аз рӯйи дархости «${esc(query)}» чизе ёфт нашуд</div>`; return; }
+      const byG={}; hits.forEach(h=>{(byG[h.grade]=byG[h.grade]||[]).push(h)});
+      box.innerHTML=Object.keys(byG).sort((a,b)=>a-b).map(g=>`<div class="section-row"><h2>Синфи ${g}</h2><span>${byG[g].length} натиҷа</span></div><div class="list">${byG[g].map(card).join('')}</div>`).join('');
+      bind(); return;
+    }
+    const g=DATA.grades.find(x=>x.grade===grade)||DATA.grades[0];
+    const main=g.main.filter(passFilter), summer=g.summer.filter(passFilter);
+    let html=`<div class="section-row"><h2>Синфи ${g.grade} · рӯйхати асосӣ</h2><span>${main.length} аз ${g.main.length}</span></div>`;
+    html+=main.length?`<div class="list">${main.map(card).join('')}</div>`:`<div class="empty">Аз рӯйи ин филтр дар рӯйхати асосӣ чизе нест</div>`;
+    if(g.summer.length){
+      html+=`<div class="summer-head"><span style="font-size:18px">☀️</span><div><h3>Адабиёти барои таътили тобистона тавсияшаванда</h3><span>${summer.length} аз ${g.summer.length} китоб</span></div></div>`;
+      html+=summer.length?`<div class="list">${summer.map(card).join('')}</div>`:`<div class="empty">Аз рӯйи ин филтр чизе нест</div>`;
+    }
+    box.innerHTML=html; bind();
+  }
+  function bind(){ $('content').querySelectorAll('.item').forEach(el=>{ const open=()=>openSheet(Number(el.dataset.id)); el.addEventListener('click',open); el.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();open()}}); }); }
+  function findItem(id){ for(const g of DATA.grades){ for(const it of g.main.concat(g.summer)) if(it.id===id) return {...it,grade:g.grade}; } return null; }
+
+  // ---------- opening books ----------
+  function absUrl(u){ try{ return new URL(u,location.href).href; }catch(e){ return u; } }
+  function openLink(link,it){
+    if(!link) return;
+    if(link.type==='none'){ toast('Ин китоб дар барнома нест'); return; }
+    if(link.type==='text'){ openText(link,it); return; }
+    const url=link.src==='local'?absUrl(link.url):link.url; const name=link.name||it.title;
+    closeSheet();
+    location.href=`reader.html?url=${encodeURIComponent(url)}&name=${encodeURIComponent(name)}`;
+  }
+  function linkBox(link,label){
+    const where=link.src==='local'?(link.bib?esc(link.bib):'Нашри PDF (дар барнома)'):(link.src==='text'?'Матн барои хондан дар барнома':(link.catName?`Категория: ${esc(link.catName)}`:esc((link.folder||'').replace(/^books\//,''))));
+    return `<div class="box"><div class="k">${label}</div><div class="n">${esc(link.name)}</div><div class="d">${where}${link.pages?` · ${link.pages} саҳ.`:''}${link.note?`<br>${esc(link.note)}`:''}</div></div>`;
+  }
+  function openSheet(id){
+    const it=findItem(id); if(!it) return; const m=it.match;
+    const metaTags=[`Синфи ${it.grade}`, it.summer?'таътили тобистона':'рӯйхати асосӣ', it.note, it.collection?`аз «${it.collection}»`:'', it.publisher?`нашриёти «${it.publisher}»`:'', it.lang==='ru'?'ба забони русӣ':''].filter(Boolean);
+    let html=`<div class="grip"></div><h3>${esc(it.title)}</h3>${it.author?`<div class="a">${esc(it.author)}</div>`:''}<div class="meta">${metaTags.map(t=>`<span class="tag">${esc(t)}</span>`).join('')}<span class="status pill-${m.type}">${STATUS[m.type]}</span></div>`;
+    if(m.type==='none'){
+      html+=`<div class="hint"><b>ДАР КУҶО ЁФТАН МУМКИН АСТ</b>${esc(m.hint||'Дар китобхонаи мактаб ё Китобхонаи миллӣ пурсон шавед.')}</div>`;
+    } else {
+      html+=linkBox(m,TYPE_LABEL[m.type]);
+      if(m.note&&m.type!=='exact'&&false) html+='';
+      html+=`<button class="btn btn-gold" id="mainOpen" type="button">${m.type==='text'?'📜 Хондани матн':'📖 Кушодан дар хонанда'}</button>`;
+    }
+    const more=(it.more||[]).filter(x=>x.type!=='none'||x.hint);
+    if(more.length){
+      html+=`<div class="box" style="background:transparent;border-style:dashed"><div class="k">ИНЧУНИН</div><div class="more-list">${more.map((x,i)=>x.type==='none'?`<div class="hint" style="margin-top:0">${esc(x.hint)}</div>`:`<div class="more"><div><div class="n">${esc(x.name)}</div><div class="d">${TYPE_LABEL[x.type]}${x.note?' · '+esc(x.note):''}${x.pages?' · '+x.pages+' саҳ.':''}</div></div><button type="button" data-more="${i}">${x.type==='text'?'Матн':'Кушодан'}</button></div>`).join('')}</div></div>`;
+    }
+    if(m.type!=='none'&&m.src==='catalog'&&m.cat) html+=`<button class="btn btn-ghost" type="button" onclick="location.href='kitobho.html?cat=${encodeURIComponent(m.cat)}'">📚 Категорияи «${esc(m.catName||'')}»-ро кушоед</button>`;
+    html+=`<button class="btn btn-ghost" type="button" onclick="closeSheet()">Пӯшидан</button>`;
+    $('sheet').innerHTML=html; $('sheetWrap').classList.add('open'); document.body.style.overflow='hidden';
+    const mo=$('mainOpen'); if(mo) mo.addEventListener('click',()=>openLink(m,it));
+    $('sheet').querySelectorAll('[data-more]').forEach(b=>b.addEventListener('click',()=>openLink(more[Number(b.dataset.more)],it)));
+  }
+  window.closeSheet=function(){ $('sheetWrap').classList.remove('open'); document.body.style.overflow=''; };
+
+  // ---------- embedded text reader ----------
+  let textStart=0,textMeta=null;
+  const RS_KEY='kk_tavsiya_font',MODE_KEY='kk_tavsiya_mode';
+  function applyFont(){ const v=Number(localStorage.getItem(RS_KEY)||18); $('rt').style.setProperty('--rs',Math.min(30,Math.max(13,v))+'px'); }
+  window.fontStep=function(d){ const v=Math.min(30,Math.max(13,Number(localStorage.getItem(RS_KEY)||18)+d*1.5)); localStorage.setItem(RS_KEY,String(v)); applyFont(); };
+  window.cycleMode=function(){ const modes=['dark','sepia','light']; const cur=$('reader').dataset.mode; const nx=modes[(modes.indexOf(cur)+1)%modes.length]; $('reader').dataset.mode=nx; localStorage.setItem(MODE_KEY,nx); };
+  async function openText(link,it){
+    closeSheet();
+    const r=$('reader'); r.dataset.mode=localStorage.getItem(MODE_KEY)||'dark'; applyFont();
+    $('rTitle').textContent=link.name||it.title; $('rAuthor').textContent=it.author||''; $('rt').innerHTML='<div class="loader"></div>'; r.classList.add('open'); r.setAttribute('aria-hidden','false'); document.body.style.overflow='hidden';
+    let t=null;
+    try{ const resp=await fetch(link.url,{cache:'no-cache'}); if(resp.ok) t=await resp.json(); }catch(e){}
+    if(!t){ try{ const m=await caches.match(link.url); if(m) t=await m.json(); }catch(e){} }
+    if(!t){ $('rt').innerHTML='<p>Матн бор нашуд. Интернетро санҷед ва бори дигар кӯшиш кунед.</p>'; return; }
+    textMeta={id:t.id,title:t.title,author:t.author}; textStart=Date.now();
+    let body=`<h2>${esc(t.title)}</h2><div class="by">${esc(t.author)}${t.year?' · '+esc(t.year):''}</div>`;
+    if(t.kind==='poem') body+=t.stanzas.map(st=>`<div class="stanza">${st.map(l=>`<div>${esc(l)}</div>`).join('')}</div>`).join('');
+    else body+=t.paragraphs.map(p=>`<p>${esc(p)}</p>`).join('');
+    body+=`<div class="src">Манбаъ: ${esc(t.source||'')}</div>`;
+    $('rt').innerHTML=body; $('rBody').scrollTop=Number(localStorage.getItem('kk_tavsiya_pos_'+t.id)||0); updateProgress();
+  }
+  function updateProgress(){ const b=$('rBody'); const max=b.scrollHeight-b.clientHeight; const p=max>0?Math.round(b.scrollTop/max*100):100; $('rProgress').textContent=p+'%'; if(textMeta) try{localStorage.setItem('kk_tavsiya_pos_'+textMeta.id,String(b.scrollTop))}catch(e){} }
+  $('rBody').addEventListener('scroll',()=>{ if(updateProgress._t) return; updateProgress._t=setTimeout(()=>{updateProgress._t=0;updateProgress()},150); },{passive:true});
+  window.closeText=function(){
+    const r=$('reader'); r.classList.remove('open'); r.setAttribute('aria-hidden','true'); document.body.style.overflow='';
+    if(textMeta&&textStart){ const sec=Math.round((Date.now()-textStart)/1000); if(sec>=20){ try{ const b=$('rBody'); const max=b.scrollHeight-b.clientHeight; const pct=max>0?b.scrollTop/max:1; const rec={book_id:'tavsiya/matn/'+textMeta.id,book_title:textMeta.title,book_author:textMeta.author,duration:sec,pages_read:Math.round(pct*10),total_pages:10,status:pct>=.95?'completed':'paused'}; if(window.KKReadingSyncV2&&typeof KKReadingSyncV2.add==='function') KKReadingSyncV2.add(rec); else if(window.KKReadingLog&&typeof KKReadingLog.add==='function') KKReadingLog.add(rec); }catch(e){} } }
+    textMeta=null; textStart=0;
+  };
+
+  // ---------- info ----------
+  $('infoBtn').addEventListener('click',()=>{
+    const s=DATA?DATA.stats:{}; 
+    $('sheet').innerHTML=`<div class="grip"></div><h3>Дар бораи ин рӯйхат</h3><div class="a">Рӯйхати адабиёти тавсияшуда барои хониши берун аз синф, синфҳои 1–11</div>
+      <div class="box"><div class="k">ЧӢ ТАВР КОР МЕКУНАД</div><div class="d">Барои ҳар як китоби рӯйхат мо феҳристи Китобхонаро ҷустуҷӯ кардем:<br>✅ <b>Дар барнома ҳаст</b> — китоб айнан мавҷуд аст, якбора кушоед.<br>📘 <b>Қисми китоби дигар</b> — асар дар дохили маҷмӯа ё куллиёт аст.<br>📙 <b>Китоби наздик</b> — худи асар нест, вале китоби ҳамон муаллиф ё ҳамон силсила ҳаст.<br>📜 <b>Матн</b> — матни пурраи асар (ҷамъиятӣ) барои хондан дар барнома гузошта шудааст.<br>❔ <b>Дар барнома нест</b> — мегӯем, ки китобро дар куҷо ёфтан мумкин аст.</div></div>
+      <div class="box"><div class="k">ОМОР</div><div class="d">Ҳамагӣ: <b>${Object.values(s).reduce((a,b)=>a+b,0)}</b> асар · дар барнома: <b>${(s.exact||0)}</b> айнан, <b>${(s.part||0)}</b> дар дохили китоб, <b>${(s.related||0)}</b> китоби наздик, <b>${(s.text||0)}</b> матн · <b>${(s.none||0)}</b> дар барнома нест.</div></div>
+      <div class="box"><div class="k">МАНБАЪҲО</div><div class="d">Китобҳои иловагӣ (PDF) — аз бойгонии кушоди адабиёти бачагонаи zarowadk.com (нашрияҳои «Маориф», «Адиб», «Истиқбол», «Адабиёти бачагона»). Матнҳои русӣ — аз Викитека, танҳо асарҳои ҷамъиятӣ (public domain).</div></div>
+      <button class="btn btn-ghost" type="button" onclick="closeSheet()">Пӯшидан</button>`;
+    $('sheetWrap').classList.add('open'); document.body.style.overflow='hidden';
+  });
+
+  // ---------- controls ----------
+  $('q').addEventListener('input',()=>{ query=$('q').value.trim(); render(); });
+  $('filters').querySelectorAll('.filter-chip').forEach(b=>b.addEventListener('click',()=>{ filter=b.dataset.f; $('filters').querySelectorAll('.filter-chip').forEach(x=>x.classList.toggle('active',x===b)); render(); }));
+  document.addEventListener('keydown',e=>{ if(e.key==='Escape'){ if($('reader').classList.contains('open')) closeText(); else closeSheet(); } });
+
+  (async function init(){
+    const p=new URLSearchParams(location.search); const pg=Number(p.get('grade')||localStorage.getItem('kk_tavsiya_grade')||1); grade=(pg>=1&&pg<=11)?pg:1;
+    try{ DATA=await loadData(); }catch(e){ $('content').innerHTML='<div class="empty"><div style="font-size:30px;margin-bottom:6px">📡</div>Рӯйхат бор нашуд. Як маротиба бо интернет кушоед — баъд офлайн ҳам кор мекунад.</div>'; return; }
+    renderHero(); renderGrades(); render();
+    const q=p.get('q'); if(q){ $('q').value=q; query=q; render(); }
+  })();
+})();
+</script>
+</body>
+</html>

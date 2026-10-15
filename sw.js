@@ -1,4 +1,6 @@
-const CACHE_NAME = 'kitobkhona-v125-study-progress-quiz';
+const CACHE_NAME = 'kitobkhona-v126-tavsiya-offline';
+const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
+const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
   './',
   './index.html',
@@ -29,6 +31,14 @@ const LOCAL_FILES = [
   './assets/documents/maorif-order-27/page-2.jpg',
   './kitobho.html',
   './offline-books.html',
+  './adabiyoti-tavsiyashuda.html',
+  './data/tavsiya.json',
+  './data/contests.json',
+  './tavsiya/matn/skazka_o_tsare_saltane.json',
+  './tavsiya/matn/kot_v_sapogah.json',
+  './tavsiya/matn/kot_i_lisa.json',
+  './tavsiya/matn/teremok.json',
+  './tavsiya/matn/bremenskie_muzykanty.json',
   './book_reviews.html',
   './chat старй.html',
   './delete-account.html',
@@ -97,7 +107,7 @@ const LOCAL_FILES = [
   './furugi_banner.jpg',
   './vatan_banner.jpg',
   './donandai_banner.jpg',
-  ...Array.from({ length: 42 }, (_, index) => `./assets/hero/${index + 1}.jpeg`)
+  ...Array.from({ length: 100 }, (_, index) => `./assets/hero/${index + 1}.jpeg`)
 ];
 // МУҲИМ: surudi_milli.mp3 (1.8МБ) ва 50 сурати newsimg (2МБ) ба пешкэш НАМЕРОХАНД —
 // онҳо ҳангоми аввалин дархост аз тарафи fetch-обработчик кэш мешаванд.
@@ -127,7 +137,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key !== CACHE_NAME && key !== 'kitobkhona-pdf-cache-v1')
+      .filter((key) => key !== CACHE_NAME && key !== RUNTIME_CACHE && key !== 'kitobkhona-pdf-cache-v1')
       .map((key) => caches.delete(key)));
     await self.clients.claim();
     scheduleBooksJsonUpdate();
@@ -175,14 +185,66 @@ function safeCachePut(request, response) {
   } catch (e) {}
 }
 
+// v126: кэши иҷроӣ барои манбаъҳои берунӣ, ки саҳифаи асосӣ ба онҳо вобаста аст (пештар SW онҳоро тамоман
+// коркард намекард ва ҳангоми интернети суст/қатъ бахшҳо холӣ мемонданд):
+//  - books.json / manifest / search-index аз raw.githubusercontent.com ва cdn.jsdelivr.net (JSON)
+//  - GET-ҳои ҷамъиятии Edge API (popular-books, winners, announcements, book-stats) — бе Authorization
+//  - суратҳои муқоваю ахбор (flickr, weserv, raw.githubusercontent)
+// Стратегия: stale-while-revalidate (аввал кэш, дар замина навсозӣ); ҳаҷм то RUNTIME_LIMIT сабт.
+const RUNTIME_JSON_HOSTS = ['raw.githubusercontent.com', 'cdn.jsdelivr.net'];
+const RUNTIME_IMG_HOSTS = ['live.staticflickr.com', 'images.weserv.nl', 'raw.githubusercontent.com', 'cdn.jsdelivr.net'];
+const RUNTIME_API_PATHS = ['/api/popular-books', '/api/winners', '/api/announcements/active', '/api/book-stats/', '/api/users/directory-public'];
+function runtimeKind(request, url) {
+  if (request.method !== 'GET') return '';
+  if (request.headers.has('Authorization')) return '';
+  const path = url.pathname;
+  if (/\.(pdf|epub|fb2|docx?|zip|mp4|m4v|webm|mp3)$/i.test(path)) return ''; // китобҳоро KITOB_PDF_CACHE идора мекунад
+  if (url.hostname.endsWith('.workers.dev') && RUNTIME_API_PATHS.some(p => path.startsWith(p))) return 'api';
+  if (RUNTIME_JSON_HOSTS.includes(url.hostname) && /\.json$/i.test(path)) return 'json';
+  if (RUNTIME_IMG_HOSTS.includes(url.hostname) && /\.(jpe?g|png|webp|gif|avif)$/i.test(path)) return 'img';
+  if (url.hostname === 'images.weserv.nl') return 'img';
+  return '';
+}
+async function trimRuntimeCache() {
+  try {
+    const cache = await caches.open(RUNTIME_CACHE);
+    const keys = await cache.keys();
+    if (keys.length <= RUNTIME_LIMIT) return;
+    const extra = keys.slice(0, keys.length - RUNTIME_LIMIT);
+    await Promise.all(extra.map(k => cache.delete(k)));
+  } catch (e) {}
+}
+async function runtimeStaleWhileRevalidate(request, kind) {
+  const cache = await caches.open(RUNTIME_CACHE);
+  const cached = await cache.match(request, { ignoreVary: true });
+  const network = fetch(request).then(async (response) => {
+    // танҳо ҷавобҳои ошкор (CORS/basic) бо статуси 200 сабт мешаванд; opaque — не (ҳаҷми квотаро хӯрда метавонанд)
+    if (response && response.status === 200 && (response.type === 'basic' || response.type === 'cors')) {
+      try { await cache.put(request, response.clone()); } catch (e) {}
+      if (Math.random() < 0.05) trimRuntimeCache();
+    }
+    return response;
+  }).catch(() => null);
+  if (cached) {
+    if (kind === 'img') return cached;                 // суратҳо: кэш-аввал
+    // JSON/API: агар шабака то 2.5 сония ҷавоб диҳад — маълумоти нав, вагарна кэш (шабака дар замина навсозӣ мекунад)
+    const fast = await Promise.race([network, new Promise(r => setTimeout(() => r(null), 2500))]);
+    return fast || cached;
+  }
+  const net = await network;
+  return net || Response.error();
+}
+
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
   if (url.origin !== self.location.origin) {
+    const kind = runtimeKind(event.request, url);
+    if (kind) event.respondWith(runtimeStaleWhileRevalidate(event.request, kind));
     return;
   }
   if (event.request.mode === 'navigate') {
-    // Аввал шабака: баъди нашр корбар фавран саҳифаи навро мебинад.
-    // Саҳифаи кӯҳнаи кэшшуда (масалан, бо бахши кӯҳна) дигар нишон дода намешавад.
+    // Аввал шабака: баъди нашр корбар фавран саҳифаи навро мебинад. v126: агар шабака то 3.5 сония ҷавоб
+    // надиҳад (интернети суст/«lie-fi»), саҳифаи кэшшуда дода мешавад; шабака дар замина кэшро нав мекунад.
     event.respondWith((async () => {
       const network = fetch(event.request).then(response => {
         if (response && response.status === 200) {
@@ -190,10 +252,14 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => null);
+      const cachedPromise = caches.match(event.request, { ignoreSearch: true });
+      const timer = new Promise(resolve => setTimeout(() => resolve('timeout'), 3500));
+      const first = await Promise.race([network, timer]);
+      if (first && first !== 'timeout') return first;
+      const cached = await cachedPromise;
+      if (cached) return cached;
       const net = await network;
-      if (net) return net;
-      const cached = await caches.match(event.request, { ignoreSearch: true });
-      return cached || await caches.match('./offline.html');
+      return net || await caches.match('./offline.html');
     })());
     return;
   }
@@ -227,6 +293,11 @@ self.addEventListener('fetch', (event) => {
       if (cached) { network.catch(() => {}); return cached; }
       return await network || Response.error();
     })());
+    return;
+  }
+  // v126: файлҳои китоб (tavsiya/pdf/*.pdf ва ғ.) дар кэши умумӣ дубора сабт намешаванд — онҳоро хонанда
+  // дар 'kitobkhona-pdf-cache-v1' нигоҳ медорад (бо танзими муҳлати нигоҳдорӣ).
+  if (/\.(pdf|epub|fb2|docx?|zip|mp4|m4v|webm)$/i.test(url.pathname)) {
     return;
   }
   if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
@@ -304,11 +375,20 @@ self.addEventListener('notificationclick', function(event) {
   } else if (data.url) {
     url = data.url;
   }
-  const fullUrl = url.startsWith('/') ? self.location.origin + url : url;
+  // v126: барнома дар зерпапка (/kitobkhona/) ҷойгир аст — истинодҳои '/winners.html' ё 'winners.html'
+  // ба доираи (scope) SW оварда мешаванд, то ки саҳифаи дуруст кушода шавад.
+  let fullUrl = url;
+  try {
+    const scope = self.registration.scope; // https://host/kitobkhona/
+    const scopePath = new URL(scope).pathname;
+    if (/^https?:\/\//i.test(url)) fullUrl = url;
+    else if (url.startsWith('/')) fullUrl = url.startsWith(scopePath) ? self.location.origin + url : new URL(url.replace(/^\/+/, ''), scope).href;
+    else fullUrl = new URL(url, scope).href;
+  } catch (e) { fullUrl = url.startsWith('/') ? self.location.origin + url : url; }
   event.waitUntil(clients.matchAll({ type: 'window', includeUncontrolled: true }).then(windowClients => {
     for (let i = 0; i < windowClients.length; i++) {
       const client = windowClients[i];
-      if (client.url.includes(url) && 'focus' in client) return client.focus();
+      if ((client.url === fullUrl || client.url.split('?')[0] === fullUrl.split('?')[0]) && 'focus' in client) { try { if ('navigate' in client && client.url !== fullUrl) return client.navigate(fullUrl).then(c => c && c.focus()); } catch (e) {} return client.focus(); }
     }
     if (clients.openWindow) return clients.openWindow(fullUrl);
   }));

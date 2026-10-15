@@ -6,7 +6,7 @@
   <title>Китобхона — Ғолибон</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=71"></script>
+  <script src="config.js?v=72"></script>
   <script src="cache.js?v=45"></script>
   <style>
     
@@ -918,6 +918,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
       return currentYear - birthYear;
     }
 
+    // v126: аватар танҳо аз https ва бе XSS (пештар avatar_url бевосита ба innerHTML мерафт)
+    function safeAvatarUrl(u){ try{ const x=new URL(String(u||''),location.href); return (x.protocol==='https:'||x.protocol==='http:')?x.href:''; }catch(e){ return ''; } }
+    function escAttr(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
     function getAvatarSvg(gender) {
       if (gender === 'male') {
         return `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="var(--gold)" stroke-width="1.6"/></svg>`;
@@ -997,7 +1000,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
           const city = user.city || '—';
           const hours = formatHours(user.total_hours);
           const books = user.total_books || 0;
-          const avatar = user.avatar_url ? `<img src="${user.avatar_url}" alt="">` : getAvatarSvg(user.gender);
+          const avatar = safeAvatarUrl(user.avatar_url) ? `<img src="${escAttr(safeAvatarUrl(user.avatar_url))}" alt="">` : getAvatarSvg(user.gender);
           html += `
             <div class="podium-col" onclick="openUserProfile('${user.id}')">
               ${isGold ? '<div class="podium-crown">👑</div>' : ''}
@@ -1048,7 +1051,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}*::
           const age = user.age !== null && user.age !== undefined ? user.age : '—';
           const hours = formatHours(user.total_hours);
           const books = user.total_books || 0;
-          const avatar = user.avatar_url ? `<img src="${user.avatar_url}" alt="">` : getAvatarSvg(user.gender);
+          const avatar = safeAvatarUrl(user.avatar_url) ? `<img src="${escAttr(safeAvatarUrl(user.avatar_url))}" alt="">` : getAvatarSvg(user.gender);
           html += `
             <div class="rank-row" data-age="${user.age !== null ? user.age : ''}" data-region="${user.region || ''}" onclick="openUserProfile('${user.id}')">
               <div class="rank-num-wrap"><span class="rank-num">${rank}</span></div>

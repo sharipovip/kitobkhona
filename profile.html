@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=71"></script>
+  <script src="config.js?v=72"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=45"></script>
   <style>
@@ -1157,6 +1157,30 @@
     }
   </style>
 
+<style id="reading-stats-style">
+.rstats{margin:10px 0 6px;border:1px solid var(--line);border-radius:18px;background:linear-gradient(160deg,var(--card),var(--card-2));padding:12px 12px 10px;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+.rstats-head{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:8px}
+.rstats-head b{font-size:13px}.rstats-head span{font-size:9.5px;color:var(--muted);display:block;margin-top:2px}
+.rstats-ranges{display:flex;gap:4px}.rstats-range{height:26px;padding:0 9px;border-radius:99px;border:1px solid var(--line);background:transparent;color:var(--muted);font-size:10px;font-weight:800;cursor:pointer;font-family:inherit}
+.rstats-range.active{background:var(--gold);color:#1a1200;border-color:var(--gold)}
+.rstats-kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px;margin:8px 0 10px}
+.rstats-kpi{border:1px solid var(--line);border-radius:12px;padding:7px 6px;text-align:center;background:rgba(0,0,0,.12)}
+body.light-theme .rstats-kpi{background:rgba(255,255,255,.55)}
+.rstats-kpi b{display:block;font-size:14px;color:var(--gold2,var(--gold));line-height:1.1}.rstats-kpi span{display:block;font-size:8.5px;color:var(--muted);margin-top:3px;font-weight:700;line-height:1.2}
+.rstats-chart{width:100%;height:auto;display:block;margin:2px 0 4px}
+.rstats-sub{display:flex;justify-content:space-between;align-items:center;font-size:9.5px;color:var(--muted);margin:0 2px 4px}
+.rstats-grid2{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.2fr);gap:10px;margin-top:8px}
+@media(max-width:380px){.rstats-grid2{grid-template-columns:1fr}}
+.rstats-week svg{width:100%;height:auto;display:block}
+.rstats-title{font-size:9.5px;letter-spacing:.05em;color:var(--muted);font-weight:800;margin:0 0 5px}
+.rstats-top{display:grid;gap:5px}.rstats-book{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px;align-items:center}
+.rstats-book b{display:block;font-size:10.5px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.rstats-book i{display:block;height:4px;border-radius:99px;background:linear-gradient(90deg,var(--gold2,var(--gold)),var(--gold));margin-top:3px}
+.rstats-book span{font-size:10px;color:var(--muted);font-weight:800;white-space:nowrap}
+.rstats-foot{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:10px;padding-top:8px;border-top:1px dashed var(--line);font-size:9px;color:var(--muted);line-height:1.4}
+.rstats-foot button{height:28px;padding:0 10px;border-radius:9px;border:1px solid var(--line);background:transparent;color:var(--gold2,var(--gold));font-size:10px;font-weight:800;cursor:pointer;white-space:nowrap;font-family:inherit}
+.rstats-empty{font-size:11px;color:var(--muted);line-height:1.5;padding:4px 2px}
+</style>
 <style id="users-directory-style">.directory-user{display:flex;align-items:center;gap:10px;padding:10px;border-bottom:1px solid var(--line);cursor:pointer}.directory-user:active{background:var(--gold-soft)}.directory-avatar{width:42px;height:42px;border-radius:50%;background:var(--card-2);display:grid;place-items:center;overflow:hidden;flex:0 0 42px}.directory-avatar img{width:100%;height:100%;object-fit:cover}.directory-main{flex:1;min-width:0}.directory-name{display:flex;align-items:center;font-weight:700;font-size:12.5px}.directory-meta{font-size:10px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}</style>
 <style id="app-scrollbar-policy">
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
@@ -1203,6 +1227,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <button class="btn btn-outline" id="friendBtn" onclick="friendAction()">➕ Дӯст кардан</button>
         <button class="btn btn-outline" id="editBtn" style="display:none;" onclick="openEdit()">Таҳрири профил</button>
       </div>
+      <!-- v126: омори графикии хониш — аз пойгоҳи маҳаллӣ (KKReadingLog), бе сервер; маълумоти ҳисоб ворид ва якҷоя мешавад -->
+      <section class="rstats" id="readingStats" style="display:none" aria-label="Омори хониш"></section>
       <div class="tabs" data-group="own">
         <div class="tab-btn active" data-tab="books">📚 Китобҳо</div>
         <div class="tab-btn" data-tab="marks">❤️ Дӯстдошта</div>
@@ -1943,6 +1969,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       loadBooksCached(profileId)
         .then(() => { if (loadSequence === profileLoadSequence) renderBooks(); })
         .catch(e => console.warn('Не удалось обновить книги', e));
+      if (isOwnProfile) { try { renderReadingStats(); importReadingHistory(profileId, false); } catch (e) { console.warn('[Profile] stats', e); } }
       loadFavoritesCached(profileId)
         .then(() => { if (loadSequence === profileLoadSequence) renderFavorites(); })
         .catch(e => console.warn('Не удалось обновить дӯстдошта', e));
@@ -1988,6 +2015,51 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const map={};
     (sessions||[]).forEach(s=>{if(!s.book_id)return;const titleKey=normalizeTitle(s.book_title||'Китоб');if(!titleKey)return;let folder='books',file=s.book_id;if(String(s.book_id).includes('/')){const parts=s.book_id.split('/');file=parts.pop();folder=parts.join('/');if(!folder.startsWith('books/'))folder='books/'+folder}if(map[titleKey]){const e=map[titleKey];e.total_duration+=Number(s.duration||0);e.sessions_count++;if(s.rating)e.rating=s.rating;if(s.status==='completed')e.status='completed';if(s.created_at&&(!e.last_created||new Date(s.created_at)>new Date(e.last_created)))e.last_created=s.created_at}else map[titleKey]={book_id:s.book_id,file,folder,book_title:s.book_title||'Китоб',book_author:s.book_author||'',total_duration:Number(s.duration||0),status:s.status||'paused',rating:s.rating||null,sessions_count:1,last_created:s.created_at,cover_url:s.cover_url||null,pdf_url:s.pdf_url||null}});
     return Object.values(map).sort((a,b)=>new Date(b.last_created)-new Date(a.last_created));
+  }
+  // ===== v126: Омори хониш (маҳаллӣ + воридот аз ҳисоб) =====
+  const RSTATS_RANGE_KEY='kk_rstats_range';
+  let rstatsRange=Number(localStorage.getItem(RSTATS_RANGE_KEY))||30;
+  const RSTATS_WD=['Дш','Сш','Чш','Пш','Ҷм','Шб','Яш'];
+  function rsHours(sec){const h=sec/3600;return h>=10?Math.round(h)+' с':h>=1?(Math.round(h*10)/10).toString().replace('.',',')+' с':Math.round(sec/60)+' дақ'}
+  function rsHoursLong(sec){const h=Math.floor(sec/3600),m=Math.round((sec%3600)/60);return h?`${h} соат${m?' '+m+' дақ':''}`:`${m} дақиқа`}
+  function rsDayLabel(d){try{const x=new Date(d+'T00:00:00');return x.getDate()+'.'+String(x.getMonth()+1).padStart(2,'0')}catch(e){return d}}
+  function rsBars(series,unit){
+    const W=320,H=96,pad=4,n=series.length,gap=n>40?1:n>14?2:4,bw=Math.max(1,(W-pad*2-gap*(n-1))/n),max=Math.max(60,...series.map(p=>p.s));
+    const today=series[n-1]?.d;let bars='',labels='';
+    series.forEach((p,i)=>{const h=p.s>0?Math.max(2,(H-22)*p.s/max):1.5,x=pad+i*(bw+gap),y=H-16-h;bars+=`<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${bw.toFixed(1)}" height="${h.toFixed(1)}" rx="${Math.min(3,bw/2).toFixed(1)}" fill="${p.d===today?'url(#rsGoldHot)':p.s>0?'url(#rsGold)':'rgba(128,140,160,.18)'}"/>`;
+      const step=n>60?15:n>20?7:n>7?3:1,lastTick=Math.floor((n-1)/step)*step;if(i%step===0||(i===n-1&&n-1-lastTick>=Math.ceil(step/2))){labels+=`<text x="${(x+bw/2).toFixed(1)}" y="${H-4}" text-anchor="middle" font-size="7.5" fill="currentColor" opacity=".55">${unit==='month'?p.d.slice(5):rsDayLabel(p.d).split('.')[0]}</text>`}});
+    const maxLabel=`<text x="${W-pad}" y="9" text-anchor="end" font-size="7.5" fill="currentColor" opacity=".55">макс ${rsHours(max)}</text>`;
+    return `<svg class="rstats-chart" viewBox="0 0 ${W} ${H}" role="img" aria-label="Хониш аз рӯйи рӯзҳо"><defs><linearGradient id="rsGold" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#E8C96D"/><stop offset="1" stop-color="#9C7A2A"/></linearGradient><linearGradient id="rsGoldHot" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8DF0B4"/><stop offset="1" stop-color="#22A35A"/></linearGradient></defs><line x1="${pad}" x2="${W-pad}" y1="${H-15.5}" y2="${H-15.5}" stroke="currentColor" opacity=".18"/>${bars}${labels}${maxLabel}</svg>`;
+  }
+  function rsWeek(weekday){const max=Math.max(1,...weekday),W=150,H=78;let out='';weekday.forEach((v,i)=>{const h=Math.max(2,(H-24)*v/max),x=6+i*20,y=H-16-h;out+=`<rect x="${x}" y="${y.toFixed(1)}" width="13" height="${h.toFixed(1)}" rx="3" fill="${v===max&&v>0?'url(#rsGoldHot)':'url(#rsGold)'}" opacity="${v>0?1:.25}"/><text x="${x+6.5}" y="${H-4}" text-anchor="middle" font-size="7.5" fill="currentColor" opacity=".6">${RSTATS_WD[i]}</text>`});return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Рӯзҳои ҳафта">${out}</svg>`}
+  function renderReadingStats(){
+    const box=el('readingStats');if(!box||!isOwnProfile||!window.KKReadingLog){if(box)box.style.display='none';return}
+    const sum=KKReadingLog.summary({days:rstatsRange===365?365:rstatsRange});box.style.display='block';
+    const ranges=[[7,'7 рӯз'],[30,'30 рӯз'],[365,'Сол']].map(([v,l])=>`<button type="button" class="rstats-range${v===rstatsRange?' active':''}" data-range="${v}">${l}</button>`).join('');
+    const imported=sum.serverImportedAt?new Date(sum.serverImportedAt):null;
+    if(!sum.totalSeconds){box.innerHTML=`<div class="rstats-head"><div><b>📊 Омори хониш</b><span>дар дастгоҳи шумо ҳисоб мешавад</span></div></div><div class="rstats-empty">Ҳанӯз маълумоте нест. Китобро дар хонанда кушоед — вақти хониш, саҳифаҳо ва рӯзҳо дар ҳамин ҷо ба таври графикӣ нишон дода мешаванд.${localStorage.getItem('kk_token')?' Агар дар ҳисобатон хониши пештара бошад, он ворид карда мешавад.':''}</div><div class="rstats-foot"><div>${imported?'Воридот аз ҳисоб: '+imported.toLocaleDateString():'Маълумоти ҳисоб ҳанӯз ворид нашудааст'}</div><button type="button" id="rstatsImport">⟳ Аз ҳисоб ворид кардан</button></div>`;bindRstats();return}
+    let series=sum.series,unit='day';
+    if(rstatsRange===365){const m=sum.months,keys=[];const now=new Date();for(let i=11;i>=0;i--){const d=new Date(now.getFullYear(),now.getMonth()-i,1);keys.push(d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0'))}series=keys.map(k=>({d:k,s:m[k]||0}));unit='month'}
+    const rangeTotal=series.reduce((a,p)=>a+p.s,0),topMax=sum.topBooks[0]?.s||1;
+    box.innerHTML=`<div class="rstats-head"><div><b>📊 Омори хониш</b><span>дар дастгоҳ ҳисоб мешавад · ${sum.firstDay?'аз '+rsDayLabel(sum.firstDay):''}</span></div><div class="rstats-ranges">${ranges}</div></div>
+      <div class="rstats-kpis"><div class="rstats-kpi"><b>${rsHours(sum.totalSeconds)}</b><span>ҳамагӣ хониш</span></div><div class="rstats-kpi"><b>${sum.books}</b><span>китоб${sum.completed?' · '+sum.completed+' тамом':''}</span></div><div class="rstats-kpi"><b>${sum.streak}</b><span>рӯзи пайдарпай</span></div><div class="rstats-kpi"><b>${sum.activeDays}</b><span>рӯзи фаъол</span></div></div>
+      <div class="rstats-sub"><span>${rstatsRange===365?'12 моҳи охир':rstatsRange+' рӯзи охир'}: <b style="color:var(--text)">${rsHoursLong(rangeTotal)}</b></span><span>${sum.bestDay?'беҳтарин рӯз: '+rsDayLabel(sum.bestDay.d)+' · '+rsHours(sum.bestDay.s):''}</span></div>
+      ${rsBars(series,unit)}
+      <div class="rstats-grid2"><div class="rstats-week"><div class="rstats-title">РӮЗҲОИ ҲАФТА</div>${rsWeek(sum.weekday)}</div><div><div class="rstats-title">БЕШТАР ХОНДАШУДА</div><div class="rstats-top">${sum.topBooks.slice(0,5).map(b=>`<div class="rstats-book"><div><b title="${esc(b.t)}">${esc(b.t)}${b.c?' ✓':''}</b><i style="width:${Math.max(6,Math.round(b.s/topMax*100))}%"></i></div><span>${rsHours(b.s)}</span></div>`).join('')||'<div class="rstats-empty">—</div>'}</div></div></div>
+      <div class="rstats-foot"><div>Маълумот дар дастгоҳ нигоҳ дошта мешавад${imported?' · воридот аз ҳисоб: '+imported.toLocaleDateString():''}</div><button type="button" id="rstatsImport">⟳ Навсозӣ аз ҳисоб</button></div>`;
+    bindRstats();
+  }
+  function bindRstats(){const box=el('readingStats');box.querySelectorAll('.rstats-range').forEach(b=>b.addEventListener('click',()=>{rstatsRange=Number(b.dataset.range)||30;localStorage.setItem(RSTATS_RANGE_KEY,String(rstatsRange));renderReadingStats()}));box.querySelector('#rstatsImport')?.addEventListener('click',()=>importReadingHistory(currentUserId,true))}
+  // Воридоти таърихи хониш аз ҳисоб (то 1000 сессияи охир) ва якҷоякунӣ бо журнали маҳаллӣ (бе дубора ҳисобкунӣ)
+  let rstatsImporting=false;
+  async function importReadingHistory(userId,force){
+    if(!window.KKReadingLog||!userId||rstatsImporting)return;const token=localStorage.getItem('kk_token');if(!token)return;
+    const st=KKReadingLog.state();if(!force&&st.serverImportedAt&&Date.now()-st.serverImportedAt<6*60*60*1000&&String(st.serverUserId||'')===String(userId))return;
+    if(st.serverUserId&&String(st.serverUserId)!==String(userId)&&!force){KKReadingLog.clear()}
+    rstatsImporting=true;const btn=el('rstatsImport');if(btn){btn.disabled=true;btn.textContent='⟳ Ворид мешавад...'}
+    try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/reading-sessions?user_id='+encodeURIComponent(userId)+'&limit=1000&_t='+Date.now(),{headers:{Authorization:'Bearer '+token},cache:'no-store'},12000);if(!r.ok)throw new Error('HTTP '+r.status);const rows=await r.json();const n=KKReadingLog.mergeServer(Array.isArray(rows)?rows:[],userId);if(force&&typeof toast==='function')toast(n?'Омор аз ҳисоб нав шуд':'Дар ҳисоб маълумоти нав нест')}
+    catch(e){console.warn('[Profile] reading import',e);if(force&&typeof toast==='function')toast('Воридот нашуд — интернетро санҷед')}
+    finally{rstatsImporting=false;renderReadingStats()}
   }
   async function loadBooksCached(userId) {
     const key=profileCacheKey('sessions',userId),cached=typeof CacheManager!=='undefined'?CacheManager.get(key):null;
@@ -2726,9 +2798,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function directoryNorm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/\s+/g,' ').trim()}
   async function loadUsersDirectory(){
     const box=el('usersDirectoryResults');if(!box)return;const q=directoryNorm(el('directorySearch').value),region=directoryNorm(el('directoryRegion').value),[minAge,maxAge]=el('directoryAge').value.split('-').map(Number),meId=String(currentUserId||localStorage.getItem('kk_user_id')||''),meRegion=directoryNorm(loadedProfile?.region),meCity=directoryNorm(loadedProfile?.city);
-    try{const all=await getDirectorySnapshot(),year=new Date().getFullYear();const rows=all.filter(u=>{if(String(u.id)===meId)return false;const age=u.birth_year?year-Number(u.birth_year):0,name=directoryNorm([u.username,u.display_name,u.first_name,u.last_name].join(' '));return(!q||name.includes(q))&&(!region||directoryNorm(u.region)===region)&&age>=minAge&&age<=maxAge}).sort((a,b)=>{const ap=directoryNorm(a.city)===meCity&&meCity?0:directoryNorm(a.region)===meRegion&&meRegion?1:2,bp=directoryNorm(b.city)===meCity&&meCity?0:directoryNorm(b.region)===meRegion&&meRegion?1:2;return ap-bp||Number(b.verified)-Number(a.verified)||new Date(b.updated_at||0)-new Date(a.updated_at||0)}).slice(0,40);renderUsersDirectory(rows)}catch(e){if(!box.querySelector('.directory-user'))box.innerHTML='<div class="empty-state">Рӯйхат дастрас нест</div>'}
+    try{const all=await getDirectorySnapshot(),year=new Date().getFullYear();const rows=all.filter(u=>{if(String(u.id)===meId)return false;const age=u.birth_year?year-Number(u.birth_year):0,name=directoryNorm([u.display_name,u.first_name,u.last_name].join(' '));return(!q||name.includes(q))&&(!region||directoryNorm(u.region)===region)&&age>=minAge&&age<=maxAge}).sort((a,b)=>{const ap=directoryNorm(a.city)===meCity&&meCity?0:directoryNorm(a.region)===meRegion&&meRegion?1:2,bp=directoryNorm(b.city)===meCity&&meCity?0:directoryNorm(b.region)===meRegion&&meRegion?1:2;return ap-bp||Number(b.verified)-Number(a.verified)||new Date(b.updated_at||0)-new Date(a.updated_at||0)}).slice(0,40);renderUsersDirectory(rows)}catch(e){if(!box.querySelector('.directory-user'))box.innerHTML='<div class="empty-state">Рӯйхат дастрас нест</div>'}
   }
-  function renderUsersDirectory(rows){const box=el('usersDirectoryResults');if(!rows?.length){box.innerHTML='<div class="empty-state">Корбар ёфт нашуд</div>';return}box.innerHTML=rows.map(u=>{const name=u.display_name||u.username,age=u.birth_year?new Date().getFullYear()-u.birth_year:'',address=[u.region,u.city,u.jamoat,u.village].filter(Boolean).join(' · '),avatar=u.avatar_url?`<img src="${esc(u.avatar_url)}" alt="">`:esc(String(name||'?').slice(0,1).toUpperCase());return `<div class="directory-user" onclick="location.href='profile.html?user=${u.id}'"><div class="directory-avatar">${avatar}</div><div class="directory-main"><div class="directory-name">${esc(name)}${u.verified?verifiedBadgeSvg():''}</div><div class="directory-meta">@${esc(u.username)}${age?' · '+age+' сола':''}</div><div class="directory-meta">${esc(address)}</div></div></div>`}).join('')}
+  // v126: дар «Корбарон» логин/username нишон дода НАМЕШАВАД — танҳо ному насаб, ҷинс, соли таваллуд ва шаҳр.
+  function directoryGender(g){const v=String(g||'').toLowerCase();if(!v)return'';if(/^(m|male|мард|мужской|м)$/.test(v))return'♂ мард';if(/^(f|female|зан|женский|ж)$/.test(v))return'♀ зан';return esc(g)}
+  function renderUsersDirectory(rows){const box=el('usersDirectoryResults');if(!rows?.length){box.innerHTML='<div class="empty-state">Корбар ёфт нашуд</div>';return}box.innerHTML=rows.map(u=>{const fullName=[u.first_name,u.last_name].filter(Boolean).join(' ').trim(),name=fullName||u.display_name||'Корбар',gender=directoryGender(u.gender),avatar=u.avatar_url?`<img src="${esc(u.avatar_url)}" alt="">`:esc(String(name||'?').slice(0,1).toUpperCase());const line2=[gender,u.birth_year?'соли таваллуд '+esc(u.birth_year):''].filter(Boolean).join(' · ');return `<div class="directory-user" onclick="location.href='profile.html?user=${u.id}'"><div class="directory-avatar">${avatar}</div><div class="directory-main"><div class="directory-name">${esc(name)}${u.verified?verifiedBadgeSvg():''}</div><div class="directory-meta">${line2||'&nbsp;'}</div><div class="directory-meta">${esc(u.city||'')}</div></div></div>`}).join('')}
   function openUsersDirectory(){el('usersDirectoryOverlay').classList.add('open');loadUsersDirectory()}
   window.openUsersDirectory=openUsersDirectory;
   el('closeUsersDirectory')?.addEventListener('click',()=>el('usersDirectoryOverlay').classList.remove('open'));

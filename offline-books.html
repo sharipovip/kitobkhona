@@ -8,7 +8,7 @@
   <title>Китобҳои зеркашидашуда · Китобхона</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="manifest" href="./manifest.json">
-  <script src="./config.js?v=71"></script>
+  <script src="./config.js?v=72"></script>
   <style>
     :root{color-scheme:dark;--bg:#0D1B2A;--panel:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--line:rgba(201,168,76,.22);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
     *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -125,7 +125,7 @@
     function matchesFilter(book){var value=$('bookSearch').value.trim().toLowerCase();var text=[book.name,book.author,book.category,book.subcategory,book.folder,book.file].join(' ').toLowerCase();if(value&&!text.includes(value))return false;var f=$('categoryFilter').value;if(f.indexOf('cat|')===0&&book.category!==f.slice(4))return false;if(f.indexOf('sub|')===0){var parts=f.split('|');if(book.category!==parts[1]||book.subcategory!==parts.slice(2).join('|'))return false}return true}
     function coverMarkup(book){if(book.cover&&/^https?:|^data:image\//i.test(book.cover))return'<img src="'+esc(book.cover)+'" alt="" onerror="this.remove();this.parentNode.querySelector(\'.cover-text\').style.display=\'block\'">';return'<span>📖</span><small class="cover-text">'+esc(book.name)+'</small>'}
     function render(){var visible=allBooks.filter(matchesFilter),list=$('bookList');$('visibleCount').textContent=visible.length+' аз '+allBooks.length; if(!visible.length){list.innerHTML='<div class="empty"><div class="empty-icon">'+(allBooks.length?'🔎':'📥')+'</div><b>'+(allBooks.length?'Китоб ёфт нашуд':'Китобҳои ҳифзшуда ҳоло нестанд')+'</b><span>'+(allBooks.length?'Категория ё ҷустуҷӯро тағйир диҳед.':'Китобҳоро аз «Китобҳо» кушоед; баъд онҳо дар ин ҷо бе интернет дастрас мешаванд.')+'</span>'+(allBooks.length?'':'<br><button class="action primary" onclick="location.href=\'kitobho.html\'">Ба феҳристи китобҳо</button>')+'</div>';return}
-      list.innerHTML=visible.map(function(book){var meta=[book.category,book.subcategory].filter(Boolean).join(' · ');var size=book.size?KitobOffline.formatBytes(book.size):'Ҳаҷм номаълум';return'<article class="book-card" data-url="'+esc(book.url)+'"><div class="cover">'+coverMarkup(book)+'</div><div class="book-main"><div class="book-name">'+esc(book.name)+'</div><div class="book-meta">'+esc(meta||book.folder||'Китоб')+'<br><span class="book-size">'+esc(size)+'</span> · '+esc(formatDate(book.cachedAt))+'</div><div class="book-actions"><button class="action primary" data-action="open">📖 Кушодан</button><button class="action" data-action="share">↗ Мубодила</button><button class="action remove" data-action="remove">✕ Нест кардан</button></div></div></article>'}).join('');
+      list.innerHTML=visible.map(function(book){var meta=[book.category,book.subcategory].filter(Boolean).join(' · ');var size=book.size?KitobOffline.formatBytes(book.size):'Ҳаҷм номаълум';return'<article class="book-card" data-url="'+esc(book.url)+'"><div class="cover">'+coverMarkup(book)+'</div><div class="book-main"><div class="book-name">'+esc(book.name)+'</div><div class="book-meta">'+esc(meta||book.folder||'Китоб')+'<br><span class="book-size">'+esc(size)+'</span> · '+esc(formatDate(book.cachedAt))+'</div><div class="book-actions"><button class="action primary" data-action="open">📖 Кушодан</button><button class="action" data-action="share">↗ Мубодила</button><button class="action" data-action="save">💾 Ҳифз дар хотира</button><button class="action remove" data-action="remove">✕ Нест кардан</button></div></div></article>'}).join('');
     }
     async function refresh(){var list=$('bookList');list.innerHTML='<div class="empty">Рӯйхат санҷида мешавад...</div>';try{if(window.KitobOffline)await KitobOffline.pruneExpired();var raw=window.KitobOffline?await KitobOffline.listCachedBooks():[];var index=await loadCatalogIndex();allBooks=enrichBooks(raw,index).sort(function(a,b){return(b.cachedAt||0)-(a.cachedAt||0)||a.name.localeCompare(b.name)});updateSummary(allBooks);populateCategories(allBooks);render()}catch(e){console.warn('offline books',e);allBooks=[];updateSummary(allBooks);list.innerHTML='<div class="empty"><div class="empty-icon">⚠️</div><b>Кэши китобҳо дастрас нест</b><span>Ин дастгоҳ ё браузер ҳифзи офлайнро дастгирӣ намекунад.</span></div>'}}
     function openBook(book){var params=new URLSearchParams();params.set('url',book.url);params.set('name',book.name||'Китоб');if(book.cover&&!/^data:/i.test(book.cover))params.set('cover',book.cover);location.href='reader.html?'+params.toString()}
@@ -166,7 +166,10 @@
       var card=button.closest('.book-card'),book=allBooks.find(function(x){return x.url===card.dataset.url});if(!book)return;
       var action=button.dataset.action;
       if(action==='open')openBook(book);
+      // v126: мисли reader.html — файл аз кэш гирифта мешавад (бе интернет ҳам кор мекунад): share → AndroidBridge.shareFile / navigator.share,
+      // save → AndroidBridge.saveFile (папкаи «Боргириҳо») ё боргирии муқаррарии браузер.
       else if(action==='share'){if(typeof window.shareFile==='function')window.shareFile(book.url,book.name);else showToast('Мубодила ҳоло дастрас нест')}
+      else if(action==='save'){if(typeof window.downloadFile==='function')window.downloadFile(book.url,book.name,true);else showToast('Ҳифз ҳоло дастрас нест')}
       else if(action==='remove'){
         var approved=await askConfirmation('Китобро нест кунед?','«'+book.name+'» аз кэши ин дастгоҳ хориҷ карда мешавад.','Нест кардани китоб');
         if(!approved)return;

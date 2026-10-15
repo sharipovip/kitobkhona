@@ -13,6 +13,28 @@
 })();
 
 
+/* v126: Пули эҳтиётӣ бо барномаи Android барои ҲАМАИ саҳифаҳо (пештар танҳо дар reader.html буд).
+   Агар AndroidBridge сохта нашуда бошад, вале канали нативии KitobkhonaNative ҳаст — ҳамон методҳоро
+   месозем. Бе ин isAndroid() дар offline-books.html false буд ва «Мубодила» ба navigator.share меафтод. */
+(function installNativeBridgeFallback() {
+  try {
+    if (typeof window === 'undefined' || !window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+    var bridge = window.AndroidBridge || {};
+    var map = { saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile', shareFile: 'shareFile',
+      shareText: 'shareText', shareTextWithWhatsAppChooser: 'shareTextWithWhatsAppChooser', shareImageWithText: 'shareImageWithText',
+      shareRemoteImage: 'shareRemoteImage', shareRemoteImages: 'shareRemoteImages', saveUserId: 'saveUserId', saveAuthToken: 'saveAuthToken',
+      openExternalUrl: 'openExternalUrl', openOfficialSite: 'openOfficialSite' };
+    Object.keys(map).forEach(function (name) {
+      if (typeof bridge[name] === 'function') return;
+      bridge[name] = function () {
+        try { window.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) })); }
+        catch (e) { console.warn('Native feature is unavailable', e); }
+      };
+    });
+    window.AndroidBridge = bridge;
+  } catch (e) {}
+})();
+
 const KITOB_CONFIG = {
   EDGE_API_BASE: 'https://kitobkhona-edge.tojik.workers.dev',
   NEON_API_BASE: 'https://kitobkhona-proxy.vercel.app',
@@ -22,7 +44,7 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '3.0.4';
+const APP_VERSION = '3.1.0';
 
 const KKH_THEMES = {
   dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
@@ -2416,9 +2438,24 @@ async function apiGet(table, opts) {
 }
 
 
-async function getNotifications(){return [];}
-
-async function markNotificationRead(){return true;}
+// v126: огоҳиҳои дохилӣ — сервери Render (тавассути прокси NEON_API_BASE). Ҷадвал: user_notifications.
+function notifApiHeaders(){const token=localStorage.getItem('kk_token');return token?{'Authorization':'Bearer '+token,'Content-Type':'application/json'}:null}
+async function getNotifications(limit){
+  const headers=notifApiHeaders();if(!headers)return [];
+  const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/notifications?limit='+(Number(limit)||50)+'&_t='+Date.now(),{headers,cache:'no-store'},9000);
+  if(r.status===401||r.status===403)return [];
+  if(!r.ok)throw new Error('notifications HTTP '+r.status);
+  const data=await r.json();return Array.isArray(data)?data:[];
+}
+async function markNotificationRead(id){
+  const headers=notifApiHeaders();if(!headers||id==null)return false;
+  try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/notifications/'+encodeURIComponent(id)+'/read',{method:'PUT',headers},8000);return r.ok}catch(e){return false}
+}
+async function markAllNotificationsRead(){
+  const headers=notifApiHeaders();if(!headers)return false;
+  try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/notifications/read-all',{method:'POST',headers},8000);return r.ok}catch(e){return false}
+}
+window.getNotifications=getNotifications;window.markNotificationRead=markNotificationRead;window.markAllNotificationsRead=markAllNotificationsRead;
 
 const KKH_FCM = {
   firebaseConfig: {
@@ -2724,6 +2761,51 @@ function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url |
   window.KKReadingSyncV2={add,active,closed,flush,state:read};migrate();window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{schedule();setTimeout(flush,1500)},{once:true});else{schedule();setTimeout(flush,1500)}
 })();
 
+
+// ===== v126: Журнали доимии хониш (маҳаллӣ) барои омори графикии профил =====
+// KKReadingSyncV2 сабтҳоро пас аз ҳамоҳангсозӣ нест мекунад, бинобар ин журнали алоҳида нигоҳ медорем:
+// ҳар сабт = (рӯз, китоб) → сонияҳо, саҳифаҳо. Маълумоти сервер (баъди воридшавӣ) бо ҳамин калид якҷоя
+// мешавад (max аз маҳаллӣ ва сервер — то ки сессияҳои аллакай фиристодашуда ду бор ҳисоб нашаванд).
+(function initReadingLog(){
+  const KEY='kk_reading_log_v1',MAX_ENTRIES=4000;
+  const empty=()=>({version:1,entries:{},serverImportedAt:0,serverUserId:null});
+  function read(){try{const x=JSON.parse(localStorage.getItem(KEY)||'null');return x&&x.version===1&&x.entries?x:empty()}catch(e){return empty()}}
+  function write(s){try{const keys=Object.keys(s.entries);if(keys.length>MAX_ENTRIES){keys.sort();keys.slice(0,keys.length-MAX_ENTRIES).forEach(k=>delete s.entries[k])}localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+  function dayKey(ts){const d=new Date(ts||Date.now());if(Number.isNaN(d.getTime()))return null;return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+  function bookKey(id){return String(id||'').replace(/^\/+/,'').replace(/^books\//i,'').slice(0,300)}
+  function add(x){
+    const sec=Math.max(0,Math.round(Number(x?.duration)||0)),book=bookKey(x?.book_id);if(!book||!sec)return;
+    const day=dayKey(x?.at||Date.now()),key=day+'|'+book,s=read(),e=s.entries[key]||{d:day,b:book,t:'',a:'',s:0,ss:0,p:0,u:0};
+    e.s+=sec;e.t=x.book_title||e.t||'Китоб';e.a=x.book_author||e.a||'';e.p=Math.max(Number(e.p)||0,Number(x.pages_read)||0);e.tp=Math.max(Number(e.tp)||0,Number(x.total_pages)||0);e.u=Date.now();if(x.status==='completed')e.c=1;
+    s.entries[key]=e;write(s);
+  }
+  /** rows — сатрҳои /api/reading-sessions ({book_id,book_title,book_author,duration,pages_read,total_pages,status,created_at}) */
+  function mergeServer(rows,userId){
+    if(!Array.isArray(rows))return 0;const s=read(),agg={};let n=0;
+    for(const r of rows){const book=bookKey(r.book_id),day=dayKey(r.created_at);const sec=Math.max(0,Math.round(Number(r.duration)||0));if(!book||!day||!sec)continue;const key=day+'|'+book;const a=agg[key]||(agg[key]={d:day,b:book,t:r.book_title||'',a:r.book_author||'',s:0,p:0,tp:0,c:0});a.s+=sec;a.p=Math.max(a.p,Number(r.pages_read)||0);a.tp=Math.max(a.tp,Number(r.total_pages)||0);if(r.status==='completed')a.c=1}
+    for(const [key,a] of Object.entries(agg)){const e=s.entries[key]||{d:a.d,b:a.b,t:'',a:'',s:0,p:0,u:0};e.ss=Math.max(Number(e.ss)||0,a.s);e.s=Math.max(Number(e.s)||0,a.s);e.t=e.t||a.t||'Китоб';e.a=e.a||a.a;e.p=Math.max(Number(e.p)||0,a.p);e.tp=Math.max(Number(e.tp)||0,a.tp);if(a.c)e.c=1;e.u=e.u||Date.now();s.entries[key]=e;n++}
+    s.serverImportedAt=Date.now();s.serverUserId=userId||s.serverUserId||null;write(s);return n;
+  }
+  function entries(){return Object.values(read().entries).sort((a,b)=>a.d<b.d?-1:a.d>b.d?1:0)}
+  /** Омори ҷамъбастӣ барои графикҳо */
+  function summary(opts){
+    const days=Math.max(7,Math.min(365,Number(opts&&opts.days)||30)),list=entries(),byDay={},byBook={},today=new Date();today.setHours(0,0,0,0);
+    let total=0,totalPages=0;const daySet=new Set();
+    for(const e of list){const sec=Number(e.s)||0;total+=sec;totalPages+=Number(e.p)||0;byDay[e.d]=(byDay[e.d]||0)+sec;daySet.add(e.d);const b=byBook[e.b]||(byBook[e.b]={b:e.b,t:e.t||'Китоб',a:e.a||'',s:0,days:0,last:e.d,c:0});b.s+=sec;b.days++;if(e.d>b.last)b.last=e.d;if(e.c)b.c=1}
+    const series=[];for(let i=days-1;i>=0;i--){const d=new Date(today);d.setDate(today.getDate()-i);const k=dayKey(d);series.push({d:k,s:byDay[k]||0})}
+    // силсилаи рӯзҳои пайдарпай (streak) то имрӯз/дирӯз
+    let streak=0;for(let i=0;i<400;i++){const d=new Date(today);d.setDate(today.getDate()-i);const k=dayKey(d);if(byDay[k]>0)streak++;else if(i===0)continue;else break}
+    const weekday=[0,0,0,0,0,0,0];for(const [k,sec] of Object.entries(byDay)){const d=new Date(k+'T00:00:00');if(!Number.isNaN(d.getTime()))weekday[(d.getDay()+6)%7]+=sec}
+    const months={};for(const [k,sec] of Object.entries(byDay)){months[k.slice(0,7)]=(months[k.slice(0,7)]||0)+sec}
+    const top=Object.values(byBook).sort((a,b)=>b.s-a.s);
+    const best=Object.entries(byDay).sort((a,b)=>b[1]-a[1])[0]||null;
+    return {totalSeconds:total,totalPages,books:Object.keys(byBook).length,completed:top.filter(b=>b.c).length,activeDays:daySet.size,streak,series,weekday,months,topBooks:top.slice(0,8),firstDay:list.length?list[0].d:null,lastDay:list.length?list[list.length-1].d:null,bestDay:best?{d:best[0],s:best[1]}:null,serverImportedAt:read().serverImportedAt||0};
+  }
+  function clear(){try{localStorage.removeItem(KEY)}catch(e){}}
+  window.KKReadingLog={add,mergeServer,entries,summary,clear,state:read};
+  // ҳар сабти хониш, ки ба синк меравад, ба журнали маҳаллӣ ҳам меафтад
+  try{if(window.KKReadingSyncV2&&typeof KKReadingSyncV2.add==='function'&&!KKReadingSyncV2.__logged){const orig=KKReadingSyncV2.add;KKReadingSyncV2.add=function(x){try{add(x)}catch(e){}return orig.apply(this,arguments)};KKReadingSyncV2.__logged=true}}catch(e){}
+})();
 
 // ===== Interface protection and administrator-controlled cache refresh =====
 function installContentProtection(){
