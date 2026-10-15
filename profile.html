@@ -6,7 +6,7 @@
   <title>Китобхона — Профил</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-  <script src="config.js?v=73"></script>
+  <script src="config.js?v=74"></script>
 <script src="locations.js?v=3" defer></script>
   <script src="cache.js?v=45"></script>
   <style>
@@ -1584,13 +1584,14 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
     loadProfile();
     initSettings();
+    // v128: 30 с ба ҷои 10 с (танҳо дар профили каси дигар ва вақте ки саҳифа намоён аст) — камтар дархост ба Render/Neon
     friendStatusTimer = setInterval(() => {
-      if (!document.hidden && currentProfileUserId && !isOwnProfile) {
+      if (!document.hidden && navigator.onLine !== false && currentProfileUserId && !isOwnProfile) {
         checkFriendStatus(currentUserId, currentProfileUserId)
           .then(() => updateFriendButtonUI())
           .catch(() => {});
       }
-    }, 10000);
+    }, 30000);
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden && currentProfileUserId) {
         const seq = profileLoadSequence;

@@ -1,0 +1,107 @@
+Архив содержит ТОЛЬКО файлы, отличающиеся от исходной загрузки «Китобхона новая версия до 10 октября»
+(сравнение по SHA-256), со структурой папок — распаковать поверх репозиториев.
+
+ИЗМЕНЕНЫ (27):
+  kitobkhona-chat/server.js
+  kitobkhona-edge/package.json
+  kitobkhona-edge/src/directory.ts
+  kitobkhona-edge/src/index.ts
+  kitobkhona-edge/src/public-api.ts
+  kitobkhona-edge/src/reading-sync.ts
+  kitobkhona-edge/wrangler.jsonc
+  kitobkhona/Lenta.html
+  kitobkhona/book_reviews.html
+  kitobkhona/books.json
+  kitobkhona/chat старй.html
+  kitobkhona/chat.html
+  kitobkhona/chats.html
+  kitobkhona/config.js
+  kitobkhona/icons/quotes-data.js
+  kitobkhona/index.html
+  kitobkhona/kitobho.html
+  kitobkhona/login.html
+  kitobkhona/manifest.json
+  kitobkhona/maorif-books.html
+  kitobkhona/offline-books.html
+  kitobkhona/president.html
+  kitobkhona/profile.html
+  kitobkhona/quotes-data.js
+  kitobkhona/reader.html
+  kitobkhona/sw.js
+  kitobkhona/winners.html
+
+ДОБАВЛЕНЫ (70):
+  kitobkhona-edge/sql/02_user_notifications.sql
+  kitobkhona-edge/src/keepalive.ts
+  kitobkhona-edge/src/notify.ts
+  kitobkhona/.github/workflows/supabase-keepalive.yml
+  kitobkhona/adabiyoti-tavsiyashuda.html
+  kitobkhona/assets/hero/100.jpeg
+  kitobkhona/assets/hero/43.jpeg
+  kitobkhona/assets/hero/44.jpeg
+  kitobkhona/assets/hero/45.jpeg
+  kitobkhona/assets/hero/46.jpeg
+  kitobkhona/assets/hero/47.jpeg
+  kitobkhona/assets/hero/48.jpeg
+  kitobkhona/assets/hero/49.jpeg
+  kitobkhona/assets/hero/50.jpeg
+  kitobkhona/assets/hero/51.jpeg
+  kitobkhona/assets/hero/52.jpeg
+  kitobkhona/assets/hero/53.jpeg
+  kitobkhona/assets/hero/54.jpeg
+  kitobkhona/assets/hero/55.jpeg
+  kitobkhona/assets/hero/56.jpeg
+  kitobkhona/assets/hero/57.jpeg
+  kitobkhona/assets/hero/58.jpeg
+  kitobkhona/assets/hero/59.jpeg
+  kitobkhona/assets/hero/60.jpeg
+  kitobkhona/assets/hero/61.jpeg
+  kitobkhona/assets/hero/62.jpeg
+  kitobkhona/assets/hero/63.jpeg
+  kitobkhona/assets/hero/64.jpeg
+  kitobkhona/assets/hero/65.jpeg
+  kitobkhona/assets/hero/66.jpeg
+  kitobkhona/assets/hero/67.jpeg
+  kitobkhona/assets/hero/68.jpeg
+  kitobkhona/assets/hero/69.jpeg
+  kitobkhona/assets/hero/70.jpeg
+  kitobkhona/assets/hero/71.jpeg
+  kitobkhona/assets/hero/72.jpeg
+  kitobkhona/assets/hero/73.jpeg
+  kitobkhona/assets/hero/74.jpeg
+  kitobkhona/assets/hero/75.jpeg
+  kitobkhona/assets/hero/76.jpeg
+  kitobkhona/assets/hero/77.jpeg
+  kitobkhona/assets/hero/78.jpeg
+  kitobkhona/assets/hero/79.jpeg
+  kitobkhona/assets/hero/80.jpeg
+  kitobkhona/assets/hero/81.jpeg
+  kitobkhona/assets/hero/82.jpeg
+  kitobkhona/assets/hero/83.jpeg
+  kitobkhona/assets/hero/84.jpeg
+  kitobkhona/assets/hero/85.jpeg
+  kitobkhona/assets/hero/86.jpeg
+  kitobkhona/assets/hero/87.jpeg
+  kitobkhona/assets/hero/88.jpeg
+  kitobkhona/assets/hero/89.jpeg
+  kitobkhona/assets/hero/90.jpeg
+  kitobkhona/assets/hero/91.jpeg
+  kitobkhona/assets/hero/92.jpeg
+  kitobkhona/assets/hero/93.jpeg
+  kitobkhona/assets/hero/94.jpeg
+  kitobkhona/assets/hero/95.jpeg
+  kitobkhona/assets/hero/96.jpeg
+  kitobkhona/assets/hero/97.jpeg
+  kitobkhona/assets/hero/98.jpeg
+  kitobkhona/assets/hero/99.jpeg
+  kitobkhona/data/contests.json
+  kitobkhona/data/tavsiya.json
+  kitobkhona/tavsiya/matn/bremenskie_muzykanty.json
+  kitobkhona/tavsiya/matn/kot_i_lisa.json
+  kitobkhona/tavsiya/matn/kot_v_sapogah.json
+  kitobkhona/tavsiya/matn/skazka_o_tsare_saltane.json
+  kitobkhona/tavsiya/matn/teremok.json
+
+Удалённых файлов нет.
+
+PDF тавсия (kitobkhona/tavsiya/pdf/*.pdf, 30 файлов) — в отдельном архиве kitobkhona_tavsiya_pdf.zip (не менялись).

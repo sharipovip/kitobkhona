@@ -5,10 +5,10 @@
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#0D1B2A">
   <meta name="description" content="Рӯйхати адабиёти тавсияшуда барои хонандагони синфҳои 1–11 — кадом китобҳо дар Китобхона ҳастанд ва онҳоро дар куҷо ёфтан мумкин аст">
-  <title>Адабиёти тавсияшуда · синфҳои 1–11 · Китобхона</title>
+  <title>Китобҳои тавсияшуда барои хонандагон · синфҳои 1–11 · Китобхона</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="manifest" href="./manifest.json">
-  <script src="./config.js?v=73"></script>
+  <script src="./config.js?v=74"></script>
   <style>
     :root{color-scheme:dark;--bg:#0D1B2A;--panel:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--line:rgba(201,168,76,.22);
       --ok:#3DBE7A;--ok-bg:rgba(61,190,122,.14);--part:#5AA9FF;--part-bg:rgba(90,169,255,.14);--rel:#F0B35B;--rel-bg:rgba(240,179,91,.14);--txt:#C58BFF;--txt-bg:rgba(197,139,255,.15);--no:#8E9BB0;--no-bg:rgba(142,155,176,.14);
@@ -119,7 +119,7 @@
   <main>
     <section class="hero" id="hero">
       <div class="hero-label">РӮЙХАТИ АДАБИЁТИ ТАВСИЯШУДА</div>
-      <h1>Китобҳо барои хониши берун аз синф, синфҳои 1–11</h1>
+      <h1>Китобҳои тавсияшуда барои хонандагони муассисаҳои ҶТ</h1>
       <p>Синфро интихоб кунед. Агар китоб дар Китобхона бошад — якбора мехонед; агар набошад — мегӯем, ки онро дар куҷо ёфтан мумкин аст.</p>
       <div class="hero-stats">
         <div class="stat"><b id="stTotal">—</b><span>асар дар рӯйхат</span></div>
@@ -269,7 +269,7 @@
     } else {
       html+=linkBox(m,TYPE_LABEL[m.type]);
       if(m.note&&m.type!=='exact'&&false) html+='';
-      html+=`<button class="btn btn-gold" id="mainOpen" type="button">${m.type==='text'?'📜 Хондани матн':'📖 Кушодан дар хонанда'}</button>`;
+      html+=`<button class="btn btn-gold" id="mainOpen" type="button">${m.type==='text'?'📜 Хондани матн':'📖 Хондан'}</button>`;
     }
     const more=(it.more||[]).filter(x=>x.type!=='none'||x.hint);
     if(more.length){
