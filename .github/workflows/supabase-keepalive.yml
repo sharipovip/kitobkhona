@@ -1,7 +1,7 @@
 name: Supabase keep-alive (ҳар 5 рӯз)
 
 # v127: лоиҳаҳои ройгони Supabase пас аз ~7 рӯзи бефаъолиятӣ таваққуф мешаванд (аватарҳо кушода намешаванд).
-# Ин вазифа ҳар 5 рӯз дархостҳои GET ба Supabase мефиристад (REST + Storage + Auth).
+# Ин вазифа ҳар 5 рӯз дархостҳои GET ба Supabase мефиристад (REST-ҷадвал + Auth + Storage).
 # АСОСӢ: Cron Trigger дар kitobkhona-edge (wrangler.jsonc → "0 6 */5 * *", бо калиди service_role — дархости боэътимод).
 # Ин workflow — нусхаи ЭҲТИЁТӢ. Барои дархости аутентификатсияшуда дар Settings → Secrets → Actions илова кунед:
 #   SUPABASE_KEEPALIVE_KEY = калиди anon (Supabase Dashboard → Project Settings → API → anon public).
@@ -40,7 +40,8 @@ jobs:
             AUTH=(-H "apikey: ${SUPABASE_KEY}" -H "Authorization: Bearer ${SUPABASE_KEY}")
           fi
           fail=0
-          for path in "/rest/v1/" "/storage/v1/bucket" "/auth/v1/health"; do
+          # v129: /rest/v1/profiles — дархости ҳақиқӣ ба ҷадвал (OpenAPI root бо калиди anon 401 медиҳад ва базаро бедор намекунад)
+          for path in "/rest/v1/profiles?select=id&limit=1" "/auth/v1/settings" "/storage/v1/bucket"; do
             code=$(curl -sS -o /tmp/body.txt -w '%{http_code}' --retry 3 --retry-delay 10 --max-time 30 "${AUTH[@]}" "${SUPABASE_URL}${path}" || echo 000)
             echo "GET ${path} → ${code}"
             case "$code" in

@@ -1131,7 +1131,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .announce-top.show{ transform:translateY(0) !important; opacity:1 !important; }
 
 </style>
-<script src="config.js?v=74"></script>
+<script src="config.js?v=75"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -1470,7 +1470,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #E8C96D;
   font-weight: 600;
 }
-.offline-library-v3{margin:0 0 12px;padding:0 12px}
+.offline-library-v3{margin:-2px 0 12px;padding:0 12px}
 .offline-library-card{display:flex;align-items:center;gap:11px;width:100%;min-height:76px;padding:12px 13px;border:1px solid rgba(201,168,76,.32);border-radius:16px;background:linear-gradient(135deg,rgba(25,47,72,.97),rgba(18,33,51,.97));color:var(--text);text-decoration:none;box-shadow:0 8px 22px rgba(0,0,0,.2);transition:transform .18s,border-color .18s}
 .offline-library-card:active{transform:scale(.985);border-color:var(--gold2)}
 .offline-library-icon{flex:0 0 42px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(201,168,76,.14);font-size:22px}
@@ -1922,9 +1922,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
 </head>
 <body>
-<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
+<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH (v129: было 5–9 с, стало 1.5–4 с — приложение открывается заметно быстрее): MIN=1500 → минимум 1.5 секунды, MAX=4000 → максимум 4 секунды.
    Цифры в миллисекундах: 6000 = 6 сек, 3000 = 3 сек. MIN — сколько ждать, даже если
-   программа уже загрузилась; MAX — страховка, дольше не держит */const MIN=5000,MAX=9000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
+   программа уже загрузилась; MAX — страховка, дольше не держит */const MIN=1500,MAX=4000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
 <div class="phone-wrapper">
   <!-- Объявление админа — ставится в верхушку над логотипом с красивой анимацией появления/исчезновения по очереди -->
   <div id="announcementBannerTop" class="announce-top">
@@ -2054,11 +2054,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </div>
     </section>
     <section class="offline-library-v3" id="offlineBooksHomeSection">
-      <div class="sec-head-v3">
-        <div class="sec-title-v3">📥 Китобҳои захирашуда</div>
-        <a class="sec-link-v3" href="offline-books.html">Идора кардан <span>›</span></a>
-      </div>
-      <a class="offline-library-card" href="offline-books.html" aria-label="Кушодани китобҳои захирашуда">
+      <!-- v129: сарлавҳаи «Китобҳои захирашуда · Идора кардан» хориҷ шуд — худи корт ҳамаро мегӯяд -->
+      <a class="offline-library-card" href="offline-books.html" aria-label="Китобҳои захирашуда — кушодан ва идора кардан">
         <span class="offline-library-icon">📚</span>
         <span class="offline-library-copy"><b id="offlineHomeCount">Ҳисоб...</b><span id="offlineHomeSize">Ҳаҷм санҷида мешавад</span><small id="offlineHomeStatus">Кушоед, мубодила кунед, категория интихоб кунед ё кэшро идора намоед.</small></span>
         <span class="offline-library-arrow">›</span>
@@ -2639,7 +2636,7 @@ function updateLiveClockAndDate() {
   if (dateEl) dateEl.textContent = dd + '.' + mm + '.' + yyyy;
   if (timeEl) timeEl.textContent = hh + ':' + min;
 }
-setInterval(updateLiveClockAndDate, 1000);
+setInterval(()=>{if(!document.hidden)updateLiveClockAndDate()}, 1000); // v129: дар замина кор намекунад
 updateLiveClockAndDate();
 
 async function fetchLiveCityWeather(cityName) {

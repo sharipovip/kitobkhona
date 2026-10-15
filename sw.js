@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v128-saved-books';
+const CACHE_NAME = 'kitobkhona-v129-fast-nav';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -113,6 +113,8 @@ const LOCAL_FILES = [
 // онҳо ҳангоми аввалин дархост аз тарафи fetch-обработчик кэш мешаванд.
 // Ин насби навсозии аппро барои босуръат месозад (пешина "боркунии абадӣ" буд).;
 
+const NAV_FRESH_MS = 600;   // v129: то чанд мс шабакаро барои саҳифаи «тоза» интизор мешавем, агар нусхаи кэшшуда бошад
+const API_FRESH_MS = 1800;  // v129: ҳамин барои JSON/API-и ҷамъиятӣ (пештар 2500)
 const BOOKS_JSON_URL = 'books.json';
 const SYNC_INTERVAL = 60 * 60 * 1000; // 1 час
 
@@ -227,8 +229,8 @@ async function runtimeStaleWhileRevalidate(request, kind) {
   }).catch(() => null);
   if (cached) {
     if (kind === 'img') return cached;                 // суратҳо: кэш-аввал
-    // JSON/API: агар шабака то 2.5 сония ҷавоб диҳад — маълумоти нав, вагарна кэш (шабака дар замина навсозӣ мекунад)
-    const fast = await Promise.race([network, new Promise(r => setTimeout(() => r(null), 2500))]);
+    // JSON/API: агар шабака то API_FRESH_MS ҷавоб диҳад — маълумоти нав, вагарна кэш (шабака дар замина навсозӣ мекунад)
+    const fast = await Promise.race([network, new Promise(r => setTimeout(() => r(null), API_FRESH_MS))]);
     return fast || cached;
   }
   const net = await network;
@@ -243,23 +245,27 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (event.request.mode === 'navigate') {
-    // Аввал шабака: баъди нашр корбар фавран саҳифаи навро мебинад. v126: агар шабака то 3.5 сония ҷавоб
-    // надиҳад (интернети суст/«lie-fi»), саҳифаи кэшшуда дода мешавад; шабака дар замина кэшро нав мекунад.
+    // v129: гузариши фаврӣ байни саҳифаҳо. Агар шабака то NAV_FRESH_MS (600 мс) ҷавоб диҳад — саҳифаи нав аз
+    // шабака (баъди нашр корбар бо интернети хуб фавран версияи навро мебинад); вагарна — нусхаи кэшшуда ФАВРАН,
+    // шабака дар замина кэшро нав мекунад (дафъаи оянда — нав). Пештар ҳар гузариш то 3.5 с интизор мешуд.
+    // Агар кэш набошад — шабака пурра интизор мешавад; офлайн ва бе кэш — offline.html.
+    const network = fetch(event.request).then(response => {
+      if (response && response.status === 200) {
+        safeCachePut(event.request, response);
+      }
+      return response;
+    }).catch(() => null);
+    event.waitUntil(network.then(() => undefined)); // SW то анҷоми навсозии кэш дар замина зинда мемонад
     event.respondWith((async () => {
-      const network = fetch(event.request).then(response => {
-        if (response && response.status === 200) {
-          safeCachePut(event.request, response);
-        }
-        return response;
-      }).catch(() => null);
-      const cachedPromise = caches.match(event.request, { ignoreSearch: true });
-      const timer = new Promise(resolve => setTimeout(() => resolve('timeout'), 3500));
+      const cached = await caches.match(event.request, { ignoreSearch: true });
+      if (!cached) {
+        const net = await network;
+        return net || await caches.match('./offline.html');
+      }
+      const timer = new Promise(resolve => setTimeout(() => resolve('timeout'), NAV_FRESH_MS));
       const first = await Promise.race([network, timer]);
-      if (first && first !== 'timeout') return first;
-      const cached = await cachedPromise;
-      if (cached) return cached;
-      const net = await network;
-      return net || await caches.match('./offline.html');
+      if (first && first !== 'timeout' && first.status === 200) return first;
+      return cached;
     })());
     return;
   }
@@ -276,7 +282,10 @@ self.addEventListener('fetch', (event) => {
         }
         return null;
       }).catch(() => null);
-      return await network || cached || Response.error();
+      if (!cached) return await network || Response.error();
+      // v129: агар шабака то 3 с ҷавоб надиҳад — ахбори кэшшуда (шабака дар замина кэшро нав мекунад)
+      const fast = await Promise.race([network, new Promise(r => setTimeout(() => r(null), 3000))]);
+      return fast || cached;
     })());
     return;
   }

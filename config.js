@@ -44,7 +44,7 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '3.1.2';
+const APP_VERSION = '3.1.3';
 
 const KKH_THEMES = {
   dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
@@ -2903,4 +2903,60 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
       if(cancelled)throw new DOMException('Амалиёт бекор шуд','AbortError');throw new Error('Сервер пас аз 3 дақиқа ҷавоб надод');
     }finally{activeController=null;clearTimeout(cancelTimer);cancelEl?.remove();restore()}
   };
+})();
+
+// =========================================================================
+// v129 — СУРЪАТ ВА ҲАМВОРӢ ДАР ҲАМАИ САҲИФАҲО (як ҷо, барои ҳама саҳифаҳо, зеро config.js дар <head> бор мешавад)
+//  1) preconnect ба серверҳои API ва GitHub — аввалин дархост 100–300 мс тезтар мешавад;
+//  2) гузариши ҳамвори байни саҳифаҳо (cross-document View Transitions, Chrome/WebView 126+; дар дигар браузерҳо
+//     бе таъсир) + touch-action:manipulation (бе таъхири дучанд-пахш) + бе tap-highlight;
+//  3) «реҷаи сабук» барои дастгоҳҳои суст (≤2 ГБ RAM, ≤2 ядро ё Data Saver): бе blur-ҳои вазнин ва бе аниматсияи гузариш;
+//  4) огоҳӣ дар бораи версияи нав: sw.js пас аз навсозӣ идоракуниро мегирад (controllerchange) → тугмаи «Навсозӣ».
+// =========================================================================
+(function kkSpeedAndSmoothness(){
+  try{
+    if(typeof document==='undefined'||!document.head)return;
+    const head=document.head,cfg=(typeof KITOB_CONFIG!=='undefined'&&KITOB_CONFIG)||{};
+    // 1) preconnect
+    const origins=[cfg.EDGE_API_BASE,cfg.NEON_API_BASE,'https://raw.githubusercontent.com'];
+    origins.forEach(o=>{try{if(!o)return;const u=new URL(o).origin;if(head.querySelector('link[rel="preconnect"][href="'+u+'"]'))return;const l=document.createElement('link');l.rel='preconnect';l.href=u;l.crossOrigin='anonymous';head.appendChild(l)}catch(e){}});
+    // 3) lite mode detection
+    const nav=navigator,conn=nav.connection||{};
+    const lite=(Number(nav.deviceMemory)>0&&Number(nav.deviceMemory)<=2)||(Number(nav.hardwareConcurrency)>0&&Number(nav.hardwareConcurrency)<=2)||conn.saveData===true||/(^|\D)(2g|slow-2g)$/.test(String(conn.effectiveType||''));
+    if(lite)document.documentElement.classList.add('kk-lite');
+    // 2) global style
+    if(!document.getElementById('kk-speed-style')){
+      const st=document.createElement('style');st.id='kk-speed-style';
+      st.textContent='@view-transition{navigation:auto}'+
+        '::view-transition-old(root),::view-transition-new(root){animation-duration:.18s;animation-timing-function:ease-out}'+
+        '@media (prefers-reduced-motion:reduce){::view-transition-group(*),::view-transition-old(*),::view-transition-new(*){animation:none!important}}'+
+        'html.kk-lite::view-transition-group(*),html.kk-lite::view-transition-old(*),html.kk-lite::view-transition-new(*){animation:none!important}'+
+        'html.kk-lite *,html.kk-lite *::before,html.kk-lite *::after{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}'+
+        'a,button,[role="button"],input,select,textarea,summary,label,.btn{touch-action:manipulation}'+
+        'html{-webkit-tap-highlight-color:transparent;-webkit-text-size-adjust:100%}'+
+        '.kk-update-toast{position:fixed;left:50%;bottom:calc(84px + env(safe-area-inset-bottom,0px));transform:translateX(-50%) translateY(20px);opacity:0;z-index:2147483000;display:flex;align-items:center;gap:10px;max-width:min(92vw,420px);padding:10px 12px 10px 14px;border-radius:14px;background:#142236;color:#F0EAD6;border:1px solid rgba(201,168,76,.35);box-shadow:0 12px 36px rgba(0,0,0,.45);font:600 12.5px/1.35 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;transition:opacity .25s ease,transform .25s ease}'+
+        '.kk-update-toast.show{opacity:1;transform:translateX(-50%) translateY(0)}'+
+        '.kk-update-toast button{flex:none;min-height:34px;padding:0 12px;border:0;border-radius:10px;background:linear-gradient(135deg,#E8C96D,#C9A84C);color:#1A1200;font:800 12px system-ui,sans-serif;cursor:pointer}'+
+        '.kk-update-toast .kk-update-later{background:transparent;color:#A8B8CC;padding:0 6px;font-weight:700}';
+      head.appendChild(st);
+    }
+    // 4) SW update toast
+    if('serviceWorker' in nav){
+      let hadController=!!nav.serviceWorker.controller,shown=false;
+      nav.serviceWorker.addEventListener('controllerchange',()=>{
+        if(!hadController){hadController=true;return} // аввалин насб — на навсозӣ
+        if(shown)return;shown=true;
+        const show=()=>{try{
+          if(!document.body)return;
+          const t=document.createElement('div');t.className='kk-update-toast';t.setAttribute('role','status');
+          t.innerHTML='<span>Версияи нави Китобхона омода аст</span><button type="button" class="kk-update-now">Навсозӣ</button><button type="button" class="kk-update-later" aria-label="Баъдтар">✕</button>';
+          t.querySelector('.kk-update-now').onclick=()=>{try{sessionStorage.setItem('kk_splash_seen','1')}catch(e){}location.reload()};
+          t.querySelector('.kk-update-later').onclick=()=>t.remove();
+          document.body.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));
+          setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},25000);
+        }catch(e){}};
+        if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show();
+      });
+    }
+  }catch(e){}
 })();
