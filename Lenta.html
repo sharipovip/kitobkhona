@@ -136,32 +136,114 @@ html, body {
   filter: blur(8px) brightness(0.35);
   transform: scale(1.08);
 }
-/* v130: Ковер книги в правом верхнем углу, чтобы текст его не перекрывал */
-.slide-cover-topright,
-.slide-cover-center {
+/* ===== v130: OPEN BOOK SPREAD (ТАРҲИ КИТОБИ КУШОДА) ===== */
+.open-book-spread {
   position: absolute;
-  top: 68px;
-  right: 16px;
-  width: 84px;
-  height: 122px;
-  border-radius: 10px;
+  top: 66px;
+  bottom: 124px;
+  left: 12px;
+  right: 68px; /* озод мондани тугмаҳои лайк, шарҳ ва рейтинг дар тарафи рост */
+  display: flex;
+  flex-direction: row;
+  border-radius: 16px;
   overflow: hidden;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 0 1.5px rgba(220, 181, 94, 0.45);
-  z-index: 15;
+  background: #101F33;
+  box-shadow: 0 22px 65px rgba(0, 0, 0, 0.88), 0 0 0 1.5px rgba(220, 181, 94, 0.35);
+  z-index: 10;
+}
+
+/* Саҳифаи чапи китоб: матни корбар */
+.book-page-left {
+  flex: 1.15;
+  min-width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #132438 0%, #172A42 85%, #0F1C2C 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  position: relative;
+  padding: 16px 14px;
+  overflow: hidden;
+}
+.page-corner-ornament {
+  position: absolute;
+  top: 8px;
+  left: 10px;
+  font-size: 15px;
+  color: rgba(220, 181, 94, 0.4);
+  pointer-events: none;
+  user-select: none;
+}
+.book-page-left .slide-text-overlay {
+  max-height: 100%;
+  overflow-y: auto;
+  scrollbar-width: none;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  padding: 0 !important;
+  line-height: 1.6;
+  word-break: break-word;
+  text-shadow: 0 1px 4px rgba(0,0,0,0.85);
+}
+.book-page-left .slide-text-overlay::-webkit-scrollbar { display: none; }
+
+/* Кӯзаки китоб ва сояи мобайнӣ */
+.book-spine-divider {
+  width: 9px;
+  flex: 0 0 9px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.65) 0%, rgba(220,181,94,0.3) 50%, rgba(0,0,0,0.65) 100%);
+  box-shadow: inset 0 0 6px rgba(0,0,0,0.95);
+  position: relative;
+  z-index: 2;
+}
+
+/* Саҳифаи рости китоб: муқоваи китоб */
+.book-page-right {
+  flex: 0.95;
+  min-width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #0F1C2C 0%, #172A42 15%, #132438 100%);
+  position: relative;
+  overflow: hidden;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease;
-  background: var(--card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease;
 }
-.slide-cover-topright:active,
-.slide-cover-center:active {
-  transform: scale(0.95);
+.book-page-right:active {
+  transform: scale(0.98);
 }
-.slide-cover-topright img,
-.slide-cover-center img {
+.book-page-right img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+}
+.no-cover-book-page {
+  text-align: center;
+  font-size: 32px;
+  padding: 16px 10px;
+  color: var(--text);
+}
+.page-read-badge {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background: rgba(11, 23, 38, 0.88);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(220, 181, 94, 0.4);
+  color: var(--gold2);
+  font-size: 10px;
+  font-weight: 800;
+  padding: 4px 8px;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+  pointer-events: none;
 }
 
 
@@ -1752,10 +1834,22 @@ function buildSlide(post, idx) {
       ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
     </div>
     
-    ${finalCoverUrl ? `
-    <div class="slide-cover-topright" onclick="location.href='reader.html?name=${encodeURIComponent(bookTitle)}'" title="${escHtml(bookTitle)}">
-      <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
-    </div>` : ''}
+    <!-- v130: Тарҳи китоби кушода (Open Book) — саҳифаи чап: матни корбар, саҳифаи рост: муқоваи китоб -->
+    <div class="open-book-spread">
+      <div class="book-page-left">
+        <div class="page-corner-ornament">❧</div>
+        <div class="slide-text-overlay"
+          style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#F6EEDB'}">
+        </div>
+      </div>
+
+      <div class="book-spine-divider"></div>
+
+      <div class="book-page-right" onclick="location.href='reader.html?name=${encodeURIComponent(bookTitle)}'" title="${escHtml(bookTitle)} · Хондани китоб">
+        ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">` : `<div class="no-cover-book-page">📖<div style="font-size:12px;margin-top:8px;font-weight:750;color:var(--gold);">${escHtml(bookTitle)}</div></div>`}
+        <div class="page-read-badge">Хондан ›</div>
+      </div>
+    </div>
 
     <div class="slide-bottom-grad"></div>
 
@@ -1774,13 +1868,6 @@ function buildSlide(post, idx) {
       <div class="sidebar-btn" data-action="rating" data-post="${post.id}" data-book="${post.book_id || ''}">
         <div class="sidebar-icon">⭐</div>
         <span class="sidebar-count" id="ratingCnt_${post.id}">${avgRating || '—'}</span>
-      </div>
-    </div>
-
-    
-    <div class="slide-text-layer">
-      <div class="slide-text-overlay"
-        style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}">
       </div>
     </div>
 

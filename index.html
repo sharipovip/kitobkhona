@@ -1212,10 +1212,30 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
   background:#111E33!important;
   border:2px solid #E8C96D!important;
   box-shadow:0 4px 14px rgba(0,0,0,0.4),0 0 0 2px rgba(201,168,76,0.12)!important;
-  overflow:hidden!important;
+  overflow:visible!important; /* v130: visible, то ки рақамҳои рӯзҳо (.oz-badge) пӯшонида нашаванд */
   position:relative!important;
   display:grid!important;
   place-items:center!important;
+}
+.oz-badge{
+  position:absolute!important;
+  top:-4px!important;
+  right:-4px!important;
+  min-width:22px!important;
+  height:22px!important;
+  padding:0 5px!important;
+  border-radius:99px!important;
+  background:#22C55E!important;
+  color:#06240F!important;
+  font-size:11px!important;
+  font-weight:900!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border:2px solid #0D1B2A!important;
+  box-shadow:0 2px 8px rgba(0,0,0,0.5)!important;
+  z-index:10!important;
+  line-height:1!important;
 }
 .ozmun-circle-v3 img{
   width:100%!important;
