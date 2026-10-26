@@ -751,11 +751,12 @@ body.light-reading .book-scroll{color:#1A1F29}
 body.light-reading .page-slot canvas{filter:none!important}
 
 /* ===== v131: СТАБИЛЬНЫЙ МАСШТАБ — холст всегда точного размера, без max-width/object-fit-искажений ===== */
-.page-slot canvas{max-width:none!important;max-height:none!important;width:auto;height:auto;flex:none!important;object-fit:fill!important;margin:auto}
+.page-slot canvas{max-width:none!important;max-height:none!important;width:auto;height:auto;flex:none!important;object-fit:fill!important;margin:0}
 .page-container{perspective:1600px!important}
-.page-container.zoomed .page-slot.current{overflow:auto!important;justify-content:flex-start!important;align-items:flex-start!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
-.page-container.zoomed .page-slot.current::-webkit-scrollbar{display:none}
-.page-stage.is-zoomed{touch-action:pan-x pan-y!important}
+.page-stage.is-zoomed{touch-action:none!important}
+/* v132: подпись «Баҳо диҳед» всегда видна целиком (раньше скрывалась/обрезалась на узких экранах) */
+.top-rating .rating-label{display:inline-block!important;flex:0 0 auto!important;white-space:nowrap!important}
+.top-rating .star{flex:0 0 auto!important}
 
 /* ===== v131: ПЕРЕЛИСТЫВАНИЕ КАК В НАСТОЯЩЕЙ КНИГЕ ===== */
 .page-slot.flip-flap{z-index:6!important;box-shadow:none!important;pointer-events:none;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform,filter,opacity}
@@ -1263,13 +1264,20 @@ body.light-reading .page-slot canvas{filter:none!important}
     el.style.transition = 'none'; el.style.transform = ''; el.style.transformOrigin = ''; el.style.opacity = ''; el.style.filter = '';
     void el.offsetWidth; el.style.transition = '';
   }
-  // «Живой» масштаб: пока холст не перерисован, показываем разницу zoom/renderedZoom через CSS scale.
-  function applyLiveTransform(smooth) {
-    const c = $('pageContainer'); if (!c) return;
-    const k = zoom / renderedZoom;
-    c.style.transformOrigin = 'center center';
-    c.style.transition = smooth ? 'transform .14s ease-out' : 'none';
-    c.style.transform = Math.abs(k - 1) < 0.001 ? '' : 'scale(' + k + ')';
+  // v132: вид страницы = масштаб (zoom/renderedZoom) + сдвиг panX/panY от центра. Нативного скролла нет:
+  // увеличенная страница стоит неподвижно, двигается и масштабируется только двумя пальцами (как в галерее).
+  let panX = 0, panY = 0;
+  function cvEl() { return $('currentSlot').querySelector('canvas'); }
+  function applyViewTo(cv, smooth) {
+    if (!cv) return;
+    const k = zoom / renderedZoom, box = pageBox();
+    const w = parseFloat(cv.style.width) * k, h = parseFloat(cv.style.height) * k;
+    const mx = Math.max(0, (w - box.w) / 2), my = Math.max(0, (h - box.h) / 2);
+    panX = Math.max(-mx, Math.min(mx, panX));
+    panY = Math.max(-my, Math.min(my, panY));
+    cv.style.transformOrigin = '50% 50%';
+    cv.style.transition = smooth ? 'transform .14s ease-out' : 'none';
+    cv.style.transform = (Math.abs(k - 1) < 0.001 && !panX && !panY) ? '' : 'translate3d(' + panX + 'px,' + panY + 'px,0) scale(' + k + ')';
   }
 
   function flipTo(newCv, oldCv, dir) {
@@ -1335,27 +1343,18 @@ body.light-reading .page-slot canvas{filter:none!important}
       ctx.fillRect(0, 0, cv.width, cv.height);
       await p.render({ canvasContext: ctx, viewport: vp }).promise;
 
-      const currentSlot = $('currentSlot'), container = $('pageContainer'), stage = $('stage');
+      const currentSlot = $('currentSlot'), stage = $('stage');
       const oldCanvas = currentSlot.querySelector('canvas');
-      let fx = .5, fy = .5;
-      if (direction === 0 && oldCanvas && currentSlot.scrollWidth > 0 && currentSlot.scrollHeight > 0) {
-        fx = (currentSlot.scrollLeft + currentSlot.clientWidth / 2) / currentSlot.scrollWidth;
-        fy = (currentSlot.scrollTop + currentSlot.clientHeight / 2) / currentSlot.scrollHeight;
-      }
-      const animate = direction !== 0 && oldCanvas && z <= 1.001 && !reducedMotion();
+      const animate = direction !== 0 && oldCanvas && !reducedMotion();
       resetSlotInstant(currentSlot);
-      if (animate) flipTo(cv, oldCanvas, direction); else currentSlot.replaceChildren(cv);
-
-      // подмена холста и снятие «живого» масштаба — в одном кадре, без скачка
       renderedZoom = z; renderedBoxW = box.w; renderedBoxH = box.h;
-      const zoomed = z > 1.001;
-      container.classList.toggle('zoomed', zoomed);
-      stage.classList.toggle('is-zoomed', zoomed);
-      applyLiveTransform(false);
-      if (zoomed) {
-        currentSlot.scrollLeft = fx * currentSlot.scrollWidth - currentSlot.clientWidth / 2;
-        currentSlot.scrollTop = direction === 0 ? fy * currentSlot.scrollHeight - currentSlot.clientHeight / 2 : 0;
-      } else { currentSlot.scrollLeft = 0; currentSlot.scrollTop = 0; }
+      if (direction !== 0) {   // новая страница: тот же масштаб и то же положение по горизонтали, по вертикали — с верха
+        const k = zoom / z;
+        panY = Math.max(0, (nat.height * fit * k - box.h) / 2);
+      }
+      applyViewTo(cv, false);  // сдвиг/масштаб ставится на холст ДО показа — без скачка
+      stage.classList.toggle('is-zoomed', zoom > 1.001);
+      if (animate) flipTo(cv, oldCanvas, direction); else currentSlot.replaceChildren(cv);
 
       page = n;
       const pct=pages?Math.round(page/pages*100):0;
@@ -1395,8 +1394,8 @@ body.light-reading .page-slot canvas{filter:none!important}
     window.__kkToggleBars();
   });
 
-      let sx = 0, sy = 0, drag = false, startTime = 0, dragged = false, edgeL = true, edgeR = true;
-  let isPinching = false, pinchStartDist = 0, pinchStartZoom = 1;
+      let sx = 0, sy = 0, drag = false, startTime = 0, dragged = false;
+  let isPinching = false, pinchStartDist = 0, pinchStartZoom = 1, pinchR = 1, pinchMid0 = { x: 0, y: 0 }, pinchPan0 = { x: 0, y: 0 };
   const stageEl = $('stage');
 
   function getTouchDist(e) {
@@ -1405,6 +1404,13 @@ body.light-reading .page-slot canvas{filter:none!important}
       e.touches[0].clientX - e.touches[1].clientX,
       e.touches[0].clientY - e.touches[1].clientY
     );
+  }
+  function getMid(e) {   // середина двух пальцев относительно центра области страницы
+    const r = $('pageContainer').getBoundingClientRect();
+    return {
+      x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - (r.left + r.width / 2),
+      y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - (r.top + r.height / 2)
+    };
   }
   function restoreSlot(el) {
     dragAngle = 0;
@@ -1421,6 +1427,7 @@ body.light-reading .page-slot canvas{filter:none!important}
       pinchStartDist = getTouchDist(e);
       // v99: для скролл-книг (FB2/TXT/DOCX) пинч меняет РАЗМЕР ШРИФТА, как в PDF
       pinchStartZoom = window.__kkTextMode === 'scroll' ? (window.__kkScrollZoomPct || 100) / 100 : zoom;
+      pinchR = renderedZoom; pinchMid0 = getMid(e); pinchPan0 = { x: panX, y: panY };
       return;
     }
     if (e.touches.length !== 1 || isPinching) return;
@@ -1428,9 +1435,6 @@ body.light-reading .page-slot canvas{filter:none!important}
     sy = e.touches[0].clientY;
     startTime = Date.now();
     drag = true; dragged = false;
-    const cs = $('currentSlot');   // у края увеличенной страницы свайп листает, иначе — панорамирование
-    edgeL = cs.scrollLeft <= 1;
-    edgeR = cs.scrollLeft + cs.clientWidth >= cs.scrollWidth - 1;
   }, { passive: true });
 
   stageEl.addEventListener('touchmove', e => {
@@ -1444,12 +1448,21 @@ body.light-reading .page-slot canvas{filter:none!important}
           return;
         }
         if (window.__kkTextMode) return;
-        setLiveZoom(pinchStartZoom * factor, false);   // только дешёвый CSS-масштаб; чёткая перерисовка — после отпускания пальцев
+        // два пальца: масштаб вокруг точки между пальцами + сдвиг страницы вслед за пальцами
+        const z1 = clampZoom(pinchStartZoom * factor);
+        const m = getMid(e);
+        const k0 = pinchStartZoom / pinchR, k1 = z1 / pinchR;
+        panX = m.x - k1 * ((pinchMid0.x - pinchPan0.x) / k0);
+        panY = m.y - k1 * ((pinchMid0.y - pinchPan0.y) / k0);
+        zoom = z1;
+        applyViewTo(cvEl(), false);
+        syncZoomUI();
+        $('stage').classList.toggle('is-zoomed', zoom > 1.001);
       }
       return;
     }
     if (!drag || e.touches.length !== 1 || isPinching) return;
-    if (window.__kkTextMode || zoom > 1.001) return;   // увеличенная страница — нативное панорамирование
+    if (window.__kkTextMode) return;
     const dx = e.touches[0].clientX - sx;
     const dy = e.touches[0].clientY - sy;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
@@ -1470,7 +1483,7 @@ body.light-reading .page-slot canvas{filter:none!important}
         pinchStartDist = 0;
         if (!window.__kkTextMode && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
           clearTimeout(zoomCommitTimer);
-          renderPage(page, 0);   // холст и CSS-масштаб меняются одновременно — без скачка
+          renderPage(page, 0);   // чёткая перерисовка; сдвиг и масштаб подменяются в одном кадре — без скачка
         }
       }
       return;
@@ -1481,13 +1494,11 @@ body.light-reading .page-slot canvas{filter:none!important}
     const dx = t.clientX - sx, dy = t.clientY - sy;
     const dt = Date.now() - startTime;
     const currentSlot = $('currentSlot');
-    const zoomedPdf = !window.__kkTextMode && zoom > 1.001;
+    // один палец — только листание (страница при этом остаётся на месте, даже при увеличении)
     const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
-    const edgeOK = !zoomedPdf || (dx < 0 ? edgeR : edgeL);
-    if (wantTurn && edgeOK) {
+    if (wantTurn) {
       turnPage(dx < 0 ? 1 : -1);
-      // если перелистывание не началось (край книги) — вернуть страницу на место
-      if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);
+      if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);   // край книги — вернуть на место
       return;
     }
     if (dragged) restoreSlot(currentSlot);
@@ -1516,12 +1527,33 @@ body.light-reading .page-slot canvas{filter:none!important}
     const sl = document.querySelector('input[type="range"][oninput*="setZoom"]');
     if (sl) sl.value = pct;
   }
-  function setLiveZoom(z, smooth) { zoom = clampZoom(z); applyLiveTransform(!!smooth); syncZoomUI(); }
+  function setLiveZoom(z, smooth) {   // кнопки A± и ползунок: масштаб вокруг центра
+    const nz = clampZoom(z), k0 = zoom / renderedZoom, k1 = nz / renderedZoom;
+    if (k0 > 0) { panX *= k1 / k0; panY *= k1 / k0; }
+    zoom = nz;
+    applyViewTo(cvEl(), !!smooth); syncZoomUI();
+    $('stage').classList.toggle('is-zoomed', zoom > 1.001);
+  }
   function setZoom(v, smooth) {
     setLiveZoom(Number(v) / 100, smooth);
     clearTimeout(zoomCommitTimer);
     zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
   }
+  // v132: «Баҳо диҳед» + звёзды всегда помещаются целиком — при нехватке места слегка уменьшаются
+  function fitRatingLabel() {
+    const box = document.querySelector('.top-rating'); if (!box) return;
+    box.style.zoom = '';
+    let w = 8;
+    Array.prototype.forEach.call(box.children, c => { w += c.getBoundingClientRect().width; });
+    const avail = box.clientWidth;
+    if (avail > 0 && w > avail) box.style.zoom = Math.max(0.55, avail / w).toFixed(3);
+  }
+  window.addEventListener('resize', fitRatingLabel);
+  window.addEventListener('orientationchange', fitRatingLabel);
+  fitRatingLabel();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitRatingLabel);
+  setTimeout(fitRatingLabel, 400);
+
   // смена размера окна / поворот экрана — перерисовать страницу под новый размер
   if (window.ResizeObserver) {
     let resizeTimer = null;
