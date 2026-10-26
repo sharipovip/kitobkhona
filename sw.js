@@ -51,7 +51,6 @@ const LOCAL_FILES = [
   './ideai_man.html',
   './ideai_man_banner.jpg',
   './serkhonandatarin.html',
-  './ai-chat.html',
   './reader.html',
   './profile.html',
   './login.html',
