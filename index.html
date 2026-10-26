@@ -1992,30 +1992,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
 
-<style>
-/* v130: Round SoroLLM AI button in bottom nav */
-.nav-item.nav-item-ai { position: relative; z-index: 5; text-decoration: none; }
-.nav-ai-bubble {
-  width: 25px; height: 25px; border-radius: 50%;
-  background: linear-gradient(135deg, #FFE4A0 0%, #D8A541 50%, #946513 100%);
-  display: flex; align-items: center; justify-content: center;
-  box-shadow: 0 2px 7px rgba(216, 165, 65, 0.45);
-  border: 1.5px solid rgba(255, 255, 255, 0.45);
-  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
-.nav-ai-bubble span {
-  font-size: 10px; font-weight: 900; color: #1A1206;
-  letter-spacing: -0.3px; line-height: 1;
-}
-.nav-item-ai:active .nav-ai-bubble,
-.nav-item-ai.active .nav-ai-bubble {
-  transform: scale(1.15);
-  box-shadow: 0 4px 14px rgba(216, 165, 65, 0.7);
-}
-.nav-ai-label {
-  color: #DCB55E !important; font-weight: 800 !important; font-size: 8.5px !important;
-}
-</style>
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH (v129: было 5–9 с, стало 1.5–4 с — приложение открывается заметно быстрее): MIN=1500 → минимум 1.5 секунды, MAX=4000 → максимум 4 секунды.
@@ -2198,10 +2174,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </a>
       <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
       <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-            <a class="nav-item nav-item-ai" href="ai-chat.html" aria-label="SoroLLM AI">
-        <div class="nav-ai-bubble"><span>AI</span></div>
-        <span class="nav-ai-label">AITJ</span>
-      </a>
 <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
       <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
       <a class="nav-item" href="profile.html" aria-label="Профил"><div class="profile-wrap"><div class="person-group"><div class="person-small ps1"></div><div class="person-small ps2"></div><div class="person-small ps3"></div></div></div><span>Профил</span></a>
