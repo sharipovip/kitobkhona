@@ -10,7 +10,9 @@
 <script src="cache.js?v=45"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<!-- v129: шрифтҳои Google render-ро банд намекунанд (пештар саҳифа то боршавии CSS-и шрифтҳо сафед мемонд) -->
+<link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap" onload="this.onload=null;this.rel='stylesheet'">
+<noscript><link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Comfortaa:wght@400;700&family=Exo+2:wght@400;700&family=Montserrat:wght@400;700&family=Nunito:wght@400;700&family=Open+Sans:wght@400;700&family=Oswald:wght@400;700&family=PT+Sans:wght@400;700&family=PT+Serif:ital,wght@0,400;0,700;1,400&family=Raleway:wght@400;700&family=Roboto:wght@400;700&family=Russo+One&family=Ubuntu:wght@400;700&family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Noto+Serif:ital,wght@0,400;0,700;1,400&display=swap"></noscript>
 <style>
 
 *, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
@@ -134,19 +136,32 @@ html, body {
   filter: blur(8px) brightness(0.35);
   transform: scale(1.08);
 }
+/* v130: Ковер книги в правом верхнем углу, чтобы текст его не перекрывал */
+.slide-cover-topright,
 .slide-cover-center {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 65%;
-  max-width: 260px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-  border-radius: 8px;
+  top: 68px;
+  right: 16px;
+  width: 84px;
+  height: 122px;
+  border-radius: 10px;
   overflow: hidden;
-  z-index: 2;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 0 1.5px rgba(220, 181, 94, 0.45);
+  z-index: 15;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--card);
 }
+.slide-cover-topright:active,
+.slide-cover-center:active {
+  transform: scale(0.95);
+}
+.slide-cover-topright img,
 .slide-cover-center img {
-  width: 100%; display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 
@@ -165,11 +180,18 @@ html, body {
 }
 .slide-text-layer::-webkit-scrollbar { display: none; }
 .slide-text-overlay {
-  line-height: 1.55;
+  line-height: 1.6;
   word-break: break-word;
-  text-shadow: 0 3px 16px rgba(0,0,0,0.98), 0 1px 4px rgba(0,0,0,1);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.85);
   max-height: 100%;
   overflow-y: auto;
+  background: rgba(11, 20, 34, 0.58);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
@@ -901,151 +923,6 @@ input[type="color"] {
 }
 .confirm-cancel { background: rgba(255,255,255,0.07); border: 1px solid var(--border); color: var(--text); }
 .confirm-ok { background: #BD5650; border: none; color: #fff; }
-
-/* ===== OPEN BOOK SPREAD (КИТОБИ КУШОДА) ===== */
-.open-book-spread {
-  position: absolute;
-  top: 78px;
-  bottom: 125px;
-  left: 10px;
-  right: 64px; /* ҷой барои тугмаҳои лайк, шарҳ, рейтинг */
-  display: flex;
-  flex-direction: row;
-  padding: 7px;
-  border-radius: 12px;
-  background: linear-gradient(145deg, #5a3a1c 0%, #3b2412 55%, #26160a 100%);
-  box-shadow:
-    0 22px 46px rgba(0,0,0,0.85),
-    0 0 0 1.5px rgba(220,181,94,0.55),
-    inset 0 0 0 1px rgba(255,220,150,0.18);
-  z-index: 10;
-}
-/* варақҳои зери китоб (қабатҳо) */
-.open-book-spread::before {
-  content: '';
-  position: absolute;
-  left: 4px; right: 4px; bottom: 3px; height: 6px;
-  background: repeating-linear-gradient(180deg, #d9cdb0 0 1px, #8f866f 1px 2px);
-  border-radius: 0 0 8px 8px;
-  z-index: -1;
-}
-.book-page-left, .book-page-right {
-  position: relative;
-  min-width: 0;
-  height: 100%;
-  overflow: hidden;
-  background:
-    repeating-linear-gradient(0deg, rgba(255,255,255,0.012) 0 2px, transparent 2px 4px),
-    linear-gradient(180deg, #1b3050 0%, #162a45 100%);
-}
-/* Саҳифаи чап: матни корбар */
-.book-page-left {
-  flex: 1.15;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  padding: 22px 18px 24px 16px;
-  border-radius: 8px 0 0 8px;
-  box-shadow:
-    inset -22px 0 24px -14px rgba(0,0,0,0.75),
-    inset 2px 0 0 rgba(255,255,255,0.05),
-    inset 0 -10px 14px -10px rgba(0,0,0,0.5);
-}
-.book-page-left::after {
-  content: '';
-  position: absolute; left: 0; right: 0; bottom: 8px;
-  text-align: center; color: rgba(220,181,94,0.35);
-  font-size: 10px; pointer-events: none;
-}
-.page-corner-ornament {
-  position: absolute;
-  top: 7px; left: 10px;
-  font-size: 15px;
-  color: rgba(220,181,94,0.45);
-  pointer-events: none;
-  user-select: none;
-}
-.book-page-left .slide-text-overlay {
-  max-height: 100%;
-  overflow-y: auto;
-  scrollbar-width: none;
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-  backdrop-filter: none !important;
-  -webkit-backdrop-filter: none !important;
-  padding: 0 !important;
-  line-height: 1.6;
-  word-break: break-word;
-  text-shadow: 0 1px 3px rgba(0,0,0,0.6);
-}
-.book-page-left .slide-text-overlay::-webkit-scrollbar { display: none; }
-
-/* Миёна (кӯзак) ва лентаи закладка */
-.book-spine-divider {
-  width: 4px;
-  flex: 0 0 4px;
-  background: linear-gradient(90deg, #04080e, #0c1623 50%, #04080e);
-  position: relative;
-  z-index: 2;
-}
-.book-spine-ribbon {
-  position: absolute;
-  top: -3px; left: 50%;
-  transform: translateX(-50%);
-  width: 9px; height: 46px;
-  background: linear-gradient(180deg, #E5C368, #AA771C);
-  box-shadow: 0 3px 6px rgba(0,0,0,0.6);
-  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% 84%, 0 100%);
-  pointer-events: none;
-}
-
-/* Саҳифаи рост: акси муқоваи китоб */
-.book-page-right {
-  flex: 0.95;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 18px 12px 22px 16px;
-  cursor: pointer;
-  border-radius: 0 8px 8px 0;
-  box-shadow:
-    inset 22px 0 24px -14px rgba(0,0,0,0.75),
-    inset -2px 0 0 rgba(255,255,255,0.05),
-    inset 0 -10px 14px -10px rgba(0,0,0,0.5);
-  transition: transform 0.2s ease;
-}
-.book-page-right:active { transform: scale(0.98); }
-.book-page-right img {
-  max-width: 100%;
-  max-height: 100%;
-  width: auto; height: auto;
-  object-fit: contain;
-  display: block;
-  border-radius: 4px;
-  transform: rotate(-1.2deg);
-  border: 3px solid #efe6cf;           /* чаҳорчӯбаи акс */
-  box-shadow: 0 8px 18px rgba(0,0,0,0.65), 0 0 0 1px rgba(0,0,0,0.4);
-}
-.no-cover-book-page {
-  text-align: center;
-  font-size: 32px;
-  padding: 16px 10px;
-  color: var(--text);
-}
-.page-read-badge {
-  position: absolute;
-  bottom: 12px; right: 12px;
-  background: linear-gradient(135deg, rgba(201,168,76,0.95), rgba(160,120,30,0.95));
-  border: 1px solid rgba(255,255,255,0.3);
-  color: #0A111A;
-  font-size: 10.5px;
-  font-weight: 800;
-  padding: 4px 10px;
-  border-radius: 99px;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.45);
-  pointer-events: none;
-}
 </style>
 
 <style id="avatar-media-polish">.feed-user-avatar{width:24px;height:24px;border-radius:50%;object-fit:cover;border:1.5px solid #E8C96D;vertical-align:middle;margin-right:5px}</style>
@@ -1875,22 +1752,10 @@ function buildSlide(post, idx) {
       ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="" loading="lazy" onerror="this.style.opacity='0'">` : ''}
     </div>
     
-    <!-- Тарҳи китоби кушода (Open Book Spread) -->
-    <div class="open-book-spread">
-      <div class="book-page-left">
-        <div class="page-corner-ornament">❧</div>
-        <div class="slide-text-overlay"
-          style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}">
-        </div>
-      </div>
-      <div class="book-spine-divider">
-        <div class="book-spine-ribbon"></div>
-      </div>
-      <div class="book-page-right" onclick="location.href='reader.html?name=${encodeURIComponent(bookTitle)}'" title="${escHtml(bookTitle)} · Хондани китоб">
-        ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">` : `<div class="no-cover-book-page">📖<div style="font-size:12px;margin-top:8px;font-weight:750;color:var(--gold);">${escHtml(bookTitle)}</div></div>`}
-        <div class="page-read-badge">Хондан ›</div>
-      </div>
-    </div>
+    ${finalCoverUrl ? `
+    <div class="slide-cover-topright" onclick="location.href='reader.html?name=${encodeURIComponent(bookTitle)}'" title="${escHtml(bookTitle)}">
+      <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
+    </div>` : ''}
 
     <div class="slide-bottom-grad"></div>
 
@@ -1913,17 +1778,33 @@ function buildSlide(post, idx) {
     </div>
 
     
+    <div class="slide-text-layer">
+      <div class="slide-text-overlay"
+        style="font-family:'${style.font||'Roboto'}',sans-serif;font-size:${style.size||14}px;color:${style.color||'#FFFFFF'}">
+      </div>
+    </div>
+
+    
     ${hashtags.length ? `
     <div class="slide-hashtags">
       ${hashtags.map(h => `<span class="slide-hashtag" data-hashtag="${escHtml(h)}">#${escHtml(h)}</span>`).join('')}
     </div>` : ''}
 
     
+    <!-- v130: тарҳи тоза ва дусатра — ном ва нишони тасдиқ дар сатри 1, никнейм дар сатри 2 -->
     <div class="slide-bottom-row">
       <div class="slide-bottom-info">
-        <div class="info-line" data-userid="${userId}">
-          ${post.avatar_url ? `<img class="feed-user-avatar" src="${escHtml(post.avatar_url)}" alt="">` : ''}<span class="gold" style="display:inline-flex;align-items:center">@${escHtml(username)}${post.verified ? verifiedBadgeSvg() : ''}</span>
-          <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
+        <div class="user-meta-block" data-userid="${userId}" style="cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          ${post.avatar_url ? `<img class="feed-user-avatar" src="${escHtml(post.avatar_url)}" alt="" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;">` : ''}
+          <div style="display:flex;flex-direction:column;line-height:1.25;">
+            <div style="display:flex;align-items:center;gap:4px;font-size:15px;font-weight:750;color:#FFFFFF;">
+              <span>${escHtml(post.display_name || post.username || 'Корбар')}</span>${post.verified ? verifiedBadgeSvg() : ''}
+            </div>
+            <div style="font-size:12px;color:var(--gold);opacity:0.9;display:flex;align-items:center;gap:6px;">
+              <span>@${escHtml(post.username || 'user')}</span>
+              <span style="color:rgba(255,255,255,0.45);font-size:11px;">· ${timeSince(post.created_at)}</span>
+            </div>
+          </div>
         </div>
         ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
         ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(cover)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}

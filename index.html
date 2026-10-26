@@ -935,12 +935,47 @@ body:before {
   width:62px;height:62px;border-radius:50%;margin:0 auto 8px;
   background:#111E33;border:2.5px solid #E8C96D;
   box-shadow:0 6px 18px rgba(0,0,0,.4),0 0 0 4px rgba(201,168,76,.1);
-  position:relative;overflow:visible;display:grid;place-items:center;
+  overflow:hidden;display:grid;place-items:center;
 }
-.ozmun-circle-v3 img{width:100%;height:100%;object-fit:cover;border-radius:50%}
-.oz-badge{position:absolute;top:-4px;right:-4px;background:#E74C3C;color:#fff;font-size:9px;font-weight:800;padding:1.5px 5px;border-radius:99px;border:1.5px solid #0D1B2A;box-shadow:0 2px 6px rgba(0,0,0,.35);z-index:10;pointer-events:none;white-space:nowrap;line-height:1.2}
-.oz-badge.oz-now{background:#27AE60}
+.ozmun-circle-v3 img{width:100%;height:100%;object-fit:cover}
 .ozmun-label-v3{font-size:10px;font-weight:700;color:#B8C4D4;line-height:1.25;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;min-height:38px}
+/* v126: нуқтаи сабз бо ҳисобкунаки рӯзҳо то оғози даври навбатии озмун */
+.ozmun-circle-v3{position:relative;overflow:visible!important}
+.ozmun-circle-v3 img{border-radius:50%}
+.oz-badge{position:absolute;top:-4px;right:-4px;min-width:22px;height:22px;padding:0 5px;border-radius:99px;background:#22C55E;color:#06240F;font-size:11px;font-weight:900;display:flex;align-items:center;justify-content:center;border:2px solid #0D1B2A;box-shadow:0 0 0 0 rgba(34,197,94,.7);animation:ozPulse 2s infinite;z-index:3;line-height:1}
+.oz-badge.oz-now{background:#16A34A;color:#fff;font-size:9px}
+@keyframes ozPulse{0%{box-shadow:0 0 0 0 rgba(34,197,94,.65)}70%{box-shadow:0 0 0 9px rgba(34,197,94,0)}100%{box-shadow:0 0 0 0 rgba(34,197,94,0)}}
+.oz-sheet-wrap{position:fixed;inset:0;z-index:1200;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.66);backdrop-filter:blur(4px)}
+.oz-sheet{width:min(100%,480px);max-width:100%;box-sizing:border-box;max-height:88vh;overflow-y:auto;overflow-x:hidden;overscroll-behavior:contain;background:#142236;color:#F0EAD6;border-radius:22px 22px 0 0;border:1px solid rgba(201,168,76,.25);border-bottom:0;padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px));animation:ozUp .22s ease}
+@keyframes ozUp{from{transform:translateY(40px);opacity:.4}to{transform:none;opacity:1}}
+.oz-grip{width:40px;height:4px;border-radius:99px;background:rgba(255,255,255,.2);margin:2px auto 12px}
+.oz-title{font-size:16px;font-weight:900;line-height:1.3}.oz-sub{font-size:10.5px;color:#A8B8CC;margin-top:4px;line-height:1.4}
+.oz-status{margin-top:10px;padding:9px 11px;border-radius:13px;font-size:11.5px;font-weight:800;line-height:1.45;background:rgba(255,255,255,.05);border:1px solid rgba(255,255,255,.08)}
+.oz-status-soon{background:rgba(34,197,94,.12);border-color:rgba(34,197,94,.35);color:#86EFAC}.oz-status-now{background:rgba(22,163,74,.18);border-color:rgba(34,197,94,.45);color:#BBF7D0}
+.oz-h{font-size:10.5px;letter-spacing:.05em;color:#E8C96D;font-weight:900;margin:14px 0 6px}
+.oz-p,.oz-ol{font-size:11.8px;line-height:1.55;color:#E6E0CF;margin:0}.oz-ol{padding-left:18px}.oz-ol li{margin-bottom:5px}
+.oz-stages{display:grid;gap:0}
+.oz-stage{display:grid;grid-template-columns:16px minmax(0,1fr);gap:9px;padding:7px 0 9px;position:relative}
+.oz-stage:not(:last-child):before{content:'';position:absolute;left:5px;top:22px;bottom:-2px;width:2px;background:rgba(255,255,255,.1)}
+.oz-stage-dot{width:12px;height:12px;border-radius:50%;background:#3A4C66;margin-top:4px;border:2px solid #142236;box-shadow:0 0 0 1px rgba(255,255,255,.15)}
+.oz-stage.cur .oz-stage-dot{background:#22C55E;box-shadow:0 0 0 3px rgba(34,197,94,.25)}.oz-stage.past{opacity:.55}.oz-stage.past .oz-stage-dot{background:#C9A84C}
+.oz-stage-name{font-size:12px;font-weight:800;line-height:1.35}.oz-stage.cur .oz-stage-name{color:#86EFAC}.oz-stage-meta{font-size:10.5px;color:#A8B8CC;margin-top:3px;line-height:1.45}
+.oz-contacts{display:grid;grid-template-columns:minmax(0,1fr);gap:7px}.oz-contact{min-width:0;max-width:100%;overflow:hidden;text-align:left;border:1px solid rgba(201,168,76,.22);background:#1A2D44;color:#F0EAD6;border-radius:13px;padding:9px 11px;cursor:pointer;font:inherit}
+.oz-contact b{display:block;font-size:12px}.oz-contact span{display:block;font-size:10px;color:#A8B8CC;margin-top:2px;overflow-wrap:anywhere;word-break:break-word}.oz-sheet *{min-width:0}.oz-sheet .oz-title,.oz-sheet .oz-sub,.oz-sheet .oz-p,.oz-sheet .oz-ol,.oz-sheet .oz-stage-meta,.oz-sheet .oz-status,.oz-sheet .oz-src{overflow-wrap:anywhere}
+.oz-contact.busy{opacity:.6}
+.site-opening{position:fixed;inset:0;z-index:2000000;display:flex;align-items:center;justify-content:center;padding:24px;background:rgba(5,12,22,.82);backdrop-filter:blur(6px);animation:ozUp .18s ease}
+.site-opening-card{width:min(100%,340px);background:#142236;color:#F0EAD6;border:1px solid rgba(201,168,76,.3);border-radius:20px;padding:22px 18px 16px;text-align:center;box-shadow:0 18px 50px rgba(0,0,0,.45)}
+.site-opening-spin{width:38px;height:38px;margin:0 auto 12px;border-radius:50%;border:3px solid rgba(201,168,76,.25);border-top-color:#E8C96D;animation:siteSpin .8s linear infinite}
+@keyframes siteSpin{to{transform:rotate(360deg)}}
+.site-opening-card b{display:block;font-size:14px;font-weight:900}.site-opening-card span{display:block;font-size:12px;margin-top:4px;color:#E6E0CF}.site-opening-card small{display:block;font-size:10.5px;color:#A8B8CC;margin-top:2px}
+.site-opening-note{font-size:10.5px;color:#A8B8CC;line-height:1.45;margin:10px 0 12px}
+.site-opening-actions{display:grid;gap:6px}.site-opening-btn{min-height:38px;border-radius:12px;border:0;background:linear-gradient(135deg,#E8C96D,#C9A84C);color:#1A1200;font-weight:800;font-size:12px;cursor:pointer;font-family:inherit}.site-opening-btn.ghost{background:transparent;color:#A8B8CC;border:1px solid rgba(201,168,76,.25)}
+body.light-theme .site-opening-card{background:#FFFFFF;color:#1E2A3A}body.light-theme .site-opening-card span{color:#1E2A3A}
+@media(min-width:640px){.oz-sheet-wrap{align-items:center;padding:16px}.oz-sheet{border-radius:22px;border-bottom:1px solid rgba(201,168,76,.25);max-height:86vh}}
+.oz-btn{display:block;width:100%;min-height:44px;border-radius:14px;border:1px solid rgba(201,168,76,.25);background:transparent;color:#F0EAD6;font-weight:900;font-size:13px;cursor:pointer;margin-top:10px;font-family:inherit}
+.oz-btn-gold{background:linear-gradient(135deg,#E8C96D,#C9A84C);color:#1A1200;border:0;margin-top:16px}
+.oz-src{font-size:9.5px;color:#8497ad;margin-top:12px;line-height:1.5}
+body.light-theme .oz-sheet{background:#FFFFFF;color:#1E2A3A}body.light-theme .oz-p,body.light-theme .oz-ol,body.light-theme .oz-stage-name{color:#1E2A3A}body.light-theme .oz-contact{background:#F3EDDD;color:#1E2A3A}body.light-theme .oz-btn{color:#1E2A3A}body.light-theme .oz-stage-dot{border-color:#fff}body.light-theme .oz-badge{border-color:#F5F1E8}
 
 /* CAT V3 — иконки точь-в-точь как на фото */
 .cat-v3{margin:6px 0}
@@ -955,6 +990,18 @@ body:before {
 .cat-card-v3:first-child::after{content:'';position:absolute;left:10px;right:10px;bottom:-6px;height:3px;background:#E8C96D;border-radius:99px}
 .cat-icon-v3{width:32px;height:32px;margin:0 auto 8px;display:grid;place-items:center;color:#E8C96D}
 .cat-name-v3{font-size:11px;font-weight:600;color:#E8E4D9;line-height:1.25;min-height:28px;display:flex;align-items:center;justify-content:center}
+/* v126: сатри «Адабиёти тавсияшуда» дар қатори категорияҳо */
+.tavsiya-row-v3{margin:2px 12px 10px;display:grid;grid-template-columns:44px minmax(0,1fr) 20px;gap:10px;align-items:center;padding:10px 12px;border-radius:16px;cursor:pointer;position:relative;overflow:hidden;
+  background:linear-gradient(120deg,rgba(201,168,76,.18),rgba(17,30,51,.95) 55%,rgba(26,45,68,.95));border:1px solid rgba(201,168,76,.38);box-shadow:0 8px 22px rgba(0,0,0,.18);transition:transform .15s}
+.tavsiya-row-v3:active{transform:scale(.985)}
+.tavsiya-row-v3+.tavsiya-row-v3{margin-top:-2px}.tavsiya-row-maorif::before{background:linear-gradient(#8DF0B4,#22A35A)}.tavsiya-row-maorif .tavsiya-ic-v3{background:linear-gradient(145deg,rgba(141,240,180,.22),rgba(34,163,90,.08));border-color:rgba(141,240,180,.35)}
+.tavsiya-row-v3::before{content:'';position:absolute;left:0;top:0;bottom:0;width:4px;background:linear-gradient(#E8C96D,#C9A84C)}
+.tavsiya-ic-v3{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:23px;background:rgba(201,168,76,.16);border:1px solid rgba(201,168,76,.3)}
+.tavsiya-txt-v3{min-width:0}.tavsiya-txt-v3 b{display:block;font-size:12.5px;color:#F0EAD6;line-height:1.3}.tavsiya-txt-v3 span{display:block;font-size:10px;color:#A8B8CC;margin-top:3px;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tavsiya-chev-v3{color:#E8C96D;font-size:22px;font-weight:700;text-align:center}
+.notif-item.notif-seen{opacity:.6}.notif-sep{font-size:10px;letter-spacing:.06em;color:#8497ad;font-weight:800;padding:10px 4px 4px;text-transform:uppercase}
+body.light-theme .tavsiya-row-v3{background:linear-gradient(120deg,rgba(201,168,76,.22),#FFFFFF 55%,#FBF7EC);border-color:rgba(160,120,30,.35)}
+body.light-theme .tavsiya-txt-v3 b{color:#1E2A3A}body.light-theme .tavsiya-txt-v3 span{color:#5C6B80}
 
 /* BOOKS V3 — карточки точь-в-точь как на фото */
 .books-v3{margin:8px 0}
@@ -1084,7 +1131,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .announce-top.show{ transform:translateY(0) !important; opacity:1 !important; }
 
 </style>
-<script src="config.js?v=71"></script>
+<script src="config.js?v=75"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -1109,7 +1156,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 </script>
 <script src="cache.js?v=45"></script>
 <script src="president.js?v=4"></script>
-<script src="quotes-data.js?v=44"></script>
+<script src="quotes-data.js?v=45"></script>
 
 <style>
 /* FINAL FIX V9 - еще меньше по вертикали, фото без пустого места справа */
@@ -1136,8 +1183,58 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .main-content{padding-bottom:6px!important}
 .sec-head-v3{padding:8px 12px 4px!important}
 .ozmun-v3,.cat-v3,.books-v3{margin:1px 0!important}
-.ozmun-scroll-v3{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:3px!important;overflow:visible!important;padding:2px 7px 6px!important}
-.ozmun-item-v3{width:auto!important;min-width:0!important;max-width:none!important;flex:none!important}
+/* v130: Озмунҳо дар як қатори уфуқӣ бо гардиши чапу рост (horizontal scroll in single row) */
+.ozmun-scroll-v3{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  gap:12px!important;
+  padding:4px 14px 12px!important;
+  scrollbar-width:none!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.ozmun-scroll-v3::-webkit-scrollbar{display:none!important}
+.ozmun-item-v3{
+  flex:0 0 72px!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  text-align:center!important;
+  cursor:pointer!important;
+}
+.ozmun-circle-v3{
+  width:58px!important;
+  height:58px!important;
+  border-radius:50%!important;
+  margin:0 auto 6px!important;
+  background:#111E33!important;
+  border:2px solid #E8C96D!important;
+  box-shadow:0 4px 14px rgba(0,0,0,0.4),0 0 0 2px rgba(201,168,76,0.12)!important;
+  overflow:hidden!important;
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.ozmun-circle-v3 img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:50%!important;
+  display:block!important;
+}
+.ozmun-label-v3{
+  font-size:9.5px!important;
+  font-weight:700!important;
+  color:#B8C4D4!important;
+  line-height:1.2!important;
+  display:-webkit-box!important;
+  -webkit-line-clamp:2!important;
+  -webkit-box-orient:vertical!important;
+  overflow:hidden!important;
+  min-height:24px!important;
+}
 .ozmun-circle-v3{width:52px!important;height:52px!important;margin:0 auto 5px!important;border-width:2px!important;box-shadow:0 4px 13px rgba(0,0,0,.35),0 0 0 2px rgba(201,168,76,.09)!important}
 .ozmun-label-v3{font-size:8.3px!important;line-height:1.16!important;min-height:29px!important;-webkit-line-clamp:3!important}
 .cat-scroll-v3{padding:0 12px 5px!important}.books-scroll-v3{padding:0 12px 6px!important}
@@ -1175,9 +1272,11 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .notif-head-copy{flex:1}.notif-head-copy b{display:block;color:#f5d978;font-size:17px}.notif-head-copy span{font-size:11px;color:#8294aa}
 .notif-close{width:34px;height:34px;border:0;border-radius:11px;background:rgba(255,255,255,.06);color:#a8b8cc;font-size:18px;cursor:pointer}
 .notif-list{overflow:auto;max-height:calc(min(78vh,620px) - 73px)}
-.notif-item{width:100%;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;text-align:left;padding:14px 17px;display:grid;grid-template-columns:38px 1fr 16px;gap:11px;align-items:start;cursor:pointer}
+.notif-item{width:100%;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;text-align:left;padding:12px 14px;display:grid;grid-template-columns:36px 1fr 28px;gap:10px;align-items:center;cursor:pointer}
 .notif-item:hover,.notif-item:focus{background:rgba(232,201,109,.07);outline:none}.notif-item-icon{width:36px;height:36px;border-radius:12px;background:rgba(232,201,109,.11);display:grid;place-items:center;font-size:17px}
-.notif-title{font-weight:750;color:#f3d879;font-size:13px}.notif-body{font-size:12.5px;color:#b3c0d0;line-height:1.42;margin-top:3px}.notif-time{font-size:10px;color:#708299;margin-top:6px}.notif-arrow{color:#667b94;padding-top:9px;font-size:18px}
+.notif-title{font-weight:750;color:#f3d879;font-size:13px}.notif-body{font-size:12.5px;color:#b3c0d0;line-height:1.42;margin-top:3px}.notif-time{font-size:10px;color:#708299;margin-top:5px}
+.notif-del-btn{width:28px;height:28px;border-radius:8px;border:0;background:rgba(255,75,75,.12);color:#FF6B6B;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.notif-del-btn:hover{background:rgba(255,75,75,.28);color:#FFAAAA}
 .notif-empty{padding:42px 24px;text-align:center}.notif-empty-icon{font-size:34px;margin-bottom:9px}.notif-empty b{display:block;color:#e7e9ee}.notif-empty span{display:block;color:#8091a7;font-size:12px;margin-top:5px}
 @media(max-width:350px){.new-logo-text-v3 span{display:none}.new-top-actions-v3{gap:6px}.kh-nav2 .nav-item span{font-size:7.5px}}
 
@@ -1423,7 +1522,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   color: #E8C96D;
   font-weight: 600;
 }
-.offline-library-v3{margin:8px 0 12px;padding:0 12px}
+.offline-library-v3{margin:-2px 0 12px;padding:0 12px}
 .offline-library-card{display:flex;align-items:center;gap:11px;width:100%;min-height:76px;padding:12px 13px;border:1px solid rgba(201,168,76,.32);border-radius:16px;background:linear-gradient(135deg,rgba(25,47,72,.97),rgba(18,33,51,.97));color:var(--text);text-decoration:none;box-shadow:0 8px 22px rgba(0,0,0,.2);transition:transform .18s,border-color .18s}
 .offline-library-card:active{transform:scale(.985);border-color:var(--gold2)}
 .offline-library-icon{flex:0 0 42px;width:42px;height:42px;border-radius:13px;display:grid;place-items:center;background:rgba(201,168,76,.14);font-size:22px}
@@ -1872,27 +1971,36 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 .news-empty{margin:0 14px;border:1px dashed rgba(201,168,76,.35);border-radius:16px;padding:16px;
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
-<style id="maorif-reading-section-style">
-  .maorif-reading-section{margin:10px 12px 18px}
-  .maorif-reading-card{position:relative;isolation:isolate;overflow:hidden;display:flex;align-items:center;gap:13px;padding:15px 14px;border:1px solid rgba(232,201,109,.3);border-radius:19px;background:linear-gradient(125deg,#17334d 0%,#14263b 58%,#2d2417 100%);box-shadow:0 12px 26px rgba(0,0,0,.2);color:#F0EAD6;transition:transform .16s,border-color .16s}
-  .maorif-reading-card:active{transform:scale(.99);border-color:rgba(232,201,109,.55)}
-  .maorif-reading-card:before{content:"";position:absolute;z-index:-1;width:160px;height:160px;right:-65px;top:-80px;border-radius:50%;background:radial-gradient(circle,rgba(232,201,109,.22),transparent 70%)}
-  .maorif-reading-icon{width:47px;height:54px;flex:0 0 47px;display:grid;place-items:center;border-radius:14px;background:linear-gradient(145deg,rgba(232,201,109,.22),rgba(201,168,76,.08));border:1px solid rgba(232,201,109,.28);font-size:24px}
-  .maorif-reading-copy{min-width:0;flex:1}
-  .maorif-reading-kicker{display:flex;align-items:center;gap:6px;color:#E8C96D;font-size:9px;line-height:1.35;font-weight:900;letter-spacing:.055em;text-transform:uppercase}
-  .maorif-reading-copy h3{margin:5px 0 4px;color:#fff4d8;font:700 15px/1.22 Georgia,'Times New Roman',serif}
-  .maorif-reading-copy p{margin:0;color:#b9c6d6;font-size:10px;line-height:1.45}
-  .maorif-reading-open{display:inline-flex;align-items:center;gap:4px;margin-top:8px;color:#E8C96D;font-size:10px;font-weight:900}
-  .maorif-reading-open span{font-size:17px;line-height:10px}
-  .maorif-source-link{display:inline-flex;align-items:center;gap:6px;margin:8px 2px 0;padding:5px 8px;border:0;border-radius:8px;background:transparent;color:#C9A84C;font:700 9px system-ui;cursor:pointer}
-  .maorif-source-link:hover{color:#E8C96D;background:rgba(201,168,76,.08)}
-  @media(max-width:360px){.maorif-reading-section{margin-left:10px;margin-right:10px}.maorif-reading-card{gap:10px;padding:12px}.maorif-reading-icon{width:40px;height:46px;flex-basis:40px;font-size:21px}.maorif-reading-copy h3{font-size:13px}}
+
+<style>
+/* v130: Round SoroLLM AI button in bottom nav */
+.nav-item.nav-item-ai { position: relative; z-index: 5; text-decoration: none; }
+.nav-ai-bubble {
+  width: 25px; height: 25px; border-radius: 50%;
+  background: linear-gradient(135deg, #FFE4A0 0%, #D8A541 50%, #946513 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 7px rgba(216, 165, 65, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-ai-bubble span {
+  font-size: 10px; font-weight: 900; color: #1A1206;
+  letter-spacing: -0.3px; line-height: 1;
+}
+.nav-item-ai:active .nav-ai-bubble,
+.nav-item-ai.active .nav-ai-bubble {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(216, 165, 65, 0.7);
+}
+.nav-ai-label {
+  color: #DCB55E !important; font-weight: 800 !important; font-size: 8.5px !important;
+}
 </style>
 </head>
 <body>
-<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH: MIN=5000 → минимум 5 секунд, MAX=9000 → максимум 9 секунд.
+<div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH (v129: было 5–9 с, стало 1.5–4 с — приложение открывается заметно быстрее): MIN=1500 → минимум 1.5 секунды, MAX=4000 → максимум 4 секунды.
    Цифры в миллисекундах: 6000 = 6 сек, 3000 = 3 сек. MIN — сколько ждать, даже если
-   программа уже загрузилась; MAX — страховка, дольше не держит */const MIN=5000,MAX=9000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
+   программа уже загрузилась; MAX — страховка, дольше не держит */const MIN=1500,MAX=4000,t0=Date.now();let done=false;const hide=()=>{if(done)return;done=true;s.classList.add('hide');setTimeout(()=>s.remove(),550)};const ready=()=>{const left=MIN-(Date.now()-t0);if(left>0)setTimeout(hide,left);else hide()};if(document.readyState==='complete')ready();else addEventListener('load',ready,{once:true});setTimeout(hide,MAX)})();</script>
 <div class="phone-wrapper">
   <!-- Объявление админа — ставится в верхушку над логотипом с красивой анимацией появления/исчезновения по очереди -->
   <div id="announcementBannerTop" class="announce-top">
@@ -2006,30 +2114,34 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="news-dots-v3" id="newsDots"></div>
     </section>
 
-    <!-- 3 Категории — как на фото один в один иконки -->
-    <section class="cat-v3">
-      <div class="sec-head-v3"><div class="sec-title-v3">Категорияҳо</div><div class="sec-link-v3" onclick="location.href='kitobho.html'">Ҳамаашро бинед <span>›</span></div></div>
-      <div class="cat-scroll-v3" id="catGrid"><div class="loader"></div></div>
+    <!-- 3 v128: Рӯйхатҳои тавсияшуда + китобҳои захирашуда (тартиб: маориф → хонандагон → захирашуда) -->
+    <section class="cat-v3" id="tavsiyaSection">
+      <!-- Китобҳои тавсияшуда барои кормандони соҳаи маориф — фармоиши №27 аз 09.02.2026 (Хатлон); хониш мисли дигар китобҳо ҳисоб мешавад -->
+      <div class="tavsiya-row-v3 tavsiya-row-maorif tavsiya-row-first" id="maorifRow" role="button" tabindex="0" onclick="location.href='maorif-books.html'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='maorif-books.html'}">
+        <div class="tavsiya-ic-v3">📚</div>
+        <div class="tavsiya-txt-v3"><b>Китобҳои тавсияшуда барои кормандони соҳаи маориф</b><span>Фармоиши №27 · 09.02.2026 · Хатлон — ҷадвали хондан, китобҳои дастрас ва матни фармоиш</span></div>
+        <div class="tavsiya-chev-v3">›</div>
+      </div>
+      <!-- Рӯйхати адабиёти тавсияшуда барои хонандагони синфҳои 1–11 (саҳифаи алоҳида, офлайн ҳам кор мекунад) -->
+      <div class="tavsiya-row-v3" id="tavsiyaRow" role="button" tabindex="0" onclick="location.href='adabiyoti-tavsiyashuda.html'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='adabiyoti-tavsiyashuda.html'}">
+        <div class="tavsiya-ic-v3">🎓</div>
+        <div class="tavsiya-txt-v3"><b>Китобҳои тавсияшуда барои хонандагон · синфҳои 1–11</b><span>Рӯйхати расмии хониш — кадом китобҳо дар барнома ҳастанд ва дигаронро аз куҷо ёбем</span></div>
+        <div class="tavsiya-chev-v3">›</div>
+      </div>
+    </section>
+    <section class="offline-library-v3" id="offlineBooksHomeSection">
+      <!-- v129: сарлавҳаи «Китобҳои захирашуда · Идора кардан» хориҷ шуд — худи корт ҳамаро мегӯяд -->
+      <a class="offline-library-card" href="offline-books.html" aria-label="Китобҳои захирашуда — кушодан ва идора кардан">
+        <span class="offline-library-icon">📚</span>
+        <span class="offline-library-copy"><b id="offlineHomeCount">Ҳисоб...</b><span id="offlineHomeSize">Ҳаҷм санҷида мешавад</span><small id="offlineHomeStatus">Кушоед, мубодила кунед, категория интихоб кунед ё кэшро идора намоед.</small></span>
+        <span class="offline-library-arrow">›</span>
+      </a>
     </section>
 
     <!-- 4 Китобҳои Пешвои миллат -->
     <section class="books-v3" id="pesvoSection" style="display:none">
       <div class="sec-head-v3"><div class="sec-title-v3">👑 Китобҳои Пешвои миллат</div><div class="sec-link-v3" onclick="location.href='kitobho.html?cat=peshvoi_millat'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="books-scroll-v3" id="pesvoBooks"></div>
-    </section>
-
-    <!-- Китобҳои тавсияшуда барои кормандони маориф — дар асоси фармоиши №27 -->
-    <section class="maorif-reading-section" aria-labelledby="maorifReadingTitle">
-      <a class="maorif-reading-card" href="maorif-books.html" aria-label="Кушодани китобҳои тавсияшуда барои кормандони соҳаи маориф">
-        <span class="maorif-reading-icon" aria-hidden="true">📚</span>
-        <span class="maorif-reading-copy">
-          <span class="maorif-reading-kicker">Фармоиши №27 · 09.02.2026 · Хатлон</span>
-          <h3 id="maorifReadingTitle">Китобҳои тавсияшуда барои кормандони соҳаи маориф</h3>
-          <p>Ҷадвали хондан, китобҳои дастрас ва матни фармоиш.</p>
-          <span class="maorif-reading-open">Кушодани рӯйхат <span>›</span></span>
-        </span>
-      </a>
-      <a class="maorif-source-link" href="maorif-books.html?source=1"><span aria-hidden="true">▣</span> Манбаъ · нусхаи аслии фармоиш</a>
     </section>
 
     <!-- 4.1 Бахши махсус: Китобҳои ман -->
@@ -2042,19 +2154,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     </section>
 
     <!-- Китобҳои боргирифташуда, ки дар дастгоҳ бе интернет боз мешаванд -->
-    <section class="offline-library-v3" id="offlineBooksHomeSection">
-      <div class="sec-head-v3">
-        <div class="sec-title-v3">📥 Китобҳои зеркашидашуда</div>
-        <a class="sec-link-v3" href="offline-books.html">Идора кардан <span>›</span></a>
-      </div>
-      <a class="offline-library-card" href="offline-books.html" aria-label="Кушодани китобҳои зеркашидашуда">
-        <span class="offline-library-icon">📚</span>
-        <span class="offline-library-copy"><b id="offlineHomeCount">Ҳисоб...</b><span id="offlineHomeSize">Ҳаҷм санҷида мешавад</span><small id="offlineHomeStatus">Кушоед, мубодила кунед, категория интихоб кунед ё кэшро идора намоед.</small></span>
-        <span class="offline-library-arrow">›</span>
-      </a>
-    </section>
 
-    <!-- 6 Китобҳои серхонтарин -->
+    <!-- 6 Китобҳои серхонандарин -->
     <section class="books-v3" id="popSection" style="display:none">
       <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонандарин</div><div class="sec-link-v3" onclick="location.href='serkhonandatarin.html'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="books-scroll-v3" id="popBooks"></div>
@@ -2077,7 +2178,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </a>
       <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
       <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
+            <a class="nav-item nav-item-ai" href="ai-chat.html" aria-label="SoroLLM AI">
+        <div class="nav-ai-bubble"><span>AI</span></div>
+        <span class="nav-ai-label">AITJ</span>
+      </a>
+<a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
       <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
       <a class="nav-item" href="profile.html" aria-label="Профил"><div class="profile-wrap"><div class="person-group"><div class="person-small ps1"></div><div class="person-small ps2"></div><div class="person-small ps3"></div></div></div><span>Профил</span></a>
     </div>
@@ -2167,12 +2272,37 @@ function showNotificationsModal(items){
   document.getElementById('notifModal')?.remove();const unread=unreadNotifications(items),modal=document.createElement('div');modal.id='notifModal';modal.className='notif-modal';
   const box=document.createElement('section');box.className='notif-panel';box.setAttribute('role','dialog');box.setAttribute('aria-modal','true');box.setAttribute('aria-label','Огоҳиҳо');
   box.innerHTML=`<header class="notif-head"><div class="notif-head-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 3 7 3 7H3s3 0 3-7"/><path d="M9 20h6"/></svg></div><div class="notif-head-copy"><b>Огоҳиҳо</b><span>${unread.length?unread.length+' огоҳии нав':'Ҳама огоҳиҳо дида шуданд'}</span></div><button class="notif-close" type="button" aria-label="Пӯшидан">×</button></header><div class="notif-list"></div>`;
-  const list=box.querySelector('.notif-list');if(!unread.length)list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Огоҳии нав нест</b><span>Санҷиш дар замина идома дорад.</span></div>';
-  else unread.forEach(n=>{const btn=document.createElement('button');btn.type='button';btn.className='notif-item';btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><span><span class="notif-title">${esc(n.title||'Китобхона')}</span><span class="notif-body">${esc(n.body||'')}</span><span class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</span></span><span class="notif-arrow">›</span>`;btn.addEventListener('click',()=>{markNotificationRead(n.id);markNotifCacheSeen([n.id]);const target=notificationTarget(n);modal.remove();if(target)location.href=target});list.appendChild(btn)});
+  // v126: аввал огоҳиҳои нав, баъд 20 огоҳии охирини хондашуда (хира) — то ки рӯйхат пас аз хондан холӣ намонад
+  const seen=(Array.isArray(items)?items:[]).filter(n=>n.is_read).slice(0,20);
+  const list=box.querySelector('.notif-list');if(!unread.length&&!seen.length)list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Огоҳии нав нест</b><span>Санҷиш дар замина идома дорад.</span></div>';
+  const renderItem=(n,isSeen)=>{
+    const btn=document.createElement('div');btn.className='notif-item'+(isSeen?' notif-seen':'');
+    btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><div style="min-width:0;cursor:pointer"><div class="notif-title">${esc(n.title||'Китобхона')}</div><div class="notif-body">${esc(n.body||'')}</div><div class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</div></div><button class="notif-del-btn" type="button" title="Нест кардан" aria-label="Нест кардан">🗑</button>`;
+    btn.querySelector('div').addEventListener('click',()=>{markNotificationRead(n.id);markNotifCacheSeen([n.id]);const target=notificationTarget(n);modal.remove();if(target)location.href=target});
+    btn.querySelector('.notif-del-btn').addEventListener('click',async(e)=>{
+      e.stopPropagation();
+      btn.style.opacity='0.3';btn.style.pointerEvents='none';
+      try{
+        if(typeof deleteNotification==='function')await deleteNotification(n.id);
+        const cached=readNotifCache();
+        if(cached){const next=(cached.items||[]).filter(x=>String(x.id)!==String(n.id));writeNotifCache(next);paintNotifBadge(next);}
+        btn.remove();
+        if(!list.querySelector('.notif-item'))list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Ҳама огоҳиҳо тоза шуданд</b></div>';
+      }catch(err){btn.style.opacity='';btn.style.pointerEvents='';toast('Хатогӣ дар нест кардан');}
+    });
+    list.appendChild(btn)
+  };
+  unread.forEach(n=>renderItem(n,false));
+  if(seen.length){if(unread.length){const sep=document.createElement('div');sep.className='notif-sep';sep.textContent='Пештар';list.appendChild(sep)}seen.forEach(n=>renderItem(n,true))}
   const close=()=>modal.remove();box.querySelector('.notif-close').onclick=close;modal.onclick=e=>{if(e.target===modal)close()};modal.appendChild(box);document.body.appendChild(modal);box.querySelector('.notif-close').focus();
-  const ids=unread.map(n=>n.id);markNotifCacheSeen(ids);paintNotifBadge([]);Promise.allSettled(ids.map(markNotificationRead));return modal
+  const ids=unread.map(n=>n.id);markNotifCacheSeen(ids);paintNotifBadge([]);if(ids.length){(typeof markAllNotificationsRead==='function'?markAllNotificationsRead():Promise.allSettled(ids.map(markNotificationRead))).catch?.(()=>{})}return modal
 }
-const nb=$('notifBtn');if(nb)nb.style.display='none';if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
+const nb=$('notifBtn');
+// v126: зангӯла барои корбарони воридшуда нишон дода мешавад; v128: бадж ҳар 15 дақиқа ва танҳо вақте ки саҳифа кушода/намоён ва онлайн аст
+// (дар замина ҳеҷ дархост ба сервер фиристода намешавад — соатҳои ройгони Render/Neon сарф намешаванд); ҳангоми бозгашт ба барнома нав мешавад
+if(nb)nb.style.display=localStorage.getItem('kk_token')?'':'none';
+updateNotifBadge();setInterval(()=>{if(document.hidden||navigator.onLine===false)return;updateNotifBadge()},15*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){const c=readNotifCache();if(!c)updateNotifBadge()}});
+if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
 
 const oz=[ ['ideai_man.html','ideai_man_banner.jpg','Идеяи ман калиди фардо'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'] ];
 // v130: озмунҳо бо тартиби хронологӣ, аз ҷумла озмуни нави «Идеяи ман калиди фардо»
@@ -2181,51 +2311,59 @@ let CONTESTS=null;
 function renderOzmunBase(){ const ozEl=$('ozmunList'); if(ozEl) ozEl.innerHTML=oz.map(o=>`<div class="ozmun-item-v3" data-oz="${OZ_PAGE_IDS[o[0]]||''}" data-page="${o[0]}" onclick="ozmunTap(this)"><div class="ozmun-circle-v3"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label-v3">${o[2]}</div></div>`).join(''); }
 renderOzmunBase();
 const OZ_MONTHS=['январ','феврал','март','апрел','май','июн','июл','август','сентябр','октябр','ноябр','декабр'];
-function parseIsoDate(s){ if(!s) return null; const m=String(s).match(/^(\d{4})-(\d{2})-(\d{2})$/); return m?new Date(Date.UTC(+m[1],+m[2]-1,+m[3])):null; }
-function diffDays(a,b){ return Math.round((a.getTime()-b.getTime())/86400000); }
-function ozTimeline(c){
-  const now=new Date(); const nowUtc=new Date(Date.UTC(now.getFullYear(),now.getMonth(),now.getDate()));
-  const stages=(c&&c.stages)||[];
-  for(let i=0;i<stages.length;i++){
-    const st=stages[i], s=parseIsoDate(st.start), e=parseIsoDate(st.end);
-    if(s && e){
-      if(nowUtc>=s && nowUtc<=e){ return {state:'now', stage:st, index:i+1, total:stages.length}; }
-      if(nowUtc<s){
-        const d=diffDays(s,nowUtc);
-        const limit=(c.soonDays!=null)?c.soonDays:60;
-        if(d<=limit) return {state:'soon', days:d, stage:st, index:i+1, total:stages.length};
-      }
-    }
-  }
-  return {state:'none'};
-}
-function renderOzmunBadges(){
+function ozDay(s){ const d=new Date(s+'T00:00:00'); return Number.isNaN(d.getTime())?null:d; }
+function ozFmt(s){ const d=ozDay(s); return d?`${d.getDate()} ${OZ_MONTHS[d.getMonth()]} ${d.getFullYear()}`:s; }
+function ozRange(st){ const a=ozDay(st.start),b=ozDay(st.end); if(!a||!b) return st.start; if(a.getMonth()===b.getMonth()&&a.getFullYear()===b.getFullYear()) return `${a.getDate()}–${b.getDate()} ${OZ_MONTHS[a.getMonth()]} ${a.getFullYear()}`; return `${ozFmt(st.start)} — ${ozFmt(st.end)}`; }
+function ozShift(st,years){ const sh=s=>{const d=ozDay(s); if(!d) return s; d.setFullYear(d.getFullYear()+years); return d.toISOString().slice(0,10)}; return {...st,start:sh(st.start),end:sh(st.end),approx:true}; }
+// Ҷадвали амалкунанда: агар ҳамаи даврҳои сол гузашта бошанд, ҷадвал ба соли оянда кӯчонида мешавад (тахминӣ).
+function ozTimeline(c){ const today=new Date(); today.setHours(0,0,0,0); let stages=(c.stages||[]).slice(); if(!stages.length) return {stages:[],next:null}; if(c.recurring){ let guard=0; while(guard++<3 && stages.every(s=>{const e=ozDay(s.end); return e && e<today})){ stages=stages.map(s=>ozShift(s,1)); } } const next=stages.find(s=>{const e=ozDay(s.end); return e && e>=today})||null; let state='none',days=null; if(next){ const a=ozDay(next.start); if(a&&a<=today) state='now'; else if(a){ days=Math.ceil((a-today)/86400000); state=days<=Number(CONTESTS?.soonDays||30)?'soon':'later'; } } return {stages,next,state,days}; }
+function applyOzmunBadges(){
   if(!CONTESTS) return;
-  document.querySelectorAll('#ozmunList .ozmun-item-v3').forEach(el=>{
-    const c=(CONTESTS.contests||[]).find(x=>x.id===el.dataset.oz);
-    el.querySelector('.oz-badge')?.remove();
-    if(!c) return;
-    const t=ozTimeline(c);
-    if(t.state==='soon'||t.state==='now'){
-      const b=document.createElement('div');
-      b.className='oz-badge'+(t.state==='now'?' oz-now':'');
-      b.title=t.state==='now'?'Даври озмун идома дорад':`Пас аз ${t.days} рӯз сар мешавад`;
-      b.innerHTML=t.state==='now'?'Идома дорад':`Баъди ${t.days} р.`;
-      const circle=el.querySelector('.ozmun-circle-v3');
-      if(circle) circle.appendChild(b);
-    }
-  });
+  const listEl=$('ozmunList');
+  if(listEl){
+    const items = Array.from(listEl.querySelectorAll('.ozmun-item-v3'));
+    items.sort((a,b)=>{
+      const ca=(CONTESTS.contests||[]).find(x=>x.id===a.dataset.oz);
+      const cb=(CONTESTS.contests||[]).find(x=>x.id===b.dataset.oz);
+      const ta=ca?ozTimeline(ca):{state:'none',days:999};
+      const tb=cb?ozTimeline(cb):{state:'none',days:999};
+      const score=t=>t.state==='now'?-1000:(t.days!=null?t.days:500);
+      return score(ta)-score(tb);
+    });
+    items.forEach(el=>listEl.appendChild(el));
+  }
+  document.querySelectorAll('#ozmunList .ozmun-item-v3').forEach(el=>{ const c=(CONTESTS.contests||[]).find(x=>x.id===el.dataset.oz); el.querySelector('.oz-badge')?.remove(); if(!c) return; const t=ozTimeline(c); if(t.state==='soon'||t.state==='now'){ const b=document.createElement('div'); b.className='oz-badge'+(t.state==='now'?' oz-now':''); b.title=t.state==='now'?'Даври озмун идома дорад':`Пас аз ${t.days} рӯз сар мешавад`; b.innerHTML=t.state==='now'?'<span>●</span>':`<span>${t.days}</span>`; el.querySelector('.ozmun-circle-v3').appendChild(b); } });
 }
-function ozmunTap(el){
-  const page=el.getAttribute('data-page');
-  if(page) location.href=page;
+async function loadContests(){ const url='data/contests.json?v=1'; let data=null; try{ const r=await fetch(url,{cache:'no-cache'}); if(r.ok) data=await r.json(); }catch(e){} if(!data){ try{ const m=await caches.match(url,{ignoreSearch:true}); if(m) data=await m.json(); }catch(e){} } if(!data){ try{ data=JSON.parse(localStorage.getItem('kk_contests_cache_v1')||'null'); }catch(e){} } else { try{ localStorage.setItem('kk_contests_cache_v1',JSON.stringify(data)); }catch(e){} } if(data&&Array.isArray(data.contests)){ CONTESTS=data; applyOzmunBadges(); } }
+loadContests();
+function ozmunTap(el){ const id=el.dataset.oz, page=el.dataset.page; const c=CONTESTS&&(CONTESTS.contests||[]).find(x=>x.id===id); if(!c){ location.href=page; return; } openContestSheet(c,page); }
+function openContestLink(url,title){ try{ const host=new URL(url).hostname.toLowerCase(); const g=GOV_SITES.find(s=>host===s.domain||host.endsWith('.'+s.domain)); if(g){ openGovernmentSite(url,title||g.name,g.id); return; } }catch(e){} openMiniBrowser(url,title||'Сомона','',true); }
+function openContestSheet(c,page){
+  document.getElementById('ozSheet')?.remove();
+  const t=ozTimeline(c); const today=new Date(); today.setHours(0,0,0,0);
+  let status='';
+  if(t.state==='now') status=`<div class="oz-status oz-status-now">● Ҳоло идома дорад: ${esc(t.next.name)} · то ${ozFmt(t.next.end)}</div>`;
+  else if(t.state==='soon') status=`<div class="oz-status oz-status-soon">● Пас аз ${t.days} рӯз: ${esc(t.next.name)} — ${ozRange(t.next)}</div>`;
+  else if(t.state==='later') status=`<div class="oz-status">Даври навбатӣ: ${esc(t.next.name)} — ${ozRange(t.next)}${t.next.approx?' (тахминӣ)':''}</div>`;
+  else status=`<div class="oz-status">Ҷадвали даврҳои нав ҳанӯз эълон нашудааст</div>`;
+  const stages=t.stages.map(s=>{ const a=ozDay(s.start),b=ozDay(s.end); const past=b&&b<today; const cur=t.next&&s.n===t.next.n&&s.start===t.next.start; return `<div class="oz-stage${past?' past':''}${cur?' cur':''}"><div class="oz-stage-dot"></div><div><div class="oz-stage-name">${esc(s.name)}${s.final?' 🏆':''}</div><div class="oz-stage-meta">📅 ${ozRange(s)}${s.approx?' · тахминӣ':''}${s.place?`<br>📍 ${esc(s.place)}`:''}</div></div></div>`; }).join('');
+  const how=(c.how||[]).map((h,i)=>`<li>${esc(h)}</li>`).join('');
+  // v127: тугмаҳои тамос бо data-атрибутҳо (onclick бо нохунакҳои дугона кор намекард) + танҳо номи сомона нишон дода мешавад
+  const contacts=(c.contacts||[]).map((k,i)=>{ let host=''; try{ host=new URL(k.url).hostname.replace(/^www\./,''); }catch(e){ host=String(k.url||''); } return `<button type="button" class="oz-contact" data-oz-link="${i}"><b>${esc(k.label)}</b><span>${esc(k.note||'')}${k.note?' · ':''}${esc(host)} ↗</span></button>`; }).join('');
+  const wrap=document.createElement('div'); wrap.id='ozSheet'; wrap.className='oz-sheet-wrap'; wrap.onclick=e=>{ if(e.target===wrap) wrap.remove(); };
+  wrap.innerHTML=`<div class="oz-sheet" role="dialog" aria-modal="true"><div class="oz-grip"></div>
+    <div class="oz-title">${esc(c.name)}</div><div class="oz-sub">${esc(c.decree||'')}</div>
+    ${status}
+    <div class="oz-h">📅 Кай ва дар куҷо</div><div class="oz-stages">${stages}</div>
+    ${c.who?`<div class="oz-h">👥 Кӣ иштирок карда метавонад</div><div class="oz-p">${esc(c.who)}</div>`:''}
+    ${how?`<div class="oz-h">📝 Чӣ тавр иштирок кунем</div><ol class="oz-ol">${how}</ol>`:''}
+    ${contacts?`<div class="oz-h">☎️ Тамос ва сомонаҳои расмӣ</div><div class="oz-contacts">${contacts}</div>`:''}
+    <button type="button" class="oz-btn oz-btn-gold" onclick="location.href='${esc(page||c.page)}'">📜 Низомномаи пурраи Озмун</button>
+    <button type="button" class="oz-btn" onclick="document.getElementById('ozSheet').remove()">Пӯшидан</button>
+    <div class="oz-src">${(c.sources||[]).map(esc).join(' · ')}</div></div>`;
+  wrap.querySelectorAll('[data-oz-link]').forEach(btn=>{ btn.addEventListener('click',ev=>{ ev.preventDefault(); ev.stopPropagation(); const k=(c.contacts||[])[Number(btn.dataset.ozLink)]; if(!k) return; btn.classList.add('busy'); openContestLink(k.url,k.label); wrap.remove(); }); });
+  document.body.appendChild(wrap);
 }
-(async function initContests(){
-  try{
-    const r=await fetch('data/contests.json',{cache:'no-cache'});
-    if(r.ok){ CONTESTS=await r.json(); renderOzmunBadges(); }
-  }catch(_){}
-})();
 
 const hsForm=$('homeSearchForm'); if(hsForm) hsForm.onsubmit=e=>{e.preventDefault(); const q=$('homeSearch').value.trim(); if(q) searchHome(q,true);};
 async function fetchJsonFast(u,ms=4500){ const ctrl=new AbortController(); const t=setTimeout(()=>ctrl.abort(),ms); try{ const r=await fetch(u,{cache:'no-store',signal:ctrl.signal}); if(!r.ok) throw new Error('HTTP '+r.status); return await r.json(); } finally{ clearTimeout(t);} }
@@ -2238,9 +2376,28 @@ function readCachedBooksJson(){
     return { data:parsed, fresh: ts>0 && (Date.now()-ts)<BOOKS_JSON_TTL_MS };
   }catch(e){ return null; }
 }
+let booksJsonRefreshing=false;
+// v126: кэши кӯҳна фавран дода мешавад, навсозӣ дар замина (stale-while-revalidate) — дар интернети суст
+// саҳифа 3×6,5 сония интизор намешавад; агар рӯйхати категорияҳо тағйир ёбад, ҳодисаи 'kk-books-updated' мебарояд.
+async function refreshBooksJsonInBackground(){
+  if(booksJsonRefreshing||navigator.onLine===false)return;booksJsonRefreshing=true;
+  try{
+    for(const u of BOOKS_JSON_URLS){
+      try{
+        const data=await fetchJsonFast(u,6500);if(!data||!Array.isArray(data.categories))continue;
+        const sig=d=>JSON.stringify((d?.categories||[]).map(c=>[c.id,c.name,c.count||c.books_count||0,(c.subs||[]).length]));
+        const changed=sig(data)!==sig(DATA);DATA=data;
+        try{localStorage.setItem('kk_booksjson_cache',JSON.stringify(DATA));localStorage.setItem('kk_booksjson_ts',String(Date.now()))}catch(_){}
+        if(changed)document.dispatchEvent(new CustomEvent('kk-books-updated',{detail:DATA}));
+        break;
+      }catch(e){}
+    }
+  }finally{booksJsonRefreshing=false}
+}
 async function loadBooksJson(force=false){
   const cached=readCachedBooksJson();
   if(cached&& (cached.fresh || navigator.onLine===false)){ DATA=cached.data; return DATA; }
+  if(cached&&cached.data&&!force){ DATA=cached.data; refreshBooksJsonInBackground(); return DATA; }
   for(const u of BOOKS_JSON_URLS){
     try{
       const data=await fetchJsonFast(u,6500);
@@ -2387,10 +2544,16 @@ async function loadManifest(sub,force=false){
   const freshArr=readCachedManifest(key),staleArr=readCachedManifest(key,true);
   if(!force&&freshArr){manifestCache.set(key,freshArr);manifestCacheTs.set(key,now);return freshArr;}
   if(navigator.onLine===false&&staleArr){manifestCache.set(key,staleArr);manifestCacheTs.set(key,now);return staleArr;}
+  // v126: манифести кӯҳна фавран дода мешавад (навсозӣ дар замина); дархостҳо бо таймаут 5 с — интернети суст саҳифаро намебандад
+  if(!force&&staleArr&&staleArr.length){
+    manifestCache.set(key,staleArr);manifestCacheTs.set(key,now);
+    (async()=>{try{const fresh=await loadManifest(sub,true);if(JSON.stringify(fresh)!==JSON.stringify(staleArr))document.dispatchEvent(new CustomEvent('kk-manifest-updated',{detail:{folder:key,books:fresh}}))}catch(e){}})();
+    return staleArr;
+  }
   let arr=[],loaded=false;
   const repo=DATA?.repo||'sharipovip/books',branch=DATA?.branch||'main';
   const urls=[`https://raw.githubusercontent.com/${repo}/${branch}/${enc(key)}/manifest.json?t=${Date.now()}`,`https://cdn.jsdelivr.net/gh/${repo}@${branch}/${enc(key)}/manifest.json?t=${Date.now()}`];
-  for(const url of urls){try{const r=await fetch(url,{cache:'no-store'});if(!r.ok)continue;const j=await r.json();if(Array.isArray(j.books)){arr=j.books;loaded=true;break}}catch(e){}}
+  for(const url of urls){try{const j=await fetchJsonFast(url,5000);if(Array.isArray(j.books)){arr=j.books;loaded=true;break}}catch(e){}}
   if(!loaded&&staleArr&&staleArr.length)arr=staleArr;
   manifestCache.set(key,arr);manifestCacheTs.set(key,Date.now());writeCachedManifest(key,arr);return arr;
 }
@@ -2470,6 +2633,7 @@ function renderCategories(cats){
   };
   grid.innerHTML=cats.slice(0,6).map(c=>`<div class="cat-card-v3" onclick="location.href='kitobho.html?cat=${encodeURIComponent(c.id)}'"><div class="cat-icon-v3">${icons[c.id]||icons.digar}</div><div class="cat-name-v3">${esc(c.name).replace(' ва ','<br>')}</div></div>`).join('');
 }
+document.addEventListener('kk-books-updated',e=>{ try{ renderCategories((e.detail&&e.detail.categories)||[]); }catch(err){} });
 async function loadHome(){
   try{
     const d=await loadBooksJson();
@@ -2583,7 +2747,7 @@ function updateLiveClockAndDate() {
   if (dateEl) dateEl.textContent = dd + '.' + mm + '.' + yyyy;
   if (timeEl) timeEl.textContent = hh + ':' + min;
 }
-setInterval(updateLiveClockAndDate, 1000);
+setInterval(()=>{if(!document.hidden)updateLiveClockAndDate()}, 1000); // v129: дар замина кор намекунад
 updateLiveClockAndDate();
 
 async function fetchLiveCityWeather(cityName) {
@@ -2852,10 +3016,30 @@ function openGovernmentSite(url, title, siteId) {
   // approved official domains in its own WebView; browser/PWA uses the same
   // in-app mini-browser overlay as the president.html page.
   if (window.AndroidBridge && typeof AndroidBridge.openOfficialSite === 'function') {
+    // v128: дар Android WebView саҳифаи барнома бо сомона иваз мешавад — то боршавии он нишонаи «гузариш» нишон медиҳем
+    showSiteOpening(safeUrl, title);
     AndroidBridge.openOfficialSite(safeUrl);
     return;
   }
   openMiniBrowser(safeUrl, title, siteId, true);
+}
+
+// v128: нишонаи фаврии гузариш ба сомона (сомонаҳои давлатӣ суст бор мешаванд; бе ин корбар фикр мекунад, ки тугма кор накард)
+function showSiteOpening(url, title) {
+  let host = '';
+  try { host = new URL(url).hostname.replace(/^www\./, ''); } catch (e) {}
+  document.getElementById('siteOpening')?.remove();
+  const el = document.createElement('div');
+  el.id = 'siteOpening'; el.className = 'site-opening'; el.setAttribute('role', 'status'); el.setAttribute('aria-live', 'polite');
+  el.innerHTML = `<div class="site-opening-card"><div class="site-opening-spin"></div><b>Гузариш ба сомона…</b><span>${esc(title || host)}</span><small>${esc(host)}</small>
+    <div class="site-opening-note">Сомонаҳои давлатӣ баъзан суст бор мешаванд — лутфан каме интизор шавед</div>
+    <div class="site-opening-actions"><button type="button" class="site-opening-btn" data-act="ext">Дар браузер кушодан</button><button type="button" class="site-opening-btn ghost" data-act="close">Бекор кардан</button></div></div>`;
+  el.querySelector('[data-act="close"]').onclick = () => el.remove();
+  el.querySelector('[data-act="ext"]').onclick = () => { el.remove(); try { if (window.AndroidBridge && typeof AndroidBridge.openExternalUrl === 'function') AndroidBridge.openExternalUrl(url); else window.open(url, '_blank', 'noopener'); } catch (e) {} };
+  document.body.appendChild(el);
+  // агар WebView саҳифаро иваз накунад (масалан, сомона иҷозат дода нашудааст) — пас аз 20 с худаш пинҳон мешавад
+  setTimeout(() => el.remove(), 20000);
+  window.addEventListener('pagehide', () => el.remove(), { once: true });
 }
 
 function govSiteCard(s, isCopy) {
@@ -3513,10 +3697,22 @@ function newsStartAuto(){
     newsGoTo(newsIdx + 1, true);                    // даврзанӣ: охирин → аввалин
   }, 10000);
 }
+// v126: ахбор ҳамеша дар браузери дохилии барнома кушода мешавад (на дар браузери беруна).
+// Порталҳои расмӣ (president.tj, khovar.tj, kmt.tj, ...) дар Android дар WebView-и худи барнома,
+// дар PWA — дар мини-браузери дохилӣ. Сомонаҳои дигар — дар мини-браузер бо keepInApp=true.
+function newsSiteIdFor(url){
+  try{ const host=new URL(url, location.href).hostname.toLowerCase(); const s=GOV_SITES.find(x=>host===x.domain||host.endsWith('.'+x.domain)); return s?s.id:''; }catch(e){ return ''; }
+}
 function newsOpen(i){
   const n = NEWS_ITEMS[i]; if (!n) return;
-  if (n.external || /^http:\/\//i.test(n.url)) openExternalSite(n.url);
-  else openMiniBrowser(n.url, n.source + ' · ахборот');
+  let url = String(n.url || '').trim(); if (!url) return;
+  const siteId = newsSiteIdFor(url);
+  if (siteId) {
+    url = url.replace(/^http:\/\//i, 'https://'); // порталҳои расмӣ ҳама HTTPS доранд; cleartext дар Android манъ аст
+    openGovernmentSite(url, (n.source || 'Ахбор') + ' · ахборот', siteId);
+    return;
+  }
+  openMiniBrowser(url, (n.source || 'Ахбор') + ' · ахборот', '', true);
 }
 function prepareHomeNews(items){
   const valid=(Array.isArray(items)?items:[]).filter(n=>n&&n.title&&n.url&&n.published);
@@ -3895,6 +4091,5 @@ loadNews(); // ахбороти расмӣ — баъди таърифи ҳам�
   });
 })();
 </script>
-<script>(function(){function c(){var b=a.contentDocument||(a.contentWindow&&a.contentWindow.document);if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'a4550fd828972f91',t:'MTc5MTEyNjA4Ng=='};var a=document.createElement('script');a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script><script type="module" src="https://static.cloudflareinsights.com/beacon.min.js/v31edd6df95cf4e85bb4c19e7a9bdbcba1788362987495" integrity="sha512-iIg7k2xntmwu6/uSb5tpc/hySgZc4eoL31yB29W6tJFo2akwjPWcEqnCEdJvGexCL0KEQwVYv5BlowfhVz26hg==" data-cf-beacon='{"version":"2024.11.0","token":"1954b47c125f43f8b4338b3c4f804e4f","spa":2}' crossorigin="anonymous"></script>
 </body>
 </html>
