@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="tg">
+<html lang="tg" class="light-reading">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#FAF7F0">
+<meta name="theme-color" content="#FFFFFF">
 <title>Китобхона — Хондан</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
@@ -725,6 +725,42 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 .doc-btn.alt{background:transparent;border:1px solid rgba(201,168,76,.55);color:#C9A84C}
 .doc-hint{font-size:11px;opacity:.55}
 </style>
+<style id="reader-white-flip-zoom">
+/* ===== v131: БЕЛАЯ ТЕМА ПО УМОЛЧАНИЮ — фон, панели и все элементы управления ===== */
+:root{--page-bg:#FFFFFF}
+.light-reading{--bg:#FFFFFF;--panel:#FFFFFF;--page-bg:#FFFFFF;--text:#1A1F29;--muted:#5B6472;--border:rgba(0,0,0,.12);--shadow:0 6px 22px rgba(0,0,0,.14)}
+html.light-reading,html.light-reading body,body.light-reading,
+body.light-reading .reader-wrapper,body.light-reading .reader-main,
+body.light-reading .page-stage,body.light-reading .page-container,
+body.light-reading .page-slot{background:#FFFFFF!important}
+body.light-reading .reader-wrapper{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 0 40px rgba(0,0,0,.10)!important}
+body.light-reading .reader-top-bar,body.light-reading .reader-bottom-bar,body.light-reading .reader-progress-wrap{background:#FFFFFF!important;border-color:rgba(0,0,0,.09)!important;backdrop-filter:none!important}
+body.light-reading .size-control,body.light-reading .page-entry-box{background:#FFFFFF!important;border:1px solid #E1E4E8!important;box-shadow:none!important}
+body.light-reading .reader-reactions .reaction-btn{background:#FFFFFF!important;border:1px solid #E1E4E8!important;box-shadow:0 2px 10px rgba(0,0,0,.10)!important}
+body.light-reading .reader-reactions .reaction-btn.active{background:#FFFFFF!important;border-color:#C9A84C!important}
+body.light-reading .reaction-sheet{background:#FFFFFF!important;border-color:#E1E4E8!important;box-shadow:0 10px 30px rgba(0,0,0,.14)!important}
+body.light-reading .reaction-sheet .reaction-btn{background:#FFFFFF!important;border-color:#E1E4E8!important}
+body.light-reading .panel{background:#FFFFFF!important;color:#1A1F29!important;border-color:rgba(0,0,0,.10)!important;box-shadow:0 10px 30px rgba(0,0,0,.14)!important}
+body.light-reading .setting-item{background:#FFFFFF!important;border:1px solid #E6E8EC!important}
+body.light-reading .pill{background:#FFFFFF!important;border:1px solid #D9DCE1!important;color:#1A1F29!important}
+body.light-reading .pill.active{background:#C9A84C!important;border-color:#C9A84C!important;color:#1B1202!important}
+body.light-reading #findInput{background:#FFFFFF!important;border:1px solid #D9DCE1!important;color:#1A1F29!important}
+body.light-reading .page-entry input{background:transparent!important;color:#1A1F29!important}
+body.light-reading .loading{background:#FFFFFF}
+body.light-reading .book-scroll{color:#1A1F29}
+body.light-reading .page-slot canvas{filter:none!important}
+
+/* ===== v131: СТАБИЛЬНЫЙ МАСШТАБ — холст всегда точного размера, без max-width/object-fit-искажений ===== */
+.page-slot canvas{max-width:none!important;max-height:none!important;width:auto;height:auto;flex:none!important;object-fit:fill!important;margin:auto}
+.page-container{perspective:1600px!important}
+.page-container.zoomed .page-slot.current{overflow:auto!important;justify-content:flex-start!important;align-items:flex-start!important;-webkit-overflow-scrolling:touch;overscroll-behavior:contain;scrollbar-width:none}
+.page-container.zoomed .page-slot.current::-webkit-scrollbar{display:none}
+.page-stage.is-zoomed{touch-action:pan-x pan-y!important}
+
+/* ===== v131: ПЕРЕЛИСТЫВАНИЕ КАК В НАСТОЯЩЕЙ КНИГЕ ===== */
+.page-slot.flip-flap{z-index:6!important;box-shadow:none!important;pointer-events:none;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform,filter,opacity}
+.flip-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;background:linear-gradient(to right,rgba(0,0,0,.34) 0%,rgba(0,0,0,.12) 38%,rgba(0,0,0,0) 72%)}
+</style>
 </head>
 <body class="light-reading">
 <div class="reader-wrapper">
@@ -797,7 +833,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       <div class="settings-group-title">Андоза</div>
       <div class="setting-item" style="display:block">
         <div class="setting-label">🔍 Калонсозӣ</div>
-        <input class="range" type="range" min="70" max="150" value="100" oninput="setZoom(this.value)">
+        <input class="range" type="range" min="70" max="220" value="100" oninput="setZoom(this.value)">
         <div id="zoomText" style="text-align:center;color:var(--gold2);font-weight:900">100%</div>
       </div>
     </div>
@@ -1216,78 +1252,110 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     } catch(e) {}
   }
 
+  // ===== v131: стабильный рендер (масштаб / перелистывание / ресайз) =====
+  const Z_MIN = 0.7, Z_MAX = 2.2, FLIP_MS = 640;
+  let renderedZoom = 1, renderedBoxW = 0, renderedBoxH = 0;
+  let pendingRender = null, flipFinalize = null, dragAngle = 0, zoomCommitTimer = null;
+
+  function pageBox() { const c = $('pageContainer'); return { w: Math.max(1, c.clientWidth), h: Math.max(1, c.clientHeight) }; }
+  function reducedMotion() { try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+  function resetSlotInstant(el) {
+    el.style.transition = 'none'; el.style.transform = ''; el.style.transformOrigin = ''; el.style.opacity = ''; el.style.filter = '';
+    void el.offsetWidth; el.style.transition = '';
+  }
+  // «Живой» масштаб: пока холст не перерисован, показываем разницу zoom/renderedZoom через CSS scale.
+  function applyLiveTransform(smooth) {
+    const c = $('pageContainer'); if (!c) return;
+    const k = zoom / renderedZoom;
+    c.style.transformOrigin = 'center center';
+    c.style.transition = smooth ? 'transform .14s ease-out' : 'none';
+    c.style.transform = Math.abs(k - 1) < 0.001 ? '' : 'scale(' + k + ')';
+  }
+
+  function flipTo(newCv, oldCv, dir) {
+    const container = $('pageContainer'), cur = $('currentSlot'), flap = $('nextSlot');
+    const shade = document.createElement('div'); shade.className = 'flip-shade'; container.appendChild(shade);
+    const startAngle = dragAngle; dragAngle = 0;
+    const anims = []; let done = false;
+    const finalize = () => {
+      if (done) return; done = true;
+      anims.forEach(a => { try { a.cancel(); } catch (e) {} });
+      if (dir < 0) cur.replaceChildren(newCv);
+      flap.className = 'page-slot hidden'; flap.replaceChildren(); flap.removeAttribute('style');
+      shade.remove();
+      if (flipFinalize === finalize) flipFinalize = null;
+    };
+    flipFinalize = finalize;
+    flap.removeAttribute('style');
+    flap.className = 'page-slot flip-flap';
+    if (dir > 0) { cur.replaceChildren(newCv); flap.replaceChildren(oldCv); }   // новая страница лежит снизу, старая переворачивается
+    else { flap.replaceChildren(newCv); }                                       // предыдущая страница возвращается поверх текущей
+    const R = a => 'rotateY(' + a + 'deg)', B = b => 'brightness(' + b + ')';
+    const kf = dir > 0 ? [
+      { transform: R(startAngle), filter: B(1),   opacity: 1, offset: 0 },
+      { transform: R(-52),        filter: B(.88), opacity: 1, offset: .45 },
+      { transform: R(-92),        filter: B(.74), opacity: 1, offset: .8 },
+      { transform: R(-105),       filter: B(.7),  opacity: 0, offset: 1 }
+    ] : [
+      { transform: R(-105),       filter: B(.7),  opacity: 0, offset: 0 },
+      { transform: R(-92),        filter: B(.74), opacity: 1, offset: .2 },
+      { transform: R(-52),        filter: B(.88), opacity: 1, offset: .55 },
+      { transform: R(0),          filter: B(1),   opacity: 1, offset: 1 }
+    ];
+    const opts = { duration: FLIP_MS, easing: 'cubic-bezier(.45,.05,.2,1)', fill: 'forwards' };
+    const af = flap.animate(kf, opts);
+    const as = shade.animate([{ opacity: 0 }, { opacity: .95, offset: dir > 0 ? .35 : .65 }, { opacity: 0 }], opts);
+    anims.push(af, as);
+    af.onfinish = finalize;
+  }
+
   async function renderPage(n, direction) {
-    if (!pdf || rendering) return;
+    direction = direction || 0;
+    if (!pdf) return;
+    if (rendering) { pendingRender = [n, direction]; return; }   // не теряем запрос (зум, ресайз) — выполним после текущего
     rendering = true;
     try {
+      if (flipFinalize) flipFinalize();                            // быстро листаем — предыдущая анимация мгновенно завершается
       const p = await pdf.getPage(n);
-      const st = $('stage');
+      const box = pageBox();
+      const z = zoom;
       const nat = p.getViewport({ scale: 1 });
-      const dpr = Math.min(devicePixelRatio || 1, 2);
-      // Responsive smartphone fit: always keep the complete PDF page visible.
-      const availableWidth = Math.max(1, st.clientWidth);
-      const availableHeight = Math.max(1, st.clientHeight);
-      const fit = Math.min(availableWidth / nat.width, availableHeight / nat.height) * zoom;
+      const fit = Math.min(box.w / nat.width, box.h / nat.height) * z;   // размер считаем по контейнеру страницы, а не по stage с отступами
+      let dpr = Math.min(window.devicePixelRatio || 1, 2);
+      while (dpr > 1 && (nat.width * fit * dpr) * (nat.height * fit * dpr) > 14e6) dpr = Math.max(1, dpr - 0.25);
       const vp = p.getViewport({ scale: fit * dpr });
 
       const cv = document.createElement('canvas');
-      cv.width = vp.width;
-      cv.height = vp.height;
-      cv.style.width = (vp.width / dpr) + 'px';
-      cv.style.height = (vp.height / dpr) + 'px';
+      cv.width = Math.max(1, Math.round(vp.width));
+      cv.height = Math.max(1, Math.round(vp.height));
+      cv.style.width = (nat.width * fit) + 'px';                    // CSS-размер из fit — пропорции всегда точные
+      cv.style.height = (nat.height * fit) + 'px';
       const ctx = cv.getContext('2d', { alpha: false });
-      ctx.fillStyle = getComputedStyle(document.documentElement).getPropertyValue('--page-bg') || '#f5f0e8';
+      ctx.fillStyle = '#FFFFFF';                                     // белая страница (раньше брался кремовый --page-bg)
       ctx.fillRect(0, 0, cv.width, cv.height);
       await p.render({ canvasContext: ctx, viewport: vp }).promise;
 
-      const currentSlot = $('currentSlot');
-      const nextSlot = $('nextSlot');
-
+      const currentSlot = $('currentSlot'), container = $('pageContainer'), stage = $('stage');
       const oldCanvas = currentSlot.querySelector('canvas');
-      if (oldCanvas && direction !== 0) {
-        // v130: Ба ҷои cloneNode (ки холӣ буд), худи канваси кӯҳнаро мегузаронем — варақзанӣ мисли китоби воқеӣ ҳамвор мешавад
-        nextSlot.innerHTML = '';
-        nextSlot.appendChild(oldCanvas);
-        nextSlot.className = 'page-slot next';
-        nextSlot.style.transition = 'none';
-        nextSlot.style.transformOrigin = direction === 1 ? 'left center' : 'right center';
-        nextSlot.style.transform = 'translateX(0) rotateY(0deg) scale(1)';
-        nextSlot.style.opacity = '1';
-        nextSlot.style.boxShadow = '0 10px 30px rgba(0,0,0,0.18)';
-
-        requestAnimationFrame(() => {
-          nextSlot.style.transition = 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease, box-shadow 0.45s ease';
-          nextSlot.style.transform = direction === 1 ? 'translateX(-35%) rotateY(-45deg) scale(0.93)' : 'translateX(35%) rotateY(45deg) scale(0.93)';
-          nextSlot.style.opacity = '0';
-          nextSlot.style.boxShadow = 'none';
-        });
-        setTimeout(() => {
-          nextSlot.className = 'page-slot hidden';
-          nextSlot.innerHTML = '';
-          nextSlot.style.transform = '';
-          nextSlot.style.opacity = '';
-          nextSlot.style.transition = '';
-        }, 480);
+      let fx = .5, fy = .5;
+      if (direction === 0 && oldCanvas && currentSlot.scrollWidth > 0 && currentSlot.scrollHeight > 0) {
+        fx = (currentSlot.scrollLeft + currentSlot.clientWidth / 2) / currentSlot.scrollWidth;
+        fy = (currentSlot.scrollTop + currentSlot.clientHeight / 2) / currentSlot.scrollHeight;
       }
+      const animate = direction !== 0 && oldCanvas && z <= 1.001 && !reducedMotion();
+      resetSlotInstant(currentSlot);
+      if (animate) flipTo(cv, oldCanvas, direction); else currentSlot.replaceChildren(cv);
 
-      currentSlot.innerHTML = '';
-      currentSlot.appendChild(cv);
-      currentSlot.className = 'page-slot current';
-      currentSlot.style.transition = 'none';
-      if (direction !== 0) {
-        currentSlot.style.transformOrigin = direction === 1 ? 'right center' : 'left center';
-        currentSlot.style.transform = direction === 1 ? 'translateX(25%) rotateY(30deg) scale(0.95)' : 'translateX(-25%) rotateY(-30deg) scale(0.95)';
-        currentSlot.style.opacity = '0.6';
-      } else {
-        currentSlot.style.transform = (zoom > 1.001) ? 'scale(' + zoom + ')' : 'none';
-        currentSlot.style.opacity = '1';
-      }
-
-      requestAnimationFrame(() => {
-        currentSlot.style.transition = 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease';
-        currentSlot.style.transform = (zoom > 1.001) ? 'scale(' + zoom + ')' : 'translateX(0) rotateY(0deg) scale(1)';
-        currentSlot.style.opacity = '1';
-      });
+      // подмена холста и снятие «живого» масштаба — в одном кадре, без скачка
+      renderedZoom = z; renderedBoxW = box.w; renderedBoxH = box.h;
+      const zoomed = z > 1.001;
+      container.classList.toggle('zoomed', zoomed);
+      stage.classList.toggle('is-zoomed', zoomed);
+      applyLiveTransform(false);
+      if (zoomed) {
+        currentSlot.scrollLeft = fx * currentSlot.scrollWidth - currentSlot.clientWidth / 2;
+        currentSlot.scrollTop = direction === 0 ? fy * currentSlot.scrollHeight - currentSlot.clientHeight / 2 : 0;
+      } else { currentSlot.scrollLeft = 0; currentSlot.scrollTop = 0; }
 
       page = n;
       const pct=pages?Math.round(page/pages*100):0;
@@ -1300,6 +1368,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       toast('Хатогӣ: ' + (e.message || e), 3000);
     } finally {
       rendering = false;
+      if (pendingRender) { const pr = pendingRender; pendingRender = null; renderPage(pr[0], pr[1]); }
     }
   }
 
@@ -1326,7 +1395,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     window.__kkToggleBars();
   });
 
-      let sx = 0, sy = 0, drag = false, startTime = 0;
+      let sx = 0, sy = 0, drag = false, startTime = 0, dragged = false, edgeL = true, edgeR = true;
   let isPinching = false, pinchStartDist = 0, pinchStartZoom = 1;
   const stageEl = $('stage');
 
@@ -1337,11 +1406,18 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       e.touches[0].clientY - e.touches[1].clientY
     );
   }
+  function restoreSlot(el) {
+    dragAngle = 0;
+    el.style.transition = 'transform .25s ease';
+    el.style.transform = '';
+    setTimeout(() => { el.style.transition = ''; el.style.transformOrigin = ''; }, 280);
+  }
 
   stageEl.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
       drag = false;
       isPinching = true;
+      clearTimeout(zoomCommitTimer);
       pinchStartDist = getTouchDist(e);
       // v99: для скролл-книг (FB2/TXT/DOCX) пинч меняет РАЗМЕР ШРИФТА, как в PDF
       pinchStartZoom = window.__kkTextMode === 'scroll' ? (window.__kkScrollZoomPct || 100) / 100 : zoom;
@@ -1351,7 +1427,10 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     startTime = Date.now();
-    drag = true;
+    drag = true; dragged = false;
+    const cs = $('currentSlot');   // у края увеличенной страницы свайп листает, иначе — панорамирование
+    edgeL = cs.scrollLeft <= 1;
+    edgeR = cs.scrollLeft + cs.clientWidth >= cs.scrollWidth - 1;
   }, { passive: true });
 
   stageEl.addEventListener('touchmove', e => {
@@ -1359,36 +1438,28 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       const dist = getTouchDist(e);
       if (pinchStartDist > 0 && dist > 0) {
         const factor = dist / pinchStartDist;
-        const targetPct = Math.max(70, Math.min(220, Math.round(pinchStartZoom * factor * 100)));
         // v99: FB2/TXT/DOCX — зум шрифта (матн перетекает), НЕ transform-scale
         if (window.__kkTextMode === 'scroll') {
-          setScrollZoom(targetPct, false);
+          setScrollZoom(Math.max(70, Math.min(220, Math.round(pinchStartZoom * factor * 100))), false);
           return;
         }
-        zoom = targetPct / 100;
-        const container = $('pageContainer');
-        if (container) {
-          container.classList.toggle('zoomed', zoom > 1.001);
-          container.style.transform = 'scale(' + zoom + ')';
-          container.style.transformOrigin = 'center center';
-        }
-        if ($('zoomText')) $('zoomText').textContent = targetPct + '%';
-        const slider = document.querySelector('input[type="range"][oninput*="setZoom"]');
-        if (slider) slider.value = targetPct;
+        if (window.__kkTextMode) return;
+        setLiveZoom(pinchStartZoom * factor, false);   // только дешёвый CSS-масштаб; чёткая перерисовка — после отпускания пальцев
       }
       return;
     }
     if (!drag || e.touches.length !== 1 || isPinching) return;
+    if (window.__kkTextMode || zoom > 1.001) return;   // увеличенная страница — нативное панорамирование
     const dx = e.touches[0].clientX - sx;
     const dy = e.touches[0].clientY - sy;
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
       const currentSlot = $('currentSlot');
-      const pct = Math.min(1, Math.abs(dx) / 200);
-      const offset = dx < 0 ? -pct * 40 : pct * 40;
+      const pct = Math.min(1, Math.abs(dx) / 220);
       currentSlot.style.transition = 'none';
-      currentSlot.style.transformOrigin = dx < 0 ? 'left center' : 'right center';
-      currentSlot.style.transform = 'translateX(' + (offset * 0.35) + 'px) rotateY(' + (dx < 0 ? -pct * 16 : pct * 16) + 'deg) scale(' + (1 - pct * 0.025) + ')';
-      currentSlot.style.opacity = 1 - pct * 0.3;
+      currentSlot.style.transformOrigin = 'left center';
+      if (dx < 0) { dragAngle = -pct * 28; currentSlot.style.transform = 'rotateY(' + dragAngle + 'deg)'; }   // страница приподнимается за правый край
+      else { dragAngle = 0; currentSlot.style.transform = 'translateX(' + (pct * 28) + 'px)'; }
+      dragged = true;
     }
   }, { passive: true });
 
@@ -1397,57 +1468,69 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       if (!e.touches || e.touches.length < 2) {
         isPinching = false;
         pinchStartDist = 0;
-        const container = $('pageContainer');
-        if (container) {
-          container.style.transform = '';
-        }
-        if (pdf && !rendering) {
-          renderPage(page);
+        if (!window.__kkTextMode && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
+          clearTimeout(zoomCommitTimer);
+          renderPage(page, 0);   // холст и CSS-масштаб меняются одновременно — без скачка
         }
       }
       return;
     }
     if (!drag) return;
     drag = false;
-    const dx = e.changedTouches[0].clientX - sx;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
     const dt = Date.now() - startTime;
     const currentSlot = $('currentSlot');
-    currentSlot.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
-    currentSlot.style.transform = 'translateX(0) scale(1)';
-    currentSlot.style.opacity = '1';
-    setTimeout(() => {
-      currentSlot.style.transition = '';
-    }, 350);
-    if (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250)) {
+    const zoomedPdf = !window.__kkTextMode && zoom > 1.001;
+    const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
+    const edgeOK = !zoomedPdf || (dx < 0 ? edgeR : edgeL);
+    if (wantTurn && edgeOK) {
       turnPage(dx < 0 ? 1 : -1);
+      // если перелистывание не началось (край книги) — вернуть страницу на место
+      if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);
+      return;
     }
+    if (dragged) restoreSlot(currentSlot);
   }, { passive: true });
 
   function setTheme(t) {
-    document.body.classList.toggle('light-reading', t === 'light');
+    const light = t === 'light';
+    document.body.classList.toggle('light-reading', light);
+    document.documentElement.classList.toggle('light-reading', light);
     localStorage.setItem('kk_reader_theme', t);
-    if (pdf) renderPage(page);
+    document.querySelectorAll('.settings-panel .pill[onclick^="setTheme"]').forEach(b => {
+      b.classList.toggle('active', (b.getAttribute('onclick') || '').indexOf("'" + t + "'") > -1);
+    });
+    const mt = document.querySelector('meta[name="theme-color"]');
+    if (mt) mt.setAttribute('content', light ? '#FFFFFF' : '#0C0C0C');
+    // холст теперь всегда белый, тема меняется CSS-фильтром — перерисовка не нужна (нет мерцания)
   }
   const initialReaderTheme=localStorage.getItem('kk_reader_theme')||'light';
   setTheme(initialReaderTheme);
   if($('readerThemeIcon')) $('readerThemeIcon').textContent=initialReaderTheme==='light'?'🌙':'☀';
 
-  let zoomDebounceTimer = null;
-  function setZoom(v) {
-    zoom = Number(v) / 100;
-    const container = $('pageContainer');
-    if (container) container.classList.toggle('zoomed', zoom > 1.001);
-    if ($('zoomText')) $('zoomText').textContent = v + '%';
-    const currentSlot = $('currentSlot');
-    if (currentSlot) {
-      currentSlot.style.transition = 'transform 0.12s ease-out';
-      currentSlot.style.transformOrigin = 'top center';
-      currentSlot.style.transform = (zoom > 1.001) ? 'scale(' + zoom + ')' : 'none';
-    }
-    clearTimeout(zoomDebounceTimer);
-    zoomDebounceTimer = setTimeout(() => {
-      if (pdf && !rendering) renderPage(page, 0);
-    }, 280);
+  function clampZoom(z) { return Math.max(Z_MIN, Math.min(Z_MAX, Math.round(z * 100) / 100)); }
+  function syncZoomUI() {
+    const pct = Math.round(zoom * 100);
+    if ($('zoomText')) $('zoomText').textContent = pct + '%';
+    const sl = document.querySelector('input[type="range"][oninput*="setZoom"]');
+    if (sl) sl.value = pct;
+  }
+  function setLiveZoom(z, smooth) { zoom = clampZoom(z); applyLiveTransform(!!smooth); syncZoomUI(); }
+  function setZoom(v, smooth) {
+    setLiveZoom(Number(v) / 100, smooth);
+    clearTimeout(zoomCommitTimer);
+    zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
+  }
+  // смена размера окна / поворот экрана — перерисовать страницу под новый размер
+  if (window.ResizeObserver) {
+    let resizeTimer = null;
+    new ResizeObserver(() => {
+      const b = pageBox();
+      if (Math.abs(b.w - renderedBoxW) < 2 && Math.abs(b.h - renderedBoxH) < 2) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { if (pdf) renderPage(page, 0); }, 160);
+    }).observe($('pageContainer'));
   }
 
   // ================== v99: АНДОЗАИ ҲАРФ барои EPUB / FB2 / TXT / DOCX ==================
@@ -1482,8 +1565,8 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
     if (window.__kkTextMode === 'epub') { window.__kkEpubFont(window.__kkEpubFontPct + delta); window.__kkEpubFontSave(); return; }
     if (window.__kkTextMode === 'scroll') { setScrollZoom((window.__kkScrollZoomPct || 100) + delta); return; }
     if (!window.__kkTextMode) { toast('Барои ин намуд андоза истифода намешавад'); return; }
-    const next = Math.max(70, Math.min(170, Math.round(zoom * 100) + delta));
-    setZoom(next);
+    const next = Math.max(70, Math.min(220, Math.round(zoom * 100) + delta));
+    setZoom(next, true);
     toast('Андоза: ' + next + '%');
   }
   window.adjustZoom = adjustZoom;
