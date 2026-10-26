@@ -136,19 +136,32 @@ html, body {
   filter: blur(8px) brightness(0.35);
   transform: scale(1.08);
 }
+/* v130: Ковер книги в правом верхнем углу, чтобы текст его не перекрывал */
+.slide-cover-topright,
 .slide-cover-center {
   position: absolute;
-  top: 50%; left: 50%;
-  transform: translate(-50%, -50%);
-  width: 65%;
-  max-width: 260px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-  border-radius: 8px;
+  top: 68px;
+  right: 16px;
+  width: 84px;
+  height: 122px;
+  border-radius: 10px;
   overflow: hidden;
-  z-index: 2;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.75), 0 0 0 1.5px rgba(220, 181, 94, 0.45);
+  z-index: 15;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  background: var(--card);
 }
+.slide-cover-topright:active,
+.slide-cover-center:active {
+  transform: scale(0.95);
+}
+.slide-cover-topright img,
 .slide-cover-center img {
-  width: 100%; display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 
 
@@ -1740,7 +1753,7 @@ function buildSlide(post, idx) {
     </div>
     
     ${finalCoverUrl ? `
-    <div class="slide-cover-center">
+    <div class="slide-cover-topright" onclick="location.href='reader.html?name=${encodeURIComponent(bookTitle)}'" title="${escHtml(bookTitle)}">
       <img src="${escHtml(finalCoverUrl)}" alt="${escHtml(bookTitle)}" loading="lazy">
     </div>` : ''}
 

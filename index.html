@@ -1183,8 +1183,58 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .main-content{padding-bottom:6px!important}
 .sec-head-v3{padding:8px 12px 4px!important}
 .ozmun-v3,.cat-v3,.books-v3{margin:1px 0!important}
-.ozmun-scroll-v3{display:grid!important;grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:3px!important;overflow:visible!important;padding:2px 7px 6px!important}
-.ozmun-item-v3{width:auto!important;min-width:0!important;max-width:none!important;flex:none!important}
+/* v130: Озмунҳо дар як қатори уфуқӣ бо гардиши чапу рост (horizontal scroll in single row) */
+.ozmun-scroll-v3{
+  display:flex!important;
+  flex-direction:row!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  gap:12px!important;
+  padding:4px 14px 12px!important;
+  scrollbar-width:none!important;
+  -webkit-overflow-scrolling:touch!important;
+}
+.ozmun-scroll-v3::-webkit-scrollbar{display:none!important}
+.ozmun-item-v3{
+  flex:0 0 72px!important;
+  width:72px!important;
+  min-width:72px!important;
+  max-width:72px!important;
+  text-align:center!important;
+  cursor:pointer!important;
+}
+.ozmun-circle-v3{
+  width:58px!important;
+  height:58px!important;
+  border-radius:50%!important;
+  margin:0 auto 6px!important;
+  background:#111E33!important;
+  border:2px solid #E8C96D!important;
+  box-shadow:0 4px 14px rgba(0,0,0,0.4),0 0 0 2px rgba(201,168,76,0.12)!important;
+  overflow:hidden!important;
+  position:relative!important;
+  display:grid!important;
+  place-items:center!important;
+}
+.ozmun-circle-v3 img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:50%!important;
+  display:block!important;
+}
+.ozmun-label-v3{
+  font-size:9.5px!important;
+  font-weight:700!important;
+  color:#B8C4D4!important;
+  line-height:1.2!important;
+  display:-webkit-box!important;
+  -webkit-line-clamp:2!important;
+  -webkit-box-orient:vertical!important;
+  overflow:hidden!important;
+  min-height:24px!important;
+}
 .ozmun-circle-v3{width:52px!important;height:52px!important;margin:0 auto 5px!important;border-width:2px!important;box-shadow:0 4px 13px rgba(0,0,0,.35),0 0 0 2px rgba(201,168,76,.09)!important}
 .ozmun-label-v3{font-size:8.3px!important;line-height:1.16!important;min-height:29px!important;-webkit-line-clamp:3!important}
 .cat-scroll-v3{padding:0 12px 5px!important}.books-scroll-v3{padding:0 12px 6px!important}

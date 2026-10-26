@@ -32,8 +32,8 @@
   }
   .topbar {
     display: flex; align-items: center; justify-content: space-between; gap: 10px;
-    padding: calc(env(safe-area-inset-top, 0) + 12px) 14px 12px;
-    background: rgba(11, 23, 38, 0.96);
+    padding: calc(env(safe-area-inset-top, 0) + 12px) 14px 10px;
+    background: rgba(11, 23, 38, 0.98);
     backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
     border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
@@ -56,6 +56,7 @@
   .topbar-title { font-size: 15px; font-weight: 800; color: var(--gold2); display: flex; align-items: center; gap: 4px; }
   .topbar-sub { font-size: 10.5px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
+  .topbar-actions { display: flex; align-items: center; gap: 6px; }
   .btn-clear {
     border: 1px solid var(--line); background: rgba(255,255,255,0.04);
     color: var(--muted); padding: 6px 10px; border-radius: 10px; font-size: 11px;
@@ -63,22 +64,40 @@
   }
   .btn-clear:hover { color: #FF7B79; border-color: rgba(255,75,75,0.3); }
 
+  /* Mode Switch Bar (Ёвар vs Soro-zehn live guest) */
+  .mode-switch-bar {
+    display: flex; gap: 6px; padding: 8px 14px 6px;
+    background: rgba(14, 25, 40, 0.85); border-bottom: 1px solid rgba(220,181,94,0.12);
+    flex-shrink: 0;
+  }
+  .mode-tab-btn {
+    flex: 1; padding: 7px 10px; border-radius: 12px; border: 1px solid var(--line);
+    background: var(--card); color: var(--muted); font-size: 12px; font-weight: 750;
+    cursor: pointer; transition: all 0.2s ease; text-align: center; display: flex;
+    align-items: center; justify-content: center; gap: 6px;
+  }
+  .mode-tab-btn.active {
+    background: linear-gradient(135deg, rgba(220,181,94,0.22), rgba(220,181,94,0.08));
+    color: var(--gold2); border-color: var(--gold);
+    box-shadow: 0 2px 10px rgba(0,0,0,0.3);
+  }
+
   /* Chips */
   .chips-scroll {
-    display: flex; gap: 6px; overflow-x: auto; padding: 10px 14px 6px;
+    display: flex; gap: 6px; overflow-x: auto; padding: 8px 14px 6px;
     scrollbar-width: none; flex-shrink: 0; background: rgba(0,0,0,0.12);
   }
   .chips-scroll::-webkit-scrollbar { display: none; }
   .chip-btn {
     border: 1px solid var(--line); background: var(--card); color: var(--text);
-    padding: 6px 12px; border-radius: 999px; font-size: 12px; font-weight: 600;
+    padding: 6px 12px; border-radius: 999px; font-size: 11.5px; font-weight: 600;
     white-space: nowrap; cursor: pointer; transition: all .15s ease;
   }
   .chip-btn:active { background: var(--gold); color: #1a1202; }
 
   /* Chat stream */
   .chat-stream {
-    flex: 1; overflow-y: auto; padding: 14px 14px 20px; display: flex; flex-direction: column; gap: 14px;
+    flex: 1; overflow-y: auto; padding: 14px 14px 16px; display: flex; flex-direction: column; gap: 14px;
     scrollbar-width: thin; scrollbar-color: rgba(220,181,94,0.2) transparent;
   }
   .msg-row { display: flex; gap: 10px; max-width: 88%; }
@@ -112,12 +131,12 @@
   .msg-time { font-size: 9.5px; opacity: 0.55; margin-top: 4px; text-align: right; }
 
   .book-card-ai {
-    display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.25);
-    border: 1px solid var(--line); border-radius: 12px; padding: 8px 10px; margin-top: 8px;
-    cursor: pointer; text-decoration: none; color: inherit;
+    display: flex; gap: 10px; align-items: center; background: rgba(0,0,0,0.3);
+    border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-top: 8px;
+    cursor: pointer; text-decoration: none; color: inherit; transition: border-color 0.2s;
   }
   .book-card-ai:hover { border-color: var(--gold); }
-  .b-icon { font-size: 22px; }
+  .b-icon { font-size: 24px; }
   .b-title { font-weight: 750; font-size: 13px; color: var(--gold2); }
   .b-meta { font-size: 11px; color: var(--muted); }
 
@@ -155,6 +174,15 @@
   .typing-dot:nth-child(3) { animation-delay: 0.4s; }
   @keyframes typingBounce { 0%,80%,100%{ transform: scale(0.6); opacity: 0.4; } 40%{ transform: scale(1); opacity: 1; } }
 
+  /* Iframe Container for Soro - zehn */
+  .soro-iframe-pane {
+    flex: 1; width: 100%; border: none; display: none; background: #0b1422;
+  }
+  .soro-guest-hint {
+    padding: 8px 14px; background: rgba(220,181,94,0.12); border-bottom: 1px solid var(--line);
+    font-size: 11px; color: var(--gold2); display: flex; align-items: center; justify-content: space-between;
+  }
+
   /* Bottom Nav */
   .nav-bottom {
     position: relative; width: 100%; height: 50px; flex: 0 0 50px;
@@ -178,9 +206,7 @@
   .nav-item span {
     font-size: 9px; color: inherit; font-weight: 500; line-height: 1; white-space: nowrap;
   }
-  .nav-item svg {
-    display: block; width: 20px; height: 20px; color: inherit;
-  }
+  .nav-item svg { display: block; width: 20px; height: 20px; color: inherit; }
   .nav-item.active { color: #D9B23C; }
   .nav-item.active svg { transform: scale(1.15); color: #D9B23C; }
 
@@ -213,27 +239,46 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <a class="btn-back" href="index.html" aria-label="Бозгашт">←</a>
       <div class="ai-logo">AI</div>
       <div class="topbar-meta">
-        <div class="topbar-title">SoroLLM AI <span>✨</span></div>
-        <div class="topbar-sub">Ҳуши сунъии миллии Китобхона</div>
+        <div class="topbar-title">SoroLLM · zehn <span>✨</span></div>
+        <div class="topbar-sub">Ҳуши сунъии Китобхона ва Тоҷикистон</div>
       </div>
     </div>
-    <button class="btn-clear" onclick="clearHistory()" title="Тоза кардани таърих">🗑 Тоза кардан</button>
+    <div class="topbar-actions">
+      <button class="btn-clear" onclick="clearHistory()" title="Тоза кардани таърих">🗑 Тоза кардан</button>
+    </div>
   </div>
 
-  <div class="chips-scroll">
-    <button class="chip-btn" onclick="askPrompt('Дар бораи китобҳои Пешвои миллат маълумот диҳед')">👑 Китобҳои Президент</button>
-    <button class="chip-btn" onclick="askPrompt('50 соати хониш дар Китобхона чӣ медиҳад?')">⏱ 50 соати хониш</button>
-    <button class="chip-btn" onclick="askPrompt('Дар бораи озмуни «Идеяи ман калиди фардо» маълумот диҳед')">💡 «Идеяи ман калиди фардо»</button>
-    <button class="chip-btn" onclick="askPrompt('Озмунҳои ҷумҳуриявӣ кадомҳоянд?')">🏆 Озмунҳо</button>
-    <button class="chip-btn" onclick="askPrompt('Чӣ тавр китобро офлайн хонам?')">📥 Хондан бе интернет</button>
-    <button class="chip-btn" onclick="askPrompt('Оё китоби Фирдавсӣ дар барнома ҳаст?')">🔍 Санҷиши китоб</button>
+  <div class="mode-switch-bar">
+    <button type="button" class="mode-tab-btn active" id="tabAssistantBtn" onclick="switchViewMode('assistant')">✨ Ёвари Китобхона</button>
+    <button type="button" class="mode-tab-btn" id="tabSoroZehnBtn" onclick="switchViewMode('sorozehn')">🌐 Soro — zehn (Меҳмон)</button>
   </div>
 
-  <div class="chat-stream" id="chatStream"></div>
+  <!-- Soro - zehn live guest view -->
+  <div id="soroZehnContainer" style="display:none; flex:1; flex-direction:column; min-height:0;">
+    <div class="soro-guest-hint">
+      <span>💡 Сомонаи расмии Soro — zehn дар реҷаи меҳмон</span>
+      <a href="https://www.sorollm.tj/" target="_blank" rel="noopener" style="color:var(--gold2);font-weight:750;text-decoration:none;">Кушодан ↗</a>
+    </div>
+    <iframe class="soro-iframe-pane" id="soroIframe" style="display:block;" src="https://www.sorollm.tj/" title="Soro — zehn"></iframe>
+  </div>
 
-  <div class="input-bar">
-    <input type="text" class="chat-input" id="userInput" placeholder="Саволи худро бинависед..." autocomplete="off">
-    <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
+  <!-- Assistant View -->
+  <div id="assistantContainer" style="display:flex; flex:1; flex-direction:column; min-height:0;">
+    <div class="chips-scroll">
+      <button class="chip-btn" onclick="askPrompt('Дар бораи китобҳои Пешвои миллат маълумот диҳед')">👑 Китобҳои Президент</button>
+      <button class="chip-btn" onclick="askPrompt('50 соати хониш дар Китобхона чӣ медиҳад?')">⏱ 50 соати хониш</button>
+      <button class="chip-btn" onclick="askPrompt('Дар бораи озмуни «Идеяи ман калиди фардо» маълумот диҳед')">💡 «Идеяи ман калиди фардо»</button>
+      <button class="chip-btn" onclick="askPrompt('Озмунҳои ҷумҳуриявӣ кадомҳоянд?')">🏆 Озмунҳо</button>
+      <button class="chip-btn" onclick="askPrompt('Чӣ тавр китобро офлайн хонам?')">📥 Хондан бе интернет</button>
+      <button class="chip-btn" onclick="askPrompt('Оё китоби Фирдавсӣ дар барнома ҳаст?')">🔍 Санҷиши китоб</button>
+    </div>
+
+    <div class="chat-stream" id="chatStream"></div>
+
+    <div class="input-bar">
+      <input type="text" class="chat-input" id="userInput" placeholder="Саволи худро бинависед..." autocomplete="off">
+      <button class="btn-send" id="sendBtn" onclick="sendMessage()">➤</button>
+    </div>
   </div>
 
   <div class="nav-bottom">
@@ -268,8 +313,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 const HISTORY_KEY = 'kk_sorollm_history_v1';
 let chatHistory = [];
 let allCatalogBooks = [];
+let soroGuestChatId = null;
 
-// Донишномаи дарунсохти Пешвои миллат ва барнома
+// Донишномаи дарунсохти асарҳои Пешвои миллат ва қоидаҳои барнома
 const PRESIDENT_BOOKS = [
   { title: "Тоҷикон дар оинаи таърих", vol: "4 ҷилд", desc: "Шоҳасари таърихии Пешвои миллат дар бораи пайдоиш, давлатдории ориёиҳо, давраи Сомониён ва ҳувияти миллии тоҷикон." },
   { title: "Забони миллат — ҳастии миллат", vol: "2 ҷилд", desc: "Тадқиқоти мукаммал роҷеъ ба сарнавишт, таърихи ташаккул ва рушди забони давлатии тоҷикӣ аз давраҳои бостон то имрӯз." },
@@ -278,6 +324,25 @@ const PRESIDENT_BOOKS = [
   { title: "Истиқлолияти Тоҷикистон ва эҳёи миллат", vol: "Силсила", desc: "Таҳлили раванди барқарорсозии сулҳу ваҳдати миллӣ ва асосҳои давлатдории навини Тоҷикистон." },
   { title: "Аз Ориё то Сомониён", vol: "1 ҷилд", desc: "Давраҳои шукуфоӣ ва дастовардҳои таърихии тамаддуни ориёӣ ва давлати мутамаркази Сомониён." }
 ];
+
+function switchViewMode(mode) {
+  const asstPane = document.getElementById('assistantContainer');
+  const soroPane = document.getElementById('soroZehnContainer');
+  const asstBtn = document.getElementById('tabAssistantBtn');
+  const soroBtn = document.getElementById('tabSoroZehnBtn');
+
+  if (mode === 'sorozehn') {
+    asstPane.style.display = 'none';
+    soroPane.style.display = 'flex';
+    asstBtn.classList.remove('active');
+    soroBtn.classList.add('active');
+  } else {
+    soroPane.style.display = 'none';
+    asstPane.style.display = 'flex';
+    soroBtn.classList.remove('active');
+    asstBtn.classList.add('active');
+  }
+}
 
 async function loadCatalog() {
   try {
@@ -304,7 +369,7 @@ function initHistory() {
   if (!chatHistory.length) {
     chatHistory.push({
       role: 'ai',
-      text: "Салом! Ман SoroLLM — ёрдамчии ҳушманди Китобхона ҳастам. Шумо метавонед дар бораи китобҳои Пешвои миллат, қоидаҳо ва хусусиятҳои барнома (50 соати хониш, рейтинг, озмунҳои ҷумҳуриявӣ) пурсед, ё мавҷудияти китобҳои дилхоҳро дар китобхона бисанҷед. Чӣ гуна кӯмак расонам?",
+      text: "Салом! Ман SoroLLM — ёрдамчии ҳушманди Китобхона дар заминаи модели миллии тоҷикӣ Soro ҳастам. Шумо метавонед дар бораи китобҳои Пешвои миллат, қоидаҳо ва хусусиятҳои барнома (50 соати хониш, рейтинг, озмунҳои ҷумҳуриявӣ) бипурсед, ё мавҷудияти китобҳои мушаххасро аз рӯи феҳрист бисанҷед. Ҳамчунин метавонед аз тугмаи боло бевосита ба сомонаи Soro — zehn ҳамчун меҳмон гузаред.",
       time: new Date().toLocaleTimeString('tg-TJ', { hour: '2-digit', minute: '2-digit' })
     });
     saveHistory();
@@ -365,6 +430,55 @@ function escHtml(s) {
   })[c]);
 }
 
+async function querySoroGuestAPI(userPrompt) {
+  try {
+    // 1. Guest login on sorollm.tj
+    const authRes = await fetch('https://www.sorollm.tj/api/auth/guest', {
+      method: 'POST',
+      headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+      credentials: 'include',
+      body: '{}'
+    });
+    if (!authRes.ok) return null;
+
+    // 2. Create chat if not exists
+    if (!soroGuestChatId) {
+      const chatRes = await fetch('https://www.sorollm.tj/api/chat/create', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: '{}'
+      });
+      if (chatRes.ok) {
+        const cData = await chatRes.json();
+        soroGuestChatId = cData.chat_id || cData.id;
+      }
+    }
+
+    // 3. Ask Soro LLM
+    if (soroGuestChatId) {
+      const askRes = await fetch('https://www.sorollm.tj/api/v2/ask', {
+        method: 'POST',
+        headers: { 'Accept': 'application/json', 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          messages: [{ role: 'user', content: userPrompt }],
+          chat_id: soroGuestChatId,
+          model: 'fast',
+          use_rag: true
+        })
+      });
+      if (askRes.ok) {
+        const ans = await askRes.json();
+        return ans.reply || ans.message || ans.content || null;
+      }
+    }
+  } catch(e) {
+    console.warn('Soro online API fallback to local smart engine:', e);
+  }
+  return null;
+}
+
 async function sendMessage() {
   const input = document.getElementById('userInput');
   const query = input.value.trim();
@@ -387,45 +501,31 @@ async function sendMessage() {
   stream.appendChild(typingEl);
   stream.scrollTop = stream.scrollHeight;
 
-  // Answer resolution: External Soro API or local engine
+  // Answer resolution: Soro Guest API or Local Knowledge Engine
   setTimeout(async () => {
     let reply = "";
-    let card = null;
+    let card = detectBookCard(query);
 
-    // Check if external SoroLLM API configured
-    if (window.KITOB_CONFIG && KITOB_CONFIG.SORO_API_URL && KITOB_CONFIG.SORO_API_KEY) {
-      try {
-        const resp = await fetch(KITOB_CONFIG.SORO_API_URL, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': 'Bearer ' + KITOB_CONFIG.SORO_API_KEY
-          },
-          body: JSON.stringify({
-            messages: [
-              { role: 'system', content: 'Шумо SoroLLM — ёвари ҳушманди барномаи Китобхона мебошед. Ҷавобҳоро бо забони тоҷикӣ, боэҳтиромона ва дақиқ дар бораи асарҳои Пешвои миллат ва қоидаҳои барнома пешниҳод кунед.' },
-              ...chatHistory.slice(-6).map(h => ({ role: h.role === 'user' ? 'user' : 'assistant', content: h.text }))
-            ]
-          })
-        });
-        if (resp.ok) {
-          const apiData = await resp.json();
-          reply = apiData.choices?.[0]?.message?.content || apiData.reply || "";
-        }
-      } catch(e) {}
+    // First try Soro LLM guest API if query is general
+    if (!card && !isAppSpecificQuery(query)) {
+      reply = await querySoroGuestAPI(query);
     }
 
-    // Local Knowledge Engine fallback
+    // If no external reply, use local comprehensive knowledge engine
     if (!reply) {
       reply = generateSmartAnswer(query);
-      card = detectBookCard(query);
     }
 
     document.getElementById('typingBubble')?.remove();
     chatHistory.push({ role: 'ai', text: reply, card, time: new Date().toLocaleTimeString('tg-TJ', { hour: '2-digit', minute: '2-digit' }) });
     saveHistory();
     renderStream();
-  }, 650);
+  }, 450);
+}
+
+function isAppSpecificQuery(q) {
+  const s = q.toLowerCase();
+  return s.includes('50') || s.includes('соат') || s.includes('президент') || s.includes('пешво') || s.includes('озмун') || s.includes('идея') || s.includes('офлайн') || s.includes('китоб') || s.includes('рейтинг');
 }
 
 function generateSmartAnswer(q) {
@@ -468,7 +568,6 @@ function generateSmartAnswer(q) {
 
   // 7. Ҷустуҷӯи китоб дар феҳрист
   if (s.includes('китоб') || s.includes('ҳаст') || s.includes('доред') || s.includes('ҷустуҷӯ')) {
-    // Ҷустуҷӯи калима дар феҳрист
     const found = searchBookInCatalog(s);
     if (found) {
       return `📚 Китоби «${found.name}» дар феҳристи Китобхона дар бахши «${found.category}» мавҷуд аст! Шумо метавонед онро мустақиман кушода мутолиа намоед.`;
@@ -478,10 +577,10 @@ function generateSmartAnswer(q) {
 
   // Саломи умумӣ
   if (s.includes('салом') || s.includes('ассалом') || s.includes('дархост')) {
-    return "Салом ва пазироии гарм! Ман омодаам ба ҳама саволҳои шумо роҷеъ ба китобҳо, Низомномаи озмунҳо, мутолиаи офлайн ва шартҳои истифодаи Китобхона посух гӯям.";
+    return "Салом ва пазироии гарм! Ман SoroLLM ҳастам ва омодаам ба ҳама саволҳои шумо роҷеъ ба китобҳо, Низомномаи озмунҳо, мутолиаи офлайн ва шартҳои истифодаи Китобхона посух гӯям.";
   }
 
-  return "Ташаккур барои муроҷиат! Ман ҳамчун ёвари Китобхона омодаам дар бораи китобҳои Пешвои миллат, озмунҳои ҷумҳуриявии Тоҷикистон, қоидаи 50 соати хониш, ёфтан ва санҷиши китобҳо дар феҳрист кӯмак расонам. Саволи мушаххаси худро бинависед.";
+  return "Ташаккур барои муроҷиат! Ман ҳамчун ёвари Китобхона дар ҳамкорӣ бо модели миллии Soro омодаам дар бораи китобҳои Пешвои миллат, озмунҳои ҷумҳуриявии Тоҷикистон, қоидаи 50 соати хониш, ёфтан ва санҷиши китобҳо дар феҳрист кӯмак расонам. Саволи мушаххаси худро бинависед.";
 }
 
 function searchBookInCatalog(query) {
@@ -500,6 +599,10 @@ function detectBookCard(query) {
   }
   if (s.includes('чеҳраҳои мондагор')) {
     return { title: "Чеҳраҳои мондагор", link: "reader.html?name=Чеҳраҳои+мондагор&cat=peshvoi_millat", meta: "Пешвои миллат Эмомалӣ Раҳмон" };
+  }
+  const match = searchBookInCatalog(query);
+  if (match) {
+    return { title: match.name, link: `reader.html?name=${encodeURIComponent(match.name)}&cat=${encodeURIComponent(match.category)}`, meta: match.category };
   }
   return null;
 }
