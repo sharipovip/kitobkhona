@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0a0e1a">
+<title>Озмуни ҷумҳуриявии «Идеяи ман калиди фардо» · Низомнома</title>
+<link rel="icon" type="image/x-icon" href="./favicon.ico">
+<script src="config.js?v=75"></script>
+<style>
+  :root{
+    --bg:#0a0e1a;--bg2:#11172a;--panel:#151b30;--panel2:#1a2240;--line:#243154;
+    --text:#e7ecf7;--muted:#8a94b8;--gold:#f0c674;--gold2:#ffd989;--gold-soft:rgba(240,198,116,.15);
+    --accent:#7dd3fc;--accent2:#38bdf8;--accent-soft:rgba(125,211,252,.12);
+    --shadow:0 8px 32px rgba(0,0,0,.45);
+  }
+  *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+  html,body{margin:0;padding:0;background:var(--bg);color:var(--text);
+    font-family:"Noto Sans","Vazirmatn","Segoe UI",system-ui,-apple-system,sans-serif;
+    line-height:1.7;font-size:15px;-webkit-font-smoothing:antialiased;overflow-x:hidden;}
+  .wrap{max-width:820px;margin:0 auto;padding:calc(env(safe-area-inset-top,0) + 12px) 16px calc(env(safe-area-inset-bottom,0) + 80px);}
+  .topbar{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;gap:10px;
+    padding:10px 14px;margin:-12px -16px 16px;background:rgba(10,14,26,.88);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line);}
+  .back-btn{display:inline-flex;align-items:center;gap:6px;background:var(--panel);color:var(--accent);
+    border:1px solid var(--line);padding:8px 14px;border-radius:12px;font-size:14px;font-weight:600;cursor:pointer;text-decoration:none;}
+  .hero{background:linear-gradient(135deg,#121a36 0%,#192348 50%,#0f172a 100%);border:1px solid var(--line);border-radius:20px;padding:22px 18px;margin-bottom:18px;text-align:center;box-shadow:var(--shadow);}
+  .hero-img{width:110px;height:110px;border-radius:24px;border:3px solid var(--gold);box-shadow:0 8px 24px rgba(240,198,116,.28);margin:0 auto 14px;display:block;object-fit:cover;}
+  .hero h1{font-size:22px;color:var(--gold2);margin:0 0 8px;font-weight:800;line-height:1.35;}
+  .hero p{font-size:14px;color:var(--muted);margin:0;line-height:1.55;}
+  .badge-row{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin-top:14px;}
+  .badge{display:inline-flex;align-items:center;gap:5px;background:var(--gold-soft);color:var(--gold2);padding:5px 12px;border-radius:999px;font-size:12px;font-weight:700;border:1px solid rgba(240,198,116,.3);}
+  .card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px;margin-bottom:16px;box-shadow:var(--shadow);}
+  .card h2{margin:0 0 14px;font-size:17px;color:var(--gold);display:flex;align-items:center;gap:10px;font-weight:800;}
+  .card h2 .icon{width:32px;height:32px;border-radius:10px;background:var(--gold-soft);display:flex;align-items:center;justify-content:center;font-size:16px;}
+  .stage-item{background:var(--bg2);border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:10px;}
+  .stage-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;}
+  .stage-title{font-weight:700;color:var(--accent);font-size:14.5px;}
+  .stage-date{font-size:12px;color:var(--gold);font-weight:700;background:rgba(240,198,116,.12);padding:3px 8px;border-radius:8px;}
+  .stage-desc{font-size:13px;color:var(--muted);line-height:1.5;}
+  .nom-item{display:flex;align-items:flex-start;gap:10px;padding:10px 0;border-bottom:1px solid rgba(36,49,84,.5);}
+  .nom-item:last-child{border-bottom:none;}
+  .nom-num{width:26px;height:26px;border-radius:50%;background:var(--gold-soft);color:var(--gold);display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800;flex-shrink:0;margin-top:2px;}
+  .nom-text{font-size:14px;color:var(--text);line-height:1.5;}
+  .table-wrap{overflow-x:auto;margin:12px 0;}
+  table{width:100%;border-collapse:collapse;font-size:13px;text-align:left;}
+  th,td{padding:9px 12px;border:1px solid var(--line);}
+  th{background:var(--bg2);color:var(--gold2);font-weight:700;}
+  td{background:rgba(17,23,42,.4);}
+  .contacts-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:12px;}
+  .contact-btn{display:inline-flex;align-items:center;gap:6px;background:var(--bg2);border:1px solid var(--line);color:var(--text);padding:10px 14px;border-radius:12px;font-size:13px;text-decoration:none;font-weight:600;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="topbar">
+    <a class="back-btn" href="index.html">← Ба саҳифаи асосӣ</a>
+    <span style="font-size:13px;color:var(--gold);font-weight:700;">Озмуни ҷумҳуриявӣ</span>
+  </div>
+
+  <div class="hero">
+    <img class="hero-img" src="ideai_man_banner.jpg" alt="Идеяи ман калиди фардо">
+    <h1>Озмуни ҷумҳуриявии «Идеяи ман калиди фардо»</h1>
+    <p>Бахшида ба «Солҳои рушди иқтисоди рақамӣ ва инноватсия» (2025–2030) дар асоси фармони Президенти Ҷумҳурии Тоҷикистон</p>
+    <div class="badge-row">
+      <span class="badge">💡 Инноватсия ва технология</span>
+      <span class="badge">👥 Синфҳои 5–11</span>
+      <span class="badge">🏆 Мукофот то 7 000 сомонӣ</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">📅</span> Даврҳои баргузории озмун</h2>
+    <div class="stage-item">
+      <div class="stage-head">
+        <span class="stage-title">Даври якум — ноҳиявӣ (шаҳрӣ)</span>
+        <span class="stage-date">Моҳи октябр</span>
+      </div>
+      <div class="stage-desc">Дар муассисаҳои таҳсилоти миёнаи умумӣ ва марказҳои шаҳру ноҳияҳо ташкил ва гузаронида мешавад.</div>
+    </div>
+    <div class="stage-item">
+      <div class="stage-head">
+        <span class="stage-title">Даври дуюм — вилоятӣ ва минтақавӣ</span>
+        <span class="stage-date">Моҳи ноябр</span>
+      </div>
+      <div class="stage-desc">Барои ғолибони даври 1 дар марказҳои вилоятҳо, шаҳри Душанбе ва шаҳру ноҳияҳои тобеи ҷумҳурӣ баргузор мегардад.</div>
+    </div>
+    <div class="stage-item">
+      <div class="stage-head">
+        <span class="stage-title">Даври сеюм — ҷумҳуриявӣ (ҷамъбастӣ)</span>
+        <span class="stage-date">Моҳи феврал</span>
+      </div>
+      <div class="stage-desc">Даври ниҳоӣ дар шаҳри Душанбе таҳти роҳбарии Вазорати маориф ва илми ҶТ ва Агентии инноватсия бо мукофотсупорӣ.</div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🎯</span> Панҷ номинатсияи озмун</h2>
+    <div class="nom-item"><div class="nom-num">1</div><div class="nom-text"><strong>Лоиҳаи беҳтарини инноватсионӣ дар соҳаи экология ва энергетика</strong> (дар шакли хаттӣ, амалӣ ва рунамо/видеоролик)</div></div>
+    <div class="nom-item"><div class="nom-num">2</div><div class="nom-text"><strong>Беҳтарин лоиҳаи инноватсионии технологияи рақамӣ ва барномаҳои мобилӣ</strong> (барномасозӣ, веб ва сохтани замимаҳо)</div></div>
+    <div class="nom-item"><div class="nom-num">3</div><div class="nom-text"><strong>Беҳтарин лоиҳаи инноватсионӣ ва технологияҳои рақамӣ дар соҳаи маориф</strong> (платформаҳо ва усулҳои нави таълимӣ)</div></div>
+    <div class="nom-item"><div class="nom-num">4</div><div class="nom-text"><strong>Беҳтарин лоиҳа дар соҳаи моделҳои соҳибкории сабз</strong> (стартапҳо ва иқтисоди устувор)</div></div>
+    <div class="nom-item"><div class="nom-num">5</div><div class="nom-text"><strong>Беҳтарин лоиҳа дар соҳаи зеҳни сунъӣ ва таҳлилҳои рақамӣ</strong> (AI, таҳлили маълумот ва алгоритмҳо)</div></div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">⚖️</span> Меъёрҳои баҳогузорӣ (100 балл)</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Меъёр</th><th style="width:100px;text-align:center">Хол</th></tr></thead>
+        <tbody>
+          <tr><td>Навоварӣ ва эҷодкорӣ дар ҳалли масъала</td><td style="text-align:center;font-weight:700;color:var(--gold)">40 балл</td></tr>
+          <tr><td>Амалиётпазирӣ ва татбиқи амалии лоиҳа</td><td style="text-align:center;font-weight:700;color:var(--gold)">20 балл</td></tr>
+          <tr><td>Дурустии илмӣ ва техникии лоиҳа</td><td style="text-align:center;font-weight:700;color:var(--gold)">20 балл</td></tr>
+          <tr><td>Тарзи пешниҳоди лоиҳа (презентатсия, суханварӣ)</td><td style="text-align:center;font-weight:700;color:var(--gold)">10 балл</td></tr>
+          <tr><td>Аҳамияти иҷтимоӣ ва иқтисодии лоиҳа барои кишвар</td><td style="text-align:center;font-weight:700;color:var(--gold)">10 балл</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">💰</span> Ҷоизаҳо ва мукофотпулӣ</h2>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Ҷой</th><th>Барои хонанда (як номинатсия)</th><th>Барои омӯзгори роҳбар</th></tr></thead>
+        <tbody>
+          <tr><td><strong>Ҷойи якум (1 нафар)</strong></td><td style="color:var(--gold2);font-weight:700">7 000 сомонӣ + Диплом</td><td>3 000 сомонӣ</td></tr>
+          <tr><td><strong>Ҷойи дуюм (2 нафар)</strong></td><td style="color:var(--gold2);font-weight:700">5 000 сомонӣ + Диплом</td><td>2 000 сомонӣ</td></tr>
+          <tr><td><strong>Ҷойи сеюм (3 нафар)</strong></td><td style="color:var(--gold2);font-weight:700">3 000 сомонӣ + Диплом</td><td>1 000 сомонӣ</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2><span class="icon">🌐</span> Масъулони озмун ва тамосҳо</h2>
+    <p style="font-size:13.5px;color:var(--muted);">Барои иштирок ва пешниҳоди лоиҳаҳо ба роҳбарияти муассисаи таълимӣ, шуъбаи маорифи шаҳру ноҳия ва намояндагии Агентии инноватсия муроҷиат намоед.</p>
+    <div class="contacts-row">
+      <a class="contact-btn" href="https://maorif.tj" target="_blank">🏛 Вазорати маориф ва илми ҶТ</a>
+      <a class="contact-btn" href="https://president.tj" target="_blank">🚀 Агентии инноватсия ва ТР</a>
+      <a class="contact-btn" href="https://khovar.tj" target="_blank">📰 АМИТ «Ховар»</a>
+    </div>
+  </div>
+</div>
+</body>
+</html>

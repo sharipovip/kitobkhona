@@ -546,7 +546,7 @@ async function api(path, method = 'GET', body = null){
     const controller = new AbortController();
     const timer = setTimeout(() => controller.abort(), 15000);
     try {
-      if (i > 1) toast('Сервер бедор мешавад, кӯшиши ' + i + '/' + attempts + '...');
+      if (i > 1) toast('Пайвастшавӣ, кӯшиши ' + i + '/' + attempts + '...');
       const res = await fetch(API_BASE + path, { method, headers, body: body ? JSON.stringify(body) : undefined, signal: controller.signal });
       clearTimeout(timer);
       let data = null;

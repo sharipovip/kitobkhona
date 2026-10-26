@@ -44,7 +44,7 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '3.1.3';
+const APP_VERSION = '3.1.4';
 
 const KKH_THEMES = {
   dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
@@ -1445,12 +1445,12 @@ window.getOrFetchBookResponse=getOrFetchBookResponse;
 
 const KK_WAIT_PHRASES = [
   'Китобхона дарашро мекушояд...',
-  'Китобдор аз хоб бедор мешавад...',
+  'Маълумот омода мешавад...',
   'Рафҳои китобро мебинем...',
   'Чароғҳои толорро равшан мекунем...',
   'Саҳифаҳоро тартиб медиҳем...',
   'Боз чанд сония — тамом мешавад...',
-  'Сервери ройгон каме танбал аст, вале боэътимод аст 💛',
+  'Хидматрасонӣ пайваст мешавад...',
   'Ғуборро аз рафҳо мепоккунем...',
   'Китобҳои наврасидаро ҷо мекунем...',
   'Интизор шавед, китобхона наздик аст 📚'
@@ -1512,7 +1512,7 @@ function renderWisdomLoader(container){
     <div class="kk-wisdom-book"><div class="kk-wisdom-glow"></div><div class="kk-wisdom-emoji">📖</div></div>
     <div class="kk-wisdom-quote" id="kkWisdomQuoteText">${KK_WISDOM_QUOTES[idx].text}</div>
     <div class="kk-wisdom-author" id="kkWisdomAuthorText">${KK_WISDOM_QUOTES[idx].author||''}</div>
-    <div class="kk-wisdom-sub">Сервер бедор мешавад — чанд сония сабр кунед...</div>
+      <div class="kk-wisdom-sub">Боркунӣ — чанд сония сабр кунед...</div>
   </div>`;
   const el=container.querySelector('#kkWisdomQuoteText');
   const authorEl=container.querySelector('#kkWisdomAuthorText');
@@ -1917,7 +1917,7 @@ async function fetchWithServerRetry(url,options={},settings={}){
       if(response.ok||response.status<500)return response;
       lastError=new Error('HTTP '+response.status);
     }catch(e){lastError=e}
-    if(attempt<attempts){const delay=Math.min(10000,1200*Math.pow(1.7,attempt-1));onProgress(Math.min(94,pct+7),'Сервер бедор мешавад, интизор шавед...');await new Promise(resolve=>setTimeout(resolve,delay))}
+    if(attempt<attempts){const delay=Math.min(10000,1200*Math.pow(1.7,attempt-1));onProgress(Math.min(94,pct+7),'Пайвастшавӣ, чанд сония сабр кунед...');await new Promise(resolve=>setTimeout(resolve,delay))}
   }
   if(lastResponse)return lastResponse;
   throw lastError||new Error('Сервер дастрас нест');
@@ -2282,6 +2282,24 @@ const ChatAPI = {
     if (!r.ok) throw new Error('Ошибка получения заявок: ' + r.status);
     return await r.json();
   },
+  getOutgoingFriendRequests: async function(userId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) return [];
+    try {
+      const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/outgoing', { headers: { 'Authorization': 'Bearer ' + token }, cache: 'no-store' }, 8000);
+      if (!r.ok) return [];
+      return await r.json();
+    } catch(e) { return []; }
+  },
+  cancelOutgoingFriendRequest: async function(requestId) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) throw new Error('Нет токена');
+    const r = await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE + '/api/friends/requests/outgoing/' + requestId, {
+      method: 'DELETE', headers: { 'Authorization': 'Bearer ' + token }
+    }, 8000);
+    if (!r.ok) throw new Error('Хато дар бекор кардани дархост');
+    return await r.json();
+  },
   acceptFriendRequestByUser: async function(fromUserId) {
     const token = localStorage.getItem('kk_token');
     if (!token) throw new Error('Нет токена');
@@ -2471,7 +2489,11 @@ async function markAllNotificationsRead(){
   const headers=notifApiHeaders();if(!headers)return false;
   try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/notifications/read-all',{method:'POST',headers},8000);return r.ok}catch(e){return false}
 }
-window.getNotifications=getNotifications;window.markNotificationRead=markNotificationRead;window.markAllNotificationsRead=markAllNotificationsRead;
+async function deleteNotification(id){
+  const headers=notifApiHeaders();if(!headers||id==null)return false;
+  try{const r=await fetchWithTimeout(KITOB_CONFIG.NEON_API_BASE+'/api/notifications/'+encodeURIComponent(id),{method:'DELETE',headers},8000);return r.ok}catch(e){return false}
+}
+window.getNotifications=getNotifications;window.markNotificationRead=markNotificationRead;window.markAllNotificationsRead=markAllNotificationsRead;window.deleteNotification=deleteNotification;
 
 const KKH_FCM = {
   firebaseConfig: {

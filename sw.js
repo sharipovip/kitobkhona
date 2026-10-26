@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v129-fast-nav';
+const CACHE_NAME = 'kitobkhona-v130-fast-nav';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -48,6 +48,10 @@ const LOCAL_FILES = [
   './ilm_furugi_marifat.html',
   './shohnomahoni.html',
   './vatani_azizi_man.html',
+  './ideai_man.html',
+  './ideai_man_banner.jpg',
+  './serkhonandatarin.html',
+  './ai-chat.html',
   './reader.html',
   './profile.html',
   './login.html',

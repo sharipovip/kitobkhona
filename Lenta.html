@@ -167,11 +167,18 @@ html, body {
 }
 .slide-text-layer::-webkit-scrollbar { display: none; }
 .slide-text-overlay {
-  line-height: 1.55;
+  line-height: 1.6;
   word-break: break-word;
-  text-shadow: 0 3px 16px rgba(0,0,0,0.98), 0 1px 4px rgba(0,0,0,1);
+  text-shadow: 0 2px 10px rgba(0,0,0,0.85);
   max-height: 100%;
   overflow-y: auto;
+  background: rgba(11, 20, 34, 0.58);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border-radius: 16px;
+  padding: 14px 16px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
 }
 .slide-text-overlay::-webkit-scrollbar { display: none; }
 
@@ -1771,11 +1778,20 @@ function buildSlide(post, idx) {
     </div>` : ''}
 
     
+    <!-- v130: тарҳи тоза ва дусатра — ном ва нишони тасдиқ дар сатри 1, никнейм дар сатри 2 -->
     <div class="slide-bottom-row">
       <div class="slide-bottom-info">
-        <div class="info-line" data-userid="${userId}">
-          ${post.avatar_url ? `<img class="feed-user-avatar" src="${escHtml(post.avatar_url)}" alt="">` : ''}<span class="gold" style="display:inline-flex;align-items:center">@${escHtml(username)}${post.verified ? verifiedBadgeSvg() : ''}</span>
-          <span style="color:rgba(255,255,255,0.4);font-size:11px;font-weight:400;">${timeSince(post.created_at)}</span>
+        <div class="user-meta-block" data-userid="${userId}" style="cursor:pointer;display:flex;align-items:center;gap:8px;margin-bottom:4px;">
+          ${post.avatar_url ? `<img class="feed-user-avatar" src="${escHtml(post.avatar_url)}" alt="" style="width:34px;height:34px;border-radius:50%;flex-shrink:0;">` : ''}
+          <div style="display:flex;flex-direction:column;line-height:1.25;">
+            <div style="display:flex;align-items:center;gap:4px;font-size:15px;font-weight:750;color:#FFFFFF;">
+              <span>${escHtml(post.display_name || post.username || 'Корбар')}</span>${post.verified ? verifiedBadgeSvg() : ''}
+            </div>
+            <div style="font-size:12px;color:var(--gold);opacity:0.9;display:flex;align-items:center;gap:6px;">
+              <span>@${escHtml(post.username || 'user')}</span>
+              <span style="color:rgba(255,255,255,0.45);font-size:11px;">· ${timeSince(post.created_at)}</span>
+            </div>
+          </div>
         </div>
         ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
         ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(cover)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}

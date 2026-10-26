@@ -1222,9 +1222,11 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 .notif-head-copy{flex:1}.notif-head-copy b{display:block;color:#f5d978;font-size:17px}.notif-head-copy span{font-size:11px;color:#8294aa}
 .notif-close{width:34px;height:34px;border:0;border-radius:11px;background:rgba(255,255,255,.06);color:#a8b8cc;font-size:18px;cursor:pointer}
 .notif-list{overflow:auto;max-height:calc(min(78vh,620px) - 73px)}
-.notif-item{width:100%;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;text-align:left;padding:14px 17px;display:grid;grid-template-columns:38px 1fr 16px;gap:11px;align-items:start;cursor:pointer}
+.notif-item{width:100%;border:0;border-bottom:1px solid rgba(255,255,255,.06);background:transparent;color:inherit;text-align:left;padding:12px 14px;display:grid;grid-template-columns:36px 1fr 28px;gap:10px;align-items:center;cursor:pointer}
 .notif-item:hover,.notif-item:focus{background:rgba(232,201,109,.07);outline:none}.notif-item-icon{width:36px;height:36px;border-radius:12px;background:rgba(232,201,109,.11);display:grid;place-items:center;font-size:17px}
-.notif-title{font-weight:750;color:#f3d879;font-size:13px}.notif-body{font-size:12.5px;color:#b3c0d0;line-height:1.42;margin-top:3px}.notif-time{font-size:10px;color:#708299;margin-top:6px}.notif-arrow{color:#667b94;padding-top:9px;font-size:18px}
+.notif-title{font-weight:750;color:#f3d879;font-size:13px}.notif-body{font-size:12.5px;color:#b3c0d0;line-height:1.42;margin-top:3px}.notif-time{font-size:10px;color:#708299;margin-top:5px}
+.notif-del-btn{width:28px;height:28px;border-radius:8px;border:0;background:rgba(255,75,75,.12);color:#FF6B6B;font-size:13px;display:flex;align-items:center;justify-content:center;cursor:pointer;transition:all .15s}
+.notif-del-btn:hover{background:rgba(255,75,75,.28);color:#FFAAAA}
 .notif-empty{padding:42px 24px;text-align:center}.notif-empty-icon{font-size:34px;margin-bottom:9px}.notif-empty b{display:block;color:#e7e9ee}.notif-empty span{display:block;color:#8091a7;font-size:12px;margin-top:5px}
 @media(max-width:350px){.new-logo-text-v3 span{display:none}.new-top-actions-v3{gap:6px}.kh-nav2 .nav-item span{font-size:7.5px}}
 
@@ -1920,6 +1922,30 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   font-size:12px;color:#A8B8CC;text-align:center}
 </style>
 
+<style>
+/* v130: Round SoroLLM AI button in bottom nav */
+.nav-item.nav-item-ai { position: relative; z-index: 5; text-decoration: none; }
+.nav-ai-bubble {
+  width: 25px; height: 25px; border-radius: 50%;
+  background: linear-gradient(135deg, #FFE4A0 0%, #D8A541 50%, #946513 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 7px rgba(216, 165, 65, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-ai-bubble span {
+  font-size: 10px; font-weight: 900; color: #1A1206;
+  letter-spacing: -0.3px; line-height: 1;
+}
+.nav-item-ai:active .nav-ai-bubble,
+.nav-item-ai.active .nav-ai-bubble {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(216, 165, 65, 0.7);
+}
+.nav-ai-label {
+  color: #DCB55E !important; font-weight: 800 !important; font-size: 8.5px !important;
+}
+</style>
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH (v129: было 5–9 с, стало 1.5–4 с — приложение открывается заметно быстрее): MIN=1500 → минимум 1.5 секунды, MAX=4000 → максимум 4 секунды.
@@ -2079,9 +2105,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
     <!-- Китобҳои боргирифташуда, ки дар дастгоҳ бе интернет боз мешаванд -->
 
-    <!-- 6 Китобҳои серхонтарин -->
+    <!-- 6 Китобҳои серхонандарин -->
     <section class="books-v3" id="popSection" style="display:none">
-      <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонтарин</div><div class="sec-link-v3" onclick="location.href='kitobho.html?sort=popular'">Ҳамаашро бинед <span>›</span></div></div>
+      <div class="sec-head-v3"><div class="sec-title-v3">🔥 Китобҳои серхонандарин</div><div class="sec-link-v3" onclick="location.href='serkhonandatarin.html'">Ҳамаашро бинед <span>›</span></div></div>
       <div class="books-scroll-v3" id="popBooks"></div>
     </section>
 
@@ -2102,7 +2128,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </a>
       <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
       <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
+            <a class="nav-item nav-item-ai" href="ai-chat.html" aria-label="SoroLLM AI">
+        <div class="nav-ai-bubble"><span>AI</span></div>
+        <span class="nav-ai-label">AITJ</span>
+      </a>
+<a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
       <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
       <a class="nav-item" href="profile.html" aria-label="Профил"><div class="profile-wrap"><div class="person-group"><div class="person-small ps1"></div><div class="person-small ps2"></div><div class="person-small ps3"></div></div></div><span>Профил</span></a>
     </div>
@@ -2195,7 +2225,23 @@ function showNotificationsModal(items){
   // v126: аввал огоҳиҳои нав, баъд 20 огоҳии охирини хондашуда (хира) — то ки рӯйхат пас аз хондан холӣ намонад
   const seen=(Array.isArray(items)?items:[]).filter(n=>n.is_read).slice(0,20);
   const list=box.querySelector('.notif-list');if(!unread.length&&!seen.length)list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Огоҳии нав нест</b><span>Санҷиш дар замина идома дорад.</span></div>';
-  const renderItem=(n,isSeen)=>{const btn=document.createElement('button');btn.type='button';btn.className='notif-item'+(isSeen?' notif-seen':'');btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><span><span class="notif-title">${esc(n.title||'Китобхона')}</span><span class="notif-body">${esc(n.body||'')}</span><span class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</span></span><span class="notif-arrow">›</span>`;btn.addEventListener('click',()=>{markNotificationRead(n.id);markNotifCacheSeen([n.id]);const target=notificationTarget(n);modal.remove();if(target)location.href=target});list.appendChild(btn)};
+  const renderItem=(n,isSeen)=>{
+    const btn=document.createElement('div');btn.className='notif-item'+(isSeen?' notif-seen':'');
+    btn.innerHTML=`<span class="notif-item-icon">${NOTIF_ICONS[n.type]||'🔔'}</span><div style="min-width:0;cursor:pointer"><div class="notif-title">${esc(n.title||'Китобхона')}</div><div class="notif-body">${esc(n.body||'')}</div><div class="notif-time">${esc(formatNotifTime(n.created_at||Date.now()))}</div></div><button class="notif-del-btn" type="button" title="Нест кардан" aria-label="Нест кардан">🗑</button>`;
+    btn.querySelector('div').addEventListener('click',()=>{markNotificationRead(n.id);markNotifCacheSeen([n.id]);const target=notificationTarget(n);modal.remove();if(target)location.href=target});
+    btn.querySelector('.notif-del-btn').addEventListener('click',async(e)=>{
+      e.stopPropagation();
+      btn.style.opacity='0.3';btn.style.pointerEvents='none';
+      try{
+        if(typeof deleteNotification==='function')await deleteNotification(n.id);
+        const cached=readNotifCache();
+        if(cached){const next=(cached.items||[]).filter(x=>String(x.id)!==String(n.id));writeNotifCache(next);paintNotifBadge(next);}
+        btn.remove();
+        if(!list.querySelector('.notif-item'))list.innerHTML='<div class="notif-empty"><div class="notif-empty-icon">✓</div><b>Ҳама огоҳиҳо тоза шуданд</b></div>';
+      }catch(err){btn.style.opacity='';btn.style.pointerEvents='';toast('Хатогӣ дар нест кардан');}
+    });
+    list.appendChild(btn)
+  };
   unread.forEach(n=>renderItem(n,false));
   if(seen.length){if(unread.length){const sep=document.createElement('div');sep.className='notif-sep';sep.textContent='Пештар';list.appendChild(sep)}seen.forEach(n=>renderItem(n,true))}
   const close=()=>modal.remove();box.querySelector('.notif-close').onclick=close;modal.onclick=e=>{if(e.target===modal)close()};modal.appendChild(box);document.body.appendChild(modal);box.querySelector('.notif-close').focus();
@@ -2208,10 +2254,9 @@ if(nb)nb.style.display=localStorage.getItem('kk_token')?'':'none';
 updateNotifBadge();setInterval(()=>{if(document.hidden||navigator.onLine===false)return;updateNotifBadge()},15*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){const c=readNotifCache();if(!c)updateNotifBadge()}});
 if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
 
-const oz=[ ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'] ];
-// v126: озмунҳо бо ҷадвали даврҳо (data/contests.json). Агар даври навбатӣ то 30 рӯз сар шавад —
-// нуқтаи сабз бо ҳисобкунак; ламс → варақаи тафсилот (кай, куҷо, чӣ тавр иштирок кунем, тамос).
-const OZ_PAGE_IDS={'shohnomahoni.html':'shohnoma','ilm_furugi_marifat.html':'ilm','furugi_subhi_donoi.html':'furugi','vatani_azizi_man.html':'vatan','donandai_asarho.html':'donanda'};
+const oz=[ ['ideai_man.html','ideai_man_banner.jpg','Идеяи ман калиди фардо'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'] ];
+// v130: озмунҳо бо тартиби хронологӣ, аз ҷумла озмуни нави «Идеяи ман калиди фардо»
+const OZ_PAGE_IDS={'ideai_man.html':'ideai_man','furugi_subhi_donoi.html':'furugi','shohnomahoni.html':'shohnoma','ilm_furugi_marifat.html':'ilm','donandai_asarho.html':'donanda','vatani_azizi_man.html':'vatan'};
 let CONTESTS=null;
 function renderOzmunBase(){ const ozEl=$('ozmunList'); if(ozEl) ozEl.innerHTML=oz.map(o=>`<div class="ozmun-item-v3" data-oz="${OZ_PAGE_IDS[o[0]]||''}" data-page="${o[0]}" onclick="ozmunTap(this)"><div class="ozmun-circle-v3"><img src="${o[1]}" alt="${o[2]}" loading="lazy"></div><div class="ozmun-label-v3">${o[2]}</div></div>`).join(''); }
 renderOzmunBase();
@@ -2222,7 +2267,23 @@ function ozRange(st){ const a=ozDay(st.start),b=ozDay(st.end); if(!a||!b) return
 function ozShift(st,years){ const sh=s=>{const d=ozDay(s); if(!d) return s; d.setFullYear(d.getFullYear()+years); return d.toISOString().slice(0,10)}; return {...st,start:sh(st.start),end:sh(st.end),approx:true}; }
 // Ҷадвали амалкунанда: агар ҳамаи даврҳои сол гузашта бошанд, ҷадвал ба соли оянда кӯчонида мешавад (тахминӣ).
 function ozTimeline(c){ const today=new Date(); today.setHours(0,0,0,0); let stages=(c.stages||[]).slice(); if(!stages.length) return {stages:[],next:null}; if(c.recurring){ let guard=0; while(guard++<3 && stages.every(s=>{const e=ozDay(s.end); return e && e<today})){ stages=stages.map(s=>ozShift(s,1)); } } const next=stages.find(s=>{const e=ozDay(s.end); return e && e>=today})||null; let state='none',days=null; if(next){ const a=ozDay(next.start); if(a&&a<=today) state='now'; else if(a){ days=Math.ceil((a-today)/86400000); state=days<=Number(CONTESTS?.soonDays||30)?'soon':'later'; } } return {stages,next,state,days}; }
-function applyOzmunBadges(){ if(!CONTESTS) return; document.querySelectorAll('#ozmunList .ozmun-item-v3').forEach(el=>{ const c=(CONTESTS.contests||[]).find(x=>x.id===el.dataset.oz); el.querySelector('.oz-badge')?.remove(); if(!c) return; const t=ozTimeline(c); if(t.state==='soon'||t.state==='now'){ const b=document.createElement('div'); b.className='oz-badge'+(t.state==='now'?' oz-now':''); b.title=t.state==='now'?'Даври озмун идома дорад':`Пас аз ${t.days} рӯз сар мешавад`; b.innerHTML=t.state==='now'?'<span>●</span>':`<span>${t.days}</span>`; el.querySelector('.ozmun-circle-v3').appendChild(b); } }); }
+function applyOzmunBadges(){
+  if(!CONTESTS) return;
+  const listEl=$('ozmunList');
+  if(listEl){
+    const items = Array.from(listEl.querySelectorAll('.ozmun-item-v3'));
+    items.sort((a,b)=>{
+      const ca=(CONTESTS.contests||[]).find(x=>x.id===a.dataset.oz);
+      const cb=(CONTESTS.contests||[]).find(x=>x.id===b.dataset.oz);
+      const ta=ca?ozTimeline(ca):{state:'none',days:999};
+      const tb=cb?ozTimeline(cb):{state:'none',days:999};
+      const score=t=>t.state==='now'?-1000:(t.days!=null?t.days:500);
+      return score(ta)-score(tb);
+    });
+    items.forEach(el=>listEl.appendChild(el));
+  }
+  document.querySelectorAll('#ozmunList .ozmun-item-v3').forEach(el=>{ const c=(CONTESTS.contests||[]).find(x=>x.id===el.dataset.oz); el.querySelector('.oz-badge')?.remove(); if(!c) return; const t=ozTimeline(c); if(t.state==='soon'||t.state==='now'){ const b=document.createElement('div'); b.className='oz-badge'+(t.state==='now'?' oz-now':''); b.title=t.state==='now'?'Даври озмун идома дорад':`Пас аз ${t.days} рӯз сар мешавад`; b.innerHTML=t.state==='now'?'<span>●</span>':`<span>${t.days}</span>`; el.querySelector('.ozmun-circle-v3').appendChild(b); } });
+}
 async function loadContests(){ const url='data/contests.json?v=1'; let data=null; try{ const r=await fetch(url,{cache:'no-cache'}); if(r.ok) data=await r.json(); }catch(e){} if(!data){ try{ const m=await caches.match(url,{ignoreSearch:true}); if(m) data=await m.json(); }catch(e){} } if(!data){ try{ data=JSON.parse(localStorage.getItem('kk_contests_cache_v1')||'null'); }catch(e){} } else { try{ localStorage.setItem('kk_contests_cache_v1',JSON.stringify(data)); }catch(e){} } if(data&&Array.isArray(data.contests)){ CONTESTS=data; applyOzmunBadges(); } }
 loadContests();
 function ozmunTap(el){ const id=el.dataset.oz, page=el.dataset.page; const c=CONTESTS&&(CONTESTS.contests||[]).find(x=>x.id===id); if(!c){ location.href=page; return; } openContestSheet(c,page); }

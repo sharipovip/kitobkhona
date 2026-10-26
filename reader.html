@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<meta name="theme-color" content="#0D1B2A">
+<meta name="theme-color" content="#FAF7F0">
 <title>Китобхона — Хондан</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
@@ -726,7 +726,7 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
 .doc-hint{font-size:11px;opacity:.55}
 </style>
 </head>
-<body>
+<body class="light-reading">
 <div class="reader-wrapper">
   
   <div class="reader-top-bar" id="topBar">
@@ -1244,32 +1244,48 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
       const nextSlot = $('nextSlot');
 
       const oldCanvas = currentSlot.querySelector('canvas');
-      if (oldCanvas) {
+      if (oldCanvas && direction !== 0) {
+        // v130: Ба ҷои cloneNode (ки холӣ буд), худи канваси кӯҳнаро мегузаронем — варақзанӣ мисли китоби воқеӣ ҳамвор мешавад
         nextSlot.innerHTML = '';
-        nextSlot.appendChild(oldCanvas.cloneNode(true));
+        nextSlot.appendChild(oldCanvas);
         nextSlot.className = 'page-slot next';
+        nextSlot.style.transition = 'none';
+        nextSlot.style.transformOrigin = direction === 1 ? 'left center' : 'right center';
+        nextSlot.style.transform = 'translateX(0) rotateY(0deg) scale(1)';
+        nextSlot.style.opacity = '1';
+        nextSlot.style.boxShadow = '0 10px 30px rgba(0,0,0,0.18)';
+
         requestAnimationFrame(() => {
-          nextSlot.style.transition = 'transform 0.4s cubic-bezier(0.22,0.61,0.36,1), opacity 0.4s ease';
-          nextSlot.style.transformOrigin=direction===1?'left center':'right center';nextSlot.style.transform=direction===1?'translateX(-12%) rotateY(-22deg) scale(.96)':'translateX(12%) rotateY(22deg) scale(.96)';
-          nextSlot.style.opacity = '0.3';
+          nextSlot.style.transition = 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease, box-shadow 0.45s ease';
+          nextSlot.style.transform = direction === 1 ? 'translateX(-35%) rotateY(-45deg) scale(0.93)' : 'translateX(35%) rotateY(45deg) scale(0.93)';
+          nextSlot.style.opacity = '0';
+          nextSlot.style.boxShadow = 'none';
         });
         setTimeout(() => {
           nextSlot.className = 'page-slot hidden';
+          nextSlot.innerHTML = '';
           nextSlot.style.transform = '';
           nextSlot.style.opacity = '';
           nextSlot.style.transition = '';
-        }, 500);
+        }, 480);
       }
 
       currentSlot.innerHTML = '';
       currentSlot.appendChild(cv);
       currentSlot.className = 'page-slot current';
       currentSlot.style.transition = 'none';
-      currentSlot.style.transformOrigin=direction===1?'right center':'left center';currentSlot.style.transform=direction===1?'translateX(8%) rotateY(13deg) scale(.97)':'translateX(-8%) rotateY(-13deg) scale(.97)';
-      currentSlot.style.opacity = '0.5';
+      if (direction !== 0) {
+        currentSlot.style.transformOrigin = direction === 1 ? 'right center' : 'left center';
+        currentSlot.style.transform = direction === 1 ? 'translateX(25%) rotateY(30deg) scale(0.95)' : 'translateX(-25%) rotateY(-30deg) scale(0.95)';
+        currentSlot.style.opacity = '0.6';
+      } else {
+        currentSlot.style.transform = (zoom > 1.001) ? 'scale(' + zoom + ')' : 'none';
+        currentSlot.style.opacity = '1';
+      }
+
       requestAnimationFrame(() => {
-        currentSlot.style.transition = 'transform 0.4s cubic-bezier(0.22,0.61,0.36,1), opacity 0.4s ease';
-        currentSlot.style.transform = 'translateX(0) scale(1)';
+        currentSlot.style.transition = 'transform 0.45s cubic-bezier(0.25, 1, 0.5, 1), opacity 0.45s ease';
+        currentSlot.style.transform = (zoom > 1.001) ? 'scale(' + zoom + ')' : 'translateX(0) rotateY(0deg) scale(1)';
         currentSlot.style.opacity = '1';
       });
 
@@ -1416,15 +1432,22 @@ body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-r
   setTheme(initialReaderTheme);
   if($('readerThemeIcon')) $('readerThemeIcon').textContent=initialReaderTheme==='light'?'🌙':'☀';
 
+  let zoomDebounceTimer = null;
   function setZoom(v) {
     zoom = Number(v) / 100;
     const container = $('pageContainer');
     if (container) container.classList.toggle('zoomed', zoom > 1.001);
     if ($('zoomText')) $('zoomText').textContent = v + '%';
-    if (pdf) {
-      if (rendering) setTimeout(() => { if (!rendering) renderPage(page); }, 180);
-      else renderPage(page);
+    const currentSlot = $('currentSlot');
+    if (currentSlot) {
+      currentSlot.style.transition = 'transform 0.12s ease-out';
+      currentSlot.style.transformOrigin = 'top center';
+      currentSlot.style.transform = (zoom > 1.001) ? 'scale(' + zoom + ')' : 'none';
     }
+    clearTimeout(zoomDebounceTimer);
+    zoomDebounceTimer = setTimeout(() => {
+      if (pdf && !rendering) renderPage(page, 0);
+    }, 280);
   }
 
   // ================== v99: АНДОЗАИ ҲАРФ барои EPUB / FB2 / TXT / DOCX ==================

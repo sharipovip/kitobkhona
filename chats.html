@@ -204,6 +204,124 @@
     color: var(--dim);
   }
 
+  /* v130: Блоки муосири дархостҳои дӯстӣ (воридотӣ ва содиротӣ) */
+  .requests-block-v2 {
+    background: linear-gradient(145deg, rgba(21,40,64,0.7), rgba(15,26,42,0.8));
+    border: 1px solid var(--border);
+    border-radius: 20px;
+    padding: 14px;
+    margin: 8px 0 16px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+  }
+  .req-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .req-header-row .t {
+    font-size: 13.5px;
+    font-weight: 800;
+    color: var(--gold2);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .req-tabs-switch {
+    display: flex;
+    gap: 4px;
+    background: rgba(0,0,0,0.25);
+    padding: 3px;
+    border-radius: 12px;
+    border: 1px solid rgba(255,255,255,0.06);
+  }
+  .req-tab-btn {
+    border: 0;
+    background: transparent;
+    color: var(--dim);
+    font-size: 11.5px;
+    font-weight: 700;
+    padding: 5px 9px;
+    border-radius: 9px;
+    cursor: pointer;
+    transition: all .15s ease;
+  }
+  .req-tab-btn.active {
+    background: var(--card2);
+    color: var(--gold2);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.25);
+  }
+  .req-list-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .req-v2-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    background: rgba(255,255,255,0.03);
+    border: 1px solid rgba(255,255,255,0.05);
+    border-radius: 14px;
+    padding: 8px 10px;
+  }
+  .req-v2-user {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+    flex: 1;
+  }
+  .req-v2-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 14px;
+    color: #121b2b;
+  }
+  .req-v2-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .req-v2-meta { min-width: 0; line-height: 1.3; }
+  .req-v2-name {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--text);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .req-v2-sub { font-size: 11px; color: var(--dim); }
+  .req-v2-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+  .btn-req-act {
+    border: 0;
+    border-radius: 10px;
+    padding: 6px 12px;
+    font-size: 11.5px;
+    font-weight: 750;
+    cursor: pointer;
+    transition: transform .1s ease, opacity .15s ease;
+  }
+  .btn-req-act:active { transform: scale(0.95); }
+  .btn-req-act.accept { background: linear-gradient(135deg, var(--gold), var(--gold2)); color: #1c1404; }
+  .btn-req-act.decline { background: rgba(255,255,255,0.08); color: var(--dim); border: 1px solid rgba(255,255,255,0.1); }
+  .btn-req-act.cancel { background: rgba(217,72,70,0.15); color: #FF7B79; border: 1px solid rgba(217,72,70,0.3); }
+  .req-empty-card {
+    text-align: center;
+    padding: 14px;
+    font-size: 12.5px;
+    color: var(--dim);
+  }
+
   .requests-row {
     display: flex;
     gap: 12px;
@@ -289,14 +407,16 @@
   }
 
   .chat-item {
+    background: rgba(21, 40, 64, 0.45);
+    border: 1px solid rgba(220,181,94,0.1);
+    border-radius: 18px;
+    padding: 10px 12px;
+    margin: 8px 0;
     display: flex;
     align-items: center;
-    gap: 13px;
-    padding: 12px 4px;
-    margin: 4px 0;
-    border-radius: 18px;
+    gap: 12px;
     cursor: pointer;
-    transition: transform .12s ease, background .15s ease;
+    transition: all .2s ease;
   }
   .chat-item:active {
     background: var(--card);
@@ -305,17 +425,25 @@
 
   .chat-delete-btn {
     flex: none;
-    width: 34px;
-    height: 34px;
-    border: 1px solid rgba(217,72,70,.35);
-    border-radius: 50%;
-    background: transparent;
-    color: var(--red);
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    border: 1px solid rgba(217,72,70,0.22);
+    background: rgba(217,72,70,0.08);
+    color: #FF6B6B;
     cursor: pointer;
-    opacity: .55;
-    transition: opacity .15s ease, background .15s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .18s ease;
+    margin-left: 4px;
   }
-  .chat-delete-btn:hover { opacity: 1; background: rgba(217,72,70,.12); }
+  .chat-delete-btn:hover {
+    background: rgba(217,72,70,0.24);
+    color: #FFAAAA;
+    border-color: rgba(217,72,70,0.5);
+    transform: scale(1.05);
+  }
 
   .avatar-wrap {
     position: relative;
@@ -798,6 +926,30 @@
 html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
 </style>
+<style>
+/* v130: Round SoroLLM AI button in bottom nav */
+.nav-item.nav-item-ai { position: relative; z-index: 5; text-decoration: none; }
+.nav-ai-bubble {
+  width: 25px; height: 25px; border-radius: 50%;
+  background: linear-gradient(135deg, #FFE4A0 0%, #D8A541 50%, #946513 100%);
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 2px 7px rgba(216, 165, 65, 0.45);
+  border: 1.5px solid rgba(255, 255, 255, 0.45);
+  transition: transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.nav-ai-bubble span {
+  font-size: 10px; font-weight: 900; color: #1A1206;
+  letter-spacing: -0.3px; line-height: 1;
+}
+.nav-item-ai:active .nav-ai-bubble,
+.nav-item-ai.active .nav-ai-bubble {
+  transform: scale(1.15);
+  box-shadow: 0 4px 14px rgba(216, 165, 65, 0.7);
+}
+.nav-ai-label {
+  color: #DCB55E !important; font-weight: 800 !important; font-size: 8.5px !important;
+}
+</style>
 </head>
 <body data-theme="dark">
 
@@ -870,7 +1022,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </a>
 
       
-      <a class="nav-item" href="Lenta.html" aria-label="Лента">
+            <a class="nav-item nav-item-ai" href="ai-chat.html" aria-label="SoroLLM AI">
+        <div class="nav-ai-bubble"><span>AI</span></div>
+        <span class="nav-ai-label">AITJ</span>
+      </a>
+<a class="nav-item" href="Lenta.html" aria-label="Лента">
         <div class="person-icon like-wrap">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="8" r="4" />
@@ -1079,9 +1235,11 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       if(hasCached)await renderChats(friends,requests,scroll,chatSummary);
 
       // Always refresh in the background: cache makes opening instant, server keeps it current.
-      const [freshFriends,freshRequests,freshSummary,freshDetails]=await Promise.allSettled([
-        ChatAPI.getFriends(currentUser.id),ChatAPI.getFriendRequests(currentUser.id),ChatAPI.getChatSummary(),ChatAPI.getFriendDetails()
+      const [freshFriends,freshRequests,freshSummary,freshDetails,freshOutgoing]=await Promise.allSettled([
+        ChatAPI.getFriends(currentUser.id),ChatAPI.getFriendRequests(currentUser.id),ChatAPI.getChatSummary(),ChatAPI.getFriendDetails(),
+        (ChatAPI.getOutgoingFriendRequests ? ChatAPI.getOutgoingFriendRequests(currentUser.id) : Promise.resolve([]))
       ]);
+      if(freshOutgoing.status==='fulfilled'&&Array.isArray(freshOutgoing.value)){globalOutgoingRequests=freshOutgoing.value;}
       if(freshFriends.status==='fulfilled'&&Array.isArray(freshFriends.value)){friends=freshFriends.value;CacheManager.set(friendsCacheKey,friends)}
       if(freshRequests.status==='fulfilled'&&Array.isArray(freshRequests.value)){requests=freshRequests.value;CacheManager.set(requestsCacheKey,requests)}
       if(freshSummary.status==='fulfilled'&&freshSummary.value){chatSummary=freshSummary.value;CacheManager.set(summaryCacheKey,chatSummary)}
@@ -1106,18 +1264,60 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     summaryRefreshTimer = setTimeout(() => loadData(), 250);
   });
 
+  let activeReqTab = 'in';
+  window.switchReqTab = function(tab) {
+    activeReqTab = tab;
+    const inPane = document.getElementById('incomingReqList');
+    const outPane = document.getElementById('outgoingReqList');
+    const inBtn = document.getElementById('tabIncomingBtn');
+    const outBtn = document.getElementById('tabOutgoingBtn');
+    if (inPane && outPane) {
+      inPane.style.display = tab === 'in' ? 'flex' : 'none';
+      outPane.style.display = tab === 'out' ? 'flex' : 'none';
+      if (inBtn) inBtn.classList.toggle('active', tab === 'in');
+      if (outBtn) outBtn.classList.toggle('active', tab === 'out');
+    }
+  };
+
+  window.cancelOutgoingRequest = async function(reqId) {
+    if (!reqId) return;
+    try {
+      if (typeof ChatAPI !== 'undefined' && ChatAPI.cancelOutgoingFriendRequest) {
+        await ChatAPI.cancelOutgoingFriendRequest(reqId);
+        showToast('Дархост бекор карда шуд');
+        loadData();
+      }
+    } catch (e) {
+      showToast('Хатогӣ: ' + e.message);
+    }
+  };
+
+  let globalOutgoingRequests = [];
+
   async function renderChats(friends, requests, scroll, summary = chatSummary) {
     let html = '';
 
-    if(requests.length) {
-      html += `
-        <div class="section-label">
-          <div class="t">Дархостҳо</div>
-          <div class="count">${requests.length} нав</div>
+    const incomingReqs = Array.isArray(requests) ? requests : [];
+    const outgoingReqs = Array.isArray(globalOutgoingRequests) ? globalOutgoingRequests : [];
+
+    // v130: Блоки нави муосири дархостҳои дӯстӣ (воридотӣ ва содиротӣ) дар боло
+    html += `
+      <div class="requests-block-v2">
+        <div class="req-header-row">
+          <div class="t">🤝 Дархостҳои дӯстӣ</div>
+          <div class="req-tabs-switch">
+            <button type="button" class="req-tab-btn ${activeReqTab==='in'?'active':''}" id="tabIncomingBtn" onclick="switchReqTab('in')">Воридотӣ (${incomingReqs.length})</button>
+            <button type="button" class="req-tab-btn ${activeReqTab==='out'?'active':''}" id="tabOutgoingBtn" onclick="switchReqTab('out')">Фиристодашуда (${outgoingReqs.length})</button>
+          </div>
         </div>
-        <div class="requests-row">
-      `;
-      for(const req of requests) {
+
+        <div id="incomingReqList" class="req-list-items" style="display:${activeReqTab==='in'?'flex':'none'}">
+    `;
+
+    if (!incomingReqs.length) {
+      html += `<div class="req-empty-card">Ҳоло дархости воридотӣ нест</div>`;
+    } else {
+      for (const req of incomingReqs) {
         const fromId = req.from_user;
         const profile = await getProfileCached(fromId);
         const name = profile?.display_name || profile?.username || 'Китобхон';
@@ -1125,26 +1325,54 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         const cls = getCls(String(fromId).charCodeAt(0) || 0);
         const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
         html += `
-          <div class="req-card" data-request-id="${req.id}" data-from-user="${fromId}">
-            <div class="req-avatar ${cls}">${avatarHtml}</div>
-            <div class="req-name" style="display:flex;align-items:center;justify-content:center">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
-            <div class="req-actions">
-              <button class="btn-mini accept" onclick="acceptRequest('${fromId}')">Қабул</button>
-              <button class="btn-mini decline" onclick="declineRequest('${req.id}')">Рад</button>
+          <div class="req-v2-item" data-request-id="${req.id}" data-from-user="${fromId}">
+            <div class="req-v2-user" onclick="location.href='profile.html?user=${fromId}'">
+              <div class="req-v2-avatar ${cls}">${avatarHtml}</div>
+              <div class="req-v2-meta">
+                <div class="req-v2-name">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
+                <div class="req-v2-sub">Дархост барои дӯстӣ</div>
+              </div>
+            </div>
+            <div class="req-v2-actions">
+              <button class="btn-req-act accept" onclick="acceptRequest('${fromId}')">Қабул ✓</button>
+              <button class="btn-req-act decline" onclick="declineRequest('${req.id}')">Рад ✕</button>
             </div>
           </div>
         `;
       }
-      html += `</div><div class="divider-soft"></div>`;
     }
+    html += `</div>`;
 
-    if (friends.length) {
-      const detailsMap=new Map((friendDetails||[]).map(item=>[String(item.id),item]));
-      const sortedFriends=[...friends].sort((a,b)=>{const ua=Number(summary?.by_peer?.[String(a)]?.unread_count||0),ub=Number(summary?.by_peer?.[String(b)]?.unread_count||0);if(ub!==ua)return ub-ua;return new Date(detailsMap.get(String(b))?.friendship_created_at||0)-new Date(detailsMap.get(String(a))?.friendship_created_at||0)});
-      html += `<div class="section-label"><div class="t">Ҳамаи дӯстон</div><div class="count">${friends.length}</div></div><div class="friend-strip">`;
-      for(const id of sortedFriends){const detail=detailsMap.get(String(id))||{},profile=detail.display_name||detail.avatar_url?detail:await getProfileCached(id),name=profile.display_name||profile.username||'Китобхон',initials=getInitials(name),cls=getCls(String(id).charCodeAt(0)||0),avatar=profile.avatar_url?`<img src="${esc(profile.avatar_url)}" alt="">`:esc(initials),isNew=Date.now()-new Date(profile.friendship_created_at||0).getTime()<7*86400000;html+=`<div class="friend-strip-card" onclick="openChat('${id}','${esc(name)}')"><div class="req-avatar ${cls}">${avatar}</div><div class="req-name">${esc(name)}${profile.verified?verifiedBadgeSvg():''}</div>${isNew?'<div class="friend-new">НАВ</div>':''}</div>`}
-      html += `</div><div class="divider-soft"></div>`;
+    html += `
+        <div id="outgoingReqList" class="req-list-items" style="display:${activeReqTab==='out'?'flex':'none'}">
+    `;
+    if (!outgoingReqs.length) {
+      html += `<div class="req-empty-card">Ҳоло дархости фиристодашуда нест</div>`;
+    } else {
+      for (const req of outgoingReqs) {
+        const toId = req.to_user;
+        const profile = req.display_name ? req : await getProfileCached(toId);
+        const name = profile?.display_name || profile?.username || 'Китобхон';
+        const initials = getInitials(name);
+        const cls = getCls(String(toId).charCodeAt(0) || 0);
+        const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
+        html += `
+          <div class="req-v2-item" data-request-id="${req.id}">
+            <div class="req-v2-user" onclick="location.href='profile.html?user=${toId}'">
+              <div class="req-v2-avatar ${cls}">${avatarHtml}</div>
+              <div class="req-v2-meta">
+                <div class="req-v2-name">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
+                <div class="req-v2-sub" style="color:var(--gold);">Дар интизори тасдиқ ⏳</div>
+              </div>
+            </div>
+            <div class="req-v2-actions">
+              <button class="btn-req-act cancel" onclick="cancelOutgoingRequest('${req.id}')">Бекор ✕</button>
+            </div>
+          </div>
+        `;
+      }
     }
+    html += `</div></div>`;
 
     html += `
       <div class="section-label">
@@ -1154,17 +1382,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <div class="chat-list" id="chatList">
     `;
 
-    if(friends.length === 0) {
+    if (friends.length === 0) {
       html += `<div class="empty-hint">Чати фаъол нест. Аз профили дӯст паём фиристед</div>`;
     } else {
-      const hiddenPeers=new Set((summary?.hidden_peer_ids||[]).map(String));
-      const friendIds = [...friends].filter(id=>!hiddenPeers.has(String(id))).sort((a, b) => {
+      const hiddenPeers = new Set((summary?.hidden_peer_ids || []).map(String));
+      const friendIds = [...friends].filter(id => !hiddenPeers.has(String(id))).sort((a, b) => {
         const ta = new Date(summary?.by_peer?.[String(a)]?.created_at || 0).getTime();
         const tb = new Date(summary?.by_peer?.[String(b)]?.created_at || 0).getTime();
         return tb - ta;
       });
-      if(!friendIds.length) html += `<div class="empty-hint">Чати фаъол нест. Аз рӯйхати боло дӯстро интихоб кунед.</div>`;
-      for(const id of friendIds) {
+      if (!friendIds.length) html += `<div class="empty-hint">Чати фаъол нест. Аз профили дӯст паём фиристед.</div>`;
+      for (const id of friendIds) {
         const profile = await getProfileCached(id);
         const name = profile?.display_name || profile?.username || 'Китобхон';
         const initials = getInitials(name);
@@ -1192,7 +1420,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
                 ${unreadCount > 0 ? `<div class="chat-unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
               </div>
             </div>
-            <button type="button" class="chat-delete-btn" data-delete-chat="${id}" title="Нест кардани чат" aria-label="Нест кардани чат">🗑</button>
+            <button type="button" class="chat-delete-btn" data-delete-chat="${id}" title="Нест кардани чат" aria-label="Нест кардани чат">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;display:block;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </button>
           </div>
         `;
       }

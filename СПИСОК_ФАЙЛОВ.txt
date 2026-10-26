@@ -1,107 +1,115 @@
-Архив содержит ТОЛЬКО файлы, отличающиеся от исходной загрузки «Китобхона новая версия до 10 октября»
-(сравнение по SHA-256), со структурой папок — распаковать поверх репозиториев. Версия v129.
+======================================================================
+КИТОБХОНА — СПИСОК ИЗМЕНЕННЫХ И НОВЫХ ФАЙЛОВ (ВЕРСИЯ 3.1.4 / v130)
+======================================================================
 
-ИЗМЕНЕНЫ (27):
-  kitobkhona-chat/server.js
-  kitobkhona-edge/package.json
-  kitobkhona-edge/src/directory.ts
-  kitobkhona-edge/src/index.ts
-  kitobkhona-edge/src/public-api.ts
-  kitobkhona-edge/src/reading-sync.ts
-  kitobkhona-edge/wrangler.jsonc
-  kitobkhona/Lenta.html
-  kitobkhona/book_reviews.html
-  kitobkhona/books.json
-  kitobkhona/chat старй.html
-  kitobkhona/chat.html
-  kitobkhona/chats.html
-  kitobkhona/config.js
-  kitobkhona/icons/quotes-data.js
-  kitobkhona/index.html
-  kitobkhona/kitobho.html
-  kitobkhona/login.html
-  kitobkhona/manifest.json
-  kitobkhona/maorif-books.html
-  kitobkhona/offline-books.html
-  kitobkhona/president.html
-  kitobkhona/profile.html
-  kitobkhona/quotes-data.js
-  kitobkhona/reader.html
-  kitobkhona/sw.js
-  kitobkhona/winners.html
+ИЗМЕНЕННЫХ СУЩЕСТВУЮЩИХ ФАЙЛОВ: 30
+  [МОДИФИЦИРОВАН] kitobkhona-chat/server.js
+  [МОДИФИЦИРОВАН] kitobkhona-edge/package.json
+  [МОДИФИЦИРОВАН] kitobkhona-edge/src/directory.ts
+  [МОДИФИЦИРОВАН] kitobkhona-edge/src/index.ts
+  [МОДИФИЦИРОВАН] kitobkhona-edge/src/public-api.ts
+  [МОДИФИЦИРОВАН] kitobkhona-edge/src/reading-sync.ts
+  [МОДИФИЦИРОВАН] kitobkhona-edge/wrangler.jsonc
+  [МОДИФИЦИРОВАН] kitobkhona/.github/workflows/download-books.yml
+  [МОДИФИЦИРОВАН] kitobkhona/Lenta.html
+  [МОДИФИЦИРОВАН] kitobkhona/admin.html
+  [МОДИФИЦИРОВАН] kitobkhona/book_reviews.html
+  [МОДИФИЦИРОВАН] kitobkhona/books.json
+  [МОДИФИЦИРОВАН] kitobkhona/chat старй.html
+  [МОДИФИЦИРОВАН] kitobkhona/chat.html
+  [МОДИФИЦИРОВАН] kitobkhona/chats.html
+  [МОДИФИЦИРОВАН] kitobkhona/config.js
+  [МОДИФИЦИРОВАН] kitobkhona/icons/quotes-data.js
+  [МОДИФИЦИРОВАН] kitobkhona/index.html
+  [МОДИФИЦИРОВАН] kitobkhona/kitobho.html
+  [МОДИФИЦИРОВАН] kitobkhona/login.html
+  [МОДИФИЦИРОВАН] kitobkhona/manifest.json
+  [МОДИФИЦИРОВАН] kitobkhona/maorif-books.html
+  [МОДИФИЦИРОВАН] kitobkhona/offline-books.html
+  [МОДИФИЦИРОВАН] kitobkhona/president.html
+  [МОДИФИЦИРОВАН] kitobkhona/profile.html
+  [МОДИФИЦИРОВАН] kitobkhona/quotes-data.js
+  [МОДИФИЦИРОВАН] kitobkhona/reader.html
+  [МОДИФИЦИРОВАН] kitobkhona/sw.js
+  [МОДИФИЦИРОВАН] kitobkhona/winners.html
+  [МОДИФИЦИРОВАН] kitobkhonaapp/app/src/main/java/com/kitobkhona/app/MainActivity.kt
 
-ДОБАВЛЕНЫ (70):
-  kitobkhona-edge/sql/02_user_notifications.sql
-  kitobkhona-edge/src/keepalive.ts
-  kitobkhona-edge/src/notify.ts
-  kitobkhona/.github/workflows/supabase-keepalive.yml
-  kitobkhona/adabiyoti-tavsiyashuda.html
-  kitobkhona/assets/hero/100.jpeg
-  kitobkhona/assets/hero/43.jpeg
-  kitobkhona/assets/hero/44.jpeg
-  kitobkhona/assets/hero/45.jpeg
-  kitobkhona/assets/hero/46.jpeg
-  kitobkhona/assets/hero/47.jpeg
-  kitobkhona/assets/hero/48.jpeg
-  kitobkhona/assets/hero/49.jpeg
-  kitobkhona/assets/hero/50.jpeg
-  kitobkhona/assets/hero/51.jpeg
-  kitobkhona/assets/hero/52.jpeg
-  kitobkhona/assets/hero/53.jpeg
-  kitobkhona/assets/hero/54.jpeg
-  kitobkhona/assets/hero/55.jpeg
-  kitobkhona/assets/hero/56.jpeg
-  kitobkhona/assets/hero/57.jpeg
-  kitobkhona/assets/hero/58.jpeg
-  kitobkhona/assets/hero/59.jpeg
-  kitobkhona/assets/hero/60.jpeg
-  kitobkhona/assets/hero/61.jpeg
-  kitobkhona/assets/hero/62.jpeg
-  kitobkhona/assets/hero/63.jpeg
-  kitobkhona/assets/hero/64.jpeg
-  kitobkhona/assets/hero/65.jpeg
-  kitobkhona/assets/hero/66.jpeg
-  kitobkhona/assets/hero/67.jpeg
-  kitobkhona/assets/hero/68.jpeg
-  kitobkhona/assets/hero/69.jpeg
-  kitobkhona/assets/hero/70.jpeg
-  kitobkhona/assets/hero/71.jpeg
-  kitobkhona/assets/hero/72.jpeg
-  kitobkhona/assets/hero/73.jpeg
-  kitobkhona/assets/hero/74.jpeg
-  kitobkhona/assets/hero/75.jpeg
-  kitobkhona/assets/hero/76.jpeg
-  kitobkhona/assets/hero/77.jpeg
-  kitobkhona/assets/hero/78.jpeg
-  kitobkhona/assets/hero/79.jpeg
-  kitobkhona/assets/hero/80.jpeg
-  kitobkhona/assets/hero/81.jpeg
-  kitobkhona/assets/hero/82.jpeg
-  kitobkhona/assets/hero/83.jpeg
-  kitobkhona/assets/hero/84.jpeg
-  kitobkhona/assets/hero/85.jpeg
-  kitobkhona/assets/hero/86.jpeg
-  kitobkhona/assets/hero/87.jpeg
-  kitobkhona/assets/hero/88.jpeg
-  kitobkhona/assets/hero/89.jpeg
-  kitobkhona/assets/hero/90.jpeg
-  kitobkhona/assets/hero/91.jpeg
-  kitobkhona/assets/hero/92.jpeg
-  kitobkhona/assets/hero/93.jpeg
-  kitobkhona/assets/hero/94.jpeg
-  kitobkhona/assets/hero/95.jpeg
-  kitobkhona/assets/hero/96.jpeg
-  kitobkhona/assets/hero/97.jpeg
-  kitobkhona/assets/hero/98.jpeg
-  kitobkhona/assets/hero/99.jpeg
-  kitobkhona/data/contests.json
-  kitobkhona/data/tavsiya.json
-  kitobkhona/tavsiya/matn/bremenskie_muzykanty.json
-  kitobkhona/tavsiya/matn/kot_i_lisa.json
-  kitobkhona/tavsiya/matn/kot_v_sapogah.json
-  kitobkhona/tavsiya/matn/skazka_o_tsare_saltane.json
-  kitobkhona/tavsiya/matn/teremok.json
+НОВЫХ ДОБАВЛЕННЫХ ФАЙЛОВ: 74
+  [ДОБАВЛЕН]      kitobkhona-edge/sql/02_user_notifications.sql
+  [ДОБАВЛЕН]      kitobkhona-edge/src/keepalive.ts
+  [ДОБАВЛЕН]      kitobkhona-edge/src/notify.ts
+  [ДОБАВЛЕН]      kitobkhona/.github/workflows/supabase-keepalive.yml
+  [ДОБАВЛЕН]      kitobkhona/adabiyoti-tavsiyashuda.html
+  [ДОБАВЛЕН]      kitobkhona/ai-chat.html
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/100.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/43.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/44.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/45.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/46.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/47.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/48.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/49.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/50.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/51.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/52.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/53.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/54.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/55.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/56.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/57.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/58.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/59.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/60.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/61.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/62.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/63.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/64.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/65.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/66.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/67.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/68.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/69.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/70.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/71.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/72.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/73.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/74.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/75.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/76.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/77.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/78.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/79.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/80.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/81.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/82.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/83.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/84.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/85.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/86.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/87.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/88.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/89.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/90.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/91.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/92.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/93.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/94.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/95.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/96.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/97.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/98.jpeg
+  [ДОБАВЛЕН]      kitobkhona/assets/hero/99.jpeg
+  [ДОБАВЛЕН]      kitobkhona/data/contests.json
+  [ДОБАВЛЕН]      kitobkhona/data/tavsiya.json
+  [ДОБАВЛЕН]      kitobkhona/ideai_man.html
+  [ДОБАВЛЕН]      kitobkhona/ideai_man_banner.jpg
+  [ДОБАВЛЕН]      kitobkhona/serkhonandatarin.html
+  [ДОБАВЛЕН]      kitobkhona/tavsiya/matn/bremenskie_muzykanty.json
+  [ДОБАВЛЕН]      kitobkhona/tavsiya/matn/kot_i_lisa.json
+  [ДОБАВЛЕН]      kitobkhona/tavsiya/matn/kot_v_sapogah.json
+  [ДОБАВЛЕН]      kitobkhona/tavsiya/matn/skazka_o_tsare_saltane.json
+  [ДОБАВЛЕН]      kitobkhona/tavsiya/matn/teremok.json
 
-Удалённых файлов нет.
-
-PDF тавсия (kitobkhona/tavsiya/pdf/*.pdf, 30 файлов) — в отдельном архиве kitobkhona_tavsiya_pdf.zip (не менялись).
+ДОКУМЕНТАЦИЯ:
+  [ОТЧЕТ]         ИЗМЕНЕНИЯ_v130_RU.md
+  [СПИСОК]        СПИСОК_ФАЙЛОВ.txt
