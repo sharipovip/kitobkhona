@@ -41,10 +41,36 @@ function saveNative(href,name){
   });
   return true;
 }
+function bridgeMode(){return !!(window.AndroidBridge&&typeof window.AndroidBridge.saveFile==='function')}
+function saveFetched(blob,name){
+  /* Китобхона Android — ҳамон канали китобҳо (интихоби папка) */
+  if(bridgeMode()){
+    if(window.DovDL&&window.DovDL.saveBlob){window.DovDL.saveBlob(blob,name);return}
+    try{
+      var fr=new FileReader();
+      fr.onload=function(){try{window.AndroidBridge.saveFile(String(fr.result).split(',')[1]||'',name,'application/octet-stream')}catch(e){toast('Нигоҳдорӣ нагзашт.',false)}};
+      fr.onerror=function(){toast('Нигоҳдорӣ нагзашт.',false)};
+      fr.readAsDataURL(blob);
+    }catch(e){toast('Нигоҳдорӣ нагзашт.',false)}
+    return;
+  }
+  /* Capacitor — захира дар «Документҳо/Довталаб» (қаблан) */
+  fr=new FileReader();
+  fr.onload=()=>{
+    const path=name.replace(/[\\\/]/g,'_');
+    const FS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
+    if(!FS)return;
+    FS.writeFile({path:'Довталаб/'+path,data:String(fr.result).split(',')[1]||'',directory:'DOCUMENTS',recursive:true})
+      .then(()=>toast('✓ Нигоҳ дошта шуд: Документҳо/Довталаб/'+path,true))
+      .catch(()=>toast('Нигоҳдорӣ нагзашт.',false));
+  };
+  fr.onerror=()=>toast('Нигоҳдорӣ нагзашт.',false);
+  fr.readAsDataURL(blob);
+}
 function fileLink(e){
-  if(!native())return;
+  if(!native()&&!bridgeMode())return;
   const a=e.target&&e.target.closest?e.target.closest('a[href]'):null;
-  if(!a)return;
+  if(!a||a.dataset.dovManaged)return; /* тугмаҳои бо DovDL идорашаванда */
   const h=a.getAttribute('href')||'';
   if(!/^https?:/i.test(h))return;
   if(!/\.(exe|zip|apk|msi|pdf|docx)(\?|#|$)/i.test(h))return;
@@ -58,19 +84,16 @@ function fileLink(e){
     fetch(local).then(r=>{
       if(!r.ok)throw 0;
       return r.blob().then(b=>{if(b.size<4096)throw 0;return b});
+    }).catch(()=>{
+      /* 2) файла нет внутри — качаем из сети */
+      return fetch(h).then(r=>{if(!r.ok)throw 0;return r.blob()});
     }).then(blob=>{
-      const fr=new FileReader();
-      fr.onload=()=>{
-        const path=name.replace(/[\\\/]/g,'_');
-        const FS=window.Capacitor&&window.Capacitor.Plugins&&window.Capacitor.Plugins.Filesystem;
-        if(!FS)return;
-        FS.writeFile({path:'Довталаб/'+path,data:String(fr.result).split(',')[1]||'',directory:'DOCUMENTS',recursive:true})
-          .then(()=>toast('✓ Нигоҳ дошта шуд: Документҳо/Довталаб/'+path,true))
-          .catch(()=>toast('Нигоҳдорӣ нагзашт.',false));
-      };
-      fr.readAsDataURL(blob);
-    }).catch(()=>{ /* 2) файла нет внутри — качаем с GitHub */ saveNative(h,name) });
-  }catch(err){saveNative(h,name)}
+      saveFetched(blob,name);
+    }).catch(()=>{
+      if(bridgeMode()){toast('Боркунӣ нагзашт.',false);return}
+      saveNative(h,name);
+    });
+  }catch(err){if(bridgeMode()){toast('Боркунӣ нагзашт.',false)}else{saveNative(h,name)}}
 }
 function pyw(){return window.pywebview&&window.pywebview.api&&!!window.pywebview.api}
 function savePyw(href,name){

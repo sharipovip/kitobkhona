@@ -40,7 +40,7 @@ body[data-page=pcdownload] .main{min-height:100dvh;display:flex;flex-direction:c
       <div><small>ҲАҶМ</small><b>20 МБ</b></div>
       <div><small>ТАЛАБОТ</small><b>Windows 10/11 · 64-бит</b></div>
     </div>
-    <div class="pc-dl"><a class="btn btn-primary" href="https://github.com/sharipovip/Dovtalab/releases/download/latest/Dovtalab-Setup.exe" target="_blank" rel="noopener">⬇ Зеркашии Dovtalab-Setup.exe</a></div>
+    <div class="pc-dl"><a class="btn btn-primary" data-dov-managed="1" href="https://github.com/sharipovip/Dovtalab/releases/download/latest/Dovtalab-Setup.exe" target="_blank" rel="noopener">⬇ Зеркашии Dovtalab-Setup.exe</a></div>
     <div id="pcDlWrap" hidden style="margin:12px 0 0"><div style="height:8px;border-radius:99px;background:var(--surface-2,#222);border:1px solid var(--line,#333);overflow:hidden"><div id="pcDlBar" style="height:100%;width:0;border-radius:99px;background:var(--accent-strong,#C9A84C);transition:width .2s"></div></div><div id="pcDlText" style="margin-top:6px;color:var(--muted,#999);font-size:.75rem"></div></div>
     <p class="pc-note">Файл ба «Документҳо/Довталаб» нигоҳ дошта мешавад. Агар нусхаи дохилӣ бошад — бе интернет, аз худи барнома.</p>
     <div class="pc-steps">
@@ -55,21 +55,19 @@ body[data-page=pcdownload] .main{min-height:100dvh;display:flex;flex-direction:c
     <div class="pc-link"><a href="https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share" target="_blank" rel="noopener">📖 Китобхона — барномаи дигари мо дар Play Маркет ↗</a></div>
   </article>
 </div>
-<script src="./data/catalog.js"></script><script src="./data/app-data.js"></script><script src="./assets/js/shell.js"></script><script src="./assets/js/cap-downloads.js"></script>
+<script src="./data/catalog.js"></script><script src="./data/app-data.js"></script><script src="./assets/js/shell.js"></script><script src="./assets/js/dl.js"></script><script src="./assets/js/cap-downloads.js"></script>
 <script>
-/* v14: зеркашии Dovtalab-Setup.exe бо пешрафти воқеӣ (нуқтаҳо + камон).
-   1) Агар файл дар pc/ бошад — аз нусхаи дохилӣ (бе интернет).
-   2) Вагарна — аз GitHub Releases.
-   Агар боркунии ҷараёнӣ номумкин бошад — зеркашӣ оддӣ, тавассути браузер. */
+/* v16: зеркашии Dovtalab-Setup.exe — ҳамон канали китобҳои Китобхона (DovDL.download):
+   боркунӣ бо пешрафт «Ҳифз шуда истодааст... N%» → интихоби папка дар телефон.
+   1) pc/Dovtalab-Setup.exe — нусхаи дохилӣ, бе интернет ва бе браузери беруна;
+   2) GitHub Releases. Барои браузери оддӣ — зеркашии маъмулӣ. */
 (function(){
   try{
     var btn=document.querySelector('.pc-dl a');
     if(!btn)return;
     var GITHUB='https://github.com/sharipovip/Dovtalab/releases/download/latest/Dovtalab-Setup.exe';
-    var wrap=document.getElementById('pcDlWrap'),
-        bar=document.getElementById('pcDlBar'),
-        txt=document.getElementById('pcDlText');
-    var current=GITHUB, isLocal=false;
+    var wrap=document.getElementById('pcDlWrap'),bar=document.getElementById('pcDlBar'),txt=document.getElementById('pcDlText');
+    var current=GITHUB,isLocal=false;
     fetch('./pc/Dovtalab-Setup.exe',{method:'HEAD'}).then(function(r){
       if(r.ok){current='./pc/Dovtalab-Setup.exe';isLocal=true;btn.setAttribute('href',current);}
     }).catch(function(){});
@@ -82,73 +80,39 @@ body[data-page=pcdownload] .main{min-height:100dvh;display:flex;flex-direction:c
     }
 
     btn.addEventListener('click',function(e){
-      if(!window.fetch||!window.ReadableStream)return; // кӯҳна — бигзор браузер оддӣ бор кунад
+      if(!window.fetch||!window.DovDL)return; // кӯҳна — бигзор браузер оддӣ бор кунад
       e.preventDefault();
       if(btn.dataset.busy==='1')return;
       btn.dataset.busy='1';
       wrap.hidden=false;bar.style.width='0';txt.textContent='Оғози боркунӣ…';
-      fetch(current).then(function(r){
-        if(!r.ok)throw new Error('HTTP '+r.status);
-        var total=Number(r.headers.get('content-length'))||0;
-        if(!r.body||!r.body.getReader){txt.textContent='Боркунӣ…';return r.blob().then(finish);}
-        var reader=r.body.getReader(),loaded=0,chunks=[];
-        function pump(){
-          return reader.read().then(function(res){
-            if(res.done){
-              return finish(new Blob(chunks));
-            }
-            chunks.push(res.value);loaded+=res.value.length;
-            if(total){
-              var pct=Math.min(100,Math.round(loaded*100/total));
-              bar.style.width=pct+'%';
-              txt.textContent='Боркунӣ: '+pct+'% · '+(loaded/1048576).toFixed(1)+' аз '+(total/1048576).toFixed(1)+' МБ';
-            }else{
-              txt.textContent='Боркунӣ: '+(loaded/1048576).toFixed(1)+' МБ…';
-            }
-            return pump();
-          });
+      window.DovDL.download(current,'Dovtalab-Setup.exe',{
+        localFirst:true,
+        onProgress:function(loaded,total){
+          if(total){
+            var pct=Math.min(100,Math.round(loaded*100/total));
+            bar.style.width=pct+'%';
+            txt.textContent='Ҳифз шуда истодааст... '+pct+'% · '+(loaded/1048576).toFixed(1)+' аз '+(total/1048576).toFixed(1)+' МБ';
+          }else{
+            txt.textContent='Ҳифз шуда истодааст... '+(loaded/1048576).toFixed(1)+' МБ';
+          }
         }
-        return pump();
+      }).then(function(){
+        bar.style.width='100%';
+        btn.dataset.busy='';
+        txt.textContent=window.DovDL.isAndroidApp()
+          ?'✓ Файл барои захира кардан омода — папкаи нигоҳдориро интихоб кунед'
+          :'✓ Файл боргирӣ шуд (20 МБ)';
       }).catch(function(){
         btn.dataset.busy='';
-        if(window.AndroidBridge&&window.AndroidBridge.saveFile){
+        if(window.DovDL.isAndroidApp()){
           wrap.hidden=false;
           txt.textContent='Хато: файл бор нашуд. Dovtalab-Setup.exe-ро ба папкаи dovtalab/pc/ гузоред.';
         }else{
           wrap.hidden=true;
-          plainDownload(current); // зеркашии оддии браузерӣ
+          plainDownload(current);
         }
       });
     });
-
-    /* v15: ҳамон канали хонанда (downloadCurrent → downloadFile):
-       пас аз боркунӣ Android ПАПКАРО барои захира интихоб мекунад (ACTION_CREATE_DOCUMENT).
-       Бе мост — зеркашии оддии браузерӣ. */
-    function finish(blob){
-      bar.style.width='100%';
-      btn.dataset.busy='';
-      try{
-        if(window.AndroidBridge&&window.AndroidBridge.saveFile==='function'){
-          txt.textContent='✓ Боркунӣ анҷом ёфт · ҷойи нигоҳдориро интихоб кунед…';
-          var fr=new FileReader();
-          fr.onload=function(){
-            try{window.AndroidBridge.saveFile(String(fr.result).split(',')[1]||'','Dovtalab-Setup.exe','application/octet-stream');}
-            catch(e){plainBlobDownload(blob);}
-          };
-          fr.onerror=function(){plainBlobDownload(blob);};
-          fr.readAsDataURL(blob);
-          return;
-        }
-      }catch(e){}
-      txt.textContent='✓ Боркунӣ анҷом ёфт (20 МБ)';
-      plainBlobDownload(blob);
-    }
-    function plainBlobDownload(blob){
-      var u=URL.createObjectURL(blob),a=document.createElement('a');
-      a.href=u;a.download='Dovtalab-Setup.exe';
-      document.body.appendChild(a);a.click();a.remove();
-      setTimeout(function(){URL.revokeObjectURL(u)},8000);
-    }
   }catch(e){}
 })();
 </script>

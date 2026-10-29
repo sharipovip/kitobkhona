@@ -52,6 +52,8 @@
   }
 
   function save(blob,name){const letters={'а':'a','б':'b','в':'v','г':'g','ғ':'gh','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','ӣ':'i','й':'y','к':'k','қ':'q','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ӯ':'u','ф':'f','х':'h','ҳ':'h','ц':'ts','ч':'ch','ҷ':'j','ш':'sh','щ':'sh','ъ':'','ь':'','ы':'y','э':'e','ю':'yu','я':'ya'};name=name.toLowerCase().replace(/[а-яёғӣқӯҳҷ]/g,c=>letters[c]||'').replace(/[^a-z0-9._-]+/g,'_');
+    /* v16: ягонаи DovDL — ҳамон канали хонандаи Китобхона (downloadCurrent → downloadFile) */
+    if(window.DovDL&&window.DovDL.saveBlob){window.DovDL.saveBlob(blob,name);return}
     /* v15: ҳамон канали хонандаи Китобхона (downloadCurrent → downloadFile):
        AndroidBridge.saveFile → Android пас аз боркунӣ ПАПКАРО барои захира интихоб мекунад.
        Вагарна — зеркашии оддии браузерӣ (дар Dovtalab-и Capacitor/pywebview-ро
@@ -79,6 +81,7 @@
   /* v14: пешрафти зеркашӣ — ҳамон тавре ки китобҳо дар хонанда (reader) бор мешаванд:
      нуқтаҳои кор + камони пешрафт + матни фоиз. */
   function dlProgress(pct,text,done){
+    if(window.DovDL&&window.DovDL.progress){window.DovDL.progress(pct,text,done);return}
     try{
       let box=document.getElementById('dovDlProgress');
       if(!box){
