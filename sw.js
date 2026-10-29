@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v132-dovtalab';
+const CACHE_NAME = 'kitobkhona-v133-dovtalab';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -110,6 +110,56 @@ const LOCAL_FILES = [
   './furugi_banner.jpg',
   './vatan_banner.jpg',
   './donandai_banner.jpg',
+  // v133: барномаи «Довталаб» — пешкэш ҳамчун дигар бахшҳои Китобхона
+  './dovtalab/',
+  './dovtalab/index.html',
+  './dovtalab/manifest.webmanifest',
+  './dovtalab/pages/study.html',
+  './dovtalab/pages/choose-grade.html',
+  './dovtalab/pages/choose-cluster.html',
+  './dovtalab/pages/choose-subjects.html',
+  './dovtalab/pages/exam.html',
+  './dovtalab/pages/materials.html',
+  './dovtalab/pages/admission.html',
+  './dovtalab/pages/institutions.html',
+  './dovtalab/pages/progress.html',
+  './dovtalab/pages/question-set-tj-2026.html',
+  './dovtalab/pages/test-view.html',
+  './dovtalab/assets/css/style.css',
+  './dovtalab/assets/css/home.css',
+  './dovtalab/assets/css/sample.css',
+  './dovtalab/assets/css/wizard.css',
+  './dovtalab/assets/css/tokens.css',
+  './dovtalab/assets/css/polish.css',
+  './dovtalab/assets/css/exam-full.css',
+  './dovtalab/assets/css/pages.css',
+  './dovtalab/assets/splash.jpg',
+  './dovtalab/Download-Довталаб.html',
+  './dovtalab/assets/js/export.js',
+  './dovtalab/assets/js/export-fonts.js',
+  './dovtalab/assets/vendor/jspdf.umd.min.js',
+  './dovtalab/assets/vendor/docx.umd.js',
+  './dovtalab/assets/icon-192.png',
+  './dovtalab/assets/icon-512.png',
+  './dovtalab/assets/js/shell.js',
+  './dovtalab/assets/js/dashboard.js',
+  './dovtalab/assets/js/splash.js',
+  './dovtalab/assets/js/cap-downloads.js',
+  './dovtalab/assets/css/mobile-redesign.css',
+  './dovtalab/assets/js/wizard.js',
+  './dovtalab/assets/js/study.js',
+  './dovtalab/assets/js/bank.js',
+  './dovtalab/assets/js/test-view.js',
+  './dovtalab/assets/js/exam-full.js',
+  './dovtalab/assets/js/materials.js',
+  './dovtalab/assets/js/admission.js',
+  './dovtalab/assets/js/institutions.js',
+  './dovtalab/assets/js/progress.js',
+  './dovtalab/data/catalog.js',
+  './dovtalab/data/app-data.js',
+  './dovtalab/data/book-map.js',
+  './dovtalab/data/question-bank.js',
+  './dovtalab/data/admission-plan-2026-27.js',
   ...Array.from({ length: 100 }, (_, index) => `./assets/hero/${index + 1}.jpeg`)
 ];
 // МУҲИМ: surudi_milli.mp3 (1.8МБ) ва 50 сурати newsimg (2МБ) ба пешкэш НАМЕРОХАНД —
@@ -142,7 +192,7 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key !== CACHE_NAME && key !== RUNTIME_CACHE && key !== 'kitobkhona-pdf-cache-v1')
+      .filter((key) => key !== CACHE_NAME && key !== RUNTIME_CACHE && key !== 'kitobkhona-pdf-cache-v1' && !key.startsWith('dovtalab-'))
       .map((key) => caches.delete(key)));
     await self.clients.claim();
     scheduleBooksJsonUpdate();

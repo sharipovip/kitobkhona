@@ -2184,8 +2184,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
 <script>
 document.addEventListener('DOMContentLoaded', () => { CacheManager.init(); const sBtn=document.getElementById('searchToggleBtn'); const sSec=document.getElementById('searchSection'); if(sBtn&&sSec){sBtn.addEventListener('click',()=>{ sSec.style.display=sSec.style.display==='none'?'block':'none'; if(sSec.style.display==='block'){setTimeout(()=>document.getElementById('homeSearch')?.focus(),100);} });}});
-const BOOKS_JSON_URLS = ['https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now(),'https://cdn.jsdelivr.net/gh/sharipovip/books@main/books.json?t='+Date.now(),'books.json?t='+Date.now()];
+const BOOKS_JSON_URLS = ['books.json?t='+Date.now(),'https://cdn.jsdelivr.net/gh/sharipovip/books@main/books.json?t='+Date.now(),'https://raw.githubusercontent.com/sharipovip/books/main/books.json?t='+Date.now()];
 const $ = id => document.getElementById(id);
+const COVER_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
 const enc = p => String(p||'').split('/').map(encodeURIComponent).join('/');
 let DATA=null;
 const getCachedCoverDataUrl = (url) => CacheManager?.getCachedCover(url) || '';
@@ -2500,7 +2501,7 @@ function getBookCardTitle(book,file){
   return cleanBookCardTitle(fileName.replace(/\.pdf$/i,''))||'Китоб';
 }
 function bookCard(b,folder,badge=''){
-  const file=b.file||b.filename||b.file_name||((b.name||'book')+'.pdf'),name=getBookCardTitle(b,file),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||cover,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';
+  const file=b.file||b.filename||b.file_name||((b.name||'book')+'.pdf'),name=getBookCardTitle(b,file),url=rawUrl(folder,file),covers=coverCandidates(folder,file),coversJson=JSON.stringify(covers),cover=covers[0]||'',state=getBookAccessState(url),coverSrc=getCachedCoverDataUrl(cover)||COVER_PLACEHOLDER,bookId=normalizeHomeBookId(folder,file),coverStyle=state.show&&state.dim?'width:100%;height:100%;object-fit:cover;filter:brightness(.72)':'width:100%;height:100%;object-fit:cover';
   const tag=badge||'НАВ';
   return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openReader('${encodeURIComponent(url)}','${encodeURIComponent(name)}','${encodeURIComponent(cover)}')"><div class="book-cover-v3" style="position:relative"><div class="book-tag-v3">${tag}</div><img src="${coverSrc}" alt="Обложка: ${esc(name)}" data-no-translate loading="lazy" data-i="0" data-covers='${esc(coversJson)}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.parentNode.querySelector('span').style.display='flex'}" style="${coverStyle}"><span data-no-translate style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;font-size:11px;font-weight:900;color:#fff;padding:4px;background:rgba(0,0,0,.3)">${esc(name)}</span><div data-book-badge style="display:${state.show?'flex':'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff">${state.icon}</div></div><div class="book-info-v3"><b data-no-translate>${esc(name)}</b><span class="book-author-v3" data-no-translate>${esc(b.author||'')}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div><div style="display:flex;align-items:center;gap:4px">${pinButton(bookId,name,b.author,folder,file,cover)}${bookmarkButton(bookId,name,b.author)}</div></div></div></div>`;
 }
@@ -2682,7 +2683,7 @@ async function openPopularBook(index){
 function renderPopularBooks(books){
   const popEl=$('popBooks'),popSec=$('popSection');if(!popEl)return;POPULAR_BOOKS=Array.isArray(books)?books:[];
   if(!POPULAR_BOOKS.length){popEl.innerHTML='<div class="empty">Ҳоло маълумот нест</div>';if(popSec)popSec.style.display='block';return}
-  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=getBookCardTitle({name:b.book_title},String(b.book_id||'Китоб')),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||cover}" alt="${esc(name)}" data-no-translate loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span data-no-translate style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b data-no-translate>${esc(name)}</b><span class="book-author-v3" data-no-translate>${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
+  popEl.innerHTML=POPULAR_BOOKS.slice(0,12).map((b,index)=>{const name=getBookCardTitle({name:b.book_title},String(b.book_id||'Китоб')),cover=b.cover_url||'',bookId=String(b.book_id||name).replace(/^books\//i,'');return `<div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openPopularBook(${index})"><div class="book-cover-v3"><div class="book-tag-v3">🔥</div><img src="${getCachedCoverDataUrl(cover)||COVER_PLACEHOLDER}" alt="${esc(name)}" data-no-translate loading="lazy" data-cover-url="${esc(cover)}" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'"><span data-no-translate style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:8px">${esc(name)}</span></div><div class="book-info-v3"><b data-no-translate>${esc(name)}</b><span class="book-author-v3" data-no-translate>${esc(b.book_author||'')}</span><span class="book-author-v3" style="color:#C9A84C">⏱ ${formatReadingMinutes(b.total_minutes)}</span><div class="book-foot-v3"><div class="stars-v3">${STAR_ICON}<span>—</span></div>${bookmarkButton(bookId,name,b.book_author)}</div></div></div>`}).join('');
   hydrateBookCardCovers(popEl);syncBookmarkButtons(popEl);if(popSec)popSec.style.display='block';fetchAndUpdateRatings();
 }
 
@@ -2936,14 +2937,14 @@ function renderMyBooksSection() {
     const covers = coverCandidates(folder, file);
     const cover = b.cover || covers[0] || '';
     const bookId = normalizeBookKey(b.id || b.bookId || file);
-    const coverSrc = getCachedCoverDataUrl(cover) || cover;
+    const coverSrc = getCachedCoverDataUrl(cover) || COVER_PLACEHOLDER;
 
     return `
       <div class="book-card-v3" data-book-id="${esc(bookId)}" onclick="openMyBook(${idx})">
         <div class="book-cover-v3" style="position:relative">
           <button type="button" class="mybook-remove-btn" onclick="removeMyBookByIndex(event, ${idx})" title="Хориҷ кардан">✕</button>
           <div class="book-tag-v3" style="background:var(--gold);color:#08101A;font-weight:900">МАН</div>
-          <img src="${coverSrc}" alt="Обложка: ${esc(name)}" data-no-translate loading="lazy" style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+          <img src="${coverSrc}" alt="Обложка: ${esc(name)}" data-no-translate loading="lazy" decoding="async" data-cover-url="${esc(cover)}" data-covers='${esc(JSON.stringify(covers))}' style="width:100%;height:100%;object-fit:cover" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
           <span data-no-translate style="display:none;position:absolute;inset:0;align-items:center;justify-content:center;padding:6px;font-size:11px;font-weight:bold;color:#fff">${esc(name)}</span>
         </div>
         <div class="book-info-v3">

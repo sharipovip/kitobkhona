@@ -52,6 +52,42 @@
   }
 
   function save(blob,name){const letters={'а':'a','б':'b','в':'v','г':'g','ғ':'gh','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','ӣ':'i','й':'y','к':'k','қ':'q','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ӯ':'u','ф':'f','х':'h','ҳ':'h','ц':'ts','ч':'ch','ҷ':'j','ш':'sh','щ':'sh','ъ':'','ь':'','ы':'y','э':'e','ю':'yu','я':'ya'};name=name.toLowerCase().replace(/[а-яёғӣқӯҳҷ]/g,c=>letters[c]||'').replace(/[^a-z0-9._-]+/g,'_');const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+
+  /* v14: пешрафти зеркашӣ — ҳамон тавре ки китобҳо дар хонанда (reader) бор мешаванд:
+     нуқтаҳои кор + камони пешрафт + матни фоиз. */
+  function dlProgress(pct,text,done){
+    try{
+      let box=document.getElementById('dovDlProgress');
+      if(!box){
+        box=document.createElement('div');box.id='dovDlProgress';
+        box.style.cssText='position:fixed;left:50%;bottom:24px;transform:translateX(-50%);z-index:99999;width:min(340px,86vw);padding:12px 16px;border-radius:14px;background:#132a23;color:#eaf4ee;font:13px/1.45 system-ui,sans-serif;border:1px solid #2b4a3e;box-shadow:0 8px 24px rgba(0,0,0,.45);opacity:0;transition:opacity .25s';
+        box.innerHTML='<div id="dovDlText" style="margin-bottom:8px"></div><div style="height:7px;border-radius:99px;background:rgba(255,255,255,.12);overflow:hidden"><div id="dovDlBar" style="height:100%;width:0;border-radius:99px;background:#3e8f68;transition:width .25s"></div></div>';
+        document.body.appendChild(box);
+      }
+      box.style.borderColor=done?'#3e8f68':'#2b4a3e';
+      box.querySelector('#dovDlText').textContent=text||'';
+      box.querySelector('#dovDlBar').style.width=Math.max(0,Math.min(100,pct||0))+'%';
+      box.style.opacity='1';
+      clearTimeout(box._h);
+      if(done)box._h=setTimeout(()=>{box.style.opacity='0'},done===2?2500:3500);
+    }catch(e){}
+  }
+
+  async function exportWithProgress(set,m,f,st){
+    try{
+      dlProgress(8,'Боркунии китобхонаҳо…');if(st)st('Тайёр шуда истодааст…');
+      await lib(f);
+      dlProgress(45,'Тайёр кардани файл…');if(st)st('Тайёр кардани файл…');
+      const blob=f==='pdf'?makePDF(set,m):await makeDOCX(set,m);
+      dlProgress(85,'Нигоҳдории файл…');
+      save(blob,(set.file||'Тест')+'_'+MODES[m]+'.'+f);
+      dlProgress(100,'✓ Файл зеркашӣ шуд',1);
+      return true;
+    }catch(e){
+      dlProgress(0,'Хато: '+(e&&e.message||e),2);
+      throw e;
+    }
+  }
   const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 
   function open(set){
@@ -66,12 +102,12 @@
     document.addEventListener('keydown',esc_);el.addEventListener('click',e=>{if(e.target===el)close()});el.querySelector('#dxClose').onclick=close;
     el.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{
       const m=b.dataset.m,f=b.dataset.f;b.disabled=true;st('Тайёр шуда истодааст…');
-      try{await lib(f);const blob=f==='pdf'?makePDF(set,m):await makeDOCX(set,m);
-        save(blob,(set.file||'Тест')+'_'+MODES[m]+'.'+f);st('Тайёр ✓ — файл дар ҷузвдони «Загрузки» захира шуд.')}
+      try{await exportWithProgress(set,m,f,st);
+        st('Тайёр ✓ — файл дар ҷузвдони «Загрузки» захира шуд.')}
       catch(e){st('Хато: '+(e&&e.message||e))}
       b.disabled=false;
     });
   }
-  async function run(set,m,f){await lib(f);const blob=f==='pdf'?makePDF(set,m):await makeDOCX(set,m);save(blob,(set.file||'Тест')+'_'+MODES[m]+'.'+f)}
+  async function run(set,m,f){await exportWithProgress(set,m,f,null)}
   window.DovExport={open,run};
 })();

@@ -147,15 +147,27 @@
 
   function hydrateBookCardCovers(root) {
     // v99: ТОЛЬКО кэш — если обложка уже в localStorage, подставляем мгновенно.
-    // Раньше здесь же каждая НЕкэшированная обложка скачивалась и писалась в
-    // localStorage (preloadCover) — в больших категориях это подвешивало каталог.
-    // Теперь некэшированные обложки грузит сам <img loading="lazy"> с CDN,
-    // а при ошибке перебирает зеркала (onerror в kitobho.html/index.html).
+    // v133: некэшированную обложку <img> получает ПОСЛЕ load-а страницы (индикатор
+    // загрузки браузера не крутится бесконечно); при ошибке onerror перебирает зеркала.
     const scope = root || document;
     scope.querySelectorAll('[data-cover-url]').forEach(function (img) {
       const url = img.getAttribute('data-cover-url');
       const cached = getCachedCover(url);
-      if (cached && img.getAttribute('src') !== cached) img.setAttribute('src', cached);
+      if (cached) {
+        if (img.getAttribute('src') !== cached) img.setAttribute('src', cached);
+        return;
+      }
+      if (!url || img.dataset.coverQueued) return;
+      img.dataset.coverQueued = '1';
+      var assign = function () {
+        var cur = img.getAttribute('src') || '';
+        if (cur && cur.indexOf('data:image/gif') !== 0) return;
+        var list = [];
+        try { list = JSON.parse(img.getAttribute('data-covers') || '[]'); } catch (e) {}
+        img.setAttribute('src', list[0] || url);
+      };
+      if (document.readyState === 'complete') setTimeout(assign, 0);
+      else window.addEventListener('load', assign, { once: true });
     });
   }
 

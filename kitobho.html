@@ -999,9 +999,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   const BOOKS_JSON_TTL_MS = 5 * 60 * 1000;
   const BOOKS_JSON_CACHE_KEY = 'kk_booksjson_cache_v3';
   const BOOKS_JSON_URLS = [
-    'https://raw.githubusercontent.com/' + BOOKS_REPO + '/' + BOOKS_BRANCH + '/books.json?t=' + Date.now(),
+    'books.json?t=' + Date.now(),
     'https://cdn.jsdelivr.net/gh/' + BOOKS_REPO + '@' + BOOKS_BRANCH + '/books.json?t=' + Date.now(),
-    'books.json?t=' + Date.now()
+    'https://raw.githubusercontent.com/' + BOOKS_REPO + '/' + BOOKS_BRANCH + '/books.json?t=' + Date.now()
   ];
   const $ = id => document.getElementById(id);
   const enc = p => String(p || '').split('/').map(encodeURIComponent).join('/');
@@ -1058,6 +1058,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       return '';
     }
   }
+  const COVER_PLACEHOLDER = 'data:image/gif;base64,R0lGODlhAQABAAAAACH5BAEKAAEALAAAAAABAAEAAAICTAEAOw==';
   function getBookAccessState(url) {
     const cached = isCached(url);
     const online = navigator.onLine;
@@ -1074,8 +1075,23 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const cover = img.getAttribute('data-cover-url') || '';
       const bookUrl = img.getAttribute('data-book-url') || '';
       const state = getBookAccessState(bookUrl);
-      const coverSrc = getCachedCoverDataUrl(cover) || cover;
-      if (coverSrc && img.getAttribute('src') !== coverSrc) img.setAttribute('src', coverSrc);
+      const cached = getCachedCoverDataUrl(cover);
+      if (cached) {
+        if (img.getAttribute('src') !== cached) img.setAttribute('src', cached);
+      } else if (cover && !img.dataset.coverQueued) {
+        // v133: обложка аз CDN танҳо ПАС аз load-и саҳифа бор мешавад — индикатори
+        // боркунии браузер доимо намечархад ва саҳифа тезтар кушода мешавад.
+        img.dataset.coverQueued = '1';
+        const assign = () => {
+          const cur = img.getAttribute('src') || '';
+          if (cur && cur.indexOf('data:image/gif') !== 0) return;
+          let list = [];
+          try { list = JSON.parse(img.getAttribute('data-covers') || '[]'); } catch(e) {}
+          img.setAttribute('src', list[0] || cover);
+        };
+        if (document.readyState === 'complete') setTimeout(assign, 0);
+        else window.addEventListener('load', assign, { once: true });
+      }
       if (state.show) {
         const badge = img.parentElement?.querySelector('[data-book-badge]');
         if (badge) {
@@ -1344,7 +1360,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const url = rawUrl(folderFull, file);
       const coverList = coverCandidates(folderFull, file);
       const cover = coverList[0] || '';
-      const coverSrc = getCachedCoverDataUrl(cover) || cover;
+      const coverSrc = getCachedCoverDataUrl(cover) || COVER_PLACEHOLDER;
       const state = getBookAccessState(url);
       const rawBookId = folderFull ? (folderFull.replace(/\/+$/, '') + '/' + file) : (b.file || file);
       const bookId = rawBookId.replace(/^books\//i, '');
