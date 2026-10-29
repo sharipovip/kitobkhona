@@ -87,27 +87,15 @@ body[data-page=pcdownload] .main{min-height:100dvh;display:flex;flex-direction:c
       if(btn.dataset.busy==='1')return;
       btn.dataset.busy='1';
       wrap.hidden=false;bar.style.width='0';txt.textContent='Оғози боркунӣ…';
-      var fallbackTimer=setTimeout(function(){ // агар ҷараён нест — пас аз 3 с зеркашии оддӣ
-        if(btn.dataset.busy==='1'){btn.dataset.busy='';plainDownload(current);}
-      },3000);
       fetch(current).then(function(r){
         if(!r.ok)throw new Error('HTTP '+r.status);
         var total=Number(r.headers.get('content-length'))||0;
-        if(!r.body||!r.body.getReader)throw new Error('no-stream');
+        if(!r.body||!r.body.getReader){txt.textContent='Боркунӣ…';return r.blob().then(finish);}
         var reader=r.body.getReader(),loaded=0,chunks=[];
         function pump(){
           return reader.read().then(function(res){
             if(res.done){
-              clearTimeout(fallbackTimer);
-              var blob=new Blob(chunks);
-              var u=URL.createObjectURL(blob),a=document.createElement('a');
-              a.href=u;a.download='Dovtalab-Setup.exe';
-              document.body.appendChild(a);a.click();a.remove();
-              setTimeout(function(){URL.revokeObjectURL(u)},8000);
-              bar.style.width='100%';
-              txt.textContent='✓ Боркунӣ анҷом ёфт (20 МБ)';
-              btn.dataset.busy='';
-              return;
+              return finish(new Blob(chunks));
             }
             chunks.push(res.value);loaded+=res.value.length;
             if(total){
@@ -122,12 +110,45 @@ body[data-page=pcdownload] .main{min-height:100dvh;display:flex;flex-direction:c
         }
         return pump();
       }).catch(function(){
-        clearTimeout(fallbackTimer);
         btn.dataset.busy='';
-        wrap.hidden=true;
-        plainDownload(current); // боркунии оддии браузерӣ
+        if(window.AndroidBridge&&window.AndroidBridge.saveFile){
+          wrap.hidden=false;
+          txt.textContent='Хато: файл бор нашуд. Dovtalab-Setup.exe-ро ба папкаи dovtalab/pc/ гузоред.';
+        }else{
+          wrap.hidden=true;
+          plainDownload(current); // зеркашии оддии браузерӣ
+        }
       });
     });
+
+    /* v15: ҳамон канали хонанда (downloadCurrent → downloadFile):
+       пас аз боркунӣ Android ПАПКАРО барои захира интихоб мекунад (ACTION_CREATE_DOCUMENT).
+       Бе мост — зеркашии оддии браузерӣ. */
+    function finish(blob){
+      bar.style.width='100%';
+      btn.dataset.busy='';
+      try{
+        if(window.AndroidBridge&&window.AndroidBridge.saveFile==='function'){
+          txt.textContent='✓ Боркунӣ анҷом ёфт · ҷойи нигоҳдориро интихоб кунед…';
+          var fr=new FileReader();
+          fr.onload=function(){
+            try{window.AndroidBridge.saveFile(String(fr.result).split(',')[1]||'','Dovtalab-Setup.exe','application/octet-stream');}
+            catch(e){plainBlobDownload(blob);}
+          };
+          fr.onerror=function(){plainBlobDownload(blob);};
+          fr.readAsDataURL(blob);
+          return;
+        }
+      }catch(e){}
+      txt.textContent='✓ Боркунӣ анҷом ёфт (20 МБ)';
+      plainBlobDownload(blob);
+    }
+    function plainBlobDownload(blob){
+      var u=URL.createObjectURL(blob),a=document.createElement('a');
+      a.href=u;a.download='Dovtalab-Setup.exe';
+      document.body.appendChild(a);a.click();a.remove();
+      setTimeout(function(){URL.revokeObjectURL(u)},8000);
+    }
   }catch(e){}
 })();
 </script>

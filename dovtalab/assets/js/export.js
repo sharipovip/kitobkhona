@@ -51,7 +51,30 @@
     return D.Packer.toBlob(new D.Document({sections:[{properties:{page:{margin:{top:1134,bottom:1134,left:1134,right:1134}}},children:P}]}));
   }
 
-  function save(blob,name){const letters={'а':'a','б':'b','в':'v','г':'g','ғ':'gh','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','ӣ':'i','й':'y','к':'k','қ':'q','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ӯ':'u','ф':'f','х':'h','ҳ':'h','ц':'ts','ч':'ch','ҷ':'j','ш':'sh','щ':'sh','ъ':'','ь':'','ы':'y','э':'e','ю':'yu','я':'ya'};name=name.toLowerCase().replace(/[а-яёғӣқӯҳҷ]/g,c=>letters[c]||'').replace(/[^a-z0-9._-]+/g,'_');const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000)}
+  function save(blob,name){const letters={'а':'a','б':'b','в':'v','г':'g','ғ':'gh','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','ӣ':'i','й':'y','к':'k','қ':'q','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ӯ':'u','ф':'f','х':'h','ҳ':'h','ц':'ts','ч':'ch','ҷ':'j','ш':'sh','щ':'sh','ъ':'','ь':'','ы':'y','э':'e','ю':'yu','я':'ya'};name=name.toLowerCase().replace(/[а-яёғӣқӯҳҷ]/g,c=>letters[c]||'').replace(/[^a-z0-9._-]+/g,'_');
+    /* v15: ҳамон канали хонандаи Китобхона (downloadCurrent → downloadFile):
+       AndroidBridge.saveFile → Android пас аз боркунӣ ПАПКАРО барои захира интихоб мекунад.
+       Вагарна — зеркашии оддии браузерӣ (дар Dovtalab-и Capacitor/pywebview-ро
+       cap-downloads.js ба воситаи «Документҳо/Довталаб» захира мекунад). */
+    function plainSave(){
+      const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;
+      document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(u),5000);
+    }
+    try{
+      if(window.AndroidBridge&&typeof window.AndroidBridge.saveFile==='function'){
+        const fr=new FileReader();
+        fr.onload=()=>{try{window.AndroidBridge.saveFile(String(fr.result).split(',')[1]||'',name,mimeByName(name))}catch(e){plainSave()}};
+        fr.onerror=()=>plainSave();
+        fr.readAsDataURL(blob);
+        return;
+      }
+    }catch(e){}
+    plainSave();
+  }
+  function mimeByName(name){
+    const ext=(String(name).split('.').pop()||'').toLowerCase();
+    return ({pdf:'application/pdf',doc:'application/msword',docx:'application/vnd.openxmlformats-officedocument.wordprocessingml.document',txt:'text/plain',zip:'application/zip',exe:'application/octet-stream'})[ext]||'application/octet-stream';
+  }
 
   /* v14: пешрафти зеркашӣ — ҳамон тавре ки китобҳо дар хонанда (reader) бор мешаванд:
      нуқтаҳои кор + камони пешрафт + матни фоиз. */
