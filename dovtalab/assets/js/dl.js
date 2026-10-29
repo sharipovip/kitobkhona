@@ -12,6 +12,39 @@
 (function () {
   'use strict';
 
+  /* Пули эҳтиётӣ (ҳамон тавре ки config.js дар саҳифаҳои Китобхона):
+     агар AndroidBridge набошад, вале канали нативии KitobkhonaNative ҳаст —
+     ҳамон методҳоро месозем. Бе ин «saveFile» дар саҳифаҳои Довталаб дастрас
+     набуд ва Android папкаи нигоҳдориро пурсида наметавонист. */
+  function installBridge() {
+    try {
+      if (!window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+      var bridge = window.AndroidBridge || {};
+      var map = { saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile', shareFile: 'shareFile',
+        shareText: 'shareText', shareTextWithWhatsAppChooser: 'shareTextWithWhatsAppChooser', shareImageWithText: 'shareImageWithText',
+        shareRemoteImage: 'shareRemoteImage', shareRemoteImages: 'shareRemoteImages', saveUserId: 'saveUserId', saveAuthToken: 'saveAuthToken',
+        openExternalUrl: 'openExternalUrl', openOfficialSite: 'openOfficialSite' };
+      Object.keys(map).forEach(function (name) {
+        if (typeof bridge[name] === 'function') return;
+        bridge[name] = function () {
+          try { window.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) })); }
+          catch (e) { console.warn('Native feature is unavailable', e); }
+        };
+      });
+      window.AndroidBridge = bridge;
+    } catch (e) {}
+    try {
+      /* Версияи кӯҳнаи APK: мости мустақими KitobAndroid */
+      if (!window.AndroidBridge && window.KitobAndroid && typeof window.KitobAndroid.saveFile === 'function') {
+        window.AndroidBridge = {
+          saveFile: function (b64, n, m) { window.KitobAndroid.saveFile(b64, n, m); },
+          shareFile: function (b64, n, m) { if (window.KitobAndroid.shareFile) window.KitobAndroid.shareFile(b64, n, m); }
+        };
+      }
+    } catch (e) {}
+  }
+  installBridge();
+
   var boxEl, barEl, textEl, hideTimer;
 
   function ensureBox() {
@@ -65,6 +98,7 @@
   }
 
   function isAndroidApp() {
+    installBridge();
     return !!(window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function');
   }
 
@@ -80,24 +114,30 @@
     opts = opts || {};
     name = name || 'file';
     var ui = opts.ui !== false;
-    if (isAndroidApp()) {
-      if (ui) progress(92, 'Ҷойи нигоҳдориро интихоб кунед…');
-      blobToBase64(blob).then(function (b64) {
-        try {
-          window.AndroidBridge.saveFile(b64, name, mimeByName(name));
-          if (ui) progress(100, '✓ Файл барои захира кардан омода', 1);
-        } catch (e) {
+    return new Promise(function (resolve) {
+      installBridge();
+      if (isAndroidApp()) {
+        if (ui) progress(92, 'Ҷойи нигоҳдориро интихоб кунед…');
+        blobToBase64(blob).then(function (b64) {
+          try {
+            window.AndroidBridge.saveFile(b64, name, mimeByName(name));
+            if (ui) progress(100, '✓ Файл барои захира кардан омода', 1);
+          } catch (e) {
+            plainSave(blob, name);
+            if (ui) progress(100, '✓ Файл боргирӣ шуд', 1);
+          }
+          resolve();
+        }).catch(function () {
           plainSave(blob, name);
           if (ui) progress(100, '✓ Файл боргирӣ шуд', 1);
-        }
-      }).catch(function () {
-        plainSave(blob, name);
-        if (ui) progress(100, '✓ Файл боргирӣ шуд', 1);
-      });
-      return;
-    }
-    plainSave(blob, name);
-    if (ui) progress(100, '✓ Файл боргирӣ шуд', 1);
+          resolve();
+        });
+        return;
+      }
+      plainSave(blob, name);
+      if (ui) progress(100, '✓ Файл боргирӣ шуд', 1);
+      resolve();
+    });
   }
 
   /* Боркунии blob бо пешрафти воқеӣ (content-length + reader) */

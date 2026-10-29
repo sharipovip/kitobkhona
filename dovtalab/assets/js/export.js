@@ -53,7 +53,7 @@
 
   function save(blob,name){const letters={'а':'a','б':'b','в':'v','г':'g','ғ':'gh','д':'d','е':'e','ё':'yo','ж':'zh','з':'z','и':'i','ӣ':'i','й':'y','к':'k','қ':'q','л':'l','м':'m','н':'n','о':'o','п':'p','р':'r','с':'s','т':'t','у':'u','ӯ':'u','ф':'f','х':'h','ҳ':'h','ц':'ts','ч':'ch','ҷ':'j','ш':'sh','щ':'sh','ъ':'','ь':'','ы':'y','э':'e','ю':'yu','я':'ya'};name=name.toLowerCase().replace(/[а-яёғӣқӯҳҷ]/g,c=>letters[c]||'').replace(/[^a-z0-9._-]+/g,'_');
     /* v16: ягонаи DovDL — ҳамон канали хонандаи Китобхона (downloadCurrent → downloadFile) */
-    if(window.DovDL&&window.DovDL.saveBlob){window.DovDL.saveBlob(blob,name);return}
+    if(window.DovDL&&window.DovDL.saveBlob){return window.DovDL.saveBlob(blob,name)}
     /* v15: ҳамон канали хонандаи Китобхона (downloadCurrent → downloadFile):
        AndroidBridge.saveFile → Android пас аз боркунӣ ПАПКАРО барои захира интихоб мекунад.
        Вагарна — зеркашии оддии браузерӣ (дар Dovtalab-и Capacitor/pywebview-ро
@@ -68,10 +68,11 @@
         fr.onload=()=>{try{window.AndroidBridge.saveFile(String(fr.result).split(',')[1]||'',name,mimeByName(name))}catch(e){plainSave()}};
         fr.onerror=()=>plainSave();
         fr.readAsDataURL(blob);
-        return;
+        return Promise.resolve();
       }
     }catch(e){}
     plainSave();
+    return Promise.resolve();
   }
   function mimeByName(name){
     const ext=(String(name).split('.').pop()||'').toLowerCase();
@@ -106,8 +107,8 @@
       dlProgress(45,'Тайёр кардани файл…');if(st)st('Тайёр кардани файл…');
       const blob=f==='pdf'?makePDF(set,m):await makeDOCX(set,m);
       dlProgress(85,'Нигоҳдории файл…');
-      save(blob,(set.file||'Тест')+'_'+MODES[m]+'.'+f);
-      dlProgress(100,'✓ Файл зеркашӣ шуд',1);
+      await save(blob,(set.file||'Тест')+'_'+MODES[m]+'.'+f);
+      if(!(window.DovDL&&window.DovDL.saveBlob))dlProgress(100,'✓ Файл зеркашӣ шуд',1);
       return true;
     }catch(e){
       dlProgress(0,'Хато: '+(e&&e.message||e),2);
@@ -129,7 +130,7 @@
     el.querySelectorAll('[data-m]').forEach(b=>b.onclick=async()=>{
       const m=b.dataset.m,f=b.dataset.f;b.disabled=true;st('Тайёр шуда истодааст…');
       try{await exportWithProgress(set,m,f,st);
-        st('Тайёр ✓ — файл дар ҷузвдони «Загрузки» захира шуд.')}
+        st('Тайёр ✓ — файл захира шуд.')}
       catch(e){st('Хато: '+(e&&e.message||e))}
       b.disabled=false;
     });

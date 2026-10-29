@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v134-dovtalab';
+const CACHE_NAME = 'kitobkhona-v135-dovtalab';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
