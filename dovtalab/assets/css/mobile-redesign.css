@@ -1,0 +1,205 @@
+/* ======================================================================
+   MOBILE REDESIGN — Довталаб (ММТ ТҶ)
+   Link this file LAST in every page's <head>, after all other CSS.
+   It fixes navigation on phones and makes every screen readable:
+   bigger text, smaller oversized icons/numbers, single-column layout.
+   Desktop (>860px) is left exactly as it was.
+   ====================================================================== */
+
+/* ---------- 1. NAVIGATION: real off-canvas drawer on phones/tablets ---------- */
+@media (max-width: 860px){
+  .app{display:block!important;max-width:none!important;min-height:100dvh}
+  .main{width:100%!important;max-width:none!important;margin:0!important;padding:72px 16px 36px!important}
+  .main>*:not(.footer){max-width:none!important}
+
+  .sidebar{
+    position:fixed!important;top:0!important;left:0!important;bottom:0!important;right:auto!important;
+    width:min(84vw,300px)!important;max-width:none!important;height:100dvh!important;
+    display:flex!important;flex-direction:column;
+    transform:translateX(-105%)!important;
+    padding:76px 16px 24px!important;
+    z-index:60;transition:transform .2s ease!important;overflow-y:auto!important;
+  }
+  body.sidebar-open .sidebar{transform:translateX(0)!important}
+  .sidebar-trigger{
+    position:fixed!important;left:14px!important;top:14px!important;
+    width:50px!important;height:50px!important;border:1px solid var(--line);border-radius:14px;
+    background:var(--surface);color:var(--text);font-size:28px;line-height:1;cursor:pointer;
+    z-index:70;box-shadow:var(--shadow);
+  }
+  .brand{padding:0 0 12px;min-height:60px;flex-direction:row!important}
+  .brand>div{display:block!important}
+  .sidebar .nav{display:grid!important;margin-top:18px!important;gap:6px}
+  .sidebar .nav a{white-space:normal!important;font-size:1rem!important;min-height:50px!important;padding:12px 14px!important}
+  .navicon{font-size:1.25rem!important}
+  .sidebar-backdrop{display:none}
+  body.sidebar-open .sidebar-backdrop{display:block!important;position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:55}
+  .exam-session .sidebar,.exam-session .sidebar-trigger,.exam-session .sidebar-backdrop{display:none!important}
+  .exam-session .main{padding:0!important}
+  body.sidebar-collapsed{--sidebar-size:auto}
+}
+
+/* ---------- 2. READABILITY: bigger base text everywhere on phones ---------- */
+@media (max-width: 700px){
+  html{font-size:106%}
+  body{line-height:1.6}
+
+  /* Page titles / headings were already large enough; body/caption text was not. */
+  .micro-label,.wizard-tag,.sample-eyebrow,.adm-place h3{font-size:.78rem!important;letter-spacing:.08em!important}
+  .launch-text small{font-size:.72rem!important}
+  .launch-text>span{font-size:.85rem!important}
+  .launch-text b{font-size:1.25rem!important}
+  .metric small{font-size:.68rem!important}
+  .metric strong{font-size:1.5rem!important}
+  .metric div>span{font-size:.78rem!important}
+  .chart-day-label{font-size:.7rem!important}
+  .chart-info{font-size:.8rem!important;white-space:normal!important}
+  .dash-hint,.adm-hint{font-size:.82rem!important;line-height:1.5!important}
+  .adm-sub{font-size:.8rem!important}
+  .adm-card>p,.adm-place p{font-size:.86rem!important}
+  .ring-item span{font-size:.76rem!important;max-width:none!important}
+  .sessions li b,.sessions .sc{font-size:.8rem!important}
+  .one-note{font-size:.86rem!important;text-align:left!important}
+  .sample-help,.sample-note,#st{font-size:.85rem!important}
+  .row small{font-size:.76rem!important}
+  .q-note{font-size:.85rem!important}
+  .score-note{font-size:.8rem!important}
+  .sbar{font-size:.9rem!important}
+  .sbar-val{font-size:.82rem!important}
+  .choice-body small{font-size:.86rem!important}
+  .wizard-intro p{font-size:.92rem!important}
+  .badge{font-size:.82rem!important}
+  .field label{font-size:.85rem!important}
+  .data-table{font-size:.88rem!important}
+
+  /* Comfortable tap targets */
+  .btn,.btn-small,.icon-button,.answer-option,.choice,.launch-card,.quick-card{min-height:48px}
+  input,select,.search-input{min-height:46px!important;font-size:1rem!important}
+}
+
+/* ---------- 3. OVERSIZED DECORATIVE ELEMENTS: scale down on phones ---------- */
+@media (max-width: 700px){
+  /* Giant grade digits (choose-grade screen) were dominating the whole viewport */
+  .choice-digit{font-size:clamp(2.1rem,11vw,3rem)!important}
+  body[data-step=grade] .choice-icon{width:52px!important;height:52px!important;font-size:1.3rem!important}
+  body[data-step=grade] .choice-area{grid-template-columns:1fr!important}
+  body[data-step] .choice{min-height:84px!important;flex-direction:row!important;align-items:center!important;text-align:left!important}
+  body[data-step=grade] .choice-body{align-items:flex-start!important}
+
+  /* Result donut on the exam-result screen */
+  .donut{width:128px!important;height:128px!important}
+  .donut-label b{font-size:1.5rem!important}
+  .score-box strong{font-size:2rem!important}
+  .result-hero{gap:14px!important}
+
+  /* Splash logo */
+  .splash-logo{width:72px!important;height:72px!important}
+  .splash-center h1{font-size:2rem!important}
+
+  /* Cluster/subject cards */
+  body[data-step=cluster] .choice-area,body[data-step=subjects] .choice-area{grid-template-columns:1fr!important;grid-template-rows:none!important}
+  body[data-step=cluster] .choice[data-choice="5"]{grid-column:auto!important}
+
+  /* Launch cards on the home page: icon no longer oversized relative to text */
+  .launch-icon{width:34px!important;height:34px!important;font-size:1.05rem!important}
+  .launch-list{grid-template-columns:1fr!important}
+
+  /* Accuracy / goal rings */
+  .accuracy-ring{width:50px!important;height:50px!important}
+  .goal-ring{width:68px!important;height:68px!important}
+  .goal-ring span{width:50px!important;height:50px!important}
+  .ring-item .ring{width:50px!important;height:50px!important}
+  .ring-item .ring::after{width:36px!important;height:36px!important}
+}
+
+/* ---------- 4. LAYOUT: force single-column stacking on phones everywhere ---------- */
+@media (max-width: 700px){
+  .home-layout,.adm-grid,.prg-grid,.inst-layout,.dash-metrics,.dash-extra,
+  .grid-2,.grid-3,.grid-4,.setup-fields,.result-grid,.admission-facts{
+    grid-template-columns:1fr!important;
+  }
+  .dash-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .prg-metrics{grid-template-columns:repeat(2,minmax(0,1fr))!important}
+  .one-head{flex-direction:column!important;align-items:flex-start!important;gap:10px!important}
+  .adm-steps{grid-template-columns:1fr!important}
+  .inst-filters{flex-direction:column!important;max-height:none!important}
+  body[data-page=institutions] .main,body[data-page=admission] .main,body[data-page=progress] .main{
+    height:auto!important;overflow:visible!important
+  }
+  .institution-list,.adm-events-list,.adm-docs-list,.prg-table-scroll{max-height:60vh}
+}
+
+@media (prefers-reduced-motion:reduce){
+  .sidebar,.main{transition:none!important}
+}
+
+/* ---------- 5. DOWNLOAD BUTTONS (test-view): bigger tap targets ---------- */
+@media (max-width: 700px){
+  .dl .row{flex-direction:row!important;align-items:center!important;justify-content:space-between!important;gap:10px!important}
+  .dl .row>span{font-size:.92rem!important;flex:1}
+  .dl .row>div{display:flex!important;gap:8px!important}
+  .dl .row button{min-height:46px!important;min-width:66px!important;padding:10px 16px!important;font-size:.95rem!important;font-weight:600!important;border-radius:12px!important}
+  .sample-actions a{display:flex!important;align-items:center!important;justify-content:center!important;min-height:48px!important;font-size:1rem!important}
+  #selectionCount{font-size:.85rem!important}
+  .select-all span{font-size:.88rem!important}
+}
+
+/* ---------- 6. HOTFIXES: header under ☰, drawer labels, empty-chart hint ---------- */
+@media (max-width: 700px){
+  /* A. Page-specific paddings (home.css/pages.css) beat the generic rule — restore space under ☰ */
+  body[data-page] .main{padding-top:76px!important}
+  .sample-page .main,.exam-session .main{padding-top:0!important}
+  /* C. Empty-chart hint must fit above the date row */
+  .chart-area{min-height:175px!important}
+  .chart-empty{gap:4px;padding:10px}
+  .chart-empty small{font-size:.72rem!important;max-width:232px}
+  .chart-info{white-space:normal!important;height:auto!important;line-height:1.35!important}
+}
+@media (max-width: 860px){
+  /* B. Drawer always shows labels, even if saved state was "collapsed" */
+  body.sidebar-collapsed{--sidebar-size:auto}
+  body.sidebar-collapsed .brand>div,body.sidebar-collapsed .navlabel,body.sidebar-collapsed .settings-label{display:block!important}
+  body.sidebar-collapsed .sidebar .nav a,body.sidebar-collapsed .sidebar-action{justify-content:flex-start!important;padding-left:16px!important;padding-right:16px!important}
+  body.sidebar-collapsed .sidebar-font{display:flex!important}
+  body .sidebar .nav a{display:flex!important;align-items:center;white-space:normal!important}
+  body .sidebar .nav a .navlabel{display:inline!important}
+  .sidebar .brand{white-space:normal!important}
+  .sidebar .brand>div{overflow:visible!important}
+  .sidebar .brandname{white-space:normal!important;overflow:visible!important;text-overflow:clip!important}
+}
+.chart-empty b,.chart-empty small{background:var(--surface,#101815);border-radius:8px;padding:2px 10px}
+
+/* ---------- 7. DRAWER: flush to the left edge, full height, no panel padding ---------- */
+@media (max-width: 860px){
+  .sidebar{
+    left:0!important;right:auto!important;top:0!important;bottom:0!important;
+    width:fit-content!important;min-width:0!important;max-width:min(88vw,380px)!important;
+    height:100dvh!important;
+    padding:0!important;margin:0!important;border-radius:0!important;
+    text-align:left;align-items:stretch!important;justify-content:flex-start!important;
+  }
+  .sidebar .nav{width:auto!important}
+  body .sidebar .nav a{width:auto!important;white-space:nowrap!important}
+  body .sidebar .sidebar-action{width:auto!important}
+  .sidebar .nav a .navlabel,.sidebar-action .settings-label{overflow-wrap:anywhere}
+  .sidebar .brand{
+    display:flex!important;flex-direction:row!important;align-items:center!important;align-self:stretch!important;width:100%!important;
+    gap:10px!important;padding:64px 16px 12px!important;white-space:nowrap!important;
+  }
+  .sidebar .brand>div{display:block!important;overflow:hidden!important}
+  .sidebar .brandname{white-space:nowrap!important;overflow:hidden!important;text-overflow:ellipsis!important}
+  .sidebar .nav{display:grid!important;gap:2px!important;margin:6px 0 0!important;padding:0 0 14px!important}
+  body .sidebar .nav a{
+    display:flex!important;flex-direction:row!important;align-items:center!important;
+    justify-content:flex-start!important;text-align:left!important;
+    padding:13px 16px!important;min-height:50px!important;width:100%!important;
+  }
+  .sidebar .nav a .navlabel{text-align:left!important}
+  .sidebar-settings{margin-top:auto!important;padding:12px 0 6px!important;display:grid!important;gap:4px!important}
+  body .sidebar .sidebar-action{
+    display:flex!important;flex-direction:row!important;align-items:center!important;
+    justify-content:flex-start!important;text-align:left!important;
+    padding:12px 16px!important;width:100%!important;min-height:48px!important;
+  }
+  .sidebar-font{padding:10px 16px calc(18px + env(safe-area-inset-bottom,0px))!important}
+}

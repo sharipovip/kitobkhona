@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="tg" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1"><script>try{localStorage.setItem("dov.theme","dark")}catch(e){}document.documentElement.dataset.theme="dark";document.documentElement.style.colorScheme="dark";document.documentElement.style.background="#101815"</script>
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="icon" href="./assets/icon-192.png">
+<link rel="stylesheet" href="./assets/css/style.css"><link rel="stylesheet" href="./assets/css/polish.css">
+<title>Довталаб барои Windows</title>
+<style>
+body[data-page=pcdownload] .main{min-height:100dvh;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px}
+.pc-card{width:min(640px,100%);background:var(--surface);border:1px solid var(--line);border-radius:22px;padding:clamp(20px,3vw,34px);box-shadow:var(--shadow);animation:page-in .35s ease both}
+.pc-head{display:flex;align-items:center;gap:16px}
+.pc-head img{width:64px;height:64px;border-radius:16px}
+.pc-head h1{margin:0;font-size:clamp(1.3rem,2.4vw,1.7rem);letter-spacing:-.03em}
+.pc-head p{margin:2px 0 0;color:var(--muted);font-size:.8rem}
+.pc-facts{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0}
+.pc-facts div{background:var(--surface-2);border:1px solid var(--line);border-radius:12px;padding:9px 12px}
+.pc-facts small{display:block;color:var(--muted);font-size:.6rem;letter-spacing:.08em;font-weight:800}
+.pc-facts b{font-size:.85rem}
+.pc-dl{display:flex;justify-content:center;margin:18px 0 6px}
+.pc-dl .btn{min-height:52px;font-size:1rem;padding:0 26px;border-radius:14px;text-decoration:none}
+.pc-note{color:var(--muted);font-size:.75rem;line-height:1.55;margin:10px 0 0}
+.pc-steps{margin:16px 0 0;padding:16px;border:1px dashed var(--line);border-radius:14px;display:grid;gap:8px}
+.pc-steps h2{margin:0;font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;color:var(--accent-strong)}
+.pc-steps ol{margin:0;padding-left:20px;color:var(--muted);font-size:.78rem;line-height:1.6}
+.pc-link{display:flex;justify-content:center;margin-top:16px;font-size:.8rem}
+@media(max-width:520px){.pc-facts{grid-template-columns:1fr}}
+</style>
+</head>
+<body data-base="./" data-page="pcdownload" data-title="Барои Windows">
+<div id="page-content">
+  <article class="pc-card">
+    <div class="pc-head">
+      <img src="./assets/icon-192.png" alt="">
+      <div><h1>Довталаб барои Windows</h1><p>Ҳамон барнома — дар компютер, бо кори пурраи офлайн</p></div>
+    </div>
+    <div class="pc-facts">
+      <div><small>ВЕРСИЯ</small><b>1.5</b></div>
+      <div><small>ҲАҶМ</small><b>~5 МБ</b></div>
+      <div><small>ТАЛАБОТ</small><b>Windows 10/11 · 64-бит</b></div>
+    </div>
+    <div class="pc-dl"><a class="btn btn-primary" href="https://github.com/sharipovip/Dovtalab/releases/download/latest/Dovtalab-Setup.exe" target="_blank" rel="noopener">⬇ Зеркашии Dovtalab-Setup.exe</a></div>
+    <p class="pc-note">Файл ба «Документҳо/Довталаб» нигоҳ дошта мешавад. Агар нусхаи дохилӣ бошад — бе интернет, аз худи барнома.</p>
+    <div class="pc-steps">
+      <h2>Тарзи оғоз</h2>
+      <ol>
+        <li>Файли <b>Dovtalab-Setup.exe</b>-ро давед ва кушоед — «Установить»-ро пахш кунед.</li>
+        <li>Барнома дар «Пуск», дар мизи корӣ ва дар рӯйхати барномаҳо пайдо мешавад. Барои панели вазифаҳо: барномаро кушоед → тугмаро дар панел бо тугмаи рост пахш кунед → «Закрепить».</li>
+        <li>Агар Windows огоҳиномаи SmartScreen нишон диҳад: «Подробнее» → «Выполнить в любом случае».</li>
+      </ol>
+    </div>
+    <p class="pc-note">Кӯшо ҳамчунӣ насб мешавад: <b>C:\Program Files\Dovtalab</b> ё <b>C:\Users\ном\AppData\Local\Programs\Dovtalab</b>. Ярлиқҳо дар «Пуск» ва мизи корӣ сохта мешаванд.</p>
+    <div class="pc-link"><a href="https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share" target="_blank" rel="noopener">📖 Китобхона — барномаи дигари мо дар Play Маркет ↗</a></div>
+  </article>
+</div>
+<script src="./data/catalog.js"></script><script src="./data/app-data.js"></script><script src="./assets/js/shell.js"></script><script src="./assets/js/cap-downloads.js"></script>
+<script>
+/* Китобхона: агар Dovtalab-Setup.exe дар pc/ бошад — тугма аз нусхаи дохилӣ медиҳад (бе интернет);
+   агар набошад — тугма ба ҳамон суроғаи GitHub Releases меафтад. */
+(function(){
+  try{
+    var btn=document.querySelector('.pc-dl a');
+    if(!btn)return;
+    fetch('./pc/Dovtalab-Setup.exe',{method:'HEAD'}).then(function(r){
+      if(r.ok)btn.setAttribute('href','./pc/Dovtalab-Setup.exe');
+    }).catch(function(){});
+  }catch(e){}
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,5 @@
+/* Color tokens are the only source of foreground/background colors. */
+:root{color-scheme:light;--bg:#f3f6f2;--surface:#fff;--surface-2:#f7faf7;--surface-3:#edf3ef;--text:#182a24;--muted:#566a60;--soft:#73857b;--line:#dce6df;--accent:#176b53;--accent-strong:#0d5743;--accent-soft:#e4f2e9;--nav:#143a31;--nav-hover:#21483d;--on-nav:#f4faf5;--lime:#d9f27b;--warm:#fff4df;--warm-text:#694d23;--danger:#a93f3a;--success:#176843;--shadow:0 12px 32px rgba(20,58,49,.08);--radius:18px}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#101815;--surface:#1a2420;--surface-2:#202c26;--surface-3:#293830;--text:#f0f6f1;--muted:#c2d0c7;--soft:#a6b8ad;--line:#394c42;--accent:#7bd1a8;--accent-strong:#a2e7c3;--accent-soft:#203b2e;--nav:#0d211a;--nav-hover:#1a3a2e;--on-nav:#f4faf5;--lime:#d9f27b;--warm:#352d1f;--warm-text:#f0d49e;--danger:#ffaaa2;--success:#88ddb0;--shadow:0 14px 34px rgba(0,0,0,.28)}
+:root{--soft:#566b60;--lime:#d9f27b;--ring:0 0 0 3px color-mix(in srgb,var(--accent) 30%,transparent)}
+:root[data-theme="dark"]{--soft:#b4c5ba}

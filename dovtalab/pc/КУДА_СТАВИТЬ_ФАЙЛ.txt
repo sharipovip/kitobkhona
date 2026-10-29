@@ -1,0 +1,19 @@
+СЮДА ПОСТАВЬТЕ ФАЙЛ: Dovtalab-Setup.exe
+=========================================
+
+Положите файл Dovtalab-Setup.exe именно в эту папку:
+
+    kitobkhona/dovtalab/pc/Dovtalab-Setup.exe
+
+Что это даёт:
+- Страница «Довталаб барои Windows» (dovtalab/Download-Довталаб.html)
+  автоматически отдаёт файл с самого сайта (нусхаи дохилӣ).
+- Скачивание работает даже без GitHub Releases и без интернета
+  (офлайн-копия внутри программы).
+
+Важно:
+- GitHub Pages принимает файлы до 100 МБ. Если Dovtalab-Setup.exe больше 100 МБ —
+  НЕ кладите его сюда, а загрузите в GitHub Releases репозитория sharipovip/Dovtalab
+  (релиз с тегом "latest", имя файла — Dovtalab-Setup.exe).
+  Кнопка скачивания на странице сама переключится на ссылку GitHub Releases.
+- Имя файла должно быть точно: Dovtalab-Setup.exe
