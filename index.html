@@ -1130,6 +1130,79 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 }
 .announce-top.show{ transform:translateY(0) !important; opacity:1 !important; }
 
+
+/* ===== АЛИЯ 3D-КНОПКА В НАВИГАЦИИ И КАРТОЧКА НА ГЛАВНОЙ ===== */
+.nav-item.nav-aliya-center {
+  position: relative;
+  top: -14px;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-decoration: none !important;
+  z-index: 50 !important;
+  flex: 0 0 56px !important;
+  min-width: 56px !important;
+}
+.aliya-fab-glow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3350 0%, #0D1B2A 100%);
+  border: 2px solid #E8C96D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(232, 201, 109, 0.55), 0 6px 16px rgba(0, 0, 0, 0.7);
+  color: #E8C96D;
+  font-size: 22px;
+  transition: transform 0.25s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+.aliya-fab-glow::after {
+  content: '';
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, transparent 30%, rgba(232, 201, 109, 0.45) 50%, transparent 70%);
+  animation: fabShine 3s infinite linear;
+}
+@keyframes fabShine {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+.nav-item.nav-aliya-center:hover .aliya-fab-glow,
+.nav-item.nav-aliya-center:active .aliya-fab-glow {
+  transform: scale(1.15);
+  box-shadow: 0 0 28px rgba(232, 201, 109, 0.85), 0 8px 24px rgba(0, 0, 0, 0.9);
+}
+.nav-item.nav-aliya-center span {
+  font-size: 9.5px !important;
+  font-weight: 900 !important;
+  color: #E8C96D !important;
+  margin-top: 3px !important;
+  letter-spacing: 0.2px !important;
+}
+
+/* Интерактивная карточка Алии на главной */
+.aliya-home-card-v3 {
+  margin: 10px 12px 14px;
+  background: linear-gradient(135deg, #1A2D44 0%, #102035 100%);
+  border: 1.5px solid rgba(201,168,76,0.4);
+  border-radius: 18px;
+  padding: 14px 16px;
+  box-shadow: 0 10px 28px rgba(0,0,0,0.38);
+  position: relative;
+  overflow: hidden;
+}
+.aliya-home-card-v3:hover {
+  border-color: #E8C96D;
+  box-shadow: 0 12px 32px rgba(201,168,76,0.22);
+}
+
 </style>
 <script src="config.js?v=75"></script>
 <script>
@@ -2069,6 +2142,22 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       </div>
     </section>
     <div class="hero-dots-v3" id="heroDots"></div>
+
+    <!-- КАРТОЧКА АЛИЯ ИИ (ЗЕҲНИ СУНЪӢ) -->
+    <section class="aliya-home-card-v3">
+      <div style="position: absolute; right: -10px; top: -10px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(232,201,109,0.25) 0%, transparent 70%); pointer-events: none;"></div>
+      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+          <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #1E3350, #0D1B2A); border: 1.5px solid #E8C96D; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 0 16px rgba(232,201,109,0.4);">✨</div>
+          <div style="min-width: 0;">
+            <div style="font-size: 14px; font-weight: 900; color: #E8C96D; letter-spacing: 0.3px;">АЛИЯ — Зеҳни сунъӣ</div>
+            <div style="font-size: 11px; color: #CBD5E1; margin-top: 2px; line-height: 1.35;">Нақшаи дарс, саволу ҷавоб, тестҳо ва хулосаи китобҳо</div>
+          </div>
+        </div>
+        <a href="aliya/index.html" style="background: linear-gradient(135deg, #C9A84C, #E8C96D); color: #141103; font-size: 12px; font-weight: 900; padding: 9px 16px; border-radius: 12px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(201,168,76,0.4); flex-shrink: 0;">Кушодан ›</a>
+      </div>
+    </section>
+
 
     <!-- Search hidden -->
     <div class="search-section-v3" id="searchSection" style="display:none;">
