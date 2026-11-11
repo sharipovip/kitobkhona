@@ -247,7 +247,7 @@
       // Кӯшиши 1: Муроҷиат ба шлюзи абрии FastAPI (/v1/chat)
       try {
         var controller = new AbortController();
-        var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
+        var timeoutId = setTimeout(function () { controller.abort(); }, 2800);
 
         var response = await fetch(GATEWAY_BASE + '/v1/chat', {
           method: 'POST',
