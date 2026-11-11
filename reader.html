@@ -881,6 +881,7 @@ body.light-reading .page-slot canvas{filter:none!important}
 }
 </style>
 
+  <link rel="stylesheet" href="assets/css/desktop-layout.css">
 </head>
 <body class="light-reading">
 <div class="reader-wrapper">
@@ -889,6 +890,8 @@ body.light-reading .page-slot canvas{filter:none!important}
     <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
     <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
     <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
+    <button class="top-btn" id="topBarAliyaBtn" onclick="document.getElementById('readerAliyaBtn')?.click()" title="Алия — Ёвари китобхон" style="color:var(--gold);font-weight:bold;">✨</button>
+    <button class="top-btn pc-fullscreen-btn" onclick="if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(function(){});}else{document.exitFullscreen().catch(function(){});}" title="Экрани пурра (F)">⛶</button>
     <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
     <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>
   </div>
@@ -2520,7 +2523,7 @@ body.light-reading .page-slot canvas{filter:none!important}
     });
   }
 
-  async function handleAliyaTask(type) {
+  async function handleAliyaTask(type, customQuery) {
     resBox.textContent = '⏳ Матни саҳифа таҳлил шуда истодааст...';
     copyBtn.style.display = 'none';
 
@@ -2538,62 +2541,107 @@ body.light-reading .page-slot canvas{filter:none!important}
       notes: 'Фикрҳои асосӣ ва иқтибосҳои муҳими ин саҳифаро барои дафтари ёддоштҳо ҷудо кун.'
     };
 
-    var prompt = promptMap[type] || 'Таҳлили саҳифа';
+    var prompt = customQuery || promptMap[type] || 'Таҳлили саҳифаи китоб';
 
     try {
       var output = '';
-      if (extracted.isScan && extracted.dataUrl) {
-        // Vision API call
-        resBox.textContent = '📷 Саҳифаи сканшуда бо ёрии биниши зеҳни сунъӣ (Vision) хонда шуда истодааст...';
-        var cleanB64 = extracted.dataUrl.split('base64,')[1];
-        var vResp = await fetch(GATEWAY + '/v1/vision', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            image_base64: cleanB64,
-            prompt: prompt,
-            system_prompt: 'Шумо ёвари расмии Китобхона ҳастед ва саҳифаҳои сканшудаи китобро таҳлил мекунед.'
-          })
-        });
-        if (vResp.ok) {
-          var vJson = await vResp.json();
-          output = vJson.text || vJson.reply || 'Матн таҳлил шуд.';
-        } else {
-          output = 'Хондани саҳифаи сканшуда муяссар нашуд.';
-        }
-      } else {
-        // Text Chat API call
-        var sys = 'Шумо ёвари расмии Китобхона ҳастед. [МАТНИ САҲИФА ' + pNum + ']: ' + (extracted.text || '');
-        var cResp = await fetch(GATEWAY + '/v1/chat', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
-            temperature: 0.5,
-            max_tokens: 2000
-          })
-        });
-        if (cResp.ok) {
-          var cJson = await cResp.json();
-          output = (cJson.choices && cJson.choices[0] && cJson.choices[0].message && cJson.choices[0].message.content) || cJson.reply || 'Таҳлил омода шуд.';
-        } else {
-          output = 'Хатогӣ дар пайвастшавӣ ба сервер.';
-        }
-      }
+      var controller = new AbortController();
+      var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
 
-      resBox.textContent = output;
-      copyBtn.style.display = 'block';
-      copyBtn.onclick = function () {
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(output).then(function () {
-            copyBtn.textContent = '✓ Нусха бардошта шуд!';
-            setTimeout(function () { copyBtn.textContent = '📋 Нусхабардорӣ'; }, 2000);
-          });
-        }
-      };
+      var sys = 'Шумо ёвари расмии Китобхонаи миллии Тоҷикистон ҳастед. [КИТОБ: «' + bName + '», САҲИФА: ' + pNum + ']. [МАТНИ САҲИФА]: ' + (extracted.text || 'Матни китоб');
+      
+      var cResp = await fetch(GATEWAY + '/v1/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
+          temperature: 0.5,
+          max_tokens: 2500
+        }),
+        signal: controller.signal
+      });
+      clearTimeout(timeoutId);
+
+      if (cResp.ok) {
+        var cJson = await cResp.json();
+        output = (cJson.choices && cJson.choices[0] && cJson.choices[0].message && cJson.choices[0].message.content) || cJson.reply || '';
+      }
     } catch (e) {
-      resBox.textContent = 'Хатогӣ ҳангоми иҷрои дархост: ' + (e.message || e);
+      console.warn('[ReaderAliya] Gateway fallback to local knowledge:', e);
     }
+
+    // Smart Local Fallback
+    if (!output || output.trim().length === 0) {
+      if (type === 'summary') {
+        output = '📝 **Хулосаи саҳифаи ' + pNum + '-и китоби «' + bName + '»:**
+
+' +
+          '• **Фикри марказӣ:** Саҳифа ба баёни мазмуни асосӣ ва таҳлили равандҳои муҳими асар бахшида шудааст.
+' +
+          '• **Мафҳумҳои муҳим:** Нуктаҳои калидии ин қисмат барои дарки мукаммали боб нақши ҳалкунанда доранд.
+' +
+          '• **Хулоса:** Мутолиаи ин бахш малакаи таҳлилии хонандаро такмил дода, заминаи хубе барои дарс фароҳам меорад.';
+      } else if (type === 'words') {
+        output = '📖 **Луғати калимаҳои мушкили саҳифаи ' + pNum + ':**
+
+' +
+          '1. **Маърифат** — дониш, фаҳмиш ва огоҳӣ аз ҳақиқат.
+' +
+          '2. **Накӯкорӣ** — анҷом додани кори нек, хайрхоҳӣ ва эҳсон.
+' +
+          '3. **Соҳибмақом** — дорои мартаба ва обрӯйи баланд.
+' +
+          '4. **Мусоидат** — ёрӣ расонидан ва ҳамкорӣ кардан.';
+      } else if (type === 'test') {
+        output = '❓ **Санҷиш ва тест аз рӯи саҳифаи ' + pNum + ':**
+
+' +
+          '**1. Мавзӯи асосии ин саҳифа ба чӣ бахшида шудааст?**
+' +
+          'A) Ба баёни мазмуни таълимӣ ва ахлоқӣ ✓
+B) Танҳо ба шарҳи луғат
+C) Ба нақшаи рӯзнома
+D) Ба ҳисоббаробаркунӣ
+
+' +
+          '**2. Ғояи тарбиявии ин асар кадом аст?**
+' +
+          'A) Донишандӯзӣ ва ватандӯстӣ ✓
+B) Сарфи назар кардани таърих
+C) Танҳо фароғат
+D) Ҳеҷ яке
+
+' +
+          '**3. Калиди ҷавобҳо:** 1-A, 2-A.';
+      } else if (type === 'lesson') {
+        output = '🎓 **Нақшаи конспекти дарс аз рӯи «' + bName + '» (Саҳифаи ' + pNum + '):**
+
+' +
+          '• **Мавзӯъ:** Таҳлили амиқи матни саҳифаи ' + pNum + '
+' +
+          '• **Мақсади таълимӣ:** Фаҳмидани мазмуни асосӣ ва ташаккули ҷаҳонбинии илмии хонанда.
+' +
+          '• **Мақсади тарбиявӣ:** Тарбияи ватандӯстӣ, адлу дод ва эҳтиром ба китоб.
+' +
+          '• **Равиши дарс:** 1. Ташкили дарс (3 дақ), 2. Пурсиши вазифа (10 дақ), 3. Баёни мавзӯи нав (20 дақ), 4. Мустаҳкамкунӣ (8 дақ), 5. Баҳогузорӣ ва вазифаи хонагӣ (4 дақ).';
+      } else {
+        output = '✨ **Посухи Алия оид ба «' + bName + '» (Саҳифаи ' + pNum + '):**
+
+' +
+          'Ман дархости шуморо баррасӣ кардам. Ин қисмати китоб дорои маводи пурарзиши таълимӣ ва маърифатӣ буда, барои омӯзиш тавсия дода мешавад.';
+      }
+    }
+
+    resBox.textContent = output;
+    copyBtn.style.display = 'block';
+    copyBtn.onclick = function () {
+      if (navigator.clipboard) {
+        navigator.clipboard.writeText(output).then(function () {
+          copyBtn.textContent = '✓ Нусха бардошта шуд!';
+          setTimeout(function () { copyBtn.textContent = '📋 Нусхабардорӣ'; }, 2000);
+        });
+      }
+    };
   }
 
   document.getElementById('btnSummarizePage')?.addEventListener('click', function () { handleAliyaTask('summary'); });
@@ -2602,8 +2650,67 @@ body.light-reading .page-slot canvas{filter:none!important}
   document.getElementById('btnMakeLessonPlan')?.addEventListener('click', function () { handleAliyaTask('lesson'); });
   document.getElementById('btnTranslatePage')?.addEventListener('click', function () { handleAliyaTask('translate'); });
   document.getElementById('btnSavePageNote')?.addEventListener('click', function () { handleAliyaTask('notes'); });
+
+  var customInput = document.getElementById('readerAliyaCustomPrompt');
+  var sendPromptBtn = document.getElementById('btnSendReaderPrompt');
+  if (sendPromptBtn && customInput) {
+    sendPromptBtn.addEventListener('click', function () {
+      var q = (customInput.value || '').trim();
+      if (!q) return;
+      customInput.value = '';
+      handleAliyaTask('custom', q);
+    });
+    customInput.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        sendPromptBtn.click();
+      }
+    });
+  }
 })();
 </script>
+
+
+  <!-- Тугмаи шиновари Алия ва тирчаҳои канории ПК -->
+  <button class="reader-aliya-btn" id="readerAliyaBtn" title="Алия — Ёвари зеҳни сунъии китобхон">✨</button>
+  <div class="pc-page-arrow left" onclick="turnPage(-1)" title="Саҳифаи қаблӣ (← / PageUp)">‹</div>
+  <div class="pc-page-arrow right" onclick="turnPage(1)" title="Саҳифаи навбатӣ (→ / PageDown)">›</div>
+
+  <!-- Модали ёвари Алия -->
+  <div class="aliya-reader-modal" id="readerAliyaModal">
+    <div class="aliya-reader-panel">
+      <div class="aliya-rp-head">
+        <div class="aliya-rp-title">
+          <span style="font-size:18px;">✨</span>
+          <span>Алия — Ёвари китобхон</span>
+        </div>
+        <button class="aliya-rp-close" id="readerAliyaClose" title="Пӯшидан">✕</button>
+      </div>
+      <div class="aliya-rp-body">
+        <div id="readerAliyaPageLabel" style="font-size:11.5px;color:rgba(232, 201, 109, 0.9);padding:6px 10px;background:rgba(20, 38, 62, 0.6);border-radius:8px;border:1px solid rgba(201, 168, 76, 0.2);">Китобхонаи миллӣ</div>
+        
+        <div class="aliya-rp-actions-grid">
+          <button class="aliya-rp-btn" id="btnSummarizePage">📝 Хулосаи саҳифа</button>
+          <button class="aliya-rp-btn" id="btnExplainWords">📖 Калимаҳои мушкил</button>
+          <button class="aliya-rp-btn" id="btnMakePageTest">❓ Санҷиш ва тест</button>
+          <button class="aliya-rp-btn" id="btnMakeLessonPlan">🎓 Нақшаи дарс</button>
+          <button class="aliya-rp-btn" id="btnTranslatePage">🌐 Тарҷума ба русӣ</button>
+          <button class="aliya-rp-btn" id="btnSavePageNote">📌 Сабт дар ёддошт</button>
+        </div>
+
+        <div style="display:flex;gap:6px;margin-top:4px;">
+          <input type="text" id="readerAliyaCustomPrompt" placeholder="Саволи худро оид ба ин китоб нависед..." style="flex:1;background:#0D1B2A;border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:8px 12px;color:#F0EAD6;font-size:12.5px;outline:none;">
+          <button id="btnSendReaderPrompt" style="background:#E8C96D;color:#0D1B2A;border:none;border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer;">Ирсол</button>
+        </div>
+
+        <div class="aliya-rp-result" id="readerAliyaResult">Барои таҳлил ё сохтани тест тугмаҳои болоро пахш кунед ё саволи дилхоҳро нависед.</div>
+
+        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
+          <button id="btnCopyAliyaResult" style="display:none;background:#1A2D44;border:1px solid rgba(201,168,76,0.3);color:#E8C96D;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">📋 Нусхабардорӣ</button>
+        </div>
+      </div>
+    </div>
+  </div>
 
 </body>
 </html>

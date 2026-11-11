@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v136-aliya';
+const CACHE_NAME = 'kitobkhona-v137-aliya-pc';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [

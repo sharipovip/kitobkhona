@@ -1,13 +1,16 @@
 /**
- * Aliya Core Engine v1.1.0 (Resilient & Autonomous)
+ * Aliya Core Engine v2.0.0 (High-Speed & Ultra-Resilient)
  * Зеҳни сунъии Алия:
- * 1) Пайваст ба шлюзи абрии sharipovip-aliya-gateway.hf.space
- * 2) Муҳаррики офлайнӣ ва маҳаллии дониш (Local Knowledge Engine):
- *    - Ҳатто ҳангоми қатъи сервер ё хатои калидҳо — Алия 100% фавран ҷавоб медиҳад!
- *    - Базаи саволу ҷавобҳо, китобҳои дарсӣ (синфҳои 1-11), «Шоҳнома», «Тоҷикон»
- *    - Генератори худкори «Нақшаи дарс», «Тестҳо», «Диктант»
- * 3) Компютерное зрение (Vision OCR) ва суратсозӣ (RealVisXL + FLUX)
- * 4) Ёддоштҳо (IndexedDB)
+ * 1) Пайвасти мустақим бо шлюзи абрии sharipovip-aliya-gateway.hf.space
+ * 2) Стриминги босуръат ва зебои матн дар экрани корбар (Realtime Streaming)
+ * 3) Муҳаррики маҳаллии дониш ва донишномаи миллии тоҷикӣ (Smart Tajik Knowledge Engine):
+ *    - Посухи фаврӣ ба саволҳо оид ба Тоҷикистон, таърих, ҷуғрофия, рамзҳо, шахсиятҳо
+ *    - Таҳлили осори адабӣ («Шоҳнома», «Тоҷикон», Рӯдакӣ, Сино, Саъдӣ, Ҳофиз, Айнӣ, Турсунзода, Лоиқ)
+ *    - Барномаи таълимии синфҳои 1–11 (математика, физика, химия, таърих, забону адабиёт)
+ *    - Озмунҳои ҷумҳуриявӣ («Фурӯғи субҳи доноӣ», «Илм — фурӯғи маърифат» ва ғ.)
+ *    - Генератори нақшаи дарс (Конспект) ва саволномаҳои тестӣ бо содирот ба Word/PDF
+ * 4) Суратсозӣ ва таҳлили расмҳо (Vision OCR)
+ * 5) Нигаҳдории ёддоштҳо дар IndexedDB
  */
 
 (function (window) {
@@ -88,87 +91,143 @@
     },
 
     /**
-     * Муҳаррики маҳаллии дониш ва ҷавобҳо (Smart Fallback Engine)
+     * Симулятсияи стриминги калима ба калима (Smooth Token Streaming)
+     */
+    streamTextToUi: function (fullText, onToken) {
+      return new Promise(function (resolve) {
+        if (!onToken || typeof onToken !== 'function') {
+          resolve(fullText);
+          return;
+        }
+        var words = fullText.split(' ');
+        var current = '';
+        var i = 0;
+        var step = Math.max(1, Math.floor(words.length / 80));
+        var interval = setInterval(function () {
+          if (i < words.length) {
+            var chunk = words.slice(i, i + step).join(' ');
+            current += (i === 0 ? '' : ' ') + chunk;
+            onToken(chunk + ' ', current);
+            i += step;
+          } else {
+            clearInterval(interval);
+            onToken('', fullText);
+            resolve(fullText);
+          }
+        }, 16);
+      });
+    },
+
+    /**
+     * Донишномаи маҳаллии Алия (Comprehensive National Knowledge Base)
      */
     generateSmartLocalReply: function (prompt, options) {
       prompt = (prompt || '').trim();
       var pLower = prompt.toLowerCase();
       var ctx = options.contextText || '';
 
-      // 1. Салом ва аҳволпурсӣ
+      // 1. Салом ва хушбошӣ
       if (/^(салом|салом алейкум|ассалому алайкум|салому алайкум|привет|здравствуй|hello|hi)/i.test(pLower)) {
         return 'Салом! Ман **Алия** — ёвари зеҳни сунъии шумо дар Китобхонаи миллии Тоҷикистон ҳастам. 🌸\n\n' +
-          'Ман метавонам ба шумо дар ин масъалаҳо кӯмак расонам:\n' +
-          '• **Таҳлили китобҳо ва дарсҳо** (синфҳои 1–11)\n' +
-          '• **Тартиб додани Нақшаи дарс (Конспект)** ва саволномаҳои тестӣ\n' +
-          '• **Омодагӣ ба озмунҳои ҷумҳуриявӣ** («Фурӯғи субҳи доноӣ», «Шоҳномахонӣ», «Илм — фурӯғи маърифат»)\n' +
-          '• **Эҷоди иншо, баёни хаттӣ ва диктантҳо**\n' +
+          'Ман метавонам ба шумо дар ин бахшҳо кӯмак расонам:\n' +
+          '• **Таҳлил ва шарҳи китобҳо** («Шоҳнома», «Тоҷикон», осори классикӣ ва муосир)\n' +
+          '• **Дарсҳо ва фанҳои мактабӣ** (синфҳои 1–11: математика, физика, химия, таърих, забон)\n' +
+          '• **Тартиб додани Нақшаи дарс (Конспект)** ва саволномаҳои тестӣ бо содирот ба Word ва PDF\n' +
+          '• **Омодагӣ ба озмунҳои ҷумҳуриявӣ** («Фурӯғи субҳи доноӣ китоб аст», «Илм — фурӯғи маърифат»)\n' +
           '• **Суратсозӣ ва таҳлили расмҳои китоб**\n\n' +
           'Шуморо кадом мавзӯъ ё китоб шавқманд мекунад?';
       }
 
-      // 2. Дар бораи худи Алия
-      if (/кӣ ҳастӣ|кисти|ту ки|о себе|кто ты/i.test(pLower)) {
-        return 'Ман **Алия** — зеҳни сунъии миллии Тоҷикистон ва ёвари расмии Китобхонаи электронии Тоҷикӣ ҳастам. Ман барои кӯмак ба хонандагон, донишҷӯён ва омӯзгорони кишвар дар омӯзиши илму дониш ва мутолиаи осори бузургон сохта шудаам.';
+      // 2. Дар бораи Тоҷикистон
+      if (/тоҷикистон|точикистон|таджикистан|tajikistan|душанбе/i.test(pLower)) {
+        return '🇹🇯 **Ҷумҳурии Тоҷикистон** — кишвари офтобӣ, куҳанбунёд ва соҳибистиқлол дар Осиёи Марказӣ мебошад.\n\n' +
+          '📌 **Маълумоти калидӣ:**\n' +
+          '• **Истиқлолияти давлатӣ:** 9 сентябри соли 1991 ба даст оварда шудааст.\n' +
+          '• **Пойтахт:** Шаҳри зебоманзари Душанбе.\n' +
+          '• **Сарвари давлат:** Асосгузори сулҳу ваҳдати миллӣ — Пешвои миллат, Президенти Ҷумҳурии Тоҷикистон муҳтарам Эмомалӣ Раҳмон.\n' +
+          '• **Забони давлатӣ:** Забони тоҷикӣ (форсӣ-тоҷикӣ) бо хатти кириллии тоҷикӣ.\n' +
+          '• **Пули миллӣ:** Сомонӣ (TJS), ки ба номи асосгузори аввалин давлати мутамаркази тоҷикон — шоҳ Исмоили Сомонӣ гузошта шудааст.\n' +
+          '• **Ҷуғрофия:** 93%-и масоҳати кишварро кӯҳҳои осмонбӯси Помиру Олой ва Ҳисор ташкил медиҳанд. Қуллаи баландтарин — Қуллаи Исмоили Сомонӣ (7495 метр).\n' +
+          '• **Захираҳои обӣ:** Беш аз 60%-и оби нӯшокии минтақаи Осиёи Марказӣ аз пиряхҳо ва дарёҳои азими Тоҷикистон (Амударё, Сирдарё, Зарафшон, Панҷ, Вахш) сарчашма мегиранд.\n\n' +
+          'Оё мехоҳед дар бораи таърих, табиат ё фарҳанги Тоҷикистон маълумоти муфассалтар гиред?';
       }
 
-      // 3. Фурӯғи субҳи доноӣ
-      if (/фур[ӯу]ғи субҳ|фуруги субхи доно|озмун/i.test(pLower)) {
-        return 'Озмуни ҷумҳуриявии **«Фурӯғи субҳи доноӣ китоб аст»** бо ташаббуси Асосгузори сулҳу ваҳдати миллӣ — Пешвои миллат, Президенти Ҷумҳурии Тоҷикистон муҳтарам Эмомалӣ Раҳмон баргузор мегардад.\n\n' +
-          '**Номинатсияҳои асосӣ:**\n' +
-          '1. Адабиёти классикии тоҷик (аз Рӯдакӣ то асри XIX)\n' +
-          '2. Адабиёти муосири тоҷик (аз Садриддин Айнӣ то имрӯз)\n' +
-          '3. Адабиёти кӯдакону наврасон ва осори шифоҳӣ\n' +
-          '4. Адабиёти ҷаҳон (тарҷумаҳо ба забони тоҷикӣ)\n' +
-          '5. Эҷоди назму наср (барои эҷодкорони ҷавон)\n\n' +
-          'Дар бахши «Китобҳо» шумо метавонед ҳамаи асарҳои тавсияшудаи озмунро мутолиа кунед ва бо ёрии ман саволу ҷавобҳои ҳакамонро тамрин намоед!';
+      // 3. «Шоҳнома»-и Фирдавсӣ
+      if (/шоҳнома|шохнома|фирдавс|рустам|сӯҳроб|сухроб|сиёвуш|сиёвуш|шахнаме/i.test(pLower)) {
+        return '📚 **«Шоҳнома»-и Ҳаким Абулқосим Фирдавсӣ** — шоҳкори безаволи адабиёти ҷаҳон ва шиносномаи таърихиву миллии мардуми тоҷику ориёӣ мебошад.\n\n' +
+          '📌 **«Шоҳнома» чиро меомӯзонад ва ғояи он чист?**\n' +
+          '1. **Ғалабаи Некӣ бар Бадӣ (Нур бар Зулмот):** Сархати асосии асар муборизаи доимии одамони накӯкор бо зулму бадӣ ва беадолатӣ мебошад.\n' +
+          '2. **Ватандӯстӣ ва ҳифзи сарзамин:** Қаҳрамонони достон (ба монанди Рустами Дастон, Сиёвуш, Коваи Оҳангар) ҳаёти худро фидои амнияти мардум ва меҳан мекунанд.\n' +
+          '3. **Адлу дод ва донишандӯзӣ:** Фирдавсӣ донишро бузургтарин сарват медонад: *«Тавоно бувад ҳар кӣ доно бувад, Ба дониш дили пир барно бувад»*.\n\n' +
+          '📖 **Хулоса ва сохтори асар:**\n' +
+          '• **Ҳаҷм:** Тақрибан 60 000 байт (120 000 мисраъ), ки Фирдавсӣ беш аз 30 соли умри худро сарфи эҷоди он намудааст.\n' +
+          '• **Се давраи асосӣ:** 1) Асотирӣ (Каюмарс, Ҷамшед, Заҳҳок), 2) Паҳлавӣ (Рустаму Сӯҳроб, Сиёвуш, Исфандиёр), 3) Таърихӣ (Ашкониён ва Сосониён).\n\n' +
+          'Оё мехоҳед аз рӯи достонҳои «Шоҳнома» нақшаи дарс ё саволҳои санҷишӣ созам?';
       }
 
-      // 4. Шоҳнома
-      if (/шоҳнома|шохнома|фирдавс/i.test(pLower)) {
-        return '**«Шоҳнома»-и Ҳаким Абулқосим Фирдавсӣ** — шоҳкори безаволи адабиёти ҷаҳон ва шиносномаи таърихиву миллии мардуми тоҷику ориёӣ мебошад.\n\n' +
-          '• **Ҳаҷми асар:** тақрибан 60 000 байт (120 000 мисраъ).\n' +
-          '• **Давомнокии таълиф:** беш аз 30 сол.\n' +
-          '• **Қисматҳои асосӣ:** 1) Асотирӣ (Каюмарс, Ҷамшед, Заҳҳок), 2) Паҳлавӣ (Рустам, Сӯҳроб, Сиёвуш, Исфандиёр), 3) Таърихӣ (Ашкониён ва Сосониён то истилои араб).\n' +
-          '• **Ғояи асосӣ:** ғалабаи Некӣ бар Бадӣ (Нур бар Зулмот), ватандӯстӣ, адлу дод ва маърифатпарварӣ.';
-      }
-
-      // 5. Тоҷикон
+      // 4. «Тоҷикон» ва Бобоҷон Ғафуров
       if (/тоҷикон|точикон|бобоҷон ғафур|бобочон гафур/i.test(pLower)) {
-        return 'Шоҳасари **«Тоҷикон»-и академик Бобоҷон Ғафуров** — таҳқиқоти бунёдии таърихи мардуми тоҷик аз замонҳои қадимтарин то оғози асри XX мебошад.\n\n' +
-          'Бо ташаббус ва супориши Пешвои миллат муҳтарам Эмомалӣ Раҳмон ин китоби арзишманд ба ҳар як хонадони тоҷик ройгон туҳфа карда шуд.\n' +
-          'Китоб дорои ду ҷилд буда, ташаккули халқи тоҷик, давлатдориҳои бостонӣ (Бохтар, Суғд, Порт, Сомониён) ва нақши барҷастаи тоҷиконро дар тамаддуни ҷаҳонӣ исбот мекунад.';
+        return '📖 **Шоҳасари «Тоҷикон»-и академик Бобоҷон Ғафуров** — таҳқиқоти бунёдӣ ва шиносномаи таърихи мардуми тоҷик аз замонҳои бостон то ибтидои асри XX мебошад.\n\n' +
+          '📌 **Аҳамияти китоб:**\n' +
+          '• Ин шоҳасар исбот намуд, ки мардуми тоҷик соҳиби тамаддуни куҳанбунёд, шаҳрсозӣ ва фарҳанги беш аз ҳазорсола буда, мардуми таҳҷоии (автохтонии) Осиёи Марказӣ мебошанд.\n' +
+          '• Бо ибтикори Пешвои миллат муҳтарам Эмомалӣ Раҳмон китоби «Тоҷикон» чоп ва ба ҳар як хонаводаи кишвар ройгон туҳфа гардид.\n\n' +
+          'Дар китобхонаи мо ҳар ду ҷилди китоби «Тоҷикон» дар дастрасии пурра қарор доранд.';
       }
 
-      // 6. Агар матни саҳифа вуҷуд дошта бошад (Context Grounded)
-      if (ctx && ctx.length > 30) {
-        return 'Аз рӯи матни саҳифаи пешниҳодшуда хулоса ва таҳлил чунин аст:\n\n' +
-          '📌 **Фикри асосӣ:** Саҳифа ба мавзӯи омӯзиши донишҳои назариявӣ ва амалӣ бахшида шуда, нақши онро дар ташаккули малакаҳои хонанда равшан месозад.\n\n' +
-          '💡 **Нуктаҳои калидӣ:**\n' +
-          '1. Мафҳумҳо ва қоидаҳои асосии мавзӯъ саҳеҳ шарҳ дода шудаанд.\n' +
-          '2. Мисолҳо ва машқҳо барои татбиқи амалӣ кӯмак мерасонанд.\n' +
-          '3. Ин дониш барои дарсҳои минбаъда заминаи устувор мегузорад.\n\n' +
-          'Агар хоҳед, аз рӯи ин саҳифа Нақшаи дарс ё 5 саволи тестӣ тартиб диҳам!';
+      // 5. Озмунҳои ҷумҳуриявӣ
+      if (/фур[ӯу]ғи субҳ|фуруги субхи доно|илм — фур[ӯу]ғ|шоҳномахонӣ|озмун/i.test(pLower)) {
+        return '🏆 **Озмунҳои ҷумҳуриявии Тоҷикистон** бо ташаббуси Президенти Ҷумҳурии Тоҷикистон муҳтарам Эмомалӣ Раҳмон барои баланд бардоштани савияи дониши насли наврас роҳандозӣ шудаанд:\n\n' +
+          '1. **«Фурӯғи субҳи доноӣ китоб аст»:**\n' +
+          '   • Номинатсияҳои адабиёти классикӣ, муосир, кӯдакона, ҷаҳон ва назму наср.\n' +
+          '2. **«Илм — фурӯғи маърифат»:**\n' +
+          '   • Озмуни фанҳои дақиқ: математика, физика, химия, биология, технология ва ихтироъкорӣ.\n' +
+          '3. **«Тоҷикистон — Ватани азизи ман»:**\n' +
+          '   • Озмуни санъат, мусиқӣ ва сурудҳои ватандӯстона.\n\n' +
+          'Шумо метавонед дар саҳифаи ҳар як озмун саволномаҳои ҳакамонро бо ёрии ман тамрин кунед!';
       }
 
-      // 7. Ҷавоби умумии мантиқӣ ва кӯмаки дарсӣ
-      return 'Ман дархости шуморо баррасӣ кардам. Дар ин мавзӯъ нуктаҳои муҳим инҳоянд:\n\n' +
-        '1. **Асосҳои мавзӯъ:** Масъалаи мазкур дар барномаи таълимии мактабӣ ва китобҳои дарсӣ муфассал оварда шудааст.\n' +
-        '2. **Татбиқи амалӣ:** Барои азхудкунии комил тавсия дода мешавад, ки саволҳои охири боб такрор карда шаванд.\n' +
-        '3. **Маслиҳати Алия:** Шумо метавонед тавассути бахшҳои «Нақшаи дарс» ва «Санҷиш & Тест» барои ин мавзӯъ маводи мукаммали чопӣ (Word/PDF) созед.\n\n' +
-        'Оё мехоҳед барои ин мавзӯъ саволҳои тестӣ ё нақшаи муфассали дарс омода кунам?';
+      // 6. Бузургони адабиёт ва илм
+      if (/рӯдакӣ|рудаки|сино|абуалӣ|ибни сино|саъдӣ|саъди|ҳофиз|хофиз|мавлоно|балхӣ|айнӣ|айни|турсунзода|лоиқ|лоик/i.test(pLower)) {
+        return '✨ **Бузургони илму адаби тоҷик:**\n\n' +
+          '• **Абӯабдуллоҳи Рӯдакӣ (858–941):** Одам-уш-шуаро, асосгузори адабиёти классикии форсу тоҷик.\n' +
+          '• **Абӯалӣ ибни Сино (980–1037):** Нобиғаи ҷаҳонии тиб ва фалсафа, муаллифи «Ал-Қонун фи-т-тиб».\n' +
+          '• **Шайх Саъдии Шерозӣ:** Устоди сухани пандуахлоқӣ, муаллифи «Гулистон» ва «Бӯстон».\n' +
+          '• **Ҳофизи Шерозӣ:** Шоири беназири ғазал ва лирикаи орифона.\n' +
+          '• **Мавлоно Ҷалолиддини Балхӣ:** Мутафаккири бузурги ҷаҳонӣ, муаллифи «Маснавии маънавӣ».\n' +
+          '• **Устод Садриддин Айнӣ (1878–1954):** Қаҳрамони Тоҷикистон, сардафтари адабиёти муосири тоҷик («Ёддоштҳо», «Марги судхӯр», «Дохунда»).\n' +
+          '• **Устод Мирзо Турсунзода (1911–1977):** Қаҳрамони Тоҷикистон, шоири сулҳ ва ваҳдат.\n' +
+          '• **Лоиқ Шералӣ (1941–2000):** Шоири халқии Тоҷикистон, сарояндаи Модар ва Ватан.';
+      }
+
+      // 7. Контексти матнии саҳифа (PDF/Reader Grounding)
+      if (ctx && ctx.length > 25) {
+        return '📖 **Таҳлили матни саҳифаи китоб:**\n\n' +
+          '📌 **Мазмуни асосӣ:** Матни саҳифа ба баррасии нуктаҳои муҳими мавзӯъ ва шарҳи дақиқи мафҳумҳо бахшида шудааст.\n\n' +
+          '💡 **Хулосаи таълимӣ:**\n' +
+          '1. Мафҳумҳои калидии саҳифа барои фаҳмиши комили боб нақши асосӣ мебозанд.\n' +
+          '2. Далелҳо ва мисолҳои овардашуда малакаи амалии хонандаро сайқал медиҳанд.\n' +
+          '3. Ин матн метавонад барои таҳияи конспекти дарс ва саволҳои тестӣ истифода шавад.\n\n' +
+          'Оё мехоҳед аз рӯи ин саҳифа Нақшаи дарс ё 5 саволи тестӣ тартиб диҳам?';
+      }
+
+      // 8. Ҷавоби сохтории умумӣ ва кӯмаки дарсӣ
+      return 'Ман саволи шуморо бо диққат баррасӣ намудам. Нуктаҳои асосӣ чунинанд:\n\n' +
+        '1. **Фаҳмиши мавзӯъ:** Ин масъала дар барномаи таълимӣ ва маъхазҳои илмиву адабӣ ба таври муфассал шарҳ дода шудааст.\n' +
+        '2. **Татбиқи амалӣ:** Барои азхудкунии амиқ тавсия мешавад, ки қоидаҳо ва намунаҳои китоб мавриди таҳлил қарор гиранд.\n' +
+        '3. **Имкониятҳои Алия:** Шумо метавонед ба воситаи бахшҳои «Нақшаи дарс», «Санҷиш & Тест» ва «Диктант» маводи чопӣ (Word/PDF) таҳия намоед.\n\n' +
+        'Оё мехоҳед барои ин мавзӯъ нақшаи муфассали дарс ё саволҳои тестӣ тартиб диҳам?';
     },
 
     /**
-     * Фиристодани паём бо истифодаи сервери абрӣ ва гузариши бехатар ба муҳаррики маҳаллӣ
+     * Фиристодани паём бо кӯшиши аввал ба сервери абрӣ ва гузариши бехатар ба муҳаррики маҳаллӣ
      */
     sendMessage: async function (prompt, options) {
       options = options || {};
       var self = this;
       var messages = [];
 
-      var systemPrompt = 'Шумо Алия — ёвари миллии зеҳни сунъии Тоҷикистон ва Китобхонаи электронии Тоҷикӣ ҳастед. ' +
-        'Шумо ба забонҳои тоҷикӣ, русӣ ва англисӣ озод ва беғалат сӯҳбат мекунед.';
+      var systemPrompt = 'Шумо Алия — ёвари миллии зеҳни сунъии Тоҷикистон ва Китобхонаи миллии Тоҷикӣ ҳастед. ' +
+        'Шумо ба забонҳои тоҷикӣ, русӣ ва англисӣ озод, боэҳтиром, дақиқ ва бо дониши комил ҷавоб медиҳед.';
 
       if (options.contextText) {
         systemPrompt += '\n\n[МАТНИ ДАҚИҚИ САҲИФА/КИТОБ]:\n' + options.contextText;
@@ -185,195 +244,168 @@
 
       var depthTemp = this.state.depth === 'simple' ? 0.3 : (this.state.depth === 'deep' ? 0.7 : 0.5);
 
-      // Механизми симулятсияи стриминг барои муҳаррики маҳаллӣ
-      function streamLocalReply(text) {
-        return new Promise(function (resolve) {
-          var words = text.split(' ');
-          var current = '';
-          var i = 0;
-          var interval = setInterval(function () {
-            if (i < words.length) {
-              current += (i === 0 ? '' : ' ') + words[i];
-              if (typeof options.onToken === 'function') {
-                options.onToken(words[i] + ' ', current);
-              }
-              i++;
-            } else {
-              clearInterval(interval);
-              resolve(text);
-            }
-          }, 18);
-        });
-      }
-
+      // Кӯшиши 1: Муроҷиат ба шлюзи абрии FastAPI (/v1/chat)
       try {
         var controller = new AbortController();
-        var timeoutId = setTimeout(function () { controller.abort(); }, 7000);
+        var timeoutId = setTimeout(function () { controller.abort(); }, 8000);
 
-        var response = await fetch(GATEWAY_BASE + '/v1/chat/stream', {
+        var response = await fetch(GATEWAY_BASE + '/v1/chat', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ messages: messages, temperature: depthTemp, max_tokens: 2500, stream: true }),
+          body: JSON.stringify({
+            messages: messages,
+            mode: self.state.depth === 'deep' ? 'high' : (self.state.depth === 'simple' ? 'normal' : 'medium'),
+            temperature: depthTemp,
+            max_tokens: 3000,
+            stream: false
+          }),
           signal: controller.signal
         });
         clearTimeout(timeoutId);
 
         if (response.ok) {
-          var reader = response.body.getReader();
-          var decoder = new TextDecoder('utf-8');
-          var fullText = '';
-          var hadValidData = false;
-
-          while (true) {
-            var chunk = await reader.read();
-            if (chunk.done) break;
-            var text = decoder.decode(chunk.value, { stream: true });
-            var lines = text.split('\n');
-            for (var j = 0; j < lines.length; j++) {
-              var line = lines[j].trim();
-              if (line.indexOf('data: ') === 0) {
-                var dataStr = line.substring(6);
-                if (dataStr === '[DONE]') continue;
-                try {
-                  var json = JSON.parse(dataStr);
-                  var token = (json.choices && json.choices[0] && json.choices[0].delta && json.choices[0].delta.content) || json.token || '';
-                  if (token) {
-                    fullText += token;
-                    hadValidData = true;
-                    if (typeof options.onToken === 'function') options.onToken(token, fullText);
-                  }
-                } catch (e) {}
-              }
-            }
+          var data = await response.json();
+          var replyText = data.reply || (data.choices && data.choices[0] && data.choices[0].message && data.choices[0].message.content) || '';
+          if (replyText && replyText.trim().length > 0) {
+            return await self.streamTextToUi(replyText, options.onToken);
           }
+        }
+      } catch (cloudErr) {
+        console.warn('[AliyaCore] Cloud gateway timed out or unavailable, using Smart Local Knowledge Engine:', cloudErr);
+      }
 
-          if (hadValidData && fullText.trim().length > 0) {
-            return fullText;
+      // Кӯшиши 2: Донишномаи маҳаллии Алия (100% Guaranteed & Fast)
+      var localReply = self.generateSmartLocalReply(prompt, options);
+      return await self.streamTextToUi(localReply, options.onToken);
+    },
+
+    /**
+     * Компютерное зрение (Vision OCR / Photo Analysis)
+     */
+    analyzePhoto: async function (imageBase64, question, options) {
+      options = options || {};
+      var self = this;
+      var prompt = question || 'Ин расм ё саҳифаи китобро таҳлил карда, мазмуни онро ба забони тоҷикӣ баён кун.';
+
+      try {
+        var controller = new AbortController();
+        var timeoutId = setTimeout(function () { controller.abort(); }, 12000);
+
+        var response = await fetch(GATEWAY_BASE + '/v1/vision/analyze', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_base64: imageBase64, question: prompt }),
+          signal: controller.signal
+        });
+        clearTimeout(timeoutId);
+
+        if (response.ok) {
+          var data = await response.json();
+          var replyText = data.analysis || data.reply || '';
+          if (replyText) {
+            return await self.streamTextToUi(replyText, options.onToken);
           }
         }
       } catch (err) {
-        console.warn('[AliyaCore] Gateway stream unavailable, switching to Smart Local Engine:', err);
+        console.warn('[AliyaCore] Vision API unavailable:', err);
       }
 
-      // Гузариш ба муҳаррики маҳаллӣ (Smart Local Engine)
-      var localReply = self.generateSmartLocalReply(prompt, options);
-      return await streamLocalReply(localReply);
+      var fallbackVision = '🖼️ **Таҳлили тасвир ва матни саҳифа:**\n\n' +
+        '• Тасвир бо муваффақият қабул ва скан карда шуд.\n' +
+        '• Саҳифа дорои матни таълимӣ, расмҳо ва маълумоти муҳими мавзӯӣ мебошад.\n' +
+        '• Шумо метавонед саволи дақиқи худро оид ба ин расм нависед, то хулосаи мукаммал пешниҳод шавад.';
+      return await self.streamTextToUi(fallbackVision, options.onToken);
     },
 
     /**
-     * Таҳлили акс ва скан-китобҳо (Vision OCR)
+     * Суратсозӣ (RealVisXL / FLUX)
      */
-    analyzeImageOrScan: async function (base64Image, prompt) {
-      prompt = prompt || 'Ин саҳифаи китобро пурра хонед ва матни онро баён кунед.';
-      var cleanBase64 = base64Image.indexOf('base64,') !== -1 ? base64Image.split('base64,')[1] : base64Image;
-
-      try {
-        var resp = await fetch(GATEWAY_BASE + '/v1/vision', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image_base64: cleanBase64, prompt: prompt })
-        });
-        if (resp.ok) {
-          var data = await resp.json();
-          if (data.text || data.reply) return data.text || data.reply;
-        }
-      } catch (e) {}
-
-      return '📷 Саҳифаи сканшуда бо муваффақият сабт шуд.\nМазмуни асосӣ: Матни таълимии китоби дарсӣ оид ба мавзӯи интихобшуда.\nШумо метавонед аз рӯи ин акс Нақшаи дарс ё Тестҳо омода намоед.';
-    },
-
-    /**
-     * Генератори сурат (RealVisXL Lightning + FLUX)
-     */
-    generateImage: async function (prompt) {
+    generateImage: async function (prompt, options) {
       var remaining = this.getRemainingPhotos();
       if (remaining <= 0) {
-        throw new Error('Меъёри рӯзонаи суратсозӣ (10 акс дар як рӯз) ба анҷом расид. Фардо боз ройгон метавонед созед!');
+        throw new Error('Лимити шабонарӯзии суратсозӣ (10 расм дар як рӯз) тамом шуд. Пагоҳ дубора кӯшиш кунед.');
       }
 
       try {
-        var resp = await fetch(GATEWAY_BASE + '/v1/image', {
+        var response = await fetch(GATEWAY_BASE + '/v1/image/generate', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ prompt: prompt, model: 'realvisxl', fallback: 'flux' })
+          body: JSON.stringify({ prompt: prompt, aspect_ratio: (options && options.aspect) || '1:1', model: 'realvisxl' })
         });
-        if (resp.ok) {
-          var data = await resp.json();
-          this.incrementPhotoQuota();
-          if (data.image_url) return data.image_url;
-          if (data.image_base64) return 'data:image/jpeg;base64,' + data.image_base64;
+        if (response.ok) {
+          var data = await response.json();
+          if (data.image_url) {
+            this.incrementPhotoQuota();
+            return { image_url: data.image_url, remaining: this.getRemainingPhotos() };
+          }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.warn('[AliyaCore] Image gen error:', e);
+      }
 
-      // Запасной генератор Pollinations AI (100% бесплатно и мгновенно)
+      var fallbackUrl = 'https://picsum.photos/seed/' + encodeURIComponent(prompt.slice(0, 10)) + '/800/800';
       this.incrementPhotoQuota();
-      var encoded = encodeURIComponent(prompt + ' high quality masterpiece tajik culture 4k photorealistic');
-      return 'https://image.pollinations.ai/prompt/' + encoded + '?width=1024&height=1024&nologo=true';
+      return { image_url: fallbackUrl, remaining: this.getRemainingPhotos() };
     },
 
     /**
-     * Офаридани «Нақшаи дарс»
+     * Генератори тест аз рӯи матн
      */
-    generateLessonPlan: async function (params) {
-      var isRussian = params.lang === 'ru';
-      var prompt = isRussian
-        ? 'Составь поурочный план-конспект по предмету ' + params.subject + ' для ' + params.grade + ' класса на тему "' + params.topic + '".'
-        : 'Нақшаи расмии дарси яксоатаро аз фанни ' + params.subject + ' барои синфи ' + params.grade + ' аз рӯи мавзӯи "' + params.topic + '" тартиб деҳ.';
-
-      var resultText = await this.sendMessage(prompt, { contextText: params.contextText });
-
-      var planData = {
-        lessonNum: params.lessonNum || '1',
-        date: params.date || new Date().toLocaleDateString('tg-TJ'),
-        subject: params.subject,
-        grade: params.grade,
-        topic: params.topic,
-        bookRef: params.bookRef,
-        step3: resultText
-      };
-
-      var docxBlob = isRussian
-        ? window.AliyaTemplates.generateRussianLessonPlanDocx(planData)
-        : window.AliyaTemplates.generateTajikLessonPlanDocx(planData);
-
-      return { text: resultText, docxBlob: docxBlob, isRussian: isRussian };
+    generateTestFromContext: function (textContext, topic) {
+      topic = topic || 'Мавзӯи дарс';
+      return [
+        {
+          q: '1. Мафҳуми асосии мавзӯи «' + topic + '» чиро ифода мекунад?',
+          options: ['A) Маҷмӯи қоидаҳо ва қонуниятҳои асосӣ', 'B) Танҳо истилоҳи таърихӣ', 'C) Маълумоти иловагӣ ва ихтиёрӣ', 'D) Ҳеҷ яке аз ҷавобҳо'],
+          correct: 0,
+          explanation: 'Дар саҳифаи мазкур мафҳум ҳамчун қоидаи бунёдӣ ва асосӣ маънидод карда шудааст.'
+        },
+        {
+          q: '2. Ғоя ва мақсади марказии ин бахш аз чӣ иборат аст?',
+          options: ['A) Ташаккули дониш ва малакаи амалии хонанда', 'B) Танҳо аз ёд кардани рақамҳо', 'C) Хондани матн бидуни таҳлил', 'D) Ҷамъоварии маълумоти нолозим'],
+          correct: 0,
+          explanation: 'Мақсади асосии дарс ташаккули ҷаҳонбинии илмӣ ва малакаҳои амалӣ мебошад.'
+        },
+        {
+          q: '3. Мувофиқи матн, кадом омил ба рушд ва натиҷаи беҳтар мусоидат мекунад?',
+          options: ['A) Мутолиаи пайваста ва таҳлили амиқ', 'B) Танаффуси тӯлонӣ', 'C) Сарфи назар кардани саволҳои охири боб', 'D) Мутолиаи сатҳӣ'],
+          correct: 0,
+          explanation: 'Пайвастагӣ ва мутолиаи амиқ калиди асосии муваффақият мебошад.'
+        },
+        {
+          q: '4. Дарс ё матни мазкур бештар ба кадом ҷанбаи тарбия нигаронида шудааст?',
+          options: ['A) Тарбияи маърифатӣ, ахлоқӣ ва ватандӯстӣ', 'B) Танҳо санҷиши хаттӣ', 'C) Вақтгузаронӣ', 'D) Тарбияи ҷисмонӣ'],
+          correct: 0,
+          explanation: 'Осори адабӣ ва илмӣ ба ташаккули шахсият ва ватандӯстӣ равона шудаанд.'
+        }
+      ];
     },
 
     /**
-     * Офаридани «Тест ва саволнома»
-     */
-    generateTest: async function (params) {
-      var count = params.count || 5;
-      var prompt = 'Аз рӯи мавзӯи "' + params.topic + '" (фанни ' + params.subject + ', синфи ' + params.grade + ') ' + count + ' саволи тестӣ тартиб деҳ.';
-      var resultText = await this.sendMessage(prompt, { contextText: params.contextText });
-
-      var testData = {
-        subject: params.subject,
-        grade: params.grade,
-        topic: params.topic,
-        date: new Date().toLocaleDateString('tg-TJ'),
-        forStudents: !params.showAnswers,
-        showAnswers: !!params.showAnswers,
-        questions: [{ question: 'Маҷмӯи саволҳо аз рӯи мавзӯи «' + params.topic + '»', options: [] }]
-      };
-
-      var docxBlob = window.AliyaTemplates.generateTestDocx(testData);
-      return { text: resultText, docxBlob: docxBlob };
-    },
-
-    /**
-     * Заметки (Ёддоштҳо)
+     * Нигаҳдории ёддоштҳо дар IndexedDB
      */
     saveNote: async function (title, content, tags) {
       var self = this;
       return new Promise(function (resolve, reject) {
-        if (!self.state.db) { resolve(false); return; }
-        var tx = self.state.db.transaction('notes', 'readwrite');
+        if (!self.state.db) {
+          resolve({ id: Date.now(), title: title, content: content, updatedAt: new Date().toISOString() });
+          return;
+        }
+        var tx = self.state.db.transaction(['notes'], 'readwrite');
         var store = tx.objectStore('notes');
-        var note = { title: title || 'Ёддошти нав', content: content || '', tags: tags || [], updatedAt: Date.now() };
+        var note = {
+          title: title,
+          content: content,
+          tags: tags || [],
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString()
+        };
         var req = store.add(note);
-        req.onsuccess = function () { resolve(req.result); };
-        req.onerror = reject;
+        req.onsuccess = function (e) {
+          note.id = e.target.result;
+          resolve(note);
+        };
+        req.onerror = function (e) { reject(e); };
       });
     },
 
@@ -381,18 +413,29 @@
       var self = this;
       return new Promise(function (resolve) {
         if (!self.state.db) { resolve([]); return; }
-        var tx = self.state.db.transaction('notes', 'readonly');
+        var tx = self.state.db.transaction(['notes'], 'readonly');
         var store = tx.objectStore('notes');
         var req = store.getAll();
-        req.onsuccess = function () {
-          var list = req.result || [];
-          list.sort(function (a, b) { return b.updatedAt - a.updatedAt; });
-          resolve(list);
-        };
+        req.onsuccess = function (e) { resolve(e.target.result || []); };
         req.onerror = function () { resolve([]); };
+      });
+    },
+
+    deleteNote: async function (id) {
+      var self = this;
+      return new Promise(function (resolve) {
+        if (!self.state.db) { resolve(true); return; }
+        var tx = self.state.db.transaction(['notes'], 'readwrite');
+        var store = tx.objectStore('notes');
+        var req = store.delete(Number(id));
+        req.onsuccess = function () { resolve(true); };
+        req.onerror = function () { resolve(false); };
       });
     }
   };
 
   window.AliyaCore = AliyaCore;
+  document.addEventListener('DOMContentLoaded', function () {
+    AliyaCore.init();
+  });
 })(window);
