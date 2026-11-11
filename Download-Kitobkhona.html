@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="tg" data-theme="dark">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Китобхона барои Windows (Компютер)</title>
+<link rel="icon" type="image/x-icon" href="./favicon.ico">
+<link rel="stylesheet" href="./home-refresh.css">
+<style>
+body {
+  margin: 0;
+  min-height: 100vh;
+  background: radial-gradient(circle at 50% 0%, #152840 0%, #0D1B2A 75%, #050A10 100%);
+  color: #F0EAD6;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.pc-card {
+  width: min(640px, 100%);
+  background: linear-gradient(160deg, #1A2D44 0%, #101F33 100%);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 24px;
+  padding: clamp(20px, 4vw, 36px);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.55);
+}
+.pc-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+  padding-bottom: 18px;
+}
+.pc-head img {
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  border: 1.5px solid #C9A84C;
+  box-shadow: 0 0 20px rgba(201, 168, 76, 0.3);
+}
+.pc-head h1 {
+  margin: 0;
+  font-size: clamp(1.3rem, 2.4vw, 1.7rem);
+  color: #E8C96D;
+}
+.pc-head p {
+  margin: 4px 0 0;
+  color: #A8B8CC;
+  font-size: 0.85rem;
+}
+.pc-facts {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+  margin: 18px 0;
+}
+.pc-facts div {
+  background: rgba(13, 27, 42, 0.6);
+  border: 1px solid rgba(201, 168, 76, 0.2);
+  border-radius: 14px;
+  padding: 10px 14px;
+}
+.pc-facts small {
+  display: block;
+  color: #A8B8CC;
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+.pc-facts b {
+  font-size: 0.95rem;
+  color: #F0EAD6;
+}
+.pc-dl {
+  display: flex;
+  justify-content: center;
+  margin: 22px 0 10px;
+}
+.btn-dl {
+  background: linear-gradient(135deg, #C9A84C 0%, #E8C96D 100%);
+  color: #141103;
+  font-size: 1.05rem;
+  font-weight: 900;
+  padding: 14px 32px;
+  border-radius: 16px;
+  text-decoration: none;
+  box-shadow: 0 6px 24px rgba(201, 168, 76, 0.4);
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.btn-dl:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 30px rgba(201, 168, 76, 0.6);
+}
+.pc-steps {
+  margin: 18px 0 0;
+  padding: 16px;
+  border: 1px dashed rgba(201, 168, 76, 0.3);
+  border-radius: 16px;
+  background: rgba(13, 27, 42, 0.4);
+}
+.pc-steps h2 {
+  margin: 0 0 10px;
+  font-size: 0.85rem;
+  color: #E8C96D;
+  text-transform: uppercase;
+}
+.pc-steps ol {
+  margin: 0;
+  padding-left: 20px;
+  color: #CBD5E1;
+  font-size: 0.82rem;
+  line-height: 1.65;
+}
+.pc-back {
+  display: flex;
+  justify-content: center;
+  margin-top: 18px;
+  font-size: 0.85rem;
+}
+.pc-back a {
+  color: #E8C96D;
+  text-decoration: none;
+}
+@media (max-width: 520px) {
+  .pc-facts { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="pc-card">
+  <div class="pc-head">
+    <img src="./icon-192.png" alt="Китобхона">
+    <div>
+      <h1>Китобхона барои Windows</h1>
+      <p>Ҳамаи китобҳои дарсӣ ва бадеӣ + Алия дар компютер</p>
+    </div>
+  </div>
+  <div class="pc-facts">
+    <div><small>ВЕРСИЯ</small><b>3.1.4</b></div>
+    <div><small>ҲАҶМ</small><b>~12 МБ</b></div>
+    <div><small>ТАЛАБОТ</small><b>Windows 10 / 11</b></div>
+  </div>
+  <div class="pc-dl">
+    <a class="btn-dl" id="dlBtn" href="https://github.com/sharipovip/kitobkhona/releases/download/latest/Kitobkhona-Setup.exe" target="_blank">
+      ⬇ Зеркашии Kitobkhona-Setup.exe
+    </a>
+  </div>
+  <div class="pc-steps">
+    <h2>Тарзи насб ва оғоз</h2>
+    <ol>
+      <li>Файли <b>Kitobkhona-Setup.exe</b>-ро зеркашӣ карда, кушоед.</li>
+      <li>Агар Windows огоҳиномаи SmartScreen нишон диҳад: тугмаи <b>«Подробнее»</b> → сипас <b>«Выполнить в любом случае»</b>-ро пахш намоед.</li>
+      <li>Барнома дар «Пуск» ва дар Мизи корӣ бо нишони Китобхона сохта мешавад.</li>
+    </ol>
+  </div>
+  <div class="pc-back">
+    <a href="index.html">← Бозгашт ба Китобхонаи онлайн</a>
+  </div>
+</div>
+</body>
+</html>

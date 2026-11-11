@@ -762,6 +762,125 @@ body.light-reading .page-slot canvas{filter:none!important}
 .page-slot.flip-flap{z-index:6!important;box-shadow:none!important;pointer-events:none;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform,filter,opacity}
 .flip-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;background:linear-gradient(to right,rgba(0,0,0,.34) 0%,rgba(0,0,0,.12) 38%,rgba(0,0,0,0) 72%)}
 </style>
+
+<style id="aliya-reader-styles">
+/* Кнопка Алия дар дохили хонанда (Reader) */
+.reader-aliya-btn {
+  position: fixed;
+  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  right: 16px;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3350, #0D1B2A);
+  border: 2px solid #E8C96D;
+  box-shadow: 0 0 16px rgba(232, 201, 109, 0.4), 0 6px 20px rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E8C96D;
+  font-size: 20px;
+  cursor: pointer;
+  z-index: 100;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.reader-aliya-btn:hover { transform: scale(1.1); box-shadow: 0 0 24px rgba(232, 201, 109, 0.7); }
+.reader-aliya-btn:active { transform: scale(0.92); }
+
+/* Боковые стрелки для перелистывания на ПК */
+.pc-page-arrow {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 48px;
+  height: 64px;
+  background: rgba(13, 27, 42, 0.55);
+  border: 1px solid rgba(201, 168, 76, 0.25);
+  color: #E8C96D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 28px;
+  cursor: pointer;
+  border-radius: 12px;
+  z-index: 30;
+  opacity: 0;
+  transition: opacity 0.2s ease, background 0.2s ease;
+  user-select: none;
+}
+.reader-wrapper:hover .pc-page-arrow { opacity: 0.85; }
+.pc-page-arrow:hover { opacity: 1 !important; background: rgba(20, 38, 62, 0.9); border-color: #E8C96D; }
+.pc-page-arrow.left { left: 12px; }
+.pc-page-arrow.right { right: 12px; }
+
+/* Модали ёвари Алия */
+.aliya-reader-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(4, 10, 20, 0.85);
+  backdrop-filter: blur(8px);
+  z-index: 2000;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.aliya-reader-modal.on { display: flex; }
+.aliya-reader-panel {
+  width: 100%;
+  max-width: 580px;
+  max-height: 85vh;
+  background: linear-gradient(180deg, #142236, #0D1B2A);
+  border: 1px solid rgba(201, 168, 76, 0.35);
+  border-radius: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  color: #F0EAD6;
+}
+.aliya-rp-head {
+  padding: 14px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
+  background: rgba(13, 27, 42, 0.6);
+}
+.aliya-rp-title { font-weight: 800; font-size: 15px; color: #E8C96D; display: flex; align-items: center; gap: 8px; }
+.aliya-rp-close { background: transparent; border: 0; color: #A8B8CC; font-size: 22px; cursor: pointer; }
+.aliya-rp-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex: 1; }
+.aliya-rp-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.aliya-rp-btn {
+  background: #1A2D44;
+  border: 1px solid rgba(201, 168, 76, 0.22);
+  border-radius: 12px;
+  padding: 10px;
+  color: #F0EAD6;
+  font-size: 12px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.18s ease;
+}
+.aliya-rp-btn:hover { background: rgba(201, 168, 76, 0.15); border-color: #E8C96D; }
+.aliya-rp-result {
+  background: #0B1726;
+  border: 1px solid rgba(201, 168, 76, 0.18);
+  border-radius: 12px;
+  padding: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+  min-height: 120px;
+  max-height: 280px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  color: #D1D9E6;
+}
+</style>
+
 </head>
 <body class="light-reading">
 <div class="reader-wrapper">
@@ -2305,5 +2424,186 @@ body.light-reading .page-slot canvas{filter:none!important}
   else openBookFormat(BOOK_FMT);
   void loadReactions();
 </script>
+
+<script>
+(function initReaderDesktopAndAliya() {
+  // 1. Keyboard Navigation (ПК)
+  window.addEventListener('keydown', function (e) {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      turnPage(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
+      e.preventDefault();
+      turnPage(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      if (typeof page !== 'undefined') renderPage(1, -1);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      if (typeof pages !== 'undefined' && pages) renderPage(pages, 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (!document.fullscreenElement) {
+        document.documentElement.requestFullscreen().catch(function(){});
+      } else {
+        document.exitFullscreen().catch(function(){});
+      }
+    } else if (e.key === 'Escape') {
+      var modal = document.getElementById('readerAliyaModal');
+      if (modal) modal.classList.remove('on');
+    }
+  });
+
+  // 2. Mouse Wheel Navigation (ПК)
+  var wheelTimer = null;
+  window.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaY) < 30) return;
+    if (wheelTimer) return;
+    wheelTimer = setTimeout(function () { wheelTimer = null; }, 320);
+    turnPage(e.deltaY > 0 ? 1 : -1);
+  }, { passive: true });
+
+  // 3. Dual-Engine Text / Scanned PDF Extraction for Aliya
+  async function extractCurrentPageContent() {
+    var pageNum = typeof page !== 'undefined' ? page : 1;
+    var total = typeof pages !== 'undefined' ? pages : 1;
+    var result = { text: '', isScan: false, dataUrl: null };
+
+    // Try text extraction if PDF object exists
+    if (typeof pdf !== 'undefined' && pdf && typeof pdf.getPage === 'function') {
+      try {
+        var pageObj = await pdf.getPage(pageNum);
+        var textContent = await pageObj.getTextContent();
+        var str = textContent.items.map(function(item){ return item.str; }).join(' ').trim();
+        if (str && str.length > 35) {
+          result.text = str;
+          return result;
+        }
+      } catch (err) {
+        console.warn('[ReaderAliya] Text extraction error:', err);
+      }
+    }
+
+    // Scanned PDF / Canvas Fallback
+    var canvas = document.querySelector('#currentSlot canvas');
+    if (canvas) {
+      try {
+        result.dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        result.isScan = true;
+      } catch (e) {}
+    }
+    return result;
+  }
+
+  // 4. Aliya Modal Controller
+  var modal = document.getElementById('readerAliyaModal');
+  var btnOpen = document.getElementById('readerAliyaBtn');
+  var btnClose = document.getElementById('readerAliyaClose');
+  var resBox = document.getElementById('readerAliyaResult');
+  var labelBox = document.getElementById('readerAliyaPageLabel');
+  var copyBtn = document.getElementById('btnCopyAliyaResult');
+
+  if (btnOpen) {
+    btnOpen.addEventListener('click', function (e) {
+      e.stopPropagation();
+      modal.classList.add('on');
+      var pNum = typeof page !== 'undefined' ? page : 1;
+      var pTot = typeof pages !== 'undefined' ? pages : 1;
+      var bName = typeof name !== 'undefined' ? name : 'Китоб';
+      labelBox.textContent = 'Китоб: «' + bName + '» · Саҳифаи ' + pNum + ' аз ' + pTot;
+    });
+  }
+
+  if (btnClose) {
+    btnClose.addEventListener('click', function () {
+      modal.classList.remove('on');
+    });
+  }
+
+  async function handleAliyaTask(type) {
+    resBox.textContent = '⏳ Матни саҳифа таҳлил шуда истодааст...';
+    copyBtn.style.display = 'none';
+
+    var extracted = await extractCurrentPageContent();
+    var GATEWAY = 'https://sharipovip-aliya-gateway.hf.space';
+    var pNum = typeof page !== 'undefined' ? page : 1;
+    var bName = typeof name !== 'undefined' ? name : 'Китоб';
+
+    var promptMap = {
+      summary: 'Аз рӯи саҳифаи ' + pNum + '-и китоби «' + bName + '» хулосаи мухтасар ва фикри асосиро ба забони тоҷикӣ баён кун.',
+      words: 'Дар ин саҳифа кадом калимаҳои душворфаҳм, истилоҳот ё байтҳо ҳастанд? Маънои онҳоро бо забони соддаи тоҷикӣ шарҳ деҳ.',
+      test: 'Аз рӯи ин саҳифа 4 дона саволи тестӣ бо 4 варианти ҷавоб (A, B, C, D) ва ҷавоби дуруст тартиб деҳ.',
+      lesson: 'Аз рӯи мавзӯи ин саҳифа нақшаи расмии дарси яксоата (мақсад, ташкили дарс, баёни мавзӯъ, саволу ҷавоб ва вазифаи хонагӣ) тартиб деҳ.',
+      translate: 'Ин саҳифаро пурра ва босифат ба забони русӣ тарҷума намо.',
+      notes: 'Фикрҳои асосӣ ва иқтибосҳои муҳими ин саҳифаро барои дафтари ёддоштҳо ҷудо кун.'
+    };
+
+    var prompt = promptMap[type] || 'Таҳлили саҳифа';
+
+    try {
+      var output = '';
+      if (extracted.isScan && extracted.dataUrl) {
+        // Vision API call
+        resBox.textContent = '📷 Саҳифаи сканшуда бо ёрии биниши зеҳни сунъӣ (Vision) хонда шуда истодааст...';
+        var cleanB64 = extracted.dataUrl.split('base64,')[1];
+        var vResp = await fetch(GATEWAY + '/v1/vision', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            image_base64: cleanB64,
+            prompt: prompt,
+            system_prompt: 'Шумо ёвари расмии Китобхона ҳастед ва саҳифаҳои сканшудаи китобро таҳлил мекунед.'
+          })
+        });
+        if (vResp.ok) {
+          var vJson = await vResp.json();
+          output = vJson.text || vJson.reply || 'Матн таҳлил шуд.';
+        } else {
+          output = 'Хондани саҳифаи сканшуда муяссар нашуд.';
+        }
+      } else {
+        // Text Chat API call
+        var sys = 'Шумо ёвари расмии Китобхона ҳастед. [МАТНИ САҲИФА ' + pNum + ']: ' + (extracted.text || '');
+        var cResp = await fetch(GATEWAY + '/v1/chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
+            temperature: 0.5,
+            max_tokens: 2000
+          })
+        });
+        if (cResp.ok) {
+          var cJson = await cResp.json();
+          output = (cJson.choices && cJson.choices[0] && cJson.choices[0].message && cJson.choices[0].message.content) || cJson.reply || 'Таҳлил омода шуд.';
+        } else {
+          output = 'Хатогӣ дар пайвастшавӣ ба сервер.';
+        }
+      }
+
+      resBox.textContent = output;
+      copyBtn.style.display = 'block';
+      copyBtn.onclick = function () {
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(output).then(function () {
+            copyBtn.textContent = '✓ Нусха бардошта шуд!';
+            setTimeout(function () { copyBtn.textContent = '📋 Нусхабардорӣ'; }, 2000);
+          });
+        }
+      };
+    } catch (e) {
+      resBox.textContent = 'Хатогӣ ҳангоми иҷрои дархост: ' + (e.message || e);
+    }
+  }
+
+  document.getElementById('btnSummarizePage')?.addEventListener('click', function () { handleAliyaTask('summary'); });
+  document.getElementById('btnExplainWords')?.addEventListener('click', function () { handleAliyaTask('words'); });
+  document.getElementById('btnMakePageTest')?.addEventListener('click', function () { handleAliyaTask('test'); });
+  document.getElementById('btnMakeLessonPlan')?.addEventListener('click', function () { handleAliyaTask('lesson'); });
+  document.getElementById('btnTranslatePage')?.addEventListener('click', function () { handleAliyaTask('translate'); });
+  document.getElementById('btnSavePageNote')?.addEventListener('click', function () { handleAliyaTask('notes'); });
+})();
+</script>
+
 </body>
 </html>

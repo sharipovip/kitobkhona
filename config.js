@@ -1,3 +1,22 @@
+
+(function installDesktopLayout() {
+  if (typeof document === 'undefined' || document.getElementById('kkhDesktopLayoutLink')) return;
+  var link = document.createElement('link');
+  link.id = 'kkhDesktopLayoutLink';
+  link.rel = 'stylesheet';
+  var basePath = '';
+  var scripts = document.getElementsByTagName('script');
+  for (var i = 0; i < scripts.length; i++) {
+    var src = scripts[i].src || '';
+    if (src.indexOf('config.js') !== -1) {
+      basePath = src.substring(0, src.lastIndexOf('/') + 1);
+      break;
+    }
+  }
+  link.href = (basePath || '') + 'assets/css/desktop-layout.css?v=100';
+  (document.head || document.documentElement).appendChild(link);
+})();
+
 (function installResponsiveViewportGuard() {
   if (typeof document === 'undefined' || document.getElementById('kkhResponsiveViewportGuard')) return;
   var style = document.createElement('style');

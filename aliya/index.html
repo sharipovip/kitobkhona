@@ -1,0 +1,630 @@
+<!DOCTYPE html>
+<html lang="tg">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Алия — Зеҳни сунъии Тоҷикӣ · Китобхона</title>
+  <link rel="icon" type="image/x-icon" href="../favicon.ico">
+  <link rel="stylesheet" href="aliya-ui.css?v=100">
+</head>
+<body>
+  <div class="aliya-app">
+    <!-- Header -->
+    <header class="aliya-header">
+      <div class="aliya-header-left">
+        <a href="../index.html" class="aliya-back-btn" title="Бозгашт ба Китобхона" aria-label="Бозгашт">‹</a>
+        <div class="aliya-brand">
+          <div class="aliya-avatar-3d">✨</div>
+          <div class="aliya-title-wrap">
+            <h1>АЛИЯ</h1>
+            <span>Зеҳни сунъии Китобхона</span>
+          </div>
+        </div>
+      </div>
+      <div class="aliya-header-right">
+        <div class="depth-selector" title="Сатҳи тафаккури Алия">
+          <button type="button" class="depth-btn" data-depth="simple">Оддӣ</button>
+          <button type="button" class="depth-btn active" data-depth="standard">Таҳлилӣ</button>
+          <button type="button" class="depth-btn" data-depth="deep">Амиқ</button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="aliya-tabs-bar" role="tablist">
+      <button type="button" class="tab-chip active" data-tab="chat">💬 Чат</button>
+      <button type="button" class="tab-chip" data-tab="lesson">📝 Нақшаи дарс</button>
+      <button type="button" class="tab-chip" data-tab="test">📊 Санҷиш & Тест</button>
+      <button type="button" class="tab-chip" data-tab="dictation">✍️ Диктант & Баён</button>
+      <button type="button" class="tab-chip" data-tab="image">🎨 Суратсозӣ</button>
+      <button type="button" class="tab-chip" data-tab="notes">📌 Ёддоштҳо</button>
+    </nav>
+
+    <!-- Main Content Panes -->
+    <main class="aliya-main">
+      <!-- 1. ЧАТ (Chat Tab) -->
+      <section class="tab-pane active" id="pane-chat">
+        <div class="chat-messages" id="chatMsgs">
+          <div class="chat-welcome-card">
+            <div class="welcome-icon">✨</div>
+            <div class="welcome-title">Салом! Ман Алия — ёвари зеҳни сунъии шумо.</div>
+            <div class="welcome-desc">Дар бораи дилхоҳ китоби Китобхона, дарсҳо, эссе, шеърҳо ва омодагӣ ба озмунҳо аз ман бипурсед ё асбобҳои болоро истифода баред:</div>
+            <div class="quick-prompts-grid">
+              <button class="quick-prompt-btn" data-prompt="Дар бораи озмуни «Фурӯғи субҳи доноӣ китоб аст» маълумот деҳ">🏆 Фурӯғи субҳи доноӣ</button>
+              <button class="quick-prompt-btn" data-prompt="Шоҳномаи Фирдавсӣ чиро меомӯзонад? Хулосаи мухтасар">📖 Дар бораи Шоҳнома</button>
+              <button class="quick-prompt-btn" data-prompt="Барои иншои «Ватан — сарчашмаи умед» нақша ва намуна тартиб деҳ">✍️ Нақшаи иншо</button>
+              <button class="quick-prompt-btn" data-prompt="Чӣ тавр ба имтиҳонҳои ММТ беҳтар омода шавам? Маслиҳатҳо">🎓 Маслиҳати Довталаб</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="chat-input-bar">
+          <button type="button" class="attach-btn" id="attachBtn" title="Боркунии скан ё акси китоб" aria-label="Боркунӣ">📷</button>
+          <input type="file" id="imageInput" accept="image/*" style="display:none">
+          <div class="chat-textarea-wrap">
+            <textarea id="chatInput" class="chat-textarea" placeholder="Саволи худро нависед..." rows="1"></textarea>
+          </div>
+          <button type="button" class="send-btn" id="sendBtn" title="Фиристодан" aria-label="Фиристодан">➤</button>
+        </div>
+      </section>
+
+      <!-- 2. НАҚШАИ ДАРС (Lesson Plan Tab) -->
+      <section class="tab-pane" id="pane-lesson">
+        <div class="wizard-container">
+          <div class="wizard-card">
+            <div class="wizard-title">📝 Тартиб додани Нақшаи дарс (Конспект)</div>
+            <div class="wizard-subtitle">Мутобиқи стандарти расмии давлатӣ (бо содирот ба Word DOCX ва PDF бо таблиғоти расмӣ):</div>
+            
+            <form id="lessonForm" class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Забони ҳуҷҷат:</label>
+                <select class="form-select" id="lpLang">
+                  <option value="tg">Тоҷикӣ (Нақшаи дарс)</option>
+                  <option value="ru">Русский (Поурочный план-конспект)</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Синф:</label>
+                <select class="form-select" id="lpGrade">
+                  <option value="1">1 синф</option>
+                  <option value="2">2 синф</option>
+                  <option value="3">3 синф</option>
+                  <option value="4">4 синф</option>
+                  <option value="5" selected>5 синф</option>
+                  <option value="6">6 синф</option>
+                  <option value="7">7 синф</option>
+                  <option value="8">8 синф</option>
+                  <option value="9">9 синф</option>
+                  <option value="10">10 синф</option>
+                  <option value="11">11 синф</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Фан (Предмет):</label>
+                <input type="text" class="form-input" id="lpSubject" placeholder="масалан: Технологияи иттилоотӣ, Забони тоҷикӣ, Русский язык..." value="Технологияи иттилоотӣ">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Мавзӯи дарс (Тема):</label>
+                <input type="text" class="form-input" id="lpTopic" placeholder="масалан: Андозагирии иттилоот" value="Андозагирии иттилоот">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Рақами дарс:</label>
+                <input type="text" class="form-input" id="lpLessonNum" value="2">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Саҳифаҳои китоб:</label>
+                <input type="text" class="form-input" id="lpBookRef" placeholder="саҳ. 9–12" value="саҳ. 9–12">
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Матни иловагӣ ё пораи китоб (ихтиёрӣ):</label>
+                <textarea class="form-textarea" id="lpContext" placeholder="Агар матни мушаххаси китобро дошта бошед, дар ин ҷо гузоред..."></textarea>
+              </div>
+              <div class="form-group full">
+                <button type="submit" class="primary-btn" id="lpGenBtn">✨ Омода кардани Нақшаи дарс</button>
+              </div>
+            </form>
+
+            <div id="lpResult" class="doc-result-box" style="display:none">
+              <div class="doc-result-head">
+                <span class="doc-result-title">✓ Ҳуҷҷат бо муваффақият омода шуд!</span>
+                <div class="doc-export-actions">
+                  <button type="button" class="export-btn docx" id="lpDocxBtn">⬇ Word (.docx)</button>
+                  <button type="button" class="export-btn share" id="lpShareBtn">↗ Мубодила</button>
+                </div>
+              </div>
+              <div id="lpTextContent" style="font-size:12.5px; line-height:1.6; max-height:280px; overflow-y:auto; white-space:pre-wrap; color:var(--text-dim)"></div>
+            </div>
+
+            <div class="ad-branding-card">
+              <b>📚 Омодашуда бо ёрии «Алия» — Зеҳни сунъии Тоҷикӣ</b>
+              <span>📖 Китобхонаи электронии Тоҷикӣ — Ҳамаи китобҳои дарсӣ ва бадеӣ</span>
+              <a href="https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share" target="_blank">📲 Барномаи расмии Китобхона дар Google Play</a>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. САНҶИШ & ТЕСТ (Test Tab) -->
+      <section class="tab-pane" id="pane-test">
+        <div class="wizard-container">
+          <div class="wizard-card">
+            <div class="wizard-title">📊 Сохтани тест ва саволнома</div>
+            <div class="wizard-subtitle">Барои санҷиши дониши хонандагон, чорякҳо ва санҷишҳои мактабӣ:</div>
+
+            <form id="testForm" class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Фан:</label>
+                <input type="text" class="form-input" id="tSubject" value="Адабиёти тоҷик">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Синф:</label>
+                <select class="form-select" id="tGrade">
+                  <option value="5">5 синф</option>
+                  <option value="6">6 синф</option>
+                  <option value="7" selected>7 синф</option>
+                  <option value="8">8 синф</option>
+                  <option value="9">9 синф</option>
+                  <option value="10">10 синф</option>
+                  <option value="11">11 синф</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Мавзӯъ ё номи асар:</label>
+                <input type="text" class="form-input" id="tTopic" value="«Шоҳнома»-и Абулқосим Фирдавсӣ">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Миқдори саволҳо:</label>
+                <select class="form-select" id="tCount">
+                  <option value="3">3 савол</option>
+                  <option value="5" selected>5 савол</option>
+                  <option value="10">10 савол</option>
+                  <option value="15">15 савол</option>
+                  <option value="20">20 савол</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Навъи тест:</label>
+                <select class="form-select" id="tFormat">
+                  <option value="choice">4 вариант (A, B, C, D)</option>
+                  <option value="open">Саволҳои кушодаи хаттӣ</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Тарзи барориш:</label>
+                <select class="form-select" id="tTarget">
+                  <option value="student">Барои хонандагон (бо бланки ҷавобҳо)</option>
+                  <option value="teacher">Барои омӯзгор (бо ҷавобҳои дурусти [✓])</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <button type="submit" class="primary-btn" id="tGenBtn">✨ Офаридани тест</button>
+              </div>
+            </form>
+
+            <div id="tResult" class="doc-result-box" style="display:none">
+              <div class="doc-result-head">
+                <span class="doc-result-title">✓ Тест омода шуд!</span>
+                <div class="doc-export-actions">
+                  <button type="button" class="export-btn docx" id="tDocxBtn">⬇ Word (.docx)</button>
+                  <button type="button" class="export-btn share" id="tShareBtn">↗ Мубодила</button>
+                </div>
+              </div>
+              <div id="tTextContent" style="font-size:12.5px; line-height:1.6; max-height:280px; overflow-y:auto; white-space:pre-wrap; color:var(--text-dim)"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. ДИКТАНТ & БАЁН (Dictation Tab) -->
+      <section class="tab-pane" id="pane-dictation">
+        <div class="wizard-container">
+          <div class="wizard-card">
+            <div class="wizard-title">✍️ Ёвари диктант ва баёни хаттӣ</div>
+            <div class="wizard-subtitle">Матнҳои санҷишӣ барои чорякҳо бо супоришҳои грамматикӣ:</div>
+
+            <form id="dictForm" class="form-grid">
+              <div class="form-group">
+                <label class="form-label">Навъ:</label>
+                <select class="form-select" id="dType">
+                  <option value="dictation">Диктант</option>
+                  <option value="bayon">Баёни хаттӣ</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Синф:</label>
+                <select class="form-select" id="dGrade">
+                  <option value="3">3 синф</option>
+                  <option value="4">4 синф</option>
+                  <option value="5" selected>5 синф</option>
+                  <option value="6">6 синф</option>
+                  <option value="7">7 синф</option>
+                  <option value="8">8 синф</option>
+                  <option value="9">9 синф</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Чоряк:</label>
+                <select class="form-select" id="dQuarter">
+                  <option value="1">Чоряки 1</option>
+                  <option value="2">Чоряки 2</option>
+                  <option value="3">Чоряки 3</option>
+                  <option value="4">Чоряки 4</option>
+                </select>
+              </div>
+              <div class="form-group">
+                <label class="form-label">Сатҳи душворӣ:</label>
+                <select class="form-select" id="dDiff">
+                  <option value="осон">Осон</option>
+                  <option value="миёна" selected>Миёна</option>
+                  <option value="мураккаб">Мураккаб</option>
+                </select>
+              </div>
+              <div class="form-group full">
+                <label class="form-label">Мавзӯи диктант:</label>
+                <input type="text" class="form-input" id="dTopic" value="Баҳори Тоҷикистон ва зебоиҳои табиат">
+              </div>
+              <div class="form-group full">
+                <button type="submit" class="primary-btn" id="dGenBtn">✨ Омода кардани матни диктант</button>
+              </div>
+            </form>
+
+            <div id="dResult" class="doc-result-box" style="display:none">
+              <div class="doc-result-head">
+                <span class="doc-result-title">✓ Матни диктант омода шуд!</span>
+                <div class="doc-export-actions">
+                  <button type="button" class="export-btn docx" id="dDocxBtn">⬇ Word (.docx)</button>
+                  <button type="button" class="export-btn share" id="dShareBtn">↗ Мубодила</button>
+                </div>
+              </div>
+              <div id="dTextContent" style="font-size:12.5px; line-height:1.6; max-height:280px; overflow-y:auto; white-space:pre-wrap; color:var(--text-dim)"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 5. СУРАТСОЗӢ (Image Tab) -->
+      <section class="tab-pane" id="pane-image">
+        <div class="image-gen-wrap">
+          <div class="wizard-card">
+            <div class="wizard-title">🎨 Офаридани сурат бо Алия</div>
+            <div class="quota-badge" id="quotaBadge">📸 Меъёр: 10 акс дар як рӯз ройгон</div>
+
+            <div class="form-group full">
+              <label class="form-label">Тасвири сурат (бо тоҷикӣ ё русӣ):</label>
+              <textarea class="form-textarea" id="imgPrompt" placeholder="масалан: Кӯҳҳои зебои Помир дар фасли тирамоҳ, китобхонаи қадимаи Самарқанд бо чароғҳои зарҳалӣ..."></textarea>
+            </div>
+            <button type="button" class="primary-btn" id="imgGenBtn">✨ Офаридани сурат</button>
+
+            <div class="image-preview-area" id="imgPreviewArea" style="margin-top:14px">
+              <div style="color:var(--dim); font-size:13px" id="imgPlaceholder">Сурати сохташуда дар ин ҷо намоиш дода мешавад</div>
+              <img id="imgResult" style="display:none" alt="Акси сохташуда">
+            </div>
+            <button type="button" class="export-btn docx" id="imgDownloadBtn" style="display:none; width:100%; justify-content:center; margin-top:10px">⬇ Боргирии сурат</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 6. ЁДДОШТҲО (Notes Tab) -->
+      <section class="tab-pane" id="pane-notes">
+        <div class="notes-container">
+          <div class="notes-toolbar">
+            <input type="text" class="notes-search" id="notesSearch" placeholder="🔍 Ҷустуҷӯ дар ёддоштҳо...">
+            <button type="button" class="export-btn share" id="newNoteBtn">+ Нав</button>
+          </div>
+          <div class="notes-list" id="notesList">
+            <!-- Дисплейи ёддоштҳо -->
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Toast Notification -->
+    <div class="aliya-toast" id="aliyaToast">Паём</div>
+  </div>
+
+  <script src="aliya-bridge.js?v=100"></script>
+  <script src="aliya-doc-templates.js?v=100"></script>
+  <script src="aliya-core.js?v=100"></script>
+  <script>
+    (function () {
+      'use strict';
+
+      var currentLpBlob = null;
+      var currentTestBlob = null;
+      var currentDictBlob = null;
+      var currentImgUrl = null;
+
+      function toast(msg) {
+        var el = document.getElementById('aliyaToast');
+        if (!el) return;
+        el.textContent = msg;
+        el.classList.add('show');
+        setTimeout(function () { el.classList.remove('show'); }, 2600);
+      }
+
+      // 1. Интихоби Tab
+      document.querySelectorAll('.tab-chip').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.tab-chip').forEach(function (b) { b.classList.remove('active'); });
+          document.querySelectorAll('.tab-pane').forEach(function (p) { p.classList.remove('active'); });
+          btn.classList.add('active');
+          var tabId = btn.dataset.tab;
+          var pane = document.getElementById('pane-' + tabId);
+          if (pane) pane.classList.add('active');
+          if (tabId === 'notes') renderNotes();
+        });
+      });
+
+      // 2. Интихоби Depth
+      document.querySelectorAll('.depth-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          document.querySelectorAll('.depth-btn').forEach(function (b) { b.classList.remove('active'); });
+          btn.classList.add('active');
+          window.AliyaCore.state.depth = btn.dataset.depth;
+          toast('Сатҳи тафаккур: ' + btn.textContent);
+        });
+      });
+
+      // 3. Чат
+      var chatInput = document.getElementById('chatInput');
+      var sendBtn = document.getElementById('sendBtn');
+      var chatMsgs = document.getElementById('chatMsgs');
+
+      async function handleSend() {
+        var text = (chatInput.value || '').trim();
+        if (!text) return;
+        chatInput.value = '';
+
+        appendMsg('user', text);
+        var botBubble = appendMsg('bot', 'Алия фикр карда истодааст...');
+
+        try {
+          var reply = await window.AliyaCore.sendMessage(text, {
+            onToken: function (tok, full) {
+              botBubble.innerHTML = formatMarkdown(full);
+              chatMsgs.scrollTop = chatMsgs.scrollHeight;
+            }
+          });
+          botBubble.innerHTML = formatMarkdown(reply);
+        } catch (err) {
+          botBubble.textContent = 'Хатогӣ: Пайвастшавӣ барқарор нашуд.';
+        }
+      }
+
+      sendBtn.addEventListener('click', handleSend);
+      chatInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          handleSend();
+        }
+      });
+
+      document.querySelectorAll('.quick-prompt-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          chatInput.value = btn.dataset.prompt;
+          handleSend();
+        });
+      });
+
+      function appendMsg(role, content) {
+        var row = document.createElement('div');
+        row.className = 'msg-row ' + role;
+        var avatar = role === 'bot' ? '<div class="msg-avatar">✨</div>' : '';
+        var bubble = document.createElement('div');
+        bubble.className = 'msg-bubble';
+        bubble.innerHTML = formatMarkdown(content);
+
+        row.innerHTML = avatar;
+        row.appendChild(bubble);
+        chatMsgs.appendChild(row);
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        return bubble;
+      }
+
+      function formatMarkdown(str) {
+        if (!str) return '';
+        return str
+          .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+          .replace(/\*\*(.*?)\*\*/g, '<b>$1</b>')
+          .replace(/\*(.*?)\*/g, '<i>$1</i>')
+          .replace(/\n/g, '<br>');
+      }
+
+      // 4. Нақшаи дарс
+      document.getElementById('lessonForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('lpGenBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Дар ҳоли тартиб додан...';
+
+        var params = {
+          lang: document.getElementById('lpLang').value,
+          grade: document.getElementById('lpGrade').value,
+          subject: document.getElementById('lpSubject').value,
+          topic: document.getElementById('lpTopic').value,
+          lessonNum: document.getElementById('lpLessonNum').value,
+          bookRef: document.getElementById('lpBookRef').value,
+          contextText: document.getElementById('lpContext').value
+        };
+
+        try {
+          var res = await window.AliyaCore.generateLessonPlan(params);
+          currentLpBlob = res.docxBlob;
+          document.getElementById('lpResult').style.display = 'block';
+          document.getElementById('lpTextContent').textContent = res.text;
+          toast('Нақшаи дарс омода шуд!');
+        } catch (err) {
+          toast('Хатогӣ ҳангоми омодасозӣ: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '✨ Омода кардани Нақшаи дарс';
+        }
+      });
+
+      document.getElementById('lpDocxBtn').addEventListener('click', function () {
+        if (currentLpBlob) {
+          window.AliyaBridge.saveFile(currentLpBlob, 'Накшаи_дарс_' + document.getElementById('lpTopic').value.replace(/\s+/g, '_') + '.docx');
+          toast('Ҳуҷҷати Word сабт шуд!');
+        }
+      });
+
+      document.getElementById('lpShareBtn').addEventListener('click', function () {
+        var text = document.getElementById('lpTextContent').textContent;
+        window.AliyaBridge.shareFileOrText({
+          title: 'Нақшаи дарс: ' + document.getElementById('lpTopic').value,
+          text: text,
+          blob: currentLpBlob,
+          fileName: 'Накшаи_дарс.docx'
+        });
+      });
+
+      // 5. Тест
+      document.getElementById('testForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('tGenBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Дар ҳоли офаридан...';
+
+        var params = {
+          subject: document.getElementById('tSubject').value,
+          grade: document.getElementById('tGrade').value,
+          topic: document.getElementById('tTopic').value,
+          count: parseInt(document.getElementById('tCount').value, 10),
+          format: document.getElementById('tFormat').value,
+          showAnswers: document.getElementById('tTarget').value === 'teacher'
+        };
+
+        try {
+          var res = await window.AliyaCore.generateTest(params);
+          currentTestBlob = res.docxBlob;
+          document.getElementById('tResult').style.display = 'block';
+          document.getElementById('tTextContent').textContent = res.text;
+          toast('Тест омода шуд!');
+        } catch (err) {
+          toast('Хатогӣ: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '✨ Офаридани тест';
+        }
+      });
+
+      document.getElementById('tDocxBtn').addEventListener('click', function () {
+        if (currentTestBlob) {
+          window.AliyaBridge.saveFile(currentTestBlob, 'Тест_' + document.getElementById('tTopic').value.replace(/\s+/g, '_') + '.docx');
+          toast('Файли тест сабт шуд!');
+        }
+      });
+
+      // 6. Диктант
+      document.getElementById('dictForm').addEventListener('submit', async function (e) {
+        e.preventDefault();
+        var btn = document.getElementById('dGenBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Дар ҳоли тартиб додан...';
+
+        var isBayon = document.getElementById('dType').value === 'bayon';
+        var prompt = 'Барои синфи ' + document.getElementById('dGrade').value + ' аз рӯи мавзӯи "' + document.getElementById('dTopic').value +
+          '" матни ' + (isBayon ? 'баёни хаттӣ' : 'диктант') + ' тартиб деҳ (сатҳи ' + document.getElementById('dDiff').value + ', чоряки ' + document.getElementById('dQuarter').value +
+          '). 3 дона супориши грамматикӣ ва меъёри баҳогузориро илова кун.';
+
+        try {
+          var resText = await window.AliyaCore.sendMessage(prompt);
+          var dictData = {
+            grade: document.getElementById('dGrade').value,
+            quarter: document.getElementById('dQuarter').value,
+            type: document.getElementById('dType').value,
+            topic: document.getElementById('dTopic').value,
+            difficulty: document.getElementById('dDiff').value,
+            text: resText
+          };
+          currentDictBlob = window.AliyaTemplates.generateDictationDocx(dictData);
+          document.getElementById('dResult').style.display = 'block';
+          document.getElementById('dTextContent').textContent = resText;
+          toast('Матни диктант омода шуд!');
+        } catch (err) {
+          toast('Хатогӣ: ' + err.message);
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '✨ Омода кардани матни диктант';
+        }
+      });
+
+      document.getElementById('dDocxBtn').addEventListener('click', function () {
+        if (currentDictBlob) {
+          window.AliyaBridge.saveFile(currentDictBlob, 'Диктант_' + document.getElementById('dTopic').value.replace(/\s+/g, '_') + '.docx');
+          toast('Файли диктант сабт шуд!');
+        }
+      });
+
+      // 7. Суратсозӣ
+      document.getElementById('imgGenBtn').addEventListener('click', async function () {
+        var prompt = (document.getElementById('imgPrompt').value || '').trim();
+        if (!prompt) {
+          toast('Лутфан, тасвири суратро нависед.');
+          return;
+        }
+
+        var btn = document.getElementById('imgGenBtn');
+        btn.disabled = true;
+        btn.textContent = '⏳ Дар ҳоли офаридан...';
+
+        try {
+          var imgUrl = await window.AliyaCore.generateImage(prompt);
+          currentImgUrl = imgUrl;
+          document.getElementById('imgPlaceholder').style.display = 'none';
+          var imgEl = document.getElementById('imgResult');
+          imgEl.src = imgUrl;
+          imgEl.style.display = 'block';
+          document.getElementById('imgDownloadBtn').style.display = 'flex';
+          toast('Сурат бо муваффақият офарида шуд!');
+        } catch (err) {
+          toast(err.message || 'Хатогӣ дар суратсозӣ');
+        } finally {
+          btn.disabled = false;
+          btn.textContent = '✨ Офаридани сурат';
+          updateQuotaBadge();
+        }
+      });
+
+      function updateQuotaBadge() {
+        var rem = window.AliyaCore.getRemainingPhotos();
+        document.getElementById('quotaBadge').textContent = '📸 Боқимонда: ' + rem + ' аз 10 акс имрӯз';
+      }
+
+      document.getElementById('imgDownloadBtn').addEventListener('click', function () {
+        if (currentImgUrl) {
+          window.AliyaBridge.saveFile(currentImgUrl, 'Aliya_Photo_' + Date.now() + '.jpg', 'image/jpeg');
+          toast('Сурат захира шуд!');
+        }
+      });
+
+      // 8. Ёддоштҳо
+      async function renderNotes() {
+        var list = await window.AliyaCore.getNotes();
+        var container = document.getElementById('notesList');
+        if (!list.length) {
+          container.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px">Шумо то ҳол ягон ёддошт надоред. Барои сабти фикрҳои китоб «+ Нав»-ро пахш кунед.</div>';
+          return;
+        }
+        container.innerHTML = list.map(function (n) {
+          return '<div class="note-item"><div class="note-title">' + (n.title || 'Бе ном') + '</div><div class="note-body">' + (n.content || '') + '</div><div class="note-date">' + new Date(n.updatedAt).toLocaleString('tg-TJ') + '</div></div>';
+        }).join('');
+      }
+
+      document.getElementById('newNoteBtn').addEventListener('click', async function () {
+        var title = prompt('Сарлавҳаи ёддошт:');
+        if (!title) return;
+        var content = prompt('Матни ёддошт:');
+        await window.AliyaCore.saveNote(title, content);
+        renderNotes();
+        toast('Ёддошт сабт шуд!');
+      });
+
+      // Оғоз
+      window.AliyaCore.init().then(function () {
+        updateQuotaBadge();
+      });
+    })();
+  </script>
+</body>
+</html>

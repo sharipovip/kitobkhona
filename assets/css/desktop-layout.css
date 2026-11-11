@@ -1,0 +1,118 @@
+/* ==========================================================================
+   Kitobkhona Desktop & Tablet Responsive Layer v1.0.0
+   Широкий адаптивный экран для ПК, ноутбуков и планшетов (>= 960px).
+   На смартфонах (< 768px) остаётся 1:1 идеальный мобильный вид!
+   ========================================================================== */
+
+/* 1. Снятие жёсткого ограничения 430px на больших мониторах */
+@media (min-width: 960px) {
+  body {
+    background: #08101A;
+    overflow-y: auto !important;
+  }
+
+  .phone-wrapper,
+  .app,
+  .page,
+  .reader-wrapper,
+  main.main-content {
+    max-width: 1440px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+    min-height: 100vh !important;
+    box-shadow: 0 0 60px rgba(0, 0, 0, 0.45);
+  }
+
+  /* Каталог книг в широкую сетку по 4-6 книг в ряд */
+  .books-scroll-v3,
+  .books-grid,
+  .catalog-grid,
+  #popBooks,
+  #kitobhoList {
+    display: grid !important;
+    grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)) !important;
+    gap: 16px !important;
+    overflow: visible !important;
+  }
+
+  /* Лента и новости в две колонки */
+  .news-grid-v3,
+  .lenta-feed {
+    display: grid !important;
+    grid-template-columns: 1fr 1fr !important;
+    gap: 16px !important;
+  }
+
+  /* Читалка на ПК */
+  .page-stage {
+    max-width: 1100px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* 2. Стиль центральной 3D-кнопки АЛИЯ в нижней навигации (3 + [АЛИЯ] + 3) */
+.kh-nav2 {
+  display: flex;
+  width: 100%;
+  justify-content: space-around;
+  align-items: center;
+  position: relative;
+}
+
+.nav-item.nav-aliya-center {
+  position: relative;
+  top: -12px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  z-index: 10;
+}
+
+.aliya-fab-glow {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3350 0%, #0D1B2A 100%);
+  border: 2px solid #E8C96D;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(232, 201, 109, 0.45), 0 6px 16px rgba(0, 0, 0, 0.6);
+  color: #E8C96D;
+  font-size: 20px;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.aliya-fab-glow::after {
+  content: "";
+  position: absolute;
+  top: -50%;
+  left: -50%;
+  width: 200%;
+  height: 200%;
+  background: linear-gradient(60deg, transparent 30%, rgba(232, 201, 109, 0.35) 50%, transparent 70%);
+  animation: fabShine 3s infinite linear;
+}
+
+@keyframes fabShine {
+  0% { transform: translateX(-100%) rotate(25deg); }
+  100% { transform: translateX(100%) rotate(25deg); }
+}
+
+.nav-item.nav-aliya-center:hover .aliya-fab-glow,
+.nav-item.nav-aliya-center:active .aliya-fab-glow {
+  transform: scale(1.12);
+  box-shadow: 0 0 28px rgba(232, 201, 109, 0.7), 0 8px 24px rgba(0, 0, 0, 0.8);
+}
+
+.nav-item.nav-aliya-center span {
+  font-size: 10px;
+  font-weight: 800;
+  color: #E8C96D;
+  margin-top: 2px;
+  letter-spacing: 0.2px;
+}
