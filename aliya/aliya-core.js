@@ -152,6 +152,61 @@
     },
 
     /**
+     * Secure lightweight Markdown renderer for chat messages (no raw HTML passthrough).
+     */
+    formatMarkdown: function (markdown) {
+      var source=String(markdown||'').replace(/\r\n?/g,'\n');
+      function escapeHtml(value){return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\"/g,'&quot;').replace(/'/g,'&#39;');}
+      function inline(value){
+        var tokens=[];
+        function stash(html){var id=tokens.length;tokens.push(html);return '\uE000'+id+'\uE001';}
+        var prepared=String(value||'')
+          .replace(/`([^`]+)`/g,function(_,code){return stash('<code class=\"rich-inline-code\">'+escapeHtml(code)+'</code>');})
+          .replace(/\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,function(_,label,url){return stash('<a href=\"'+escapeHtml(url)+'\" target=\"_blank\" rel=\"noopener noreferrer\">'+escapeHtml(label)+'</a>');});
+        var safe=escapeHtml(prepared)
+          .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+          .replace(/~~(.+?)~~/g,'<del>$1</del>')
+          .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>');
+        return safe.replace(/\uE000(\d+)\uE001/g,function(_,id){return tokens[Number(id)]||'';});
+      }
+      function tableCells(line){return String(line||'').trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(function(cell){return cell.trim();});}
+      function isDivider(line){var cells=tableCells(line);return cells.length>0&&cells.every(function(cell){return /^:?-{3,}:?$/.test(cell);});}
+      var lines=source.split('\n'),out=[],paragraph=[],listType='';
+      function flushParagraph(){if(paragraph.length){out.push('<p>'+paragraph.map(inline).join('<br>')+'</p>');paragraph=[];}}
+      function closeList(){if(listType){out.push('</'+listType+'>');listType='';}}
+      for(var i=0;i<lines.length;i++){
+        var line=lines[i];
+        var fence=line.match(/^\s*```\s*([a-zA-Z0-9_+-]*)\s*$/);
+        if(fence){
+          flushParagraph();closeList();var lang=(fence[1]||'text').replace(/[^a-zA-Z0-9_+-]/g,'').slice(0,24)||'text';
+          var code=[];i++;
+          while(i<lines.length&&!/^\s*```\s*$/.test(lines[i])){code.push(lines[i]);i++;}
+          out.push('<div class=\"rich-code-block\"><div class=\"rich-code-toolbar\"><span>'+escapeHtml(lang)+'</span><button type=\"button\" class=\"rich-code-copy\" aria-label=\"Нусхабардории код\" title=\"Нусхабардории код\">⧉</button><button type=\"button\" class=\"rich-code-download\" aria-label=\"Зеркашии код\" title=\"Зеркашии код\">⬇</button></div><pre><code data-language=\"'+escapeHtml(lang)+'\">'+escapeHtml(code.join('\n'))+'</code></pre></div>');
+          continue;
+        }
+        if(/^\s*\|.+\|\s*$/.test(line)&&i+1<lines.length&&/^\s*\|.+\|\s*$/.test(lines[i+1])&&isDivider(lines[i+1])){
+          flushParagraph();closeList();var headers=tableCells(line);i+=2;var bodyRows=[];
+          while(i<lines.length&&/^\s*\|.+\|\s*$/.test(lines[i])){bodyRows.push(tableCells(lines[i]));i++;}
+          i--;
+          var html='<div class=\"rich-table-wrap\"><table class=\"rich-table\"><thead><tr>'+headers.map(function(cell){return '<th>'+inline(cell)+'</th>';}).join('')+'</tr></thead><tbody>';
+          bodyRows.forEach(function(row){html+='<tr>'+headers.map(function(_,index){return '<td>'+inline(row[index]||'')+'</td>';}).join('')+'</tr>';});
+          out.push(html+'</tbody></table></div>');continue;
+        }
+        var heading=line.match(/^\s*(#{1,3})\s+(.+)$/);
+        if(heading){flushParagraph();closeList();var level=heading[1].length;out.push('<h'+level+'>'+inline(heading[2])+'</h'+level+'>');continue;}
+        if(/^\s*(---+|\*\*\*+)\s*$/.test(line)){flushParagraph();closeList();out.push('<hr class=\"rich-rule\">');continue;}
+        var quote=line.match(/^\s*>\s?(.*)$/);
+        if(quote){flushParagraph();closeList();out.push('<blockquote>'+inline(quote[1])+'</blockquote>');continue;}
+        if(!line.trim()){flushParagraph();closeList();continue;}
+        var unordered=line.match(/^\s*[-*+]\s+(.+)$/),ordered=line.match(/^\s*\d+[.)]\s+(.+)$/);
+        if(unordered||ordered){flushParagraph();var nextType=unordered?'ul':'ol';if(listType!==nextType){closeList();listType=nextType;out.push('<'+listType+'>');}out.push('<li>'+inline((unordered||ordered)[1])+'</li>');continue;}
+        closeList();paragraph.push(line);
+      }
+      flushParagraph();closeList();
+      return out.join('');
+    },
+
+    /**
      * Донишномаи маҳаллии Алия (Comprehensive National Knowledge Base)
      */
     generateSmartLocalReply: function (prompt, options) {

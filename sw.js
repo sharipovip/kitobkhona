@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v151-aliya-light-theme';
+const CACHE_NAME = 'kitobkhona-v153-desktop-fit-layout';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [

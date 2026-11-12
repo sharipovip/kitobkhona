@@ -40,6 +40,10 @@ vm.runInThisContext(fs.readFileSync(path.join(__dirname,'../aliya/aliya-core.js'
 function isZipBlob(blob) { return blob && blob.size > 1000; }
 (async()=>{
   await AliyaCore.init();
+  const rich=AliyaCore.formatMarkdown('# Сарлавҳа\n\n**Муҳим** ва *курсив*\n\n- якум\n- дуюм\n\n| Ном | Арзиш |\n|---|---|\n| <хатар> | 2 |\n\n```js\nalert(1)\n```\n<script>alert(1)</script>\n[пайванд](javascript:alert(1))\n[бехатар](https://example.com)');
+  assert.ok(rich.includes('<h1>Сарлавҳа</h1>')); assert.ok(rich.includes('<strong>Муҳим</strong>')); assert.ok(rich.includes('<ul><li>якум</li><li>дуюм</li></ul>'));
+  assert.ok(rich.includes('<table class="rich-table">')); assert.ok(rich.includes('&lt;хатар&gt;')); assert.ok(rich.includes('rich-code-copy')); assert.ok(rich.includes('rich-code-download'));
+  assert.ok(rich.includes('&lt;script&gt;alert(1)&lt;/script&gt;')); assert.doesNotMatch(rich,/href="javascript:/); assert.ok(rich.includes('rel="noopener noreferrer"'));
   assert.equal(await AliyaCore.sendMessage('Саволи оддӣ'), 'Ҷавоби санҷишии Алия.');
   assert.equal(lastPath, '/v1/chat');
   assert.ok(['normal','medium','high'].includes(lastPayload.reasoning_mode));
@@ -109,5 +113,5 @@ function isZipBlob(blob) { return blob && blob.size > 1000; }
   simulateUnavailable = false;
   const templates = fs.readFileSync(path.join(__dirname,'../aliya/aliya-doc-templates.js'),'utf8');
   for (const brand of ['Зеҳни сунъии Тоҷикӣ','Китобхонаи электронии Тоҷикӣ','https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share']) assert.ok(templates.includes(brand));
-  console.log('PASS Aliya client: chat/document context, local TXT/DOCX/XLSX/PDF extraction, photo OCR contract, image endpoint, student/teacher test separation, lesson DOCX, PDF export, branding.');
+  console.log('PASS Aliya client: secure Markdown headings/lists/tables/code/links, chat/document context, local TXT/DOCX/XLSX/PDF extraction, photo OCR contract, image endpoint, student/teacher test separation, lesson DOCX, PDF export, branding.');
 })().catch(e=>{console.error(e);process.exitCode=1;});

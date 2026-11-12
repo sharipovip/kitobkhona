@@ -1315,3 +1315,36 @@ html.aliya-light .settings-secondary-btn { background:#F1F0ED; border-color:rgba
 html.aliya-light .settings-danger-btn { background:#FFF2F0; color:#A8332D; }
 html.aliya-light .msg-bubble.error-bubble { background:#FFF0EE; color:#902F2A; border-color:rgba(200,55,51,.35); }
 @media(prefers-reduced-motion:reduce) { html.aliya-light * { scroll-behavior:auto; } }
+
+/* Rich response rendering — readable on desktop and narrow phone screens. */
+.msg-bubble p { margin:0 0 .72em; }
+.msg-bubble p:last-child { margin-bottom:0; }
+.msg-bubble h1,.msg-bubble h2,.msg-bubble h3 { margin:.9em 0 .45em; line-height:1.3; color:inherit; }
+.msg-bubble h1 { font-size:1.24em; }.msg-bubble h2 { font-size:1.13em; }.msg-bubble h3 { font-size:1.04em; }
+.msg-bubble ul,.msg-bubble ol { margin:.5em 0 .8em; padding-left:1.5em; }
+.msg-bubble li { padding:.12em 0; }
+.msg-bubble blockquote { margin:.6em 0; padding:.45em .8em; border-left:3px solid var(--accent,#ef7548); background:rgba(128,128,128,.08); border-radius:0 8px 8px 0; }
+.msg-bubble a { color:var(--accent,#ef7548); text-decoration:underline; text-underline-offset:2px; overflow-wrap:anywhere; }
+.rich-inline-code,.rich-code-block pre { font-family:ui-monospace,SFMono-Regular,Consolas,"Liberation Mono",monospace; }
+.rich-inline-code { padding:.08em .34em; border-radius:5px; background:rgba(128,128,128,.16); font-size:.9em; overflow-wrap:anywhere; }
+.rich-code-block { margin:.7em 0; border:1px solid rgba(128,128,128,.25); border-radius:10px; overflow:hidden; background:rgba(0,0,0,.22); }
+.rich-code-toolbar { display:flex; align-items:center; gap:6px; min-height:34px; padding:3px 7px 3px 11px; border-bottom:1px solid rgba(128,128,128,.22); background:rgba(128,128,128,.09); }
+.rich-code-toolbar span { flex:1; color:inherit; opacity:.7; font:600 11px/1.4 system-ui,sans-serif; text-transform:uppercase; }
+.rich-code-toolbar button { min-width:30px; height:28px; border:0; border-radius:6px; background:transparent; color:inherit; cursor:pointer; font-size:16px; }
+.rich-code-toolbar button:hover,.rich-code-toolbar button:focus-visible { background:rgba(128,128,128,.2); outline:2px solid var(--accent,#ef7548); outline-offset:1px; }
+.rich-code-block pre { margin:0; padding:12px 14px; max-height:360px; overflow:auto; font-size:.88em; line-height:1.55; tab-size:2; white-space:pre; }
+.rich-code-block pre code { font:inherit; }
+.rich-table-wrap { max-width:100%; margin:.7em 0; overflow-x:auto; border:1px solid rgba(128,128,128,.24); border-radius:9px; }
+.rich-table { width:100%; border-collapse:collapse; font-size:.92em; }
+.rich-table th,.rich-table td { padding:8px 11px; border-bottom:1px solid rgba(128,128,128,.2); text-align:left; vertical-align:top; }
+.rich-table th { background:rgba(128,128,128,.13); font-weight:700; }
+.rich-table tr:last-child td { border-bottom:0; }
+.rich-rule { border:0; border-top:1px solid rgba(128,128,128,.3); margin:.8em 0; }
+html.aliya-light .rich-code-block { background:#F2F1EE; border-color:rgba(27,27,26,.16); }
+html.aliya-light .rich-code-toolbar { background:#E9E8E4; border-bottom-color:rgba(27,27,26,.12); }
+html.aliya-light .rich-inline-code { background:#E8E7E3; }
+@media(max-width:600px) {
+  .rich-code-block { margin:.55em -2px; }
+  .rich-code-block pre { max-height:280px; padding:10px; font-size:.82em; }
+  .rich-table th,.rich-table td { padding:7px 8px; }
+}

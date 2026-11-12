@@ -36,7 +36,14 @@ core=(ROOT/'aliya/aliya-core.js').read_text(encoding='utf-8')
 assert "'/v1/vision'" in core and "'/v1/image'" in core and "'/v1/document/generate'" in core
 assert 'picsum.photos' not in core and 'generateTestFromContext' not in core
 sw=(ROOT/'sw.js').read_text(encoding='utf-8')
-assert "kitobkhona-v151-aliya-light-theme" in sw
+assert "kitobkhona-v153-desktop-fit-layout" in sw
+
+desktop_css=(ROOT/'assets/css/desktop-layout.css').read_text(encoding='utf-8')
+assert '@media screen and (min-width: 1024px)' in desktop_css
+assert 'max-width: min(100%, 1720px)' in desktop_css
+assert 'padding-bottom: 112px !important' in desktop_css
+assert 'z-index: 12000 !important' in desktop_css
+print('PASS desktop fit layer is isolated to wide screens and reserves safe scroll space')
 print('PASS endpoint contract references, no fake image fallback, PWA cache version')
 
 aliya_html=(ROOT/'aliya/index.html').read_text(encoding='utf-8')
@@ -47,7 +54,10 @@ assert all(fmt in aliya_html for fmt in ['.pdf','.docx','.xlsx','.csv'])
 assert 'loadDocumentLibrary' in core and '26000' in core
 assert 'id="aliyaStatus"' in aliya_html and 'id="imageInput"' in aliya_html
 assert '#FF6A3D' in aliya_css and '#0E0F12' in aliya_css and '@keyframes aliya-emblem-breathe' in aliya_css
-assert 'aliya-ui.css?v=118' in aliya_html
+assert 'aliya-ui.css?v=119' in aliya_html
+assert 'function formatMarkdown(str)' in aliya_html and 'AliyaCore.formatMarkdown(str)' in aliya_html
+assert 'rich-code-copy' in aliya_html and 'rich-code-download' in aliya_html
+assert 'formatMarkdown: function (markdown)' in core and 'noopener noreferrer' in core
 assert 'id="settingsDarkTheme"' in aliya_html and 'function applyTheme' in aliya_html and 'aliya-light' in aliya_html
 assert 'DarkAliyaPalette' not in aliya_html
 assert '#F7F6F4' in aliya_css and '#ECEBE7' in aliya_css and '#E85A2D' in aliya_css

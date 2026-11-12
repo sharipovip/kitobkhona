@@ -142,3 +142,121 @@
   margin-top: 2px;
   letter-spacing: 0.2px;
 }
+
+/* Kitobkhona desktop-fit pass (v2.1): wide-screen-only overrides.
+   The original mobile rules above remain untouched; this block is gated at 1024px. */
+@media screen and (min-width: 1024px) {
+  html, body {
+    width: 100%;
+    min-width: 0;
+    min-height: 100%;
+  }
+  body {
+    overflow-x: hidden !important;
+    padding-bottom: 0 !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+  }
+
+  /* Remove the phone-sized / 1400px hard ceiling on the page shell. */
+  .phone-wrapper,
+  .app,
+  .app-container,
+  .page,
+  .reader-wrapper {
+    width: 100% !important;
+    max-width: min(100%, 1720px) !important;
+    margin-inline: auto !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: none !important;
+  }
+
+  /* The previous generic rule gave main-content a full viewport minimum height
+     inside an already full-height wrapper, creating an artificial blank tail. */
+  .phone-wrapper > main.main-content,
+  main.main-content {
+    width: auto !important;
+    max-width: none !important;
+    min-height: 0 !important;
+    margin: 0 !important;
+    padding: 0 0 112px !important;
+    flex: 1 1 auto !important;
+  }
+  .screen-area { min-height: 0 !important; }
+  .screen,
+  .content-wrapper {
+    padding-bottom: 112px !important;
+    scroll-padding-bottom: 112px !important;
+    overscroll-behavior: contain;
+  }
+
+  /* Keep the desktop dock visible without covering the top layer of dialogs. */
+  .nav-bottom {
+    z-index: 1000 !important;
+    width: min(720px, calc(100vw - 48px)) !important;
+    max-width: 720px !important;
+    height: 66px !important;
+    bottom: 14px !important;
+  }
+  .oz-sheet-wrap {
+    z-index: 12000 !important;
+    align-items: center !important;
+    padding: 24px !important;
+  }
+  .oz-sheet {
+    width: min(760px, calc(100vw - 64px)) !important;
+    max-width: 760px !important;
+    max-height: calc(100dvh - 48px) !important;
+    border-radius: 22px !important;
+    border-bottom: 1px solid rgba(201,168,76,.25) !important;
+    padding: 20px 24px !important;
+  }
+  .oz-title { font-size: 19px !important; }
+  .oz-sub, .oz-stage-meta { font-size: 13px !important; }
+  .oz-h { font-size: 12px !important; }
+  .oz-p, .oz-ol { font-size: 14px !important; }
+  .oz-stage-name { font-size: 14px !important; }
+  .oz-contact b { font-size: 14px !important; }
+  .oz-contact span { font-size: 12px !important; }
+
+  /* Use the available desktop width for book shelves/catalog and reading pages. */
+  .content-wrapper { max-width: none !important; width: 100% !important; }
+  .books-section { max-width: 1600px; margin-inline: auto; }
+  .books-grid12 {
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)) !important;
+    gap: clamp(16px, 1.5vw, 26px) !important;
+  }
+  .page-stage {
+    width: 100% !important;
+    max-width: min(1400px, calc(100vw - 96px)) !important;
+    margin-inline: auto !important;
+  }
+
+  /* Give profile content a readable measure instead of stretching labels apart. */
+  .profile-card,
+  .rstats,
+  .action-row,
+  .tabs,
+  .tab-panel {
+    width: calc(100% - 40px);
+    max-width: 1480px;
+    margin-left: auto !important;
+    margin-right: auto !important;
+  }
+  .profile-card { padding-left: 22px !important; padding-right: 22px !important; }
+  .tab-panel { padding-left: 0 !important; padding-right: 0 !important; }
+  .book-grid {
+    grid-template-columns: repeat(auto-fill, minmax(170px, 220px)) !important;
+    justify-content: start;
+    gap: 20px !important;
+  }
+}
+
+@media screen and (min-width: 1600px) {
+  .phone-wrapper,
+  .app,
+  .app-container,
+  .page,
+  .reader-wrapper { max-width: 1720px !important; }
+}
