@@ -6,7 +6,9 @@
   "private": true,
   "scripts": {
     "start": "electron .",
-    "dist:win": "electron-builder --win nsis --x64"
+    "dist:win": "electron-builder --win nsis --x64",
+    "test:aliya": "node tests/aliya-smoke.js",
+    "test:ui": "node tests/ui-regression.js"
   },
   "devDependencies": {
     "electron": "^35.0.0",

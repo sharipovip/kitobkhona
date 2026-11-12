@@ -13,9 +13,9 @@
       break;
     }
   }
-  link.href = (basePath || '') + 'assets/css/desktop-layout.css?v=101';
+  link.href = (basePath || '') + 'assets/css/desktop-layout.css?v=102';
   (document.head || document.documentElement).appendChild(link);
-  var extra = document.createElement('link'); extra.rel = 'stylesheet'; extra.href = (basePath || '') + 'assets/css/desktop-sidebar.css?v=1';
+  var extra = document.createElement('link'); extra.rel = 'stylesheet'; extra.href = (basePath || '') + 'assets/css/desktop-sidebar.css?v=2';
   (document.head || document.documentElement).appendChild(extra);
   function mountDesktopSidebar() {
     if (document.getElementById('kkhDesktopNav')) return;

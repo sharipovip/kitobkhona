@@ -882,6 +882,12 @@ body.light-reading .page-slot canvas{filter:none!important}
 </style>
 
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
+
+<style id="reader-aliya-fullpage-only">
+  .aliya-reader-modal { display:none !important; }
+  .reader-aliya-btn[aria-busy="true"] { opacity:.62; pointer-events:none; }
+</style>
+
 </head>
 <body class="light-reading">
 <div class="reader-wrapper">
@@ -2536,13 +2542,11 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
 
   if (btnOpen) {
     btnOpen.addEventListener('click', function (e) {
+      e.preventDefault();
       e.stopPropagation();
-      modal.classList.add('on');
-      var pNum = typeof page !== 'undefined' ? page : 1;
-      var pTot = typeof pages !== 'undefined' ? pages : 1;
-      var bName = typeof name !== 'undefined' ? name : 'Китоб';
-      labelBox.textContent = 'Китоб: «' + bName + '» · Саҳифаи ' + pNum + ' аз ' + pTot;
-      var from=document.getElementById('readerAliyaFromPage'),to=document.getElementById('readerAliyaToPage'); if(from){from.max=pTot;from.value=pNum;} if(to){to.max=pTot;to.value=pNum;}
+      // Ба саҳифаи комили чат мегузарем, на ба тирезаи болои китоб.
+      var continueButton = document.getElementById('btnContinueInAliyaChat');
+      if (continueButton) continueButton.click();
     });
   }
 
@@ -2701,7 +2705,9 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
   exportPdfBtn?.addEventListener('click', function(){ exportAliyaReaderDocument('pdf'); });
 
   document.getElementById('btnContinueInAliyaChat')?.addEventListener('click', async function () {
-    var btn = this; btn.disabled = true; btn.textContent = '⏳ Саҳифа омода мешавад…';
+    var btn = this, launcher = document.getElementById('readerAliyaBtn');
+    btn.disabled = true; btn.textContent = '⏳ Саҳифа омода мешавад…';
+    if (launcher) { launcher.disabled = true; launcher.setAttribute('aria-busy','true'); }
     try {
       var extracted = await extractCurrentPageContent();
       var pageText = extracted.text || '';
@@ -2725,8 +2731,11 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
       }));
       window.location.href = 'aliya/index.html';
     } catch (err) {
-      resBox.textContent = 'Саҳифаро ба чат фиристода натавонистам: ' + (err.message || 'Хатои пайвастшавӣ.');
-    } finally { btn.disabled = false; btn.textContent = '💬 Идома дар чати Алия бо ин саҳифа'; }
+      toast('Матни саҳифаро ба чат фиристода натавонистам. Интернетро санҷида, дубора кӯшиш кунед.', 3200);
+    } finally {
+      btn.disabled = false; btn.textContent = '💬 Идома дар чати Алия бо ин саҳифа';
+      if (launcher) { launcher.disabled = false; launcher.removeAttribute('aria-busy'); }
+    }
   });
 
   document.getElementById('btnSummarizePage')?.addEventListener('click', function () { handleAliyaTask('summary'); });
@@ -2760,8 +2769,8 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
   <div class="pc-page-arrow left" onclick="turnPage(-1)" title="Саҳифаи қаблӣ (← / PageUp)">‹</div>
   <div class="pc-page-arrow right" onclick="turnPage(1)" title="Саҳифаи навбатӣ (→ / PageDown)">›</div>
 
-  <!-- Модали ёвари Алия -->
-  <div class="aliya-reader-modal" id="readerAliyaModal">
+  <!-- Legacy action markup retained for compatibility; the reader launcher opens full-page Aliya instead. -->
+  <div class="aliya-reader-modal" id="readerAliyaModal" aria-hidden="true">
     <div class="aliya-reader-panel">
       <div class="aliya-rp-head">
         <div class="aliya-rp-title">
@@ -2810,7 +2819,7 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
 .reader-aliya-settings{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;margin:4px 0 8px;padding:10px;background:rgba(7,15,26,.42);border:1px solid rgba(201,168,76,.15);border-radius:12px}
 .reader-aliya-settings label{display:flex;flex-direction:column;gap:4px;color:#aebbd0;font-size:10px;font-weight:700}
 .reader-aliya-settings input,.reader-aliya-settings select{min-width:0;width:100%;height:34px;background:#101e31;color:#f0ead6;border:1px solid rgba(201,168,76,.24);border-radius:8px;padding:0 8px;font:inherit;font-size:12px}
-.aliya-reader-wait{display:flex;align-items:center;gap:14px;color:#ff9b7f}.aliya-reader-wait [data-aliya-emblem]{width:76px;height:76px;flex:0 0 76px}
+.aliya-reader-wait{display:flex;align-items:center;gap:14px;color:#ff9b7f}.aliya-reader-wait [data-aliya-emblem]{width:42px;height:42px;flex:0 0 42px}
 #readerAliyaResult{white-space:normal!important;line-height:1.72!important}
 #readerAliyaResult p{margin:0 0 12px}#readerAliyaResult h2,#readerAliyaResult h3{color:#e8c96d;line-height:1.3;margin:16px 0 8px}#readerAliyaResult ul,#readerAliyaResult ol{padding-left:24px;margin:6px 0 14px}#readerAliyaResult li{padding-left:3px;margin:4px 0}#readerAliyaResult strong{color:#fff1c7}
 @media(min-width:1200px) and (hover:hover) and (pointer:fine){

@@ -1270,4 +1270,4 @@ html.aliya-light .rich-inline-code { background:#E8E7E3; }
 @keyframes aliyaWriteForward{to{clip-path:inset(0 0 0 0)}}@keyframes aliyaWriteReverse{to{clip-path:inset(0 0 0 0)}}@keyframes aliyaLineReverse{to{width:92px}}
 .aliya-wait-label{display:block;margin-top:7px;color:#ff9b7f;font-size:12px}
 .aliya-retry-message{display:block;margin-top:10px;padding:7px 11px;border:1px solid rgba(255,106,61,.4);border-radius:10px;background:rgba(255,106,61,.1);color:#ff9b7f;cursor:pointer}
-.aliya-wait-emblem{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;flex:0 0 76px;overflow:visible}
+.aliya-wait-emblem{display:inline-flex;align-items:center;justify-content:center;width:42px;height:42px;flex:0 0 42px;overflow:visible}

@@ -2066,7 +2066,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </style>
 
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
-  <link rel="stylesheet" href="assets/css/home-desktop.css?v=1">
+  <link rel="stylesheet" href="assets/css/home-desktop.css?v=2">
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH (v129: было 5–9 с, стало 1.5–4 с — приложение открывается заметно быстрее): MIN=1500 → минимум 1.5 секунды, MAX=4000 → максимум 4 секунды.
@@ -2302,6 +2302,7 @@ function typeText(text){ clearInterval(typeTimer); const el=$('heroQuote'); if(!
 function fitHeroQuote(preferredSize){
   const heroEl=document.querySelector('.hero-v3'),left=document.querySelector('.hero-v3-left'),quote=$('heroQuote'),kicker=$('heroKicker'),author=document.querySelector('.hero-author-v3');
   if(!heroEl||!left||!quote)return;
+  if(window.innerWidth<=767)return;
   const narrow=innerWidth<=365,minSize=narrow?4.2:4.8,start=Math.min(11.5,Math.max(8,Number(preferredSize)||11.5));
   let size=start,line=1.22;
   const available=()=>Math.max(28,left.clientHeight-(kicker?.offsetHeight||0)-(author?.offsetHeight||0)-24);
