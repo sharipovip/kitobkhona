@@ -1,14 +1,16 @@
-const CACHE_NAME = 'kitobkhona-v153-desktop-fit-layout';
+const CACHE_NAME = 'kitobkhona-v155-desktop-aliya-redesign';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
   './',
   './aliya/index.html',
   './aliya/aliya-ui.css',
+  './aliya/aliya-desktop.css',
   './aliya/aliya-core.js',
   './aliya/aliya-bridge.js',
   './aliya/aliya-doc-templates.js',
   './assets/css/desktop-layout.css',
+  './assets/css/home-desktop.css',
   './Download-Kitobkhona.html',
 
   './index.html',
@@ -48,7 +50,6 @@ const LOCAL_FILES = [
   './tavsiya/matn/teremok.json',
   './tavsiya/matn/bremenskie_muzykanty.json',
   './book_reviews.html',
-  './chat старй.html',
   './delete-account.html',
   './donandai_asarho.html',
   './furugi_subhi_donoi.html',

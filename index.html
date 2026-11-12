@@ -2066,6 +2066,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </style>
 
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
+  <link rel="stylesheet" href="assets/css/home-desktop.css?v=1">
 </head>
 <body>
 <div id="startupSplash"><img src="splash_logo.png" alt="Китобхона"><b>КИТОБХОНА</b><span>Манбаи дониш</span></div><script>(function(){const s=document.getElementById('startupSplash');if(!s)return;if(sessionStorage.getItem('kk_splash_seen')){s.remove();return}sessionStorage.setItem('kk_splash_seen','1');/* ВРЕМЯ ПОКАЗА SPLASH (v129: было 5–9 с, стало 1.5–4 с — приложение открывается заметно быстрее): MIN=1500 → минимум 1.5 секунды, MAX=4000 → максимум 4 секунды.
@@ -2115,10 +2116,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       <a class="new-icon-btn-v3" id="topProfileBtn" href="profile.html" title="Профил" aria-label="Профил" style="text-decoration:none;display:flex;align-items:center;justify-content:center">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8C96D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg>
       </a>
-      <div class="new-icon-btn-v3" id="notifBtn" title="Огоҳӣ">
-        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="#E8C96D" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9a6 6 0 0 1 12 0c0 7 6 7 6 7H0s6 0 6-7"/><path d="M9 21a3 3 0 0 0 6 0"/></svg>
-        <span id="notifBadge" class="badge-v3" style="display:none">3</span>
-      </div>
+      <button type="button" class="new-icon-btn-v3" id="notifBtn" title="Огоҳиҳо" aria-label="Кушодани огоҳиҳо">
+        <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M18 9a6 6 0 0 0-12 0c0 7-3 7-3 7h18s-3 0-3-7"/><path d="M10 20a2 2 0 0 0 4 0"/></svg>
+        <span id="notifBadge" class="badge-v3" style="display:none" aria-label="Огоҳиҳои нав">3</span>
+      </button>
       <div class="new-icon-btn-v3" id="themeBtn" style="display:none">🌙</div>
     </div>
   </header>

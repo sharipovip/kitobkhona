@@ -154,32 +154,6 @@ html, body {
   gap: 8px;
 }
 
-.depth-selector {
-  display: flex;
-  background: var(--bg2);
-  border: 1px solid var(--border);
-  border-radius: 20px;
-  padding: 2px;
-}
-
-.depth-btn {
-  background: transparent;
-  border: 0;
-  color: var(--muted);
-  font-size: 11px;
-  font-weight: 700;
-  padding: 4px 9px;
-  border-radius: 16px;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-
-.depth-btn.active {
-  background: linear-gradient(135deg, var(--gold), var(--gold2));
-  color: #23120D;
-  box-shadow: 0 2px 8px rgba(255, 106, 61, 0.35);
-}
-
 /* Панели функсияҳо (Tabs Bar) */
 .aliya-tabs-bar {
   display: flex;
@@ -890,8 +864,6 @@ html, body {
 @media (max-width: 640px) {
   .aliya-header-right { gap: 5px; }
   .header-icon-btn { width: 34px; height: 34px; font-size: 17px; }
-  .depth-selector { max-width: 190px; }
-  .depth-btn { padding-inline: 7px; font-size: 10px; }
   .tab-chip { min-height: 38px; padding: 7px 11px; font-size: 11.5px; }
   .msg-bubble { max-width: 90%; font-size: 13.5px; }
   .doc-export-actions { flex-wrap: wrap; }
@@ -950,9 +922,6 @@ html, body {
 .chat-textarea-wrap { background:#1A1B20; border-color:rgba(242,242,240,.12); }
 .attach-btn { background:#1A1B20; border-color:rgba(242,242,240,.12); color:#FF8B68; border-radius:50%; }
 .send-btn { background:#FF6A3D; color:#fff; border-radius:50%; box-shadow:0 4px 14px rgba(255,106,61,.22); }
-.depth-selector { background:#1A1B20; border-color:rgba(242,242,240,.11); }
-.depth-btn { color:#9A9A98; }
-.depth-btn.active { background:#FF6A3D; color:#fff; box-shadow:0 2px 9px rgba(255,106,61,.22); }
 .form-input, .form-select, .form-textarea, .notes-search { background:#141519; border-color:rgba(242,242,240,.13); color:#F2F2F0; }
 .wizard-card, .note-item { background:#1A1B20; border-color:rgba(242,242,240,.10); }
 .wizard-title, .note-title { color:#FF8B68; }
@@ -972,37 +941,31 @@ html, body {
   .aliya-title-wrap h1 { font-size:14px; }
   .aliya-title-wrap span { max-width:130px; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
   .aliya-header-right { gap:4px; flex-shrink:0; }
-  .depth-selector { max-width:138px; }
-  .depth-btn { padding:4px 5px; font-size:9px; }
   .header-icon-btn { width:32px; min-width:32px; height:32px; }
 }
 @media (max-width:380px) {
   .aliya-title-wrap span { display:none; }
   .service-status { display:none; }
-  .depth-selector { max-width:124px; }
-  .depth-btn { padding-inline:4px; font-size:8.5px; }
   .aliya-header-left { gap:6px; }
   .aliya-header-right { gap:3px; }
 }
 
-/* Composer anatomy follows the native Aliya chat: one integrated pill, add, dictation and send. */
+/* Composer anatomy follows the native Aliya chat: one integrated pill, attachment and send. */
 .chat-input-bar { gap:8px; align-items:flex-end; }
 .chat-textarea-wrap { min-height:48px; border-radius:26px; padding:4px 6px 4px 7px; gap:4px; }
 .chat-textarea { min-height:36px; padding:8px 4px; }
-.attach-btn, .mic-btn {
+.attach-btn {
   width:38px; height:38px; min-width:38px; min-height:38px; flex:0 0 38px;
   border:0; background:transparent; color:#FF8B68; border-radius:50%;
   display:flex; align-items:center; justify-content:center; cursor:pointer;
   font-size:22px; line-height:1; transition:background .18s ease, transform .18s ease, color .18s ease;
 }
-.attach-btn:hover, .mic-btn:hover { background:rgba(255,106,61,.12); transform:scale(1.04); }
-.mic-btn.is-listening { color:#fff; background:#FF6A3D; animation:ali-mic-pulse 1s ease-in-out infinite; }
-@keyframes ali-mic-pulse { 50% { box-shadow:0 0 0 7px rgba(255,106,61,.17); transform:scale(.94); } }
+.attach-btn:hover { background:rgba(255,106,61,.12); transform:scale(1.04); }
 .send-btn { width:44px; height:44px; flex:0 0 44px; min-width:44px; min-height:44px; font-size:22px; }
 @media(max-width:430px) {
   .chat-input-bar { padding-inline:10px; gap:6px; }
   .chat-textarea-wrap { padding-inline:4px; gap:2px; }
-  .attach-btn, .mic-btn { width:34px; height:34px; min-width:34px; min-height:34px; flex-basis:34px; }
+  .attach-btn { width:34px; height:34px; min-width:34px; min-height:34px; flex-basis:34px; }
   .chat-textarea { font-size:13.5px; }
 }
 
@@ -1071,8 +1034,6 @@ html, body {
   .aliya-title-wrap h1 { font-size:12px; letter-spacing:.12em; }
   .aliya-title-wrap span { max-width:78px; font-size:9px; }
   .header-icon-btn { width:27px; min-width:27px; height:27px; border-radius:9px; font-size:14px; }
-  .depth-selector { max-width:99px; }
-  .depth-btn { padding:3px 3px; font-size:8px; }
 }
 @media(prefers-reduced-motion:reduce) { .history-panel { animation:none; } }
 
@@ -1110,49 +1071,6 @@ html, body {
 .msg-action:disabled { opacity:.5; cursor:wait; }
 .send-btn.is-cancel { background:#B84E48; box-shadow:0 4px 14px rgba(184,78,72,.25); }
 @media(max-width:520px) { .msg-body { max-width:calc(100% - 42px); } .msg-row.user .msg-body { max-width:92%; } .msg-actions { gap:4px; } .msg-action { min-height:30px; padding:5px 8px; } }
-
-/* Live voice console inspired by the original Aliya live screen, with honest browser-engine caveats. */
-.voice-pane { overflow:auto; padding:clamp(14px,3vw,28px); }
-.voice-console { width:min(100%,840px); min-height:100%; margin:0 auto; padding:clamp(16px,3vw,28px); border:1px solid rgba(242,242,240,.09); border-radius:24px; background:radial-gradient(ellipse at 50% 30%,rgba(255,106,61,.075),transparent 50%),#15161a; box-shadow:0 18px 52px rgba(0,0,0,.18); display:flex; flex-direction:column; }
-.voice-console-head { display:flex; align-items:flex-start; justify-content:space-between; gap:12px; }
-.voice-eyebrow { color:#FF8B68; font-size:10px; font-weight:800; letter-spacing:.17em; }
-.voice-console-head h2 { margin:6px 0 4px; color:#F2F2F0; font-size:clamp(21px,3vw,28px); }
-.voice-console-head p { margin:0; color:#92938F; font-size:12px; line-height:1.5; }
-.voice-clear-btn { flex:0 0 auto; padding:8px 10px; border:1px solid rgba(242,242,240,.09); border-radius:10px; background:#202126; color:#AAA9A6; font-size:11px; cursor:pointer; }
-.voice-options { display:flex; align-items:end; gap:10px; margin:20px 0 8px; }
-.voice-options label { display:flex; min-width:0; flex:1; flex-direction:column; gap:6px; color:#8F908D; font-size:10px; }
-.voice-options select { width:100%; min-height:40px; padding:8px 10px; border:1px solid rgba(242,242,240,.10); border-radius:11px; outline:none; background:#202126; color:#E7E7E4; font-family:inherit; font-size:12px; font-weight:500; }
-.voice-options select:focus-visible { border-color:rgba(255,106,61,.55); }
-.voice-direction { padding:0 2px 10px; color:#FF8B68; font-size:18px; }
-.voice-stage { display:flex; flex:0 0 auto; min-height:clamp(178px,27vh,250px); flex-direction:column; align-items:center; justify-content:center; gap:9px; text-align:center; }
-.voice-orb-wrap { display:grid; width:120px; height:120px; margin:6px 0 2px; place-items:center; }
-.voice-orb { display:grid; width:78px; height:78px; place-items:center; border:1px solid rgba(255,139,104,.65); border-radius:50%; background:radial-gradient(circle at 38% 30%,#ffba9c 0,#FF6A3D 22%,#8a302d 62%,#24191b 100%); box-shadow:0 0 0 9px rgba(255,106,61,.08),0 0 42px rgba(255,106,61,.24),inset 0 0 18px rgba(255,255,255,.24); color:white; font-size:29px; animation:voice-orb-idle 2.8s ease-in-out infinite; }
-.voice-stage[data-state="listening"] .voice-orb { animation:voice-orb-listening 1.15s ease-in-out infinite; }
-.voice-stage[data-state="thinking"] .voice-orb { animation:voice-orb-thinking 1.7s ease-in-out infinite; }
-.voice-stage[data-state="speaking"] .voice-orb { animation:voice-orb-speaking .72s ease-in-out infinite alternate; }
-.voice-stage[data-state="error"] .voice-orb { filter:saturate(.5); }
-.voice-stage strong { color:#ECECE9; font-size:14px; }
-.voice-stage > span { color:#90918E; font-size:11px; line-height:1.45; }
-.voice-controls { display:flex; justify-content:center; align-items:center; gap:10px; margin:4px 0 15px; }
-.voice-toggle-btn { display:flex; min-width:176px; min-height:48px; align-items:center; justify-content:center; gap:9px; border:1px solid rgba(255,139,104,.36); border-radius:16px; background:linear-gradient(145deg,#FF764F,#DB4E30); color:white; box-shadow:0 7px 22px rgba(255,106,61,.18); font-size:13px; cursor:pointer; }
-.voice-toggle-btn[aria-pressed="true"] { background:linear-gradient(145deg,#B94E49,#823A3A); border-color:rgba(255,155,145,.42); }
-.voice-interrupt-btn { min-height:42px; padding:8px 12px; border:1px solid rgba(242,242,240,.12); border-radius:12px; background:#25262b; color:#E3E2DF; font-size:11px; cursor:pointer; }
-.voice-transcript { display:flex; max-height:min(34vh,330px); min-height:0; flex-direction:column; gap:9px; overflow:auto; padding:8px 3px; scrollbar-color:#444 transparent; }
-.voice-turn { display:flex; width:100%; }
-.voice-turn-user { justify-content:flex-end; }
-.voice-turn-assistant { justify-content:flex-start; }
-.voice-turn-body { display:flex; max-width:min(84%,600px); flex-direction:column; gap:4px; }
-.voice-turn-user .voice-turn-body { align-items:flex-end; }
-.voice-turn-body small { color:#82837F; font-size:9px; }
-.voice-turn-body .msg-bubble { max-width:100%; padding:9px 12px; font-size:12px; }
-.voice-turn .msg-actions { opacity:.8; }
-.voice-disclaimer { margin:10px 0 0; color:#71726F; font-size:10px; line-height:1.5; text-align:center; }
-@keyframes voice-orb-idle { 50% { transform:scale(1.045); box-shadow:0 0 0 13px rgba(255,106,61,.045),0 0 52px rgba(255,106,61,.28),inset 0 0 18px rgba(255,255,255,.24); } }
-@keyframes voice-orb-listening { 50% { transform:scale(1.13); box-shadow:0 0 0 16px rgba(255,106,61,.07),0 0 62px rgba(255,106,61,.42),inset 0 0 18px rgba(255,255,255,.3); } }
-@keyframes voice-orb-thinking { 50% { transform:scale(.92) rotate(12deg); filter:hue-rotate(-12deg); } }
-@keyframes voice-orb-speaking { to { transform:scale(1.1); box-shadow:0 0 0 15px rgba(255,106,61,.06),0 0 65px rgba(255,106,61,.42); } }
-@media(max-width:520px) { .voice-pane { padding:10px; } .voice-console { padding:15px 12px; border-radius:19px; } .voice-console-head { gap:7px; } .voice-clear-btn { padding:7px; font-size:10px; } .voice-options { gap:6px; margin-top:16px; } .voice-options select { padding:7px 5px; font-size:11px; } .voice-turn-body { max-width:92%; } }
-@media(prefers-reduced-motion:reduce) { .voice-orb,.voice-stage[data-state] .voice-orb { animation:none; } }
 
 /* Rich local notes: edit, pin, color accents and checklists. */
 .notes-container { max-width:920px; gap:14px; }
@@ -1257,9 +1175,6 @@ html.aliya-light .service-status { color:#6B6B68; }
 html.aliya-light .aliya-tabs-bar { background:rgba(255,255,255,.96); border-bottom-color:rgba(27,27,26,.11); }
 html.aliya-light .tab-chip { background:#ECEBE7; border-color:rgba(27,27,26,.12); color:#6B6B68; }
 html.aliya-light .tab-chip.active { background:rgba(232,90,45,.10); border-color:rgba(232,90,45,.42); color:#C94B25; }
-html.aliya-light .depth-selector { background:#FFFFFF; border-color:rgba(27,27,26,.15); }
-html.aliya-light .depth-btn { color:#777772; }
-html.aliya-light .depth-btn.active { background:#E85A2D; color:#FFFFFF; }
 html.aliya-light .chat-messages { color:#1B1B1A; }
 html.aliya-light .chat-welcome-card { background:linear-gradient(150deg,#FFFFFF,#F2F0EC); border-color:rgba(27,27,26,.10); box-shadow:0 14px 34px rgba(43,38,33,.08); }
 html.aliya-light .welcome-title, html.aliya-light .welcome-desc { color:#292927; }
@@ -1288,11 +1203,6 @@ html.aliya-light .history-search-wrap input, html.aliya-light .history-chat-sele
 html.aliya-light .history-chat-date, html.aliya-light .history-row-action, html.aliya-light .history-project-toggle small { color:#777772; }
 html.aliya-light .history-head button, html.aliya-light .move-folder-head button, html.aliya-light .note-editor-head > button { background:#ECEBE7; color:#4F4F4B; }
 html.aliya-light .history-chat-row.is-active { background:rgba(232,90,45,.07); }
-html.aliya-light .voice-console { background:radial-gradient(ellipse at 50% 30%,rgba(232,90,45,.07),transparent 50%),#FFFFFF; border-color:rgba(27,27,26,.11); }
-html.aliya-light .voice-console-head h2, html.aliya-light .voice-stage strong { color:#1B1B1A; }
-html.aliya-light .voice-console-head p, html.aliya-light .voice-stage > span, html.aliya-light .voice-disclaimer { color:#777772; }
-html.aliya-light .voice-clear-btn, html.aliya-light .voice-options select, html.aliya-light .voice-interrupt-btn { background:#F1F0ED; border-color:rgba(27,27,26,.12); color:#484844; }
-html.aliya-light .voice-turn-assistant .msg-bubble { background:#ECEBE7; color:#1B1B1A; }
 html.aliya-light .notes-heading, html.aliya-light .settings-heading h2 { color:#1B1B1A; }
 html.aliya-light .notes-caption, html.aliya-light .settings-heading p, html.aliya-light .settings-section-title p, html.aliya-light .settings-toggle-row small, html.aliya-light .settings-select-row small { color:#73736E; }
 html.aliya-light .notes-search-wrap { background:#FFFFFF; border-color:rgba(27,27,26,.13); color:#696964; }
@@ -1348,3 +1258,7 @@ html.aliya-light .rich-inline-code { background:#E8E7E3; }
   .rich-code-block pre { max-height:280px; padding:10px; font-size:.82em; }
   .rich-table th,.rich-table td { padding:7px 8px; }
 }
+
+/* Clickable native Aliya emblem opens the conversation sidebar. */
+.aliya-avatar-3d { padding:0; border:0; color:inherit; cursor:pointer; }
+.aliya-avatar-3d:focus-visible { outline:2px solid #FF8B68; outline-offset:3px; }

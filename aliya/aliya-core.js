@@ -48,7 +48,7 @@
 
   var AliyaCore = {
     state: {
-      depth: 'standard', // 'simple' | 'standard' | 'deep'
+      depth: 'deep', // Always use maximum reasoning; no exposed mode selector
       currentTab: 'chat',
       chatHistory: [],
       profileContext: '',
@@ -397,7 +397,7 @@
         messages: messages,
         reasoning_mode: this.state.depth === 'deep' ? 'high' : (this.state.depth === 'simple' ? 'normal' : 'medium'),
         temperature: this.state.depth === 'simple' ? 0.35 : (this.state.depth === 'deep' ? 0.65 : 0.5),
-        max_tokens: this.state.depth === 'deep' ? 2200 : 1400
+        max_tokens: this.state.depth === 'deep' ? 4096 : 1400
       };
       var result, lastError;
       for (var attempt = 0; attempt < 3; attempt++) {

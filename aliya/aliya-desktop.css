@@ -1,0 +1,65 @@
+/* Independent desktop-only Aliya workspace. No rules run on narrow/touch screens. */
+@media screen and (min-width:1200px) and (hover:hover) and (pointer:fine) {
+  html, body { width:100%; min-width:1200px; height:100%; min-height:100%; overflow:hidden; }
+  body { background:#0b0c0f; }
+  .aliya-app {
+    display:block !important; position:relative !important; width:100% !important; max-width:none !important;
+    height:100dvh !important; min-height:100dvh !important; margin:0 !important; overflow:hidden !important;
+    border:0 !important; box-shadow:none !important; background:radial-gradient(ellipse at 78% 8%,rgba(255,106,61,.055),transparent 38%),#0e0f12;
+  }
+  .aliya-header {
+    position:fixed !important; z-index:20 !important; left:284px !important; right:20px !important; top:14px !important;
+    width:auto !important; height:66px !important; min-height:66px !important; padding:0 24px !important;
+    border:1px solid rgba(255,255,255,.075); border-radius:20px; background:rgba(23,24,29,.92) !important;
+    box-shadow:0 14px 40px rgba(0,0,0,.22); backdrop-filter:blur(18px);
+  }
+  .aliya-header-left { gap:16px !important; }
+  .aliya-back-btn { width:40px !important; height:40px !important; flex:0 0 40px !important; font-size:29px !important; }
+  .aliya-avatar-3d { width:42px !important; height:42px !important; flex:0 0 42px !important; border-radius:14px !important; }
+  .aliya-title-wrap h1 { font-size:17px !important; }
+  .aliya-title-wrap span { max-width:400px !important; font-size:12px !important; }
+  .service-status { margin-left:auto !important; margin-right:10px !important; font-size:12px !important; }
+  .aliya-header-right { gap:9px !important; }
+  .header-icon-btn { width:42px !important; height:42px !important; border-radius:13px !important; font-size:22px !important; }
+
+  /* The tool strip becomes the desktop sidebar. The logo in the header opens chat history. */
+  .aliya-tabs-bar {
+    position:fixed !important; z-index:30 !important; inset:14px auto 14px 14px !important;
+    display:flex !important; width:250px !important; padding:20px 13px !important; flex-direction:column !important;
+    align-items:stretch !important; justify-content:flex-start !important; gap:8px !important; overflow-y:auto !important;
+    border:1px solid rgba(255,255,255,.075) !important; border-radius:23px !important;
+    background:linear-gradient(180deg,#191a1f,#131419) !important; box-shadow:0 18px 55px rgba(0,0,0,.25);
+  }
+  .aliya-tabs-bar::before { content:'АЛИЯ · АСБОБҲО'; display:block; padding:5px 10px 14px; color:#888985; font-size:10px; font-weight:800; letter-spacing:.16em; }
+  .tab-chip { flex:0 0 auto !important; min-height:49px !important; justify-content:flex-start !important; gap:12px !important; padding:0 15px !important; border-radius:14px !important; font-size:13px !important; }
+  .tab-chip:hover { transform:translateX(2px); }
+  .tab-chip.active { background:linear-gradient(100deg,rgba(255,106,61,.18),rgba(255,106,61,.055)) !important; border-color:rgba(255,139,104,.3) !important; }
+  .aliya-main {
+    position:absolute !important; inset:94px 20px 16px 284px !important; width:auto !important; height:auto !important;
+    min-height:0 !important; overflow:hidden !important; border:1px solid rgba(255,255,255,.06); border-radius:22px;
+    background:rgba(19,20,24,.54);
+  }
+  .tab-pane { height:100% !important; max-height:100% !important; }
+  .tab-pane#pane-chat { overflow:hidden !important; }
+  .chat-messages { width:min(100%,1320px) !important; max-width:1320px !important; height:auto !important; flex:1 1 auto !important; margin:0 auto !important; padding:34px clamp(32px,5vw,80px) 20px !important; }
+  .msg-body { max-width:min(82%,940px) !important; }
+  .msg-bubble { font-size:15px !important; line-height:1.72 !important; }
+  .chat-input-bar { width:100% !important; margin:0 !important; padding:12px 28px 22px !important; background:linear-gradient(0deg,#15161a 72%,transparent) !important; }
+  .chat-input-bar > * { max-width:1100px !important; }
+  .chat-textarea-wrap { border-radius:19px !important; }
+  .chat-textarea { min-height:52px !important; font-size:15px !important; }
+  .send-btn, .attach-btn { min-width:48px !important; min-height:48px !important; }
+  .chat-welcome-card { max-width:900px !important; margin:9vh auto 0 !important; }
+  .quick-prompts-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+
+  /* Chat history is a calm docked drawer on desktop; the original vector mark is its trigger. */
+  .history-drawer:not([hidden]) { inset:0 0 0 264px !important; z-index:100 !important; }
+  .history-panel { width:390px !important; height:100dvh !important; padding:24px 18px !important; border-radius:0 22px 22px 0; }
+  .history-backdrop { background:rgba(0,0,0,.38) !important; }
+  .history-chat-row { min-height:58px !important; }
+  .history-row-action { width:28px !important; flex-basis:28px !important; }
+  .history-row-action:not(:hover) { opacity:.38 !important; }
+  .settings-container, .notes-container, .wizard-container { max-width:1160px !important; margin-inline:auto !important; }
+  .notes-list { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
+  .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
+}
