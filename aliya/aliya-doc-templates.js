@@ -230,6 +230,16 @@
   var AliyaTemplates = {
     AD_BRANDING: AD_BRANDING,
 
+    generateResponseDocx: function (data) {
+      var d = data || {};
+      var xml = p(String(d.title || 'Ҷавоби Алия'), { bold: true, align: 'center', size: '30', color: '0D1B2A', after: 180 });
+      String(d.content || '').split(/\r?\n/).forEach(function (line) {
+        xml += p(line || ' ', { size: '23', lineSpacing: '280', after: 40 });
+      });
+      xml += adFooterXml();
+      return createDocxDocument(xml);
+    },
+
     /**
      * Генератори «Нақшаи дарс» (формати давлатии ҶТ)
      */
@@ -366,6 +376,10 @@
           });
         }
 
+        if (!Array.isArray(q.options) || !q.options.length) {
+          if (d.showAnswers && q.answer) xml += p('Ҷавоби намунавӣ: ' + q.answer, { italic: true, size: '23', color: '1E7E34' });
+          else xml += p('Ҷавоб: ______________________________________________________________', { size: '22' });
+        }
         if (d.showAnswers && q.explanation) {
           xml += p('   Шарҳ: ' + q.explanation, { italic: true, size: '22', color: '4A5D73', before: 20, after: 60 });
         }

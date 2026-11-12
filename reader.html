@@ -2429,7 +2429,7 @@ body.light-reading .page-slot canvas{filter:none!important}
 </script>
 
 <script>
-(function initReaderDesktopAndAliya() {
+document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya() {
   // 1. Keyboard Navigation (ПК)
   window.addEventListener('keydown', function (e) {
     if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
@@ -2491,7 +2491,13 @@ body.light-reading .page-slot canvas{filter:none!important}
     var canvas = document.querySelector('#currentSlot canvas');
     if (canvas) {
       try {
-        result.dataUrl = canvas.toDataURL('image/jpeg', 0.85);
+        var maxEdge = 1600;
+        var scale = Math.min(1, maxEdge / Math.max(canvas.width || 1, canvas.height || 1));
+        var imageCanvas = document.createElement('canvas');
+        imageCanvas.width = Math.max(1, Math.round(canvas.width * scale));
+        imageCanvas.height = Math.max(1, Math.round(canvas.height * scale));
+        imageCanvas.getContext('2d').drawImage(canvas, 0, 0, imageCanvas.width, imageCanvas.height);
+        result.dataUrl = imageCanvas.toDataURL('image/jpeg', 0.78);
         result.isScan = true;
       } catch (e) {}
     }
@@ -2505,6 +2511,10 @@ body.light-reading .page-slot canvas{filter:none!important}
   var resBox = document.getElementById('readerAliyaResult');
   var labelBox = document.getElementById('readerAliyaPageLabel');
   var copyBtn = document.getElementById('btnCopyAliyaResult');
+  var exportDocxBtn = document.getElementById('btnExportAliyaDocx');
+  var exportPdfBtn = document.getElementById('btnExportAliyaPdf');
+  var lastAliyaOutput = '';
+  var lastAliyaExportable = false;
 
   if (btnOpen) {
     btnOpen.addEventListener('click', function (e) {
@@ -2524,125 +2534,148 @@ body.light-reading .page-slot canvas{filter:none!important}
   }
 
   async function handleAliyaTask(type, customQuery) {
-    resBox.textContent = '⏳ Матни саҳифа таҳлил шуда истодааст...';
+    resBox.textContent = '⏳ Алия саҳифаро мехонад ва ҷавоб омода мекунад…';
     copyBtn.style.display = 'none';
-
     var extracted = await extractCurrentPageContent();
     var GATEWAY = 'https://sharipovip-aliya-gateway.hf.space';
     var pNum = typeof page !== 'undefined' ? page : 1;
     var bName = typeof name !== 'undefined' ? name : 'Китоб';
-
     var promptMap = {
-      summary: 'Аз рӯи саҳифаи ' + pNum + '-и китоби «' + bName + '» хулосаи мухтасар ва фикри асосиро ба забони тоҷикӣ баён кун.',
-      words: 'Дар ин саҳифа кадом калимаҳои душворфаҳм, истилоҳот ё байтҳо ҳастанд? Маънои онҳоро бо забони соддаи тоҷикӣ шарҳ деҳ.',
-      test: 'Аз рӯи ин саҳифа 4 дона саволи тестӣ бо 4 варианти ҷавоб (A, B, C, D) ва ҷавоби дуруст тартиб деҳ.',
-      lesson: 'Аз рӯи мавзӯи ин саҳифа нақшаи расмии дарси яксоата (мақсад, ташкили дарс, баёни мавзӯъ, саволу ҷавоб ва вазифаи хонагӣ) тартиб деҳ.',
-      translate: 'Ин саҳифаро пурра ва босифат ба забони русӣ тарҷума намо.',
-      notes: 'Фикрҳои асосӣ ва иқтибосҳои муҳими ин саҳифаро барои дафтари ёддоштҳо ҷудо кун.'
+      summary: 'Аз рӯи матни дақиқи ин саҳифа хулосаи мухтасар ва фикри асосиро ба забони тоҷикӣ баён кун.',
+      words: 'Калимаҳои душворфаҳм ва истилоҳоти воқеан дар саҳифа бударо ҷудо карда, маънояшонро шарҳ деҳ. Агар калимаи норавшан бошад, тахмин накун.',
+      test: 'Аз рӯи матни дақиқи ин саҳифа 4 саволи тестӣ бо чор варианти A, B, C, D соз ва дар охир калиди ҷавобҳоро ҷудо нишон деҳ.',
+      lesson: 'Аз рӯи мазмуни ин саҳифа нақшаи дарси яксоата ба забони тоҷикӣ соз. Мазмуни китобро аз контекст бигир; маълумоти мавҷгүйро насоз.',
+      translate: 'Матни саҳифаро ба забони русӣ тарҷума кун. Сохтор ва мафҳумҳои онро нигоҳ дор.',
+      notes: 'Аз ин саҳифа танҳо фикрҳои асосӣ ва иқтибосҳои воқеан намоёнро ёддошт кун.'
     };
-
-    var prompt = customQuery || promptMap[type] || 'Таҳлили саҳифаи китоб';
-
+    var prompt = customQuery || promptMap[type] || 'Ин саҳифаро таҳлил кун.';
+    var output = '';
+    var timeoutId = null;
     try {
-      var output = '';
       var controller = new AbortController();
-      var timeoutId = setTimeout(function () { controller.abort(); }, 2800);
-
-      var sys = 'Шумо ёвари расмии Китобхонаи миллии Тоҷикистон ҳастед. [КИТОБ: «' + bName + '», САҲИФА: ' + pNum + ']. [МАТНИ САҲИФА]: ' + (extracted.text || 'Матни китоб');
-      
-      var cResp = await fetch(GATEWAY + '/v1/chat', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
-          temperature: 0.5,
-          max_tokens: 2500
-        }),
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-
-      if (cResp.ok) {
-        var cJson = await cResp.json();
-        output = (cJson.choices && cJson.choices[0] && cJson.choices[0].message && cJson.choices[0].message.content) || cJson.reply || '';
-      }
-    } catch (e) {
-      console.warn('[ReaderAliya] Gateway fallback to local knowledge:', e);
-    }
-
-    // Smart Local Fallback
-    if (!output || output.trim().length === 0) {
-      if (type === 'summary') {
-        output = '📝 **Хулосаи саҳифаи ' + pNum + '-и китоби «' + bName + '»:**
-
-' +
-          '• **Фикри марказӣ:** Саҳифа ба баёни мазмуни асосӣ ва таҳлили равандҳои муҳими асар бахшида шудааст.
-' +
-          '• **Мафҳумҳои муҳим:** Нуктаҳои калидии ин қисмат барои дарки мукаммали боб нақши ҳалкунанда доранд.
-' +
-          '• **Хулоса:** Мутолиаи ин бахш малакаи таҳлилии хонандаро такмил дода, заминаи хубе барои дарс фароҳам меорад.';
-      } else if (type === 'words') {
-        output = '📖 **Луғати калимаҳои мушкили саҳифаи ' + pNum + ':**
-
-' +
-          '1. **Маърифат** — дониш, фаҳмиш ва огоҳӣ аз ҳақиқат.
-' +
-          '2. **Накӯкорӣ** — анҷом додани кори нек, хайрхоҳӣ ва эҳсон.
-' +
-          '3. **Соҳибмақом** — дорои мартаба ва обрӯйи баланд.
-' +
-          '4. **Мусоидат** — ёрӣ расонидан ва ҳамкорӣ кардан.';
-      } else if (type === 'test') {
-        output = '❓ **Санҷиш ва тест аз рӯи саҳифаи ' + pNum + ':**
-
-' +
-          '**1. Мавзӯи асосии ин саҳифа ба чӣ бахшида шудааст?**
-' +
-          'A) Ба баёни мазмуни таълимӣ ва ахлоқӣ ✓
-B) Танҳо ба шарҳи луғат
-C) Ба нақшаи рӯзнома
-D) Ба ҳисоббаробаркунӣ
-
-' +
-          '**2. Ғояи тарбиявии ин асар кадом аст?**
-' +
-          'A) Донишандӯзӣ ва ватандӯстӣ ✓
-B) Сарфи назар кардани таърих
-C) Танҳо фароғат
-D) Ҳеҷ яке
-
-' +
-          '**3. Калиди ҷавобҳо:** 1-A, 2-A.';
-      } else if (type === 'lesson') {
-        output = '🎓 **Нақшаи конспекти дарс аз рӯи «' + bName + '» (Саҳифаи ' + pNum + '):**
-
-' +
-          '• **Мавзӯъ:** Таҳлили амиқи матни саҳифаи ' + pNum + '
-' +
-          '• **Мақсади таълимӣ:** Фаҳмидани мазмуни асосӣ ва ташаккули ҷаҳонбинии илмии хонанда.
-' +
-          '• **Мақсади тарбиявӣ:** Тарбияи ватандӯстӣ, адлу дод ва эҳтиром ба китоб.
-' +
-          '• **Равиши дарс:** 1. Ташкили дарс (3 дақ), 2. Пурсиши вазифа (10 дақ), 3. Баёни мавзӯи нав (20 дақ), 4. Мустаҳкамкунӣ (8 дақ), 5. Баҳогузорӣ ва вазифаи хонагӣ (4 дақ).';
+      timeoutId = setTimeout(function () { controller.abort(); }, 75000);
+      if (extracted.isScan && extracted.dataUrl) {
+        var imageBase64 = extracted.dataUrl.replace(/^data:image\/[^;]+;base64,/i, '');
+        var visionResponse = await fetch(GATEWAY + '/v1/vision', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            image_base64: imageBase64,
+            prompt: prompt + ' Китоб: «' + bName + '», саҳифаи ' + pNum + '.',
+            system: 'Шумо ёвари таълимии Китобхона ҳастед. Матни намоёни акси саҳифаро дақиқ хонед. Агар сифат паст бошад ё қисми матн норавшан бошад, инро ошкоро қайд кунед ва матнро насозед.'
+          }), signal: controller.signal, cache: 'no-store'
+        });
+        var visionData = await visionResponse.json().catch(function () { return {}; });
+        if (!visionResponse.ok) throw new Error(visionData.detail || visionData.error || ('HTTP ' + visionResponse.status));
+        if (visionData.error) throw new Error(visionData.error);
+        output = String(visionData.reply || visionData.analysis || '').trim();
       } else {
-        output = '✨ **Посухи Алия оид ба «' + bName + '» (Саҳифаи ' + pNum + '):**
-
-' +
-          'Ман дархости шуморо баррасӣ кардам. Ин қисмати китоб дорои маводи пурарзиши таълимӣ ва маърифатӣ буда, барои омӯзиш тавсия дода мешавад.';
+        if (!extracted.text) throw new Error('Матни ин саҳифаро гирифта натавонистам ва тасвири саҳифа низ дастрас нест.');
+        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bName + '», саҳифаи ' + pNum + '. Ба савол танҳо бо такя ба матни дар поён омада ҷавоб диҳед; агар ҷавоб дар он набошад, бигӯед, ки дар ин порча нест.\n\n[МАТНИ САҲИФА]:\n' + extracted.text.slice(0, 14000);
+        var chatResponse = await fetch(GATEWAY + '/v1/chat', {
+          method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' },
+          body: JSON.stringify({
+            messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
+            reasoning_mode: 'medium', temperature: 0.45, max_tokens: 1800
+          }), signal: controller.signal, cache: 'no-store'
+        });
+        var chatData = await chatResponse.json().catch(function () { return {}; });
+        if (!chatResponse.ok) throw new Error(chatData.detail || chatData.error || ('HTTP ' + chatResponse.status));
+        if (chatData.error) throw new Error(chatData.error);
+        output = String(chatData.reply || (chatData.choices && chatData.choices[0] && chatData.choices[0].message && chatData.choices[0].message.content) || '').trim();
       }
+      clearTimeout(timeoutId);
+      if (!output) throw new Error('Сервер ҷавоби холӣ баргардонд. Дубора кӯшиш кунед.');
+    } catch (err) {
+      if (timeoutId) clearTimeout(timeoutId);
+      var errText = String(err && err.message || 'Хатои пайвастшавӣ.');
+      if (errText.indexOf('chat_providers_unavailable') >= 0 || errText.indexOf('no_chat_provider_configured') >= 0) {
+        errText = 'Шлюзи Алия дастрас аст, аммо ҳоло провайдерҳои модели зеҳни сунъӣ ҷавоб намедиҳанд. Баъдтар дубора кӯшиш кунед.';
+      }
+      output = 'Алия ҳоло ин саҳифаро таҳлил карда натавонист. ' +
+        (err && err.name === 'AbortError' ? 'Ҷавоби сервер дер шуд.' : errText) +
+        ' Интернетро санҷед ва дубора кӯшиш кунед.';
+      console.error('[ReaderAliya] Request failed:', err);
     }
-
     resBox.textContent = output;
+    lastAliyaOutput = output;
+    lastAliyaExportable = output.indexOf('Алия ҳоло ин саҳифаро таҳлил карда натавонист') !== 0;
+    if (type === 'notes' && lastAliyaExportable) {
+      try { sessionStorage.setItem('aliya_pending_note', JSON.stringify({ title: '«' + bName + '» · саҳифаи ' + pNum, content: output })); } catch (e) {}
+    }
+    if (exportDocxBtn) exportDocxBtn.style.display = lastAliyaExportable ? 'inline-flex' : 'none';
+    if (exportPdfBtn) exportPdfBtn.style.display = lastAliyaExportable ? 'inline-flex' : 'none';
     copyBtn.style.display = 'block';
     copyBtn.onclick = function () {
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(output).then(function () {
-          copyBtn.textContent = '✓ Нусха бардошта шуд!';
-          setTimeout(function () { copyBtn.textContent = '📋 Нусхабардорӣ'; }, 2000);
-        });
-      }
+      if (navigator.clipboard) navigator.clipboard.writeText(output).then(function () {
+        copyBtn.textContent = '✓ Нусха бардошта шуд!';
+        setTimeout(function () { copyBtn.textContent = '📋 Нусхабардорӣ'; }, 2000);
+      }).catch(function () {});
     };
   }
+
+  async function exportAliyaReaderDocument(format) {
+    if (!lastAliyaExportable || !lastAliyaOutput) return;
+    var btn = format === 'pdf' ? exportPdfBtn : exportDocxBtn;
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ Омода…'; }
+    try {
+      var bookTitle = typeof name !== 'undefined' ? name : 'Китоб';
+      var docTitle = 'Алия — ' + bookTitle + ' — саҳифаи ' + (typeof page !== 'undefined' ? page : 1);
+      var branded = lastAliyaOutput + '\n\n---\n📚 Омодашуда бо ёрии «Алия» — Зеҳни сунъии Тоҷикӣ\n📖 Китобхонаи электронии Тоҷикӣ — Ҳамаи китобҳои дарсӣ ва бадеӣ\n📲 Барномаи расмии Китобхона дар Google Play: https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share';
+      var response = await fetch('https://sharipovip-aliya-gateway.hf.space/v1/document/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: docTitle, content_markdown: branded, target_format: format }), cache: 'no-store'
+      });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok || !data.file_base64) throw new Error(data.error || data.detail || 'Ҳуҷҷат сохта нашуд.');
+      var ext = format === 'pdf' ? 'pdf' : 'docx';
+      var mime = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      var fileName = 'Aliya_' + String(bookTitle).replace(/[^\w\u0400-\u04FF-]+/g, '_').slice(0, 40) + '_p' + (typeof page !== 'undefined' ? page : 1) + '.' + ext;
+      if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
+        window.AndroidBridge.saveFile(data.file_base64, fileName, mime);
+      } else {
+        var binary = atob(data.file_base64), bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        var blob = new Blob([bytes], { type: mime }), url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = fileName; a.click(); setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      }
+      if (btn) btn.textContent = '✓ Сабт шуд';
+      setTimeout(function(){ if(btn){btn.textContent = format === 'pdf' ? '⬇ PDF' : '⬇ Word'; btn.disabled = false;} }, 1800);
+    } catch (err) {
+      resBox.textContent = 'Ҳуҷҷатро сабт карда натавонистам: ' + (err.message || 'Хатои пайвастшавӣ.');
+      if (btn) { btn.disabled = false; btn.textContent = format === 'pdf' ? '⬇ PDF' : '⬇ Word'; }
+    }
+  }
+  exportDocxBtn?.addEventListener('click', function(){ exportAliyaReaderDocument('docx'); });
+  exportPdfBtn?.addEventListener('click', function(){ exportAliyaReaderDocument('pdf'); });
+
+  document.getElementById('btnContinueInAliyaChat')?.addEventListener('click', async function () {
+    var btn = this; btn.disabled = true; btn.textContent = '⏳ Саҳифа омода мешавад…';
+    try {
+      var extracted = await extractCurrentPageContent();
+      var pageText = extracted.text || '';
+      if (extracted.isScan && extracted.dataUrl) {
+        // The chat can handle the scanned page through the image analysis button; OCR it here so the conversation gets text context.
+        var response = await fetch('https://sharipovip-aliya-gateway.hf.space/v1/vision', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ image_base64: extracted.dataUrl.replace(/^data:image\/[^;]+;base64,/i, ''),
+            prompt: 'Ин саҳифаи сканшудаи китобро ба матни хондашаванда табдил деҳ. Номуайянро қайд кун; ҷумла ё калимаро насоз.',
+            system: 'OCR саҳифаи китоби дарсӣ. Барориши танҳо матни воқеан хондашуда; чизҳои номуайянро [норавшан] қайд кун.' }),
+          cache: 'no-store'
+        });
+        var data = await response.json().catch(function () { return {}; });
+        pageText = String(data.reply || '').trim();
+        if (!response.ok || !pageText) throw new Error(data.error === 'chat_providers_unavailable' ? 'Провайдерҳои Алия ҳоло ҷавоб намедиҳанд.' : (data.error || 'Матни сканро хонда натавонистам.'));
+      }
+      if (!pageText) throw new Error('Матни саҳифа дастрас нест.');
+      sessionStorage.setItem('aliya_reader_context', JSON.stringify({
+        text: pageText.slice(0, 14000), book: typeof name !== 'undefined' ? name : 'Китоб',
+        page: typeof page !== 'undefined' ? page : 1, savedAt: Date.now()
+      }));
+      window.location.href = 'aliya/index.html';
+    } catch (err) {
+      resBox.textContent = 'Саҳифаро ба чат фиристода натавонистам: ' + (err.message || 'Хатои пайвастшавӣ.');
+    } finally { btn.disabled = false; btn.textContent = '💬 Идома дар чати Алия бо ин саҳифа'; }
+  });
 
   document.getElementById('btnSummarizePage')?.addEventListener('click', function () { handleAliyaTask('summary'); });
   document.getElementById('btnExplainWords')?.addEventListener('click', function () { handleAliyaTask('words'); });
@@ -2667,7 +2700,7 @@ D) Ҳеҷ яке
       }
     });
   }
-})();
+});
 </script>
 
 
@@ -2689,6 +2722,7 @@ D) Ҳеҷ яке
       <div class="aliya-rp-body">
         <div id="readerAliyaPageLabel" style="font-size:11.5px;color:rgba(232, 201, 109, 0.9);padding:6px 10px;background:rgba(20, 38, 62, 0.6);border-radius:8px;border:1px solid rgba(201, 168, 76, 0.2);">Китобхонаи миллӣ</div>
         
+        <button class="aliya-rp-btn reader-continue-chat" id="btnContinueInAliyaChat" type="button">💬 Идома дар чати Алия бо ин саҳифа</button>
         <div class="aliya-rp-actions-grid">
           <button class="aliya-rp-btn" id="btnSummarizePage">📝 Хулосаи саҳифа</button>
           <button class="aliya-rp-btn" id="btnExplainWords">📖 Калимаҳои мушкил</button>
@@ -2707,6 +2741,8 @@ D) Ҳеҷ яке
 
         <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
           <button id="btnCopyAliyaResult" style="display:none;background:#1A2D44;border:1px solid rgba(201,168,76,0.3);color:#E8C96D;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">📋 Нусхабардорӣ</button>
+          <button id="btnExportAliyaDocx" style="display:none;background:#1A2D44;border:1px solid rgba(201,168,76,0.3);color:#E8C96D;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">⬇ Word</button>
+          <button id="btnExportAliyaPdf" style="display:none;background:#2a1b24;border:1px solid rgba(217,107,99,.45);color:#ffd8d4;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">⬇ PDF</button>
         </div>
       </div>
     </div>

@@ -1,30 +1,40 @@
-name: Build Kitobkhona Windows Desktop App (.exe)
+name: Build Kitobkhona Windows Installer
 
 on:
-  push:
-    branches: [ main, master ]
   workflow_dispatch:
+  push:
+    branches: [main, master]
+    tags: ['v*']
+
+permissions:
+  contents: write
 
 jobs:
   build:
     runs-on: windows-latest
+    timeout-minutes: 30
     steps:
-      - name: Checkout Repository
+      - name: Checkout repository
         uses: actions/checkout@v4
-
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: 18
-
-      - name: Initialize & Package Native Electron App
-        run: |
-          npm init -y
-          npm install electron electron-builder --save-dev
-          npx electron-builder --win --x64 -c.win.target=nsis
-
-      - name: Upload Windows Executable (.exe) Release
+          node-version: 22
+      - name: Install build dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Package Windows installer
+        run: npm run dist:win
+      - name: Upload installer artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Kitobkhona-Setup-Windows-v2.0
-          path: dist/*.exe
+          name: Kitobkhona-Setup-Windows
+          path: dist/Kitobkhona-Setup.exe
+          if-no-files-found: error
+          retention-days: 30
+      - name: Publish installer to GitHub Release for version tags
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: Kitobkhona ${{ github.ref_name }}
+          generate_release_notes: true
+          files: dist/Kitobkhona-Setup.exe

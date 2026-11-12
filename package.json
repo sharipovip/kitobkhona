@@ -1,0 +1,58 @@
+{
+  "name": "kitobkhona-desktop",
+  "version": "3.1.0",
+  "description": "Китобхонаи электронӣ ва ёвари Алия барои Windows",
+  "main": "desktop/main.cjs",
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "dist:win": "electron-builder --win nsis --x64"
+  },
+  "devDependencies": {
+    "electron": "^35.0.0",
+    "electron-builder": "^26.0.12"
+  },
+  "build": {
+    "appId": "tj.kitobkhona.desktop",
+    "productName": "Kitobkhona",
+    "asar": true,
+    "directories": {
+      "output": "dist"
+    },
+    "files": [
+      "desktop/**/*",
+      "**/*",
+      "!.git/**",
+      "!.github/**",
+      "!tests/**",
+      "!node_modules/**",
+      "!dist/**",
+      "!coverage/**",
+      "!*.zip",
+      "!*.md",
+      "!*.log",
+      "!package-lock.json"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ],
+      "icon": "desktop/icon.ico"
+    },
+    "nsis": {
+      "oneClick": false,
+      "perMachine": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "Kitobkhona",
+      "artifactName": "Kitobkhona-Setup.exe"
+    }
+  },
+  "author": "Kitobkhona"
+}

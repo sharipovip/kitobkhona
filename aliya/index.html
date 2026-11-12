@@ -3,9 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="theme-color" content="#0E0F12">
   <title>Алия — Зеҳни сунъии Тоҷикӣ · Китобхона</title>
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
-  <link rel="stylesheet" href="aliya-ui.css?v=100">
+  <link rel="stylesheet" href="aliya-ui.css?v=118">
 </head>
 <body>
   <div class="aliya-app">
@@ -14,14 +15,23 @@
       <div class="aliya-header-left">
         <a href="../index.html" class="aliya-back-btn" title="Бозгашт ба Китобхона" aria-label="Бозгашт">‹</a>
         <div class="aliya-brand">
-          <div class="aliya-avatar-3d">✨</div>
+          <div class="aliya-avatar-3d" aria-label="Aliya logo">
+            <svg viewBox="0 0 108 108" role="img" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+              <path fill="#F7F5F2" fill-rule="evenodd" d="M29 59.44 35.11 44.05h3.09l6.04 15.39h-3.62L36 46.67l1.24 0-4.69 12.77H29Zm3.47-2.79v-2.79h8.39v2.79h-8.39Zm13.28 2.79V43.61h3.34v15.83h-3.34Zm5.69 0V48.85h3.34v10.59h-3.34Zm8.97.05-4.36-10.64h3.6l2.76 8.43-1.33 0 2.84-8.43h3.6l-4.54 10.64h-2.57Zm-2.73 4.42 3.19-6.87 2.11 2.45-1.87 4.42h-3.43Zm15.14-4.25q-1.46 0-2.61-.72-1.14-.72-1.81-1.96-.66-1.24-.66-2.84t.66-2.83q.67-1.24 1.81-1.96 1.15-.72 2.61-.72 1.07 0 1.93.41.86.42 1.4 1.15.55.73.61 1.67v4.57q-.06.94-.59 1.67-.54.73-1.41 1.15-.87.41-1.94.41Zm.67-3.01q1.07 0 1.73-.71.65-.7.65-1.8 0-.74-.29-1.3-.3-.57-.83-.89-.54-.31-1.23-.31t-1.24.31q-.53.32-.85.89-.31.56-.31 1.3 0 .72.3 1.29.31.57.85.9.55.32 1.22.32Zm2.25 2.79v-2.85l.5-2.58-.5-2.57v-2.59h3.27v10.59h-3.27Z"/>
+              <path fill="#FF6A3D" d="M53.12 47.39q-.79 0-1.3-.54-.51-.53-.51-1.3t.51-1.3q.51-.53 1.3-.53.78 0 1.28.53.5.52.5 1.3t-.5 1.3q-.5.54-1.28.54ZM45 67.8a1.15 1.15 0 0 1 1.15-1.15h15.7A1.15 1.15 0 0 1 63 67.8a1.15 1.15 0 0 1-1.15 1.15h-15.7A1.15 1.15 0 0 1 45 67.8Z"/>
+            </svg>
+          </div>
           <div class="aliya-title-wrap">
             <h1>АЛИЯ</h1>
-            <span>Зеҳни сунъии Китобхона</span>
+            <span id="currentChatTitle">Чати нав</span>
           </div>
         </div>
       </div>
+      <div class="service-status" id="aliyaStatus" role="status" aria-live="polite"><span class="status-dot"></span><span class="status-label">Санҷиши сервер…</span></div>
       <div class="aliya-header-right">
+        <button type="button" class="header-icon-btn" id="historyBtn" title="Таърихи чатҳо" aria-label="Кушодани таърихи чатҳо" aria-expanded="false">☰</button>
+        <button type="button" class="header-icon-btn new-chat-header-btn" id="newChatBtn" title="Чати нав" aria-label="Оғози чати нав">＋</button>
+        <button type="button" class="header-icon-btn" id="clearChatBtn" title="Пок кардани чати ҷорӣ" aria-label="Пок кардани чати ҷорӣ">⌫</button>
         <div class="depth-selector" title="Сатҳи тафаккури Алия">
           <button type="button" class="depth-btn" data-depth="simple">Оддӣ</button>
           <button type="button" class="depth-btn active" data-depth="standard">Таҳлилӣ</button>
@@ -33,17 +43,48 @@
     <!-- Navigation Tabs -->
     <nav class="aliya-tabs-bar" role="tablist">
       <button type="button" class="tab-chip active" data-tab="chat">💬 Чат</button>
+      <button type="button" class="tab-chip" data-tab="voice">🎙 Овоз</button>
       <button type="button" class="tab-chip" data-tab="lesson">📝 Нақшаи дарс</button>
       <button type="button" class="tab-chip" data-tab="test">📊 Санҷиш & Тест</button>
       <button type="button" class="tab-chip" data-tab="dictation">✍️ Диктант & Баён</button>
       <button type="button" class="tab-chip" data-tab="image">🎨 Суратсозӣ</button>
       <button type="button" class="tab-chip" data-tab="notes">📌 Ёддоштҳо</button>
+      <button type="button" class="tab-chip" data-tab="settings">⚙️ Танзимот</button>
     </nav>
+
+    <div class="history-drawer" id="historyDrawer" hidden>
+      <button type="button" class="history-backdrop" id="historyBackdrop" aria-label="Пӯшидани таърихи чатҳо"></button>
+      <aside class="history-panel" role="dialog" aria-modal="true" aria-labelledby="historyHeading">
+        <div class="history-head">
+          <div><strong id="historyHeading">Чатҳо</strong><small id="historyCount">Дар ҳамин дастгоҳ сабт мешаванд</small></div>
+          <button type="button" id="historyClose" aria-label="Пӯшидан">×</button>
+        </div>
+        <button type="button" class="history-new-chat" id="historyNewChat">＋ <span>Чати нав</span></button>
+        <label class="history-search-wrap"><span aria-hidden="true">⌕</span><input type="search" id="historySearch" placeholder="Ҷустуҷӯи чатҳо" aria-label="Ҷустуҷӯи чатҳо"></label>
+        <div class="history-lists" id="historyLists">
+          <section class="history-group" id="pinnedGroup"><h2>Маҳкамшуда</h2><div id="pinnedChats"></div></section>
+          <section class="history-group" id="projectsGroup"><div class="history-project-heading"><h2>Лоиҳаҳо</h2><button type="button" id="createProjectBtn" aria-label="Сохтани лоиҳа">＋</button></div><div id="projectChats"></div></section>
+          <section class="history-group"><h2>Чатҳо</h2><div id="recentChats"></div></section>
+        </div>
+        <p class="history-storage-note">Таърих танҳо дар ҳамин браузер/дастгоҳ нигоҳ дошта мешавад.</p>
+      </aside>
+      <div class="move-folder-modal" id="moveFolderModal" hidden>
+        <button type="button" class="move-folder-backdrop" id="moveFolderBackdrop" aria-label="Бекор кардани интиқол"></button>
+        <div class="move-folder-panel" role="dialog" aria-modal="true" aria-labelledby="moveFolderTitle">
+          <div class="move-folder-head"><strong id="moveFolderTitle">Чатро ба лоиҳа гузарондан</strong><button type="button" id="moveFolderClose" aria-label="Пӯшидан">×</button></div>
+          <div id="moveFolderOptions"></div>
+        </div>
+      </div>
+    </div>
 
     <!-- Main Content Panes -->
     <main class="aliya-main">
       <!-- 1. ЧАТ (Chat Tab) -->
       <section class="tab-pane active" id="pane-chat">
+        <div class="reader-context-pill" id="readerContextPill" hidden>
+          <span id="readerContextLabel">📖 Саҳифаи китоб ба чат замима шуд</span>
+          <button type="button" id="clearReaderContext" aria-label="Хориҷ кардани контексти китоб">✕</button>
+        </div>
         <div class="chat-messages" id="chatMsgs">
           <div class="chat-welcome-card">
             <div class="welcome-icon">✨</div>
@@ -58,13 +99,55 @@
           </div>
         </div>
 
-        <div class="chat-input-bar">
-          <button type="button" class="attach-btn" id="attachBtn" title="Боркунии скан ё акси китоб" aria-label="Боркунӣ">📷</button>
-          <input type="file" id="imageInput" accept="image/*" style="display:none">
-          <div class="chat-textarea-wrap">
-            <textarea id="chatInput" class="chat-textarea" placeholder="Саволи худро нависед..." rows="1"></textarea>
+        <input type="file" id="imageInput" accept="image/*" capture="environment" hidden aria-label="Интихоби акси китоб ё дафтар">
+        <input type="file" id="documentInput" accept=".pdf,.docx,.xlsx,.csv,.txt,.md,.json,.html,.xml,.log,.py,.js,.kt" hidden aria-label="Интихоби ҳуҷҷат">
+        <div class="attachment-sheet" id="attachmentSheet" hidden>
+          <button class="attachment-backdrop" id="closeAttachmentSheet" type="button" aria-label="Пӯшидани рӯйхати замимаҳо"></button>
+          <div class="attachment-panel" role="dialog" aria-modal="true" aria-labelledby="attachmentTitle">
+            <div class="attachment-panel-head"><strong id="attachmentTitle">Илова ба паём</strong><button type="button" id="dismissAttachmentSheet" aria-label="Пӯшидан">×</button></div>
+            <button type="button" class="attachment-option" id="choosePhoto"><span class="attachment-option-icon">▧</span><span><b>Сурат</b><small>Камера ё акс аз дастгоҳ</small></span></button>
+            <button type="button" class="attachment-option" id="chooseDocument"><span class="attachment-option-icon">▤</span><span><b>Ҳуҷҷат</b><small>PDF, DOCX, XLSX, CSV ё TXT</small></span></button>
+            <p class="attachment-note">Матни ҳуҷҷат дар ин дастгоҳ гирифта мешавад; барои ҷавоб танҳо матни интихобшуда ба чати Алия фиристода мешавад.</p>
           </div>
-          <button type="button" class="send-btn" id="sendBtn" title="Фиристодан" aria-label="Фиристодан">➤</button>
+        </div>
+        <div class="pending-document" id="pendingDocument" role="status" aria-live="polite" hidden>
+          <span>▤</span><span class="pending-document-name" id="pendingDocumentName"></span>
+          <button type="button" id="removePendingDocument" aria-label="Хориҷ кардани ҳуҷҷат">×</button>
+        </div>
+        <div class="chat-input-bar">
+          <div class="chat-textarea-wrap">
+            <button type="button" class="attach-btn" id="attachBtn" title="Илова кардани акс ё ҳуҷҷат" aria-label="Илова кардани акс ё ҳуҷҷат" aria-expanded="false">＋</button>
+            <textarea id="chatInput" class="chat-textarea" placeholder="Саволи худро нависед..." rows="1"></textarea>
+            <button type="button" class="mic-btn" id="micBtn" title="Диктовка" aria-label="Диктовка" aria-pressed="false">⌁</button>
+          </div>
+          <button type="button" class="send-btn" id="sendBtn" title="Фиристодан" aria-label="Фиристодан">↑</button>
+        </div>
+      </section>
+
+      <!-- 1b. ОВОЗИ ЗИНДА (voice recognition + browser speech synthesis; not a native neural voice engine) -->
+      <section class="tab-pane voice-pane" id="pane-voice">
+        <div class="voice-console">
+          <div class="voice-console-head">
+            <div><span class="voice-eyebrow">АЛИЯ · ОВОЗ</span><h2>Суҳбати овозӣ</h2><p>Сӯҳбат бо овоз; дастрасӣ ба микрофон ва дастгирии браузер зарур аст.</p></div>
+            <button type="button" id="voiceClearBtn" class="voice-clear-btn">Пок кардани таърих</button>
+          </div>
+          <div class="voice-options">
+            <label>Реҷа<select id="voiceMode"><option value="assistant">Ёвари овозӣ</option><option value="translator">Тарҷумон</option></select></label>
+            <label>Аз<select id="voiceSource"><option value="tg-TJ">Тоҷикӣ</option><option value="ru-RU">Русӣ</option><option value="en-US">English</option></select></label>
+            <span class="voice-direction" aria-hidden="true">⇄</span>
+            <label>Ба<select id="voiceTarget"><option value="ru-RU">Русӣ</option><option value="tg-TJ">Тоҷикӣ</option><option value="en-US">English</option></select></label>
+          </div>
+          <div class="voice-stage" id="voiceStage" data-state="idle">
+            <div class="voice-orb-wrap"><div class="voice-orb"><span>✦</span></div></div>
+            <strong id="voiceStatus" role="status" aria-live="polite">Омода</strong>
+            <span id="voiceHint">Барои оғоз тугмаи микрофонро пахш кунед.</span>
+          </div>
+          <div class="voice-controls">
+            <button type="button" id="voiceToggleBtn" class="voice-toggle-btn" aria-pressed="false"><span>🎙</span><b>Оғози суҳбат</b></button>
+            <button type="button" id="voiceInterruptBtn" class="voice-interrupt-btn" hidden>Қатъ кардани ҷавоб</button>
+          </div>
+          <div class="voice-transcript" id="voiceTranscript" aria-live="polite"></div>
+          <p class="voice-disclaimer">Муҳаррики шинохти нутқ ва овоздиҳӣ аз браузер/дастгоҳ истифода мешавад. Дастгирии забони тоҷикӣ, микрофон ва садои овоз вобаста ба дастгоҳ аст; ин режими овозии аслии APK нест.</p>
         </div>
       </section>
 
@@ -129,6 +212,7 @@
                 <span class="doc-result-title">✓ Ҳуҷҷат бо муваффақият омода шуд!</span>
                 <div class="doc-export-actions">
                   <button type="button" class="export-btn docx" id="lpDocxBtn">⬇ Word (.docx)</button>
+                  <button type="button" class="export-btn pdf" id="lpPdfBtn">⬇ PDF</button>
                   <button type="button" class="export-btn share" id="lpShareBtn">↗ Мубодила</button>
                 </div>
               </div>
@@ -206,7 +290,10 @@
                 <span class="doc-result-title">✓ Тест омода шуд!</span>
                 <div class="doc-export-actions">
                   <button type="button" class="export-btn docx" id="tDocxBtn">⬇ Word (.docx)</button>
+                  <button type="button" class="export-btn pdf" id="tPdfBtn">⬇ PDF</button>
                   <button type="button" class="export-btn share" id="tShareBtn">↗ Мубодила</button>
+                  <button type="button" class="export-btn key-export" id="tKeyBtn" style="display:none">🔑 Калиди омӯзгор (.docx)</button>
+                  <button type="button" class="export-btn pdf" id="tKeyPdfBtn" style="display:none">🔑 Калид PDF</button>
                 </div>
               </div>
               <div id="tTextContent" style="font-size:12.5px; line-height:1.6; max-height:280px; overflow-y:auto; white-space:pre-wrap; color:var(--text-dim)"></div>
@@ -273,6 +360,7 @@
                 <span class="doc-result-title">✓ Матни диктант омода шуд!</span>
                 <div class="doc-export-actions">
                   <button type="button" class="export-btn docx" id="dDocxBtn">⬇ Word (.docx)</button>
+                  <button type="button" class="export-btn pdf" id="dPdfBtn">⬇ PDF</button>
                   <button type="button" class="export-btn share" id="dShareBtn">↗ Мубодила</button>
                 </div>
               </div>
@@ -308,12 +396,57 @@
       <section class="tab-pane" id="pane-notes">
         <div class="notes-container">
           <div class="notes-toolbar">
-            <input type="text" class="notes-search" id="notesSearch" placeholder="🔍 Ҷустуҷӯ дар ёддоштҳо...">
-            <button type="button" class="export-btn share" id="newNoteBtn">+ Нав</button>
+            <div><span class="notes-eyebrow">ХОТИРАИ АЛИЯ</span><h2 class="notes-heading">Ёддоштҳои шумо</h2><p class="notes-caption" id="notesCount">Дар ҳамин дастгоҳ нигоҳ дошта мешаванд</p></div>
+            <button type="button" class="export-btn share" id="newNoteBtn">＋ Ёддошти нав</button>
           </div>
-          <div class="notes-list" id="notesList">
-            <!-- Дисплейи ёддоштҳо -->
-          </div>
+          <label class="notes-search-wrap"><span aria-hidden="true">⌕</span><input type="search" class="notes-search" id="notesSearch" placeholder="Ҷустуҷӯи сарлавҳа ё матн…" aria-label="Ҷустуҷӯ дар ёддоштҳо"></label>
+          <div class="notes-list" id="notesList"></div>
+        </div>
+        <div class="note-editor-modal" id="noteEditorModal" hidden>
+          <button type="button" class="note-editor-backdrop" id="noteEditorBackdrop" aria-label="Пӯшидани муҳаррири ёддошт"></button>
+          <form class="note-editor-panel" id="noteEditorForm" role="dialog" aria-modal="true" aria-labelledby="noteEditorHeading">
+            <div class="note-editor-head"><div><span class="notes-eyebrow">АЛИЯ · ЁДДОШТ</span><h2 id="noteEditorHeading">Ёддошти нав</h2></div><button type="button" id="noteEditorClose" aria-label="Пӯшидан">×</button></div>
+            <label class="note-field-label" for="noteTitleInput">Сарлавҳа</label><input id="noteTitleInput" class="note-field" maxlength="160" placeholder="Номи ёддошт">
+            <label class="note-field-label" for="noteBodyInput">Матн</label><textarea id="noteBodyInput" class="note-field note-body-input" maxlength="30000" placeholder="Матн ё фикрҳои худро нависед…"></textarea>
+            <label class="note-field-label" for="noteChecklistInput">Рӯйхати амалҳо <small>(як амал дар ҳар сатр)</small></label><textarea id="noteChecklistInput" class="note-field note-checklist-input" maxlength="5000" placeholder="Маводи дарсро такрор кардан&#10;Саволҳоро омода кардан"></textarea>
+            <label class="note-field-label" for="noteColorInput">Ранг</label><select id="noteColorInput" class="note-field"><option value="0">Коралӣ</option><option value="1">Сабз</option><option value="2">Кабуд</option><option value="3">Бунафш</option></select>
+            <div class="note-editor-actions"><button type="button" class="note-cancel-btn" id="noteEditorCancel">Бекор кардан</button><button type="submit" class="note-save-btn">Захира кардан</button></div>
+          </form>
+        </div>
+      </section>
+
+      <!-- 7. ТАНЗИМОТ (browser-backed controls only; model packs are not exposed as downloadable without API proof) -->
+      <section class="tab-pane settings-pane" id="pane-settings">
+        <div class="settings-container">
+          <div class="settings-heading"><span class="settings-eyebrow">АЛИЯ · КИТОБХОНА</span><h2>Танзимот ва махфият</h2><p>Назорати овоз ва маълумоти маҳаллии ҳамин браузер.</p></div>
+          <section class="settings-card">
+            <div class="settings-section-title"><span>💬</span><div><h3>Чат ва овоз</h3><p>Параметрҳое, ки ин версия воқеан дастгирӣ мекунад.</p></div></div>
+            <label class="settings-toggle-row"><span><b>Мавзӯи торик</b><small>Мавзӯи сабук низ дастрас аст; интихоб дар ҳамин дастгоҳ нигоҳ дошта мешавад.</small></span><input type="checkbox" id="settingsDarkTheme" checked></label>
+            <label class="settings-toggle-row"><span><b>Захира кардани таърихи чат</b><small>Агар хомӯш кунед, таърихи сабтшудаи чатҳо ва лоиҳаҳо тоза мешавад; паёмҳои ҷории ҳамин саҳифа то баста шудан боқӣ мемонанд.</small></span><input type="checkbox" id="settingsSaveHistory" checked></label>
+            <label class="settings-toggle-row"><span><b>Бо овози браузер хондани ҷавобҳои чат</b><small>Танҳо вақте кор мекунад, ки браузер/дастгоҳ синтези нутқро дастгирӣ кунад.</small></span><input type="checkbox" id="settingsSpeakReplies"></label>
+            <label class="settings-select-row"><span><b>Забони овози браузер</b><small>Забони муносибро интихоб кунед; дастрасии овоз аз дастгоҳ вобаста аст.</small></span><select id="settingsSpeechLanguage"><option value="tg-TJ">Тоҷикӣ</option><option value="ru-RU">Русӣ</option><option value="en-US">English</option></select></label>
+            <label class="settings-select-row"><span><b>Овози насбшуда</b><small>Рӯйхат аз овозҳои дастрас дар браузер/дастгоҳ гирифта мешавад.</small></span><select id="settingsSpeechVoice"><option value="">Интихоби худкор</option></select></label>
+            <div class="settings-data-actions"><button type="button" class="settings-secondary-btn" id="settingsPreviewVoice">▶ Озмоиши овоз</button><button type="button" class="settings-secondary-btn" id="settingsStopSpeech">■ Қатъ кардани овоздиҳӣ</button></div>
+          </section>
+          <section class="settings-card personal-context-card">
+            <div class="settings-section-title"><span>👤</span><div><h3>Профил ва хотираи ихтиёрӣ</h3><p>Маълумот дар ин дастгоҳ мемонад, то даме ки ирсоли контекстро худатон фаъол кунед.</p></div></div>
+            <label class="settings-profile-field"><span>Ном</span><input id="profileNameInput" maxlength="80" autocomplete="name" placeholder="Ном ё номи дилхоҳ"></label>
+            <label class="settings-profile-field"><span>Шаҳр</span><input id="profileCityInput" maxlength="100" autocomplete="address-level2" placeholder="Масалан, Хуҷанд"></label>
+            <label class="settings-profile-field"><span>Дар бораи шумо</span><textarea id="profileAboutInput" maxlength="1200" placeholder="Мавзӯъҳо, ҳадафҳо ё тарзи ҷавоби писандида"></textarea></label>
+            <label class="settings-profile-field"><span>Далелҳо барои хотира <small>(якто дар ҳар сатр)</small></span><textarea id="profileFactsInput" maxlength="4000" placeholder="Ман синфи 8 мехонам.&#10;Ба таърихи Тоҷикистон шавқ дорам."></textarea></label>
+            <div class="settings-data-actions"><button type="button" class="settings-secondary-btn" id="saveProfileBtn">Сабти профил дар дастгоҳ</button></div>
+            <label class="settings-toggle-row profile-consent-row"><span><b>Ирсоли контексти профил ба AI</b><small>Аввал профилро сабт кунед. Бо фаъол кардан розӣ мешавед, ки маълумоти профил ва далелҳои хотира ба шлюзи AI ҳамроҳи ҳар дархости матнӣ фиристода шаванд. Бо хомӯш кардан фавран қатъ мегардад.</small></span><input type="checkbox" id="settingsIncludeProfile"></label>
+          </section>
+          <section class="settings-card">
+            <div class="settings-section-title"><span>☁️</span><div><h3>Модели Алия</h3><p>Ин интерфейси вебӣ аз шлюзи онлайнии AI истифода мебарад.</p></div></div>
+            <div class="settings-info-box"><b>Ҳолати ҷорӣ: дархости онлайн</b><span>Дастрасӣ ба ҷавобҳо аз шлюз ва провайдерҳои сервер вобаста аст. Дар ин бастаи веб-барнома бастаи модели офлайнӣ ё воситаи санҷидашудаи зеркашии он нест, бинобар ин имконоти офлайн/зеркашӣ нишон дода намешавад.</span></div>
+          </section>
+          <section class="settings-card privacy-card">
+            <div class="settings-section-title"><span>🔐</span><div><h3>Маълумот дар ин дастгоҳ</h3><p>Чатҳо, лоиҳаҳо, ёддоштҳо ва таърихи овоз байни дастгоҳҳо ҳамоҳанг намешаванд.</p></div></div>
+            <div class="settings-data-actions"><button type="button" class="settings-secondary-btn" id="settingsExportBtn">⬇ Нусхаи маълумот (JSON)</button><button type="button" class="settings-danger-btn" id="settingsClearDataBtn">Пок кардани маълумоти Алия</button></div>
+            <small class="settings-privacy-footnote">Нусхаи JSON метавонад матни чатҳо ва профили шахсии сабтшударо дар бар гирад; файлро эҳтиёткорона нигоҳ доред. Барқароркунӣ аз JSON дар ин версия нест. Файлҳои аслии ҳуҷҷат ва аксҳо дар чат сабт намешаванд.</small>
+          </section>
+          <div class="settings-capability-note">Забони ҷавобро худи саволи шумо муайян мекунад. Интерфейси вебии ҳозир тоҷикӣ аст; тарҷумаи пурраи UI, тақсимоти хотираи телефон ва бастаи овоз/моделҳои APK ба ин версия интиқол дода нашудаанд.</div>
         </div>
       </section>
     </main>
@@ -322,15 +455,17 @@
     <div class="aliya-toast" id="aliyaToast">Паём</div>
   </div>
 
-  <script src="aliya-bridge.js?v=100"></script>
-  <script src="aliya-doc-templates.js?v=100"></script>
-  <script src="aliya-core.js?v=100"></script>
+  <script src="aliya-bridge.js?v=118"></script>
+  <script src="aliya-doc-templates.js?v=118"></script>
+  <script src="aliya-core.js?v=118"></script>
   <script>
     (function () {
       'use strict';
 
       var currentLpBlob = null;
       var currentTestBlob = null;
+      var currentTestKeyBlob = null;
+      var currentTestKeyText = '';
       var currentDictBlob = null;
       var currentImgUrl = null;
 
@@ -365,60 +500,638 @@
         });
       });
 
-      // 3. Чат
+      // 3. Чат Алии — устойчивые ответы, локальная история и фото-контекст
       var chatInput = document.getElementById('chatInput');
       var sendBtn = document.getElementById('sendBtn');
       var chatMsgs = document.getElementById('chatMsgs');
+      var imageInput = document.getElementById('imageInput');
+      var documentInput = document.getElementById('documentInput');
+      var attachmentSheet = document.getElementById('attachmentSheet');
+      var pendingDocument = null;
+      var chatHistory = [];
+      var readerContext = null;
+      try { readerContext = JSON.parse(sessionStorage.getItem('aliya_reader_context') || 'null'); } catch (e) {}
+      if (readerContext && typeof readerContext.text === 'string' && readerContext.text.trim()) {
+        document.getElementById('readerContextPill').hidden = false;
+        document.getElementById('readerContextLabel').textContent = '📖 «' + (readerContext.book || 'Китоб') + '» · саҳифаи ' + (readerContext.page || '?') + ' ба чат замима шуд';
+      } else { readerContext = null; }
+      document.getElementById('clearReaderContext').addEventListener('click', function () {
+        readerContext = null; document.getElementById('readerContextPill').hidden = true;
+        try { sessionStorage.removeItem('aliya_reader_context'); } catch (e) {}
+        toast('Матни саҳифа аз чат гирифта шуд.');
+      });
+      var HISTORY_KEY = 'aliya_chat_history_v2';
+      var CONVERSATIONS_KEY = 'aliya_chat_sessions_v1';
+      var FOLDERS_KEY = 'aliya_chat_projects_v1';
+      var ACTIVE_CONVERSATION_KEY = 'aliya_active_chat_v1';
+      var conversations = [];
+      var folders = [];
+      var activeConversation = null;
+      var draftSaveTimer = null;
+      var activeRequestController = null;
+      var SETTINGS_PREFS_KEY='aliya_web_settings_v1';
+      var settingsPrefs={saveHistory:true,speakReplies:false,speechLanguage:'tg-TJ',speechVoiceURI:'',darkTheme:true};
+      try { settingsPrefs=Object.assign(settingsPrefs,JSON.parse(localStorage.getItem(SETTINGS_PREFS_KEY)||'{}')); } catch(e) {}
+      settingsPrefs.saveHistory=settingsPrefs.saveHistory!==false;
+      settingsPrefs.darkTheme=settingsPrefs.darkTheme!==false;
+      settingsPrefs.speakReplies=!!settingsPrefs.speakReplies;
+      if(!['tg-TJ','ru-RU','en-US'].includes(settingsPrefs.speechLanguage))settingsPrefs.speechLanguage='tg-TJ';
+      settingsPrefs.speechVoiceURI=typeof settingsPrefs.speechVoiceURI==='string'?settingsPrefs.speechVoiceURI:'';
+      settingsPrefs.includeProfileContext=!!settingsPrefs.includeProfileContext;
+      var PROFILE_KEY='aliya_web_profile_v1';
+      var personalProfile={name:'',city:'',about:'',facts:[]};
+      try{var savedProfile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');personalProfile={name:String(savedProfile.name||'').slice(0,80),city:String(savedProfile.city||'').slice(0,100),about:String(savedProfile.about||'').slice(0,1200),facts:Array.isArray(savedProfile.facts)?savedProfile.facts.map(String).map(function(x){return x.slice(0,300);}).slice(0,30):[]};}catch(e){}
+      function buildProfileContext(){var parts=[];if(personalProfile.name)parts.push('Ном: '+personalProfile.name);if(personalProfile.city)parts.push('Шаҳр: '+personalProfile.city);if(personalProfile.about)parts.push('Дар бораи корбар: '+personalProfile.about);if(personalProfile.facts.length)parts.push('Далелҳои интихобшуда: '+personalProfile.facts.join(' | '));return parts.join('\n').slice(0,5000);}
+      if(window.AliyaCore&&window.AliyaCore.state)window.AliyaCore.state.profileContext=settingsPrefs.includeProfileContext?buildProfileContext():'';
+      function applyTheme(){document.documentElement.classList.toggle('aliya-light',!settingsPrefs.darkTheme);document.documentElement.style.colorScheme=settingsPrefs.darkTheme?'dark':'light';var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=settingsPrefs.darkTheme?'#0E0F12':'#F7F6F4';}
+      applyTheme();
+      var historyStorageWarningShown = false;
 
-      async function handleSend() {
-        var text = (chatInput.value || '').trim();
-        if (!text) return;
+      function createConversation(title, messages) {
+        return {
+          id: 'chat_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 8),
+          title: title || 'Чати нав',
+          updatedAt: Date.now(),
+          pinned: false,
+          folderId: null,
+          draft: '',
+          messages: Array.isArray(messages) ? messages.slice(-40) : []
+        };
+      }
+      function cleanConversationTitle(text) {
+        var title = String(text || '').replace(/\s+\[Ҳуҷҷат:.*?\]$/, '').replace(/^📎\s*[^\n]+\n*/, '').replace(/\s+/g, ' ').trim();
+        return title.slice(0, 42) || 'Чати нав';
+      }
+      function saveConversations() {
+        if(!settingsPrefs.saveHistory){
+          try { localStorage.removeItem(CONVERSATIONS_KEY); localStorage.removeItem(ACTIVE_CONVERSATION_KEY); localStorage.removeItem(HISTORY_KEY); } catch(e) {}
+          renderConversationList(); return;
+        }
+        try {
+          conversations.sort(function (a, b) { return Number(b.updatedAt || 0) - Number(a.updatedAt || 0); });
+          conversations = conversations.slice(0, 50);
+          var serialized = JSON.stringify(conversations);
+          var trimmed = false;
+          // Keep the JSON comfortably below common localStorage quotas (UTF-16 bytes + metadata).
+          while (serialized.length > 1600000) {
+            var candidate = conversations.filter(function(item){return item!==activeConversation && item.messages.length>4;})
+              .sort(function(a,b){return Number(a.updatedAt||0)-Number(b.updatedAt||0);})[0];
+            if(candidate) candidate.messages=candidate.messages.slice(-Math.max(4,Math.ceil(candidate.messages.length/2)));
+            else if(conversations.length>1) {
+              var removable=conversations.slice().reverse().find(function(item){return item!==activeConversation;});
+              if(removable) conversations=conversations.filter(function(item){return item!==removable;});
+              else break;
+            } else if(activeConversation && activeConversation.messages.length>8) {
+              activeConversation.messages=activeConversation.messages.slice(-Math.max(8,Math.ceil(activeConversation.messages.length/2)));
+            } else if(activeConversation && activeConversation.messages.some(function(m){return m.content.length>3000;})) {
+              activeConversation.messages=activeConversation.messages.map(function(m){return Object.assign({},m,{content:m.content.slice(-3000)});});
+            } else break;
+            trimmed=true;
+            serialized=JSON.stringify(conversations);
+          }
+          localStorage.setItem(CONVERSATIONS_KEY, serialized);
+          if (activeConversation) localStorage.setItem(ACTIVE_CONVERSATION_KEY, activeConversation.id);
+          if (trimmed && !historyStorageWarningShown) { historyStorageWarningShown=true; toast('Барои ҷой кардани таърих баъзе паёмҳои куҳна кӯтоҳ карда шуданд.'); }
+        } catch (e) { /* Quota/availability errors must not interrupt the chat. */ }
+        renderConversationList();
+      }
+      function renderConversationList() {
+        var pinnedRoot = document.getElementById('pinnedChats');
+        var recentRoot = document.getElementById('recentChats');
+        var projectsRoot = document.getElementById('projectChats');
+        if (!pinnedRoot || !recentRoot || !projectsRoot) return;
+        pinnedRoot.replaceChildren(); recentRoot.replaceChildren(); projectsRoot.replaceChildren();
+        var query = (document.getElementById('historySearch').value || '').trim().toLocaleLowerCase();
+        function chatMatches(item) {
+          return !query || (item.title + ' ' + item.messages.map(function(m){return m.content;}).join(' ')).toLocaleLowerCase().includes(query);
+        }
+        var matches = conversations.filter(chatMatches).sort(function (a, b) { return Number(b.updatedAt || 0) - Number(a.updatedAt || 0); });
+        var pinned = matches.filter(function (item) { return item.pinned; });
+        var recent = matches.filter(function (item) { return !item.pinned && !item.folderId; });
+        document.getElementById('pinnedGroup').hidden = !pinned.length;
+        document.getElementById('historyCount').textContent = conversations.length + ' чат · ' + folders.length + ' лоиҳа';
+        function addRow(parent, item) {
+          var row = document.createElement('div');
+          row.className = 'history-chat-row' + (activeConversation && item.id === activeConversation.id ? ' is-active' : '');
+          var select = document.createElement('button');
+          select.type = 'button'; select.className = 'history-chat-select'; select.dataset.action = 'select'; select.dataset.id = item.id;
+          select.setAttribute('aria-current', activeConversation && item.id === activeConversation.id ? 'page' : 'false');
+          var title = document.createElement('span'); title.className = 'history-chat-title'; title.textContent = item.title || 'Чати нав';
+          var date = document.createElement('small'); date.className = 'history-chat-date';
+          date.textContent = new Date(item.updatedAt || Date.now()).toLocaleDateString('tg-TJ', { month: 'short', day: 'numeric' });
+          select.append(title, date);
+          var move = document.createElement('button'); move.type='button'; move.className='history-row-action'; move.dataset.action='move'; move.dataset.id=item.id;
+          move.textContent='↗'; move.title='Ба лоиҳа гузарондан'; move.setAttribute('aria-label',move.title);
+          var pin = document.createElement('button'); pin.type='button'; pin.className='history-row-action'; pin.dataset.action='pin'; pin.dataset.id=item.id;
+          pin.textContent = item.pinned ? '📌' : '⌑'; pin.title = item.pinned ? 'Аз маҳкамшуда хориҷ кардан' : 'Маҳкам кардан'; pin.setAttribute('aria-label', pin.title);
+          var rename = document.createElement('button'); rename.type='button'; rename.className='history-row-action'; rename.dataset.action='rename'; rename.dataset.id=item.id;
+          rename.textContent='✎'; rename.title='Иваз кардани ном'; rename.setAttribute('aria-label',rename.title);
+          var remove = document.createElement('button'); remove.type='button'; remove.className='history-row-action danger'; remove.dataset.action='delete'; remove.dataset.id=item.id;
+          remove.textContent='×'; remove.title='Нест кардан'; remove.setAttribute('aria-label',remove.title);
+          row.append(select,move,pin,rename,remove); parent.appendChild(row);
+        }
+        pinned.forEach(function (item) { addRow(pinnedRoot, item); });
+        folders.slice().sort(function(a,b){return a.name.localeCompare(b.name,'tg');}).forEach(function(folder){
+          var folderChats=matches.filter(function(item){return item.folderId===folder.id;});
+          var folderMatches=!query || folder.name.toLocaleLowerCase().includes(query) || folderChats.length>0;
+          if(!folderMatches) return;
+          var section=document.createElement('section'); section.className='history-project';
+          var head=document.createElement('div'); head.className='history-project-row';
+          var toggle=document.createElement('button'); toggle.type='button'; toggle.className='history-project-toggle'; toggle.dataset.action='toggle-project'; toggle.dataset.id=folder.id;
+          toggle.setAttribute('aria-expanded',String(!!folder.open || !!query));
+          var arrow=document.createElement('span'); arrow.className='history-project-arrow'; arrow.textContent=(folder.open || query)?'⌄':'›';
+          var name=document.createElement('span'); name.className='history-project-name'; name.textContent=folder.name;
+          var count=document.createElement('small'); count.textContent=folderChats.length;
+          toggle.append(arrow,name,count);
+          var renameFolder=document.createElement('button'); renameFolder.type='button'; renameFolder.className='history-row-action'; renameFolder.dataset.action='rename-project'; renameFolder.dataset.id=folder.id; renameFolder.textContent='✎'; renameFolder.title='Иваз кардани номи лоиҳа'; renameFolder.setAttribute('aria-label',renameFolder.title);
+          var deleteFolder=document.createElement('button'); deleteFolder.type='button'; deleteFolder.className='history-row-action danger'; deleteFolder.dataset.action='delete-project'; deleteFolder.dataset.id=folder.id; deleteFolder.textContent='×'; deleteFolder.title='Нест кардани лоиҳа'; deleteFolder.setAttribute('aria-label',deleteFolder.title);
+          head.append(toggle,renameFolder,deleteFolder); section.appendChild(head);
+          var chatRoot=document.createElement('div'); chatRoot.className='history-project-chats'; chatRoot.hidden=!(folder.open || query);
+          folderChats.forEach(function(item){addRow(chatRoot,item);});
+          if(!folderChats.length){var emptyFolder=document.createElement('p'); emptyFolder.className='history-empty project-empty'; emptyFolder.textContent='Дар ин лоиҳа чат нест.'; chatRoot.appendChild(emptyFolder);}
+          section.appendChild(chatRoot); projectsRoot.appendChild(section);
+        });
+        document.getElementById('projectsGroup').hidden = false;
+        if(!projectsRoot.children.length){var noProjects=document.createElement('p');noProjects.className='history-empty project-empty';noProjects.textContent=query?'Лоиҳаи мувофиқ ёфт нашуд.':'Лоиҳа надоред; барои сохтани лоиҳа + -ро пахш кунед.';projectsRoot.appendChild(noProjects);}
+        recent.forEach(function (item) { addRow(recentRoot, item); });
+        if (!pinned.length && !recent.length && !projectsRoot.children.length) {
+          var empty = document.createElement('p'); empty.className='history-empty'; empty.textContent=query ? 'Чати мувофиқ ёфт нашуд.' : 'То ҳол чат сабт нашудааст.';
+          recentRoot.appendChild(empty);
+        }
+      }
+      function renderActiveConversation() {
+        if (!activeConversation) return;
+        chatHistory = activeConversation.messages.slice(-40);
+        window.AliyaCore.state.chatHistory = chatHistory.slice();
+        chatMsgs.querySelectorAll('.msg-row').forEach(function (row) { row.remove(); });
+        chatHistory.forEach(function (m) {
+          var bubble = appendMsg(m.role === 'assistant' ? 'bot' : 'user', m.content, false);
+          if (m.role === 'assistant') addMessageActions(bubble, m.content);
+        });
+        document.getElementById('pane-chat').classList.toggle('has-conversation', chatHistory.length > 0);
+        document.getElementById('currentChatTitle').textContent = activeConversation.title || 'Чати нав';
+        chatInput.value = activeConversation.draft || '';
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        renderConversationList();
+      }
+      function loadConversations() {
+        try {
+          var savedFolders=settingsPrefs.saveHistory?JSON.parse(localStorage.getItem(FOLDERS_KEY)||'[]'):[];
+          if(Array.isArray(savedFolders)) folders=savedFolders.filter(function(f){return f&&typeof f.id==='string'&&typeof f.name==='string';}).map(function(f){return{id:f.id,name:f.name.slice(0,60),open:f.open!==false};});
+        } catch(e){folders=[];}
+        try {
+          var saved = settingsPrefs.saveHistory?JSON.parse(localStorage.getItem(CONVERSATIONS_KEY)||'[]'):[];
+          if (Array.isArray(saved)) conversations = saved.filter(function (item) {
+            return item && typeof item.id === 'string' && Array.isArray(item.messages);
+          }).map(function (item) {
+            return { id:item.id, title:String(item.title || 'Чати нав').slice(0,80), updatedAt:Number(item.updatedAt || Date.now()),
+              pinned:!!item.pinned, folderId:folders.some(function(f){return f.id===item.folderId;})?item.folderId:null,
+              draft:String(item.draft || '').slice(0,4000), messages:item.messages.filter(function (m) {
+                return m && (m.role==='user' || m.role==='assistant') && typeof m.content==='string';
+              }).slice(-40) };
+          });
+        } catch (e) { conversations = []; }
+        if (!conversations.length && settingsPrefs.saveHistory) {
+          try {
+            var legacy = JSON.parse(localStorage.getItem(HISTORY_KEY) || '[]');
+            if (Array.isArray(legacy) && legacy.length) {
+              var messages = legacy.filter(function (m) { return m && (m.role==='user' || m.role==='assistant') && typeof m.content==='string'; }).slice(-40);
+              conversations.push(createConversation(cleanConversationTitle(messages.find(function(m){return m.role==='user';})?.content), messages));
+            }
+            localStorage.removeItem(HISTORY_KEY);
+          } catch (e) {}
+        }
+        if (!conversations.length) conversations.push(createConversation('Чати нав', []));
+        var savedActive = '';
+        try { savedActive = localStorage.getItem(ACTIVE_CONVERSATION_KEY) || ''; } catch (e) {}
+        activeConversation = conversations.find(function (item) { return item.id === savedActive; }) || conversations.slice().sort(function(a,b){return b.updatedAt-a.updatedAt;})[0];
+        saveFolders();
+        renderActiveConversation();
+        saveConversations();
+      }
+      function saveFolders() {
+        try { if(settingsPrefs.saveHistory)localStorage.setItem(FOLDERS_KEY,JSON.stringify(folders)); else localStorage.removeItem(FOLDERS_KEY); } catch(e) {}
+        renderConversationList();
+      }
+      function createProject() {
+        var name=window.prompt('Номи лоиҳа:');
+        if(!name || !name.trim()) return;
+        folders.push({id:'folder_'+Date.now().toString(36)+'_'+Math.random().toString(36).slice(2,6),name:name.trim().slice(0,60),open:true});
+        saveFolders(); toast('Лоиҳа сохта шуд.');
+      }
+      function openMoveFolderPicker(conversationId) {
+        if(sendBtn.disabled || activeRequestController){toast('Аввал интизори ҷавоби ҷорӣ шавед.');return;}
+        var target=conversations.find(function(item){return item.id===conversationId;});
+        if(!target) return;
+        var root=document.getElementById('moveFolderOptions'); root.replaceChildren();
+        function option(id,name){
+          var button=document.createElement('button'); button.type='button'; button.className='move-folder-option';
+          button.textContent=(target.folderId===id?'✓ ':'')+name; button.dataset.folderId=id||'';
+          button.addEventListener('click',function(){target.folderId=id||null;target.updatedAt=Date.now();saveConversations();closeMoveFolderPicker();toast(id?'Чат ба лоиҳа гузаронида шуд.':'Чат аз лоиҳа бароварда шуд.');});
+          root.appendChild(button);
+        }
+        option(null,'Бе лоиҳа');
+        folders.forEach(function(folder){option(folder.id,folder.name);});
+        document.getElementById('moveFolderModal').hidden=false;
+        var first=root.querySelector('button'); if(first) first.focus();
+      }
+      function closeMoveFolderPicker(){document.getElementById('moveFolderModal').hidden=true;}
+      function persistHistory() {
+        if (!activeConversation) return;
+        activeConversation.messages = chatHistory.slice(-40);
+        activeConversation.updatedAt = Date.now();
+        saveConversations();
+      }
+      function appendHistory(role, content) {
+        var message = { role: role, content: String(content || '').slice(0,12000) };
+        chatHistory.push(message);
+        chatHistory = chatHistory.slice(-40);
+        window.AliyaCore.state.chatHistory = chatHistory.slice();
+        if (activeConversation) {
+          activeConversation.messages = chatHistory.slice();
+          activeConversation.updatedAt = Date.now();
+          if (role === 'user' && (!activeConversation.title || activeConversation.title === 'Чати нав')) activeConversation.title = cleanConversationTitle(message.content);
+          activeConversation.draft = chatInput.value || '';
+        }
+        persistHistory();
+        document.getElementById('currentChatTitle').textContent = activeConversation ? activeConversation.title : 'Чати нав';
+      }
+      function saveCurrentDraft() {
+        if (!activeConversation) return;
+        activeConversation.draft = chatInput.value.slice(0,4000);
+        activeConversation.updatedAt = Date.now();
+        if (draftSaveTimer) clearTimeout(draftSaveTimer);
+        draftSaveTimer = setTimeout(saveConversations, 250);
+      }
+      function closeHistoryDrawer() {
+        document.getElementById('historyDrawer').hidden = true;
+        document.getElementById('historyBtn').setAttribute('aria-expanded','false');
+        document.getElementById('historyBtn').focus();
+      }
+      function openHistoryDrawer() {
+        renderConversationList();
+        document.getElementById('historyDrawer').hidden = false;
+        document.getElementById('historyBtn').setAttribute('aria-expanded','true');
+        document.getElementById('historyClose').focus();
+      }
+      function switchConversation(id) {
+        if (sendBtn.disabled || activeRequestController) { toast('Аввал интизори ҷавоби ҷорӣ шавед.'); return; }
+        if (pendingDocument) { toast('Аввал ҳуҷҷатро фиристед ё аз паём хориҷ кунед.'); return; }
+        var target = conversations.find(function (item) { return item.id === id; });
+        if (!target || target === activeConversation) { closeHistoryDrawer(); return; }
+        if (activeConversation) activeConversation.draft = chatInput.value.slice(0,4000);
+        activeConversation = target;
+        activeConversation.updatedAt = Date.now();
+        renderActiveConversation();
+        saveConversations();
+        closeHistoryDrawer();
+      }
+      function startNewConversation() {
+        if (sendBtn.disabled || activeRequestController) { toast('Аввал интизори ҷавоби ҷорӣ шавед.'); return; }
+        if (pendingDocument) { toast('Аввал ҳуҷҷатро фиристед ё аз паём хориҷ кунед.'); return; }
+        if (activeConversation && !activeConversation.messages.length && !chatInput.value.trim()) {
+          document.getElementById('historyDrawer').hidden = true;
+          document.getElementById('historyBtn').setAttribute('aria-expanded','false');
+          chatInput.focus(); return;
+        }
+        if (activeConversation) activeConversation.draft = chatInput.value.slice(0,4000);
+        activeConversation = createConversation('Чати нав', []);
+        conversations.unshift(activeConversation);
+        renderActiveConversation();
+        saveConversations();
+        document.getElementById('historyDrawer').hidden = true;
+        document.getElementById('historyBtn').setAttribute('aria-expanded','false');
+        chatInput.focus();
+      }
+
+      function closeAttachmentSheet() {
+        attachmentSheet.hidden = true;
+        document.getElementById('attachBtn').setAttribute('aria-expanded', 'false');
+      }
+      document.getElementById('attachBtn').addEventListener('click', function () {
+        attachmentSheet.hidden = false;
+        document.getElementById('attachBtn').setAttribute('aria-expanded', 'true');
+        document.getElementById('choosePhoto').focus();
+      });
+      document.getElementById('closeAttachmentSheet').addEventListener('click', closeAttachmentSheet);
+      document.getElementById('dismissAttachmentSheet').addEventListener('click', closeAttachmentSheet);
+      document.getElementById('choosePhoto').addEventListener('click', function () { closeAttachmentSheet(); imageInput.click(); });
+      document.getElementById('chooseDocument').addEventListener('click', function () { closeAttachmentSheet(); documentInput.click(); });
+      document.addEventListener('keydown', function (event) { if (event.key === 'Escape' && !attachmentSheet.hidden) closeAttachmentSheet(); });
+
+      function updatePendingDocument() {
+        var shell = document.getElementById('pendingDocument');
+        shell.hidden = !pendingDocument;
+        document.getElementById('pendingDocumentName').textContent = pendingDocument ? pendingDocument.name + ' · матн гирифта шуд' : '';
+      }
+      document.getElementById('removePendingDocument').addEventListener('click', function () { pendingDocument = null; updatePendingDocument(); });
+      documentInput.addEventListener('change', async function () {
+        var file = documentInput.files && documentInput.files[0];
+        documentInput.value = '';
+        if (!file) return;
+        if (file.size > 18 * 1024 * 1024) { toast('Ҳуҷҷат калон аст; андозаи ҳадди аксар 18 МБ.'); return; }
+        toast('Матни ҳуҷҷат гирифта мешавад…');
+        try {
+          var extracted = await window.AliyaCore.extractDocumentText(file);
+          pendingDocument = { name: file.name, text: extracted };
+          updatePendingDocument();
+          toast('Матни ҳуҷҷат омода аст. Саволро нависед ё бевосита фиристед.');
+        } catch (error) {
+          pendingDocument = null;
+          updatePendingDocument();
+          toast(error.message || 'Ҳуҷҷатро хонда натавонистам.');
+        }
+      });
+
+      async function handleSend(prefilledText) {
+        var text = String(prefilledText || chatInput.value || '').trim();
+        var doc = pendingDocument;
+        if (!text && doc) text = 'Лутфан ҳуҷҷати замимашударо таҳлил карда, нуктаҳои асосиашро шарҳ деҳ.';
+        if (!text || activeRequestController || sendBtn.disabled) return;
+        var historyText = text + (doc ? ' [Ҳуҷҷат: ' + doc.name + ']' : '');
+        var visibleText = (doc ? '📎 ' + doc.name + '\n\n' : '') + text;
         chatInput.value = '';
-
-        appendMsg('user', text);
-        var botBubble = appendMsg('bot', 'Алия фикр карда истодааст...');
-
+        pendingDocument = null;
+        updatePendingDocument();
+        document.getElementById('pane-chat').classList.add('has-conversation');
+        appendHistory('user', historyText);
+        appendMsg('user', visibleText);
+        var botBubble = appendMsg('bot', 'Алия саволро қабул кард. Ҷавоб омода мешавад…');
+        activeRequestController = new AbortController();
+        sendBtn.disabled = false;
+        sendBtn.classList.add('is-loading', 'is-cancel');
+        sendBtn.title = 'Қатъ кардани ҷавоб';
+        sendBtn.setAttribute('aria-label', 'Қатъ кардани ҷавоб');
+        sendBtn.textContent = '■';
         try {
           var reply = await window.AliyaCore.sendMessage(text, {
+            signal: activeRequestController.signal,
+            history: chatHistory.slice(0, -1),
+            contextText: readerContext ? readerContext.text : '',
+            documentText: doc ? doc.text : '',
+            documentName: doc ? doc.name : '',
             onToken: function (tok, full) {
               botBubble.innerHTML = formatMarkdown(full);
               chatMsgs.scrollTop = chatMsgs.scrollHeight;
             }
           });
           botBubble.innerHTML = formatMarkdown(reply);
+          appendHistory('assistant', reply);
+          addMessageActions(botBubble, reply);
+          if(settingsPrefs.speakReplies)speakChatReply(reply);
         } catch (err) {
-          botBubble.textContent = 'Хатогӣ: Пайвастшавӣ барқарор нашуд.';
+          botBubble.textContent = err.code === 'aborted' ? 'Ҷавоб қатъ карда шуд.' : 'Алия ҳоло ҷавоб гирифта натавонист. ' + (err.message || 'Пайвастро санҷида, дубора фиристед.');
+          botBubble.classList.add('error-bubble');
+        } finally {
+          activeRequestController = null;
+          sendBtn.disabled = false;
+          sendBtn.classList.remove('is-loading', 'is-cancel');
+          sendBtn.title = 'Фиристодан';
+          sendBtn.setAttribute('aria-label', 'Фиристодан');
+          sendBtn.textContent = '↑';
+          chatInput.focus();
         }
       }
 
-      sendBtn.addEventListener('click', handleSend);
-      chatInput.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-          e.preventDefault();
-          handleSend();
+      document.getElementById('historyBtn').addEventListener('click', openHistoryDrawer);
+      document.getElementById('historyClose').addEventListener('click', closeHistoryDrawer);
+      document.getElementById('historyBackdrop').addEventListener('click', closeHistoryDrawer);
+      document.getElementById('historySearch').addEventListener('input', renderConversationList);
+      document.getElementById('createProjectBtn').addEventListener('click', createProject);
+      document.getElementById('moveFolderClose').addEventListener('click', closeMoveFolderPicker);
+      document.getElementById('moveFolderBackdrop').addEventListener('click', closeMoveFolderPicker);
+      document.getElementById('newChatBtn').addEventListener('click', startNewConversation);
+      document.getElementById('historyNewChat').addEventListener('click', startNewConversation);
+      document.getElementById('historyDrawer').addEventListener('click', function (event) {
+        var button = event.target.closest('[data-action]');
+        if (!button) return;
+        var action=button.dataset.action;
+        if(action==='toggle-project'){
+          var folder=folders.find(function(f){return f.id===button.dataset.id;});
+          if(folder){folder.open=!folder.open;saveFolders();}
+          return;
+        }
+        if(action==='rename-project'){
+          var renameTarget=folders.find(function(f){return f.id===button.dataset.id;});
+          if(renameTarget){var renamed=window.prompt('Номи нави лоиҳа:',renameTarget.name);if(renamed&&renamed.trim()){renameTarget.name=renamed.trim().slice(0,60);saveFolders();}}
+          return;
+        }
+        if(action==='delete-project'){
+          var deleteTarget=folders.find(function(f){return f.id===button.dataset.id;});
+          if(!deleteTarget || !window.confirm('Лоиҳа нест карда шавад? Чатҳои он ба рӯйхати умумӣ бармегарданд.')) return;
+          conversations.forEach(function(item){if(item.folderId===deleteTarget.id)item.folderId=null;});
+          folders=folders.filter(function(f){return f.id!==deleteTarget.id;});
+          saveFolders();saveConversations();return;
+        }
+        var item = conversations.find(function (candidate) { return candidate.id === button.dataset.id; });
+        if (!item) return;
+        if (action === 'select') { switchConversation(item.id); return; }
+        if (action === 'move') { openMoveFolderPicker(item.id); return; }
+        if (action === 'pin') { item.pinned = !item.pinned; item.updatedAt=Date.now(); saveConversations(); return; }
+        if (action === 'rename') {
+          var nextName = window.prompt('Номи нави чат:', item.title);
+          if (nextName && nextName.trim()) { item.title=nextName.trim().slice(0,80); if(item===activeConversation) document.getElementById('currentChatTitle').textContent=item.title; saveConversations(); }
+          return;
+        }
+        if (action === 'delete') {
+          if (sendBtn.disabled || activeRequestController) { toast('Ҳангоми омода шудани ҷавоб чатро нест кардан мумкин нест.'); return; }
+          if (!window.confirm('Ин чат аз ҳамин дастгоҳ нест карда шавад?')) return;
+          conversations = conversations.filter(function(candidate){return candidate.id!==item.id;});
+          if (item===activeConversation) {
+            activeConversation = conversations[0] || createConversation('Чати нав',[]);
+            if (!conversations.length) conversations.push(activeConversation);
+            renderActiveConversation(); saveConversations();
+          } else renderConversationList();
         }
       });
-
-      document.querySelectorAll('.quick-prompt-btn').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          chatInput.value = btn.dataset.prompt;
-          handleSend();
-        });
+      document.addEventListener('keydown', function(event){ if(event.key==='Escape' && !document.getElementById('moveFolderModal').hidden) closeMoveFolderPicker(); else if(event.key==='Escape' && !document.getElementById('historyDrawer').hidden) closeHistoryDrawer(); });
+      document.getElementById('clearChatBtn').addEventListener('click', function () {
+        if (sendBtn.disabled || activeRequestController) { toast('Аввал интизори ҷавоби ҷорӣ шавед.'); return; }
+        if (!chatHistory.length) { toast('Чати ҷорӣ холӣ аст.'); return; }
+        if (!window.confirm('Паёмҳои чати ҷорӣ аз ҳамин дастгоҳ пок карда шаванд?')) return;
+        chatHistory = [];
+        if (activeConversation) { activeConversation.messages=[]; activeConversation.title='Чати нав'; activeConversation.updatedAt=Date.now(); }
+        window.AliyaCore.state.chatHistory = [];
+        chatMsgs.querySelectorAll('.msg-row').forEach(function (el) { el.remove(); });
+        document.getElementById('pane-chat').classList.remove('has-conversation');
+        document.getElementById('currentChatTitle').textContent='Чати нав';
+        persistHistory();
+        toast('Паёмҳои чати ҷорӣ пок карда шуданд.');
       });
+      loadConversations();
 
-      function appendMsg(role, content) {
+      sendBtn.addEventListener('click', function () { if (activeRequestController) activeRequestController.abort(); else handleSend(); });
+      var micBtn = document.getElementById('micBtn');
+      var speechRecognition = null;
+      var dictationBaseText = '';
+      micBtn.addEventListener('click', function () {
+        var SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        if (!SpeechRecognition) {
+          toast('Диктовка дар ин браузер дастрас нест.');
+          return;
+        }
+        if (speechRecognition) {
+          try { speechRecognition.stop(); } catch (e) {}
+          return;
+        }
+        try {
+          speechRecognition = new SpeechRecognition();
+          speechRecognition.lang = document.documentElement.lang === 'ru' ? 'ru-RU' : 'tg-TJ';
+          speechRecognition.interimResults = true;
+          speechRecognition.continuous = false;
+          dictationBaseText = chatInput.value.trim();
+          speechRecognition.onstart = function () {
+            micBtn.classList.add('is-listening');
+            micBtn.setAttribute('aria-pressed', 'true');
+            micBtn.title = 'Қатъ кардани диктовка';
+          };
+          speechRecognition.onresult = function (event) {
+            var words = '';
+            for (var i = event.resultIndex; i < event.results.length; i++) words += event.results[i][0].transcript;
+            chatInput.value = (dictationBaseText ? dictationBaseText + ' ' : '') + words.trim();
+            chatInput.dispatchEvent(new Event('input', { bubbles: true }));
+          };
+          speechRecognition.onerror = function (event) {
+            var msg = event.error === 'not-allowed' ? 'Барои диктовка иҷозати микрофон лозим аст.' : 'Диктовка дар ин браузер ё барои ин забон дастрас нест.';
+            toast(msg);
+          };
+          speechRecognition.onend = function () {
+            micBtn.classList.remove('is-listening');
+            micBtn.setAttribute('aria-pressed', 'false');
+            micBtn.title = 'Диктовка';
+            speechRecognition = null;
+            chatInput.focus();
+          };
+          speechRecognition.start();
+        } catch (e) {
+          speechRecognition = null;
+          toast('Диктовка оғоз нашуд. Иҷозати микрофон ва забони браузерро санҷед.');
+        }
+      });
+      chatInput.addEventListener('input', function () {
+        chatInput.style.height = 'auto';
+        chatInput.style.height = Math.min(chatInput.scrollHeight, 140) + 'px';
+        saveCurrentDraft();
+      });
+      chatInput.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); handleSend(); }
+      });
+      document.querySelectorAll('.quick-prompt-btn').forEach(function (btn) {
+        btn.addEventListener('click', function () { handleSend(btn.dataset.prompt || ''); });
+      });
+      imageInput.addEventListener('change', async function () {
+        var file = imageInput.files && imageInput.files[0];
+        imageInput.value = '';
+        if (!file) return;
+        if (!/^image\//i.test(file.type) || file.size > 8 * 1024 * 1024) {
+          toast('Интихоб кунед акс (то 8 МБ).'); return;
+        }
+        var userText = 'Лутфан ин акси китоб ё дафтарро бихон ва шарҳ деҳ.';
+        appendMsg('user', '📷 Акси фиристодашуда: ' + file.name);
+        appendHistory('user', userText + ' [акс: ' + file.name + ']');
+        var bubble = appendMsg('bot', 'Алия аксро мехонад…');
+        sendBtn.disabled = true;
+        try {
+          var dataUrl = await new Promise(function (resolve, reject) {
+            var reader = new FileReader(); reader.onload = function () { resolve(String(reader.result || '')); }; reader.onerror = reject; reader.readAsDataURL(file);
+          });
+          var answer = await window.AliyaCore.analyzePhoto(dataUrl, userText, {
+            onToken: function (tok, full) { bubble.innerHTML = formatMarkdown(full); chatMsgs.scrollTop = chatMsgs.scrollHeight; }
+          });
+          bubble.innerHTML = formatMarkdown(answer);
+          appendHistory('assistant', answer);
+          addMessageActions(bubble, answer);
+        } catch (err) {
+          bubble.textContent = 'Алия аксро таҳлил карда натавонист. ' + (err.message || 'Акси равшантарро санҷед.');
+          bubble.classList.add('error-bubble');
+        } finally { sendBtn.disabled = false; }
+      });
+      checkServiceStatus();
+      window.addEventListener('online', checkServiceStatus);
+      window.addEventListener('focus', checkServiceStatus);
+
+      function speakChatReply(text) {
+        if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){toast('Синтези нутқ дар ин браузер дастгирӣ намешавад.');return;}
+        try {
+          window.speechSynthesis.cancel();
+          var utterance=new SpeechSynthesisUtterance(String(text||'')); utterance.lang=settingsPrefs.speechLanguage||'tg-TJ';
+          var selected=getSpeechVoice(utterance.lang);
+          if(selected)utterance.voice=selected;
+          window.speechSynthesis.speak(utterance);
+        } catch(error) { toast('Овозро оғоз карда натавонистам.'); }
+      }
+
+      function getSpeechVoice(locale) {
+        if(!window.speechSynthesis||!window.speechSynthesis.getVoices)return null;
+        var voices=window.speechSynthesis.getVoices()||[];
+        var prefix=String(locale||'').split('-')[0].toLowerCase();
+        var matching=voices.filter(function(voice){return String(voice.lang||'').toLowerCase().startsWith(prefix);});
+        return matching.find(function(voice){return voice.voiceURI===settingsPrefs.speechVoiceURI;})||matching[0]||null;
+      }
+
+      function appendMsg(role, content, scroll) {
         var row = document.createElement('div');
         row.className = 'msg-row ' + role;
-        var avatar = role === 'bot' ? '<div class="msg-avatar">✨</div>' : '';
+        row.setAttribute('role', role === 'bot' ? 'status' : 'note');
+        var avatar = document.createElement('div');
+        if (role === 'bot') { avatar.className = 'msg-avatar'; avatar.textContent = '✨'; row.appendChild(avatar); }
+        var body = document.createElement('div'); body.className = 'msg-body';
         var bubble = document.createElement('div');
         bubble.className = 'msg-bubble';
         bubble.innerHTML = formatMarkdown(content);
-
-        row.innerHTML = avatar;
-        row.appendChild(bubble);
+        body.appendChild(bubble); row.appendChild(body);
         chatMsgs.appendChild(row);
-        chatMsgs.scrollTop = chatMsgs.scrollHeight;
+        if (scroll !== false) chatMsgs.scrollTop = chatMsgs.scrollHeight;
         return bubble;
+      }
+
+      function addMessageActions(bubble, content) {
+        var body = bubble && bubble.parentElement;
+        if (!body || body.querySelector('.msg-actions')) return;
+        var text = String(content || '').trim();
+        if (!text) return;
+        var actions = document.createElement('div'); actions.className = 'msg-actions';
+        function action(label, title, run) {
+          var button = document.createElement('button'); button.type = 'button'; button.className = 'msg-action';
+          button.textContent = label; button.title = title; button.setAttribute('aria-label', title);
+          button.addEventListener('click', async function () {
+            button.disabled = true;
+            try { await run(); } catch (error) { toast(error.message || 'Амал иҷро нашуд.'); }
+            finally { button.disabled = false; }
+          });
+          actions.appendChild(button);
+        }
+        action('⧉', 'Нусхабардории ҷавоб', async function () {
+          if (navigator.clipboard && navigator.clipboard.writeText) await navigator.clipboard.writeText(text);
+          else { var area=document.createElement('textarea'); area.value=text; area.style.position='fixed'; area.style.opacity='0'; document.body.appendChild(area); area.select(); var ok=document.execCommand('copy'); area.remove(); if(!ok) throw new Error('Нусхабардорӣ иҷозат дода нашуд.'); }
+          toast('Ҷавоб нусхабардорӣ шуд.');
+        });
+        action('▣', 'Захира кардан дар ёддоштҳо', async function () {
+          await window.AliyaCore.saveNote(text.slice(0,90).replace(/\s+/g,' ') || 'Ҷавоби Алия', text, ['aliya-answer']);
+          toast('Ҷавоб дар ёддоштҳо захира шуд.');
+        });
+        action('DOCX', 'Содирот ба Word', async function () {
+          var blob=window.AliyaTemplates.generateResponseDocx({title:'Ҷавоби Алия',content:text});
+          await window.AliyaBridge.saveFile(blob,'Ҷавоби_Алия_'+Date.now()+'.docx','application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+        });
+        action('PDF', 'Содирот ба PDF', async function () {
+          var blob=await window.AliyaCore.generatePdf('Ҷавоби Алия',text);
+          await window.AliyaBridge.saveFile(blob,'Ҷавоби_Алия_'+Date.now()+'.pdf','application/pdf');
+        });
+        action('TXT', 'Содирот ба матн', async function () {
+          var footer='\n\n📚 Омодашуда бо ёрии «Алия» — Зеҳни сунъии Тоҷикӣ\n📖 Китобхонаи электронии Тоҷикӣ — Ҳамаи китобҳои дарсӣ ва бадеӣ\n📲 Барномаи расмии Китобхона дар Google Play: https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share';
+          await window.AliyaBridge.saveFile(new Blob([text+footer],{type:'text/plain;charset=utf-8'}),'Ҷавоби_Алия_'+Date.now()+'.txt','text/plain');
+        });
+        if (/^\s*\|.+\|\s*$/m.test(text)) action('XLSX', 'Содироти ҷадвал ба Excel', async function () {
+          var XLSX=await window.AliyaCore.loadDocumentLibrary('XLSX','https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js');
+          var rows=text.split(/\r?\n/).filter(function(line){return /^\s*\|.+\|\s*$/.test(line);}).map(function(line){return line.trim().replace(/^\||\|$/g,'').split('|').map(function(cell){return cell.trim();});}).filter(function(row){return !row.every(function(cell){return /^:?-{3,}:?$/.test(cell);});});
+          if(!rows.length) throw new Error('Ҷадвал ёфт нашуд.');
+          var sheet=XLSX.utils.aoa_to_sheet(rows); var book=XLSX.utils.book_new(); XLSX.utils.book_append_sheet(book,sheet,'Aliya');
+          var bytes=XLSX.write(book,{bookType:'xlsx',type:'array'}); await window.AliyaBridge.saveFile(new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'Ҷавоби_Алия_'+Date.now()+'.xlsx','application/vnd.openxmlformats-officedocument.spreadsheetml.sheet');
+        });
+        body.appendChild(actions);
       }
 
       function formatMarkdown(str) {
@@ -429,6 +1142,192 @@
           .replace(/\*(.*?)\*/g, '<i>$1</i>')
           .replace(/\n/g, '<br>');
       }
+
+      // Овоз: Web Speech API-и браузер, бо қатъи возеҳи сессия барои муҳофизати микрофон.
+      (function setupVoiceConversation() {
+        var KEY='aliya_voice_turns_v1', turns=[], voiceActive=false, voiceBusy=false, voiceRecognition=null, voiceAbort=null, voiceRestartTimer=null;
+        var transcript=document.getElementById('voiceTranscript'), stage=document.getElementById('voiceStage');
+        var status=document.getElementById('voiceStatus'), hint=document.getElementById('voiceHint');
+        var toggle=document.getElementById('voiceToggleBtn'), interrupt=document.getElementById('voiceInterruptBtn');
+        var mode=document.getElementById('voiceMode'), source=document.getElementById('voiceSource'), target=document.getElementById('voiceTarget');
+        function setState(state,label,sub) { stage.dataset.state=state; status.textContent=label; hint.textContent=sub||''; }
+        function saveTurns() { try { localStorage.setItem(KEY,JSON.stringify(turns.slice(-80))); } catch(e) {} }
+        function drawTurn(item) {
+          var row=document.createElement('div'); row.className='voice-turn '+(item.role==='assistant'?'voice-turn-assistant':'voice-turn-user');
+          var speaker=document.createElement('small'); speaker.textContent=item.role==='assistant'?'Алия':'Шумо';
+          var body=document.createElement('div'); body.className='voice-turn-body';
+          var bubble=document.createElement('div'); bubble.className='msg-bubble'; bubble.innerHTML=formatMarkdown(item.content);
+          body.append(speaker,bubble); row.appendChild(body); transcript.appendChild(row);
+          if(item.role==='assistant') addMessageActions(bubble,item.content);
+          transcript.scrollTop=transcript.scrollHeight;
+          return bubble;
+        }
+        try {
+          var saved=JSON.parse(localStorage.getItem(KEY)||'[]');
+          if(Array.isArray(saved)) turns=saved.filter(function(t){return t&&['user','assistant'].includes(t.role)&&typeof t.content==='string';}).slice(-80);
+        } catch(e) { turns=[]; }
+        turns.forEach(drawTurn);
+        function stopVoice(silent) {
+          voiceActive=false; voiceBusy=false;
+          if(voiceRestartTimer) clearTimeout(voiceRestartTimer);
+          if(voiceAbort) { voiceAbort.abort(); voiceAbort=null; }
+          if(voiceRecognition) { var old=voiceRecognition; voiceRecognition=null; old.onend=null; try { old.stop(); } catch(e) {} }
+          if(window.speechSynthesis) window.speechSynthesis.cancel();
+          toggle.setAttribute('aria-pressed','false'); toggle.innerHTML='<span>🎙</span><b>Оғози суҳбат</b>';
+          interrupt.hidden=true;
+          if(!silent) setState('idle','Суҳбат қатъ шуд','Микрофон дигар фаъол нест.');
+        }
+        function startRecognition() {
+          if(!voiceActive||voiceBusy||voiceRecognition) return;
+          var Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+          if(!Recognition) { stopVoice(true); setState('error','Браузер дастгирӣ намекунад','Барои овоз Chrome ё браузери мувофиқро истифода баред; саволро дар ҷадвали Чат нависед.'); return; }
+          try {
+            var rec=new Recognition(); voiceRecognition=rec; rec.lang=source.value; rec.continuous=false; rec.interimResults=true; rec.maxAlternatives=1;
+            rec.onstart=function(){setState('listening','Гӯш мекунад…','Пас аз анҷоми ҷумла каме таваққуф кунед.');};
+            rec.onresult=function(event){
+              var finalText=''; var partial='';
+              for(var i=event.resultIndex;i<event.results.length;i++){var part=event.results[i][0]&&event.results[i][0].transcript||''; if(event.results[i].isFinal) finalText+=part; else partial+=part;}
+              if(partial&&!finalText){hint.textContent='Шинохта мешавад: '+partial;}
+              if(finalText.trim()){processVoiceTurn(finalText.trim());}
+            };
+            rec.onerror=function(event){
+              if(event.error==='not-allowed'||event.error==='service-not-allowed'){stopVoice(true);setState('error','Микрофон иҷозат надорад','Иҷозати микрофонро дар браузер фаъол кунед.');}
+              else if(event.error==='language-not-supported'){stopVoice(true);setState('error','Забон дастгирӣ намешавад','Ин дастгоҳ метавонад нутқи тоҷикӣ/ин забонро нашиносад. Забони дигарро интихоб кунед.');}
+              else if(event.error!=='no-speech'&&event.error!=='aborted'){hint.textContent='Шинохти нутқ: '+event.error;}
+            };
+            rec.onend=function(){if(voiceRecognition===rec)voiceRecognition=null;if(voiceActive&&!voiceBusy)voiceRestartTimer=setTimeout(startRecognition,350);};
+            rec.start();
+          } catch(error) { voiceRecognition=null; stopVoice(true); setState('error','Микрофон оғоз нашуд',error.message||'Иҷозати браузерро санҷед.'); }
+        }
+        function speakReply(text,locale) {
+          if(!window.speechSynthesis||!window.SpeechSynthesisUtterance){voiceBusy=false;setState('idle','Ҷавоб омода аст','Овоздиҳии браузер дастрас нест; ҷавобро дар экран хонед.');if(voiceActive)startRecognition();return;}
+          window.speechSynthesis.cancel(); var utterance=new SpeechSynthesisUtterance(text); utterance.lang=locale;
+          var match=getSpeechVoice(locale); if(match)utterance.voice=match;
+          utterance.onstart=function(){setState('speaking','Алия ҷавоб медиҳад…','Барои қатъ кардан тугмаи «Қатъ кардани ҷавоб»-ро пахш кунед.');};
+          utterance.onend=function(){voiceBusy=false;if(voiceActive)startRecognition();else setState('idle','Ҷавоб тамом шуд','');};
+          utterance.onerror=function(){voiceBusy=false;if(voiceActive)startRecognition();else setState('idle','Ҷавоб дар экран омода аст','Овоздиҳии ин забон дастгирӣ нашуд.');};
+          window.speechSynthesis.speak(utterance);
+        }
+        async function processVoiceTurn(text) {
+          if(voiceBusy)return;
+          voiceBusy=true;
+          if(voiceRecognition){try{voiceRecognition.stop();}catch(e){}}
+          var history=turns.slice(-12).map(function(t){return {role:t.role,content:t.content};});
+          var userTurn={role:'user',content:text}; turns.push(userTurn); turns=turns.slice(-80); saveTurns(); drawTurn(userTurn);
+          var locale=mode.value==='translator'?target.value:source.value;
+          var prompt=mode.value==='translator'
+            ? 'Тарҷумон бош. Ҷумлаи зерин аз '+source.value+' ба '+target.value+' тарҷума кун. Танҳо тарҷумаи табииро баргардон, шарҳи иловагӣ нанавис. Матн: '+text
+            : text;
+          var bubble=drawTurn({role:'assistant',content:'Алия ҷавоб омода мекунад…'});
+          voiceAbort=new AbortController(); interrupt.hidden=false; setState('thinking','Алия фикр мекунад…','Ҷавоби овозӣ ҳангоми омода шудан шунида мешавад.');
+          try {
+            var answer=await window.AliyaCore.sendMessage(prompt,{history:history,signal:voiceAbort.signal,onToken:function(tok,full){bubble.innerHTML=formatMarkdown(full);transcript.scrollTop=transcript.scrollHeight;}});
+            bubble.innerHTML=formatMarkdown(answer); turns.push({role:'assistant',content:answer}); turns=turns.slice(-80); saveTurns(); addMessageActions(bubble,answer);
+            voiceAbort=null; interrupt.hidden=true; speakReply(answer,locale);
+          } catch(error) {
+            bubble.textContent=error.code==='aborted'?'Ҷавоб қатъ карда шуд.':'Ҷавоб ҳоло дастрас нест: '+(error.message||'');
+            voiceAbort=null; interrupt.hidden=true; voiceBusy=false;
+            if(voiceActive)startRecognition(); else setState('error','Ҷавоб гирифта нашуд','Интернет ё дастрасии провайдерро санҷед.');
+          }
+        }
+        toggle.addEventListener('click',function(){
+          if(voiceActive){stopVoice(false);return;}
+          var Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
+          if(!Recognition){setState('error','Браузер дастгирӣ намекунад','Суҳбати овозӣ дар ин браузер дастрас нест. Метавонед дар ҷадвали Чат диктовка ё матнро истифода баред.');return;}
+          voiceActive=true; toggle.setAttribute('aria-pressed','true'); toggle.innerHTML='<span>■</span><b>Анҷоми суҳбат</b>'; startRecognition();
+        });
+        interrupt.addEventListener('click',function(){if(voiceAbort)voiceAbort.abort();if(window.speechSynthesis)window.speechSynthesis.cancel();voiceBusy=false;interrupt.hidden=true;setState('idle','Ҷавоб қатъ шуд','Ҷавоби ҷориро қатъ кардем.');});
+        function clearVoiceTurns(){if(voiceActive)stopVoice(true);turns=[];try{localStorage.removeItem(KEY);}catch(e){}transcript.replaceChildren();setState('idle','Омода','Таърихи овозӣ пок карда шуд.');}
+        window.AliyaVoiceControls={clear:clearVoiceTurns};
+        document.getElementById('voiceClearBtn').addEventListener('click',function(){clearVoiceTurns();});
+        [source,target,mode].forEach(function(el){el.addEventListener('change',function(){if(voiceActive){stopVoice(true);setState('idle','Танзимот иваз шуд','Барои идома суҳбатро аз нав оғоз кунед.');}});});
+        document.querySelector('.tab-chip[data-tab="voice"]').addEventListener('click',function(){if(voiceActive)setState(voiceBusy?'thinking':'listening',voiceBusy?'Суҳбат идома дорад…':'Гӯш мекунад…','');});
+        document.querySelectorAll('.tab-chip:not([data-tab="voice"])').forEach(function(tab){tab.addEventListener('click',function(){if(voiceActive)stopVoice(false);});});
+        window.addEventListener('beforeunload',function(){if(voiceActive)stopVoice(true);});
+      })();
+
+      // Танзимоти веб-версия: сабти маҳаллӣ, овоздиҳии браузер ва идоракунии нусхаи маълумот.
+      function saveSettingsPrefs(){try{localStorage.setItem(SETTINGS_PREFS_KEY,JSON.stringify(settingsPrefs));}catch(e){toast('Танзимот дар ин браузер сабт нашуд.');}}
+      var darkThemeToggle=document.getElementById('settingsDarkTheme');
+      var saveHistoryToggle=document.getElementById('settingsSaveHistory');
+      var speakRepliesToggle=document.getElementById('settingsSpeakReplies');
+      var speechLanguageSelect=document.getElementById('settingsSpeechLanguage');
+      var speechVoiceSelect=document.getElementById('settingsSpeechVoice');
+      darkThemeToggle.checked=settingsPrefs.darkTheme;
+      saveHistoryToggle.checked=settingsPrefs.saveHistory;
+      speakRepliesToggle.checked=settingsPrefs.speakReplies;
+      speechLanguageSelect.value=settingsPrefs.speechLanguage;
+      var profileNameInput=document.getElementById('profileNameInput'),profileCityInput=document.getElementById('profileCityInput'),profileAboutInput=document.getElementById('profileAboutInput'),profileFactsInput=document.getElementById('profileFactsInput'),includeProfileToggle=document.getElementById('settingsIncludeProfile');
+      profileNameInput.value=personalProfile.name;profileCityInput.value=personalProfile.city;profileAboutInput.value=personalProfile.about;profileFactsInput.value=personalProfile.facts.join('\n');includeProfileToggle.checked=settingsPrefs.includeProfileContext;
+      function refreshSpeechVoiceOptions(){
+        var selected=settingsPrefs.speechVoiceURI||'';speechVoiceSelect.replaceChildren();
+        var auto=document.createElement('option');auto.value='';auto.textContent='Интихоби худкор';speechVoiceSelect.appendChild(auto);
+        var prefix=settingsPrefs.speechLanguage.split('-')[0].toLowerCase();
+        var voices=window.speechSynthesis&&window.speechSynthesis.getVoices?window.speechSynthesis.getVoices():[];
+        var matches=voices.filter(function(voice){return String(voice.lang||'').toLowerCase().startsWith(prefix);});
+        matches.forEach(function(voice){var option=document.createElement('option');option.value=voice.voiceURI;option.textContent=voice.name+' · '+voice.lang;speechVoiceSelect.appendChild(option);});
+        if(!matches.length){var unavailable=document.createElement('option');unavailable.value='';unavailable.textContent='Овозҳои мувофиқ ёфт нашуданд';speechVoiceSelect.appendChild(unavailable);}
+        speechVoiceSelect.value=selected;
+        if(speechVoiceSelect.value!==selected)speechVoiceSelect.value='';
+      }
+      refreshSpeechVoiceOptions();
+      if(window.speechSynthesis){if(window.speechSynthesis.addEventListener)window.speechSynthesis.addEventListener('voiceschanged',refreshSpeechVoiceOptions);else window.speechSynthesis.onvoiceschanged=refreshSpeechVoiceOptions;}
+      darkThemeToggle.addEventListener('change',function(){settingsPrefs.darkTheme=darkThemeToggle.checked;applyTheme();saveSettingsPrefs();});
+      saveHistoryToggle.addEventListener('change',function(){
+        settingsPrefs.saveHistory=saveHistoryToggle.checked;saveSettingsPrefs();
+        if(!settingsPrefs.saveHistory){
+          try{localStorage.removeItem(CONVERSATIONS_KEY);localStorage.removeItem(FOLDERS_KEY);localStorage.removeItem(ACTIVE_CONVERSATION_KEY);localStorage.removeItem(HISTORY_KEY);}catch(e){}
+          toast('Сабти таърихи оянда хомӯш шуд; таърихи захирашудаи чат пок карда шуд.');
+        }else{saveFolders();saveConversations();toast('Захира кардани таърихи чат фаъол шуд.');}
+      });
+      speakRepliesToggle.addEventListener('change',function(){settingsPrefs.speakReplies=speakRepliesToggle.checked;saveSettingsPrefs();toast(settingsPrefs.speakReplies?'Ҷавобҳо бо садои системаи дастгоҳ хонда мешаванд.':'Овоздиҳии автоматӣ хомӯш шуд.');});
+      speechLanguageSelect.addEventListener('change',function(){settingsPrefs.speechLanguage=speechLanguageSelect.value;settingsPrefs.speechVoiceURI='';refreshSpeechVoiceOptions();saveSettingsPrefs();});
+      speechVoiceSelect.addEventListener('change',function(){settingsPrefs.speechVoiceURI=speechVoiceSelect.value||'';saveSettingsPrefs();});
+      document.getElementById('settingsPreviewVoice').addEventListener('click',function(){
+        var samples={'tg-TJ':'Салом! Ман Алия ҳастам. Чӣ тавр ба шумо кӯмак расонам?','ru-RU':'Здравствуйте! Я Алия. Чем могу вам помочь?','en-US':'Hello, I am Aliya. How can I help you today?'};
+        speakChatReply(samples[settingsPrefs.speechLanguage]||samples['tg-TJ']);
+      });
+      document.getElementById('saveProfileBtn').addEventListener('click',function(){
+        personalProfile={name:profileNameInput.value.trim().slice(0,80),city:profileCityInput.value.trim().slice(0,100),about:profileAboutInput.value.trim().slice(0,1200),facts:profileFactsInput.value.split(/\r?\n/).map(function(f){return f.trim().slice(0,300);}).filter(Boolean).slice(0,30)};
+        try{localStorage.setItem(PROFILE_KEY,JSON.stringify(personalProfile));}catch(error){toast('Профилро дар ин дастгоҳ сабт карда натавонистам.');return;}
+        window.AliyaCore.state.profileContext=settingsPrefs.includeProfileContext?buildProfileContext():'';
+        toast('Профил танҳо дар ҳамин дастгоҳ сабт шуд.');
+      });
+      includeProfileToggle.addEventListener('change',function(){
+        if(includeProfileToggle.checked){
+          if(!buildProfileContext()){includeProfileToggle.checked=false;toast('Аввал маълумоти профилро пур ва сабт кунед.');return;}
+          if(!window.confirm('Шумо розӣ ҳастед, ки маълумоти профили сабтшуда бо ҳар дархости матнӣ ба шлюзи AI фиристода шавад?')){includeProfileToggle.checked=false;return;}
+        }
+        settingsPrefs.includeProfileContext=includeProfileToggle.checked;
+        window.AliyaCore.state.profileContext=settingsPrefs.includeProfileContext?buildProfileContext():'';
+        saveSettingsPrefs();
+        toast(settingsPrefs.includeProfileContext?'Ирсоли контексти шахсӣ фаъол аст.':'Контексти шахсӣ дигар ба AI фиристода намешавад.');
+      });
+      document.getElementById('settingsStopSpeech').addEventListener('click',function(){if(window.speechSynthesis)window.speechSynthesis.cancel();toast('Овоздиҳӣ қатъ карда шуд.');});
+      document.getElementById('settingsExportBtn').addEventListener('click',async function(){
+        var button=this;button.disabled=true;
+        try{
+          var voiceTurns=[];try{voiceTurns=JSON.parse(localStorage.getItem('aliya_voice_turns_v1')||'[]');}catch(e){}
+          var backup={format:'kitobkhona-aliya-local-backup-v1',exportedAt:new Date().toISOString(),conversations:conversations,projects:folders,notes:await window.AliyaCore.getNotes(),voiceTurns:voiceTurns,profile:personalProfile,preferences:settingsPrefs};
+          var fileName='Kitobkhona_Aliya_backup_'+new Date().toISOString().slice(0,10)+'.json';
+          await window.AliyaBridge.saveFile(new Blob([JSON.stringify(backup,null,2)],{type:'application/json;charset=utf-8'}),fileName,'application/json');
+          toast('Нусхаи маҳаллии JSON омода шуд.');
+        }catch(error){toast('Нусха сохта нашуд: '+(error.message||''));}finally{button.disabled=false;}
+      });
+      document.getElementById('settingsClearDataBtn').addEventListener('click',async function(){
+        if(!window.confirm('Ҳамаи чатҳо, лоиҳаҳо, ёддоштҳо, таърихи овозӣ ва профили маҳаллии Алия пок карда шаванд?'))return;
+        if(activeRequestController)activeRequestController.abort();
+        if(window.AliyaVoiceControls)window.AliyaVoiceControls.clear();
+        try{
+          await window.AliyaCore.clearNotes();
+          [CONVERSATIONS_KEY,FOLDERS_KEY,ACTIVE_CONVERSATION_KEY,HISTORY_KEY,PROFILE_KEY,'aliya_voice_turns_v1','aliya_pending_note'].forEach(function(key){try{localStorage.removeItem(key);}catch(e){}});
+          try{sessionStorage.removeItem('aliya_reader_context');sessionStorage.removeItem('aliya_pending_note');}catch(e){}
+          personalProfile={name:'',city:'',about:'',facts:[]};profileNameInput.value='';profileCityInput.value='';profileAboutInput.value='';profileFactsInput.value='';
+          settingsPrefs.includeProfileContext=false;includeProfileToggle.checked=false;saveSettingsPrefs();window.AliyaCore.state.profileContext='';
+          conversations=[createConversation('Чати нав',[])];activeConversation=conversations[0];folders=[];chatHistory=[];window.AliyaCore.state.chatHistory=[];
+          renderActiveConversation();renderNotes();toast('Маълумоти маҳаллии Алия пок карда шуд.');
+        }catch(error){toast('Ҳамаи маълумот пок карда нашуд: '+(error.message||''));}
+      });
 
       // 4. Нақшаи дарс
       document.getElementById('lessonForm').addEventListener('submit', async function (e) {
@@ -451,7 +1350,8 @@
           var res = await window.AliyaCore.generateLessonPlan(params);
           currentLpBlob = res.docxBlob;
           document.getElementById('lpResult').style.display = 'block';
-          document.getElementById('lpTextContent').textContent = res.text;
+          document.getElementById('lpTextContent').textContent = res.text || res.step3 || '';
+          document.getElementById('lpResult').dataset.pdfText = res.text || res.step3 || '';
           toast('Нақшаи дарс омода шуд!');
         } catch (err) {
           toast('Хатогӣ ҳангоми омодасозӣ: ' + err.message);
@@ -463,10 +1363,27 @@
 
       document.getElementById('lpDocxBtn').addEventListener('click', function () {
         if (currentLpBlob) {
-          window.AliyaBridge.saveFile(currentLpBlob, 'Накшаи_дарс_' + document.getElementById('lpTopic').value.replace(/\s+/g, '_') + '.docx');
+          window.AliyaBridge.saveFile(currentLpBlob, 'Нақшаи_дарс_' + document.getElementById('lpTopic').value.replace(/\s+/g, '_') + '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document').catch(function(e){ toast('Word сабт нашуд: ' + e.message); });
           toast('Ҳуҷҷати Word сабт шуд!');
         }
       });
+
+      async function savePdfFromResult(resultId, title) {
+        var result = document.getElementById(resultId);
+        var text = result && result.dataset.pdfText;
+        if (!text) { toast('Аввал маводро созед.'); return; }
+        var button = document.getElementById(resultId.replace('Result', 'PdfBtn'));
+        if (button) { button.disabled = true; button.textContent = '⏳ PDF…'; }
+        try {
+          var blob = await window.AliyaCore.generatePdf(title, text);
+          await window.AliyaBridge.saveFile(blob, title.replace(/[^\p{L}\p{N}_ -]+/gu, '').replace(/\s+/g, '_') + '.pdf', 'application/pdf');
+          toast('PDF омода ва сабт шуд.');
+        } catch (err) { toast('PDF сохта нашуд: ' + (err.message || '')); }
+        finally { if (button) { button.disabled = false; button.textContent = '⬇ PDF'; } }
+      }
+      document.getElementById('lpPdfBtn').addEventListener('click', function () { savePdfFromResult('lpResult', 'Нақшаи дарс'); });
+      document.getElementById('tPdfBtn').addEventListener('click', function () { savePdfFromResult('tResult', 'Санҷиш ва тест'); });
+      document.getElementById('dPdfBtn').addEventListener('click', function () { savePdfFromResult('dResult', 'Диктант ва баён'); });
 
       document.getElementById('lpShareBtn').addEventListener('click', function () {
         var text = document.getElementById('lpTextContent').textContent;
@@ -497,8 +1414,13 @@
         try {
           var res = await window.AliyaCore.generateTest(params);
           currentTestBlob = res.docxBlob;
+          currentTestKeyBlob = res.keyDocxBlob;
+          currentTestKeyText = res.keyText || '';
           document.getElementById('tResult').style.display = 'block';
           document.getElementById('tTextContent').textContent = res.text;
+          document.getElementById('tResult').dataset.pdfText = res.text;
+          document.getElementById('tKeyBtn').style.display = params.showAnswers ? 'none' : 'inline-flex';
+          document.getElementById('tKeyPdfBtn').style.display = params.showAnswers ? 'none' : 'inline-flex';
           toast('Тест омода шуд!');
         } catch (err) {
           toast('Хатогӣ: ' + err.message);
@@ -510,9 +1432,30 @@
 
       document.getElementById('tDocxBtn').addEventListener('click', function () {
         if (currentTestBlob) {
-          window.AliyaBridge.saveFile(currentTestBlob, 'Тест_' + document.getElementById('tTopic').value.replace(/\s+/g, '_') + '.docx');
+          window.AliyaBridge.saveFile(currentTestBlob, 'Тест_' + document.getElementById('tTopic').value.replace(/\s+/g, '_') + '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document').catch(function(e){ toast('Word сабт нашуд: ' + e.message); });
           toast('Файли тест сабт шуд!');
         }
+      });
+
+      document.getElementById('tKeyBtn').addEventListener('click', async function () {
+        if (!currentTestKeyBlob) return;
+        try {
+          await window.AliyaBridge.saveFile(currentTestKeyBlob, 'Калиди_омӯзгор_' + Date.now() + '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document');
+          toast('Калиди алоҳидаи омӯзгор сабт шуд.');
+        } catch (err) { toast('Калид сабт нашуд: ' + (err.message || '')); }
+      });
+      document.getElementById('tKeyPdfBtn').addEventListener('click', async function () {
+        if (!currentTestKeyText) return;
+        var button = this; button.disabled = true; button.textContent = '⏳ PDF…';
+        try {
+          var blob = await window.AliyaCore.generatePdf('Калиди омӯзгор', currentTestKeyText);
+          await window.AliyaBridge.saveFile(blob, 'Калиди_омӯзгор_' + Date.now() + '.pdf', 'application/pdf');
+          toast('Калиди омӯзгор PDF сабт шуд.');
+        } catch (err) { toast('PDF-и калид сохта нашуд: ' + (err.message || '')); }
+        finally { button.disabled = false; button.textContent = '🔑 Калид PDF'; }
+      });
+      document.getElementById('tShareBtn').addEventListener('click', function () {
+        window.AliyaBridge.shareFileOrText({ title: 'Санҷиш ва тест', text: document.getElementById('tTextContent').textContent, blob: currentTestBlob, fileName: 'Санҷиш.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       });
 
       // 6. Диктант
@@ -525,7 +1468,7 @@
         var isBayon = document.getElementById('dType').value === 'bayon';
         var prompt = 'Барои синфи ' + document.getElementById('dGrade').value + ' аз рӯи мавзӯи "' + document.getElementById('dTopic').value +
           '" матни ' + (isBayon ? 'баёни хаттӣ' : 'диктант') + ' тартиб деҳ (сатҳи ' + document.getElementById('dDiff').value + ', чоряки ' + document.getElementById('dQuarter').value +
-          '). 3 дона супориши грамматикӣ ва меъёри баҳогузориро илова кун.';
+          '). Ҳаҷмро ба синф мувофиқ соз (тахминан: 1–4 синф 25–55 калима, 5–7 синф 60–110, 8–9 синф 110–150, 10–11 синф 150–200; ин меъёри тавсиявӣ аст, на меъёри расмии ҳатмӣ). 3 супориши грамматикӣ ва меъёри баҳогузориро илова кун.';
 
         try {
           var resText = await window.AliyaCore.sendMessage(prompt);
@@ -540,6 +1483,7 @@
           currentDictBlob = window.AliyaTemplates.generateDictationDocx(dictData);
           document.getElementById('dResult').style.display = 'block';
           document.getElementById('dTextContent').textContent = resText;
+          document.getElementById('dResult').dataset.pdfText = resText;
           toast('Матни диктант омода шуд!');
         } catch (err) {
           toast('Хатогӣ: ' + err.message);
@@ -551,9 +1495,13 @@
 
       document.getElementById('dDocxBtn').addEventListener('click', function () {
         if (currentDictBlob) {
-          window.AliyaBridge.saveFile(currentDictBlob, 'Диктант_' + document.getElementById('dTopic').value.replace(/\s+/g, '_') + '.docx');
+          window.AliyaBridge.saveFile(currentDictBlob, 'Диктант_' + document.getElementById('dTopic').value.replace(/\s+/g, '_') + '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document').catch(function(e){ toast('Word сабт нашуд: ' + e.message); });
           toast('Файли диктант сабт шуд!');
         }
+      });
+
+      document.getElementById('dShareBtn').addEventListener('click', function () {
+        window.AliyaBridge.shareFileOrText({ title: 'Диктант ва баён', text: document.getElementById('dTextContent').textContent, blob: currentDictBlob, fileName: 'Диктант.docx', mimeType: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
       });
 
       // 7. Суратсозӣ
@@ -598,31 +1546,78 @@
         }
       });
 
-      // 8. Ёддоштҳо
-      async function renderNotes() {
-        var list = await window.AliyaCore.getNotes();
-        var container = document.getElementById('notesList');
-        if (!list.length) {
-          container.innerHTML = '<div style="color:var(--muted); text-align:center; padding:20px">Шумо то ҳол ягон ёддошт надоред. Барои сабти фикрҳои китоб «+ Нав»-ро пахш кунед.</div>';
-          return;
-        }
-        container.innerHTML = list.map(function (n) {
-          return '<div class="note-item"><div class="note-title">' + (n.title || 'Бе ном') + '</div><div class="note-body">' + (n.content || '') + '</div><div class="note-date">' + new Date(n.updatedAt).toLocaleString('tg-TJ') + '</div></div>';
-        }).join('');
+      // 8. Ёддоштҳои таҳриршаванда, маҳкамшаванда ва бо рӯйхати амалҳо
+      var editingNote=null;
+      var noteModal=document.getElementById('noteEditorModal');
+      var noteTitleInput=document.getElementById('noteTitleInput');
+      var noteBodyInput=document.getElementById('noteBodyInput');
+      var noteChecklistInput=document.getElementById('noteChecklistInput');
+      var noteColorInput=document.getElementById('noteColorInput');
+      function closeNoteEditor(){noteModal.hidden=true;editingNote=null;document.getElementById('newNoteBtn').focus();}
+      function openNoteEditor(note){
+        editingNote=note||null;
+        document.getElementById('noteEditorHeading').textContent=note?'Таҳрири ёддошт':'Ёддошти нав';
+        noteTitleInput.value=note?String(note.title||''):'';
+        noteBodyInput.value=note?String(note.content||''):'';
+        noteChecklistInput.value=note&&Array.isArray(note.checklist)?note.checklist.map(function(item){return item.text||'';}).join('\n'):'';
+        noteColorInput.value=String(note&&note.colorIndex||0);
+        noteModal.hidden=false; noteTitleInput.focus();
       }
-
-      document.getElementById('newNoteBtn').addEventListener('click', async function () {
-        var title = prompt('Сарлавҳаи ёддошт:');
-        if (!title) return;
-        var content = prompt('Матни ёддошт:');
-        await window.AliyaCore.saveNote(title, content);
-        renderNotes();
-        toast('Ёддошт сабт шуд!');
+      document.getElementById('newNoteBtn').addEventListener('click',function(){openNoteEditor(null);});
+      document.getElementById('noteEditorClose').addEventListener('click',closeNoteEditor);
+      document.getElementById('noteEditorCancel').addEventListener('click',closeNoteEditor);
+      document.getElementById('noteEditorBackdrop').addEventListener('click',closeNoteEditor);
+      document.addEventListener('keydown',function(event){if(event.key==='Escape'&&!noteModal.hidden)closeNoteEditor();});
+      document.getElementById('noteEditorForm').addEventListener('submit',async function(event){
+        event.preventDefault();
+        var title=noteTitleInput.value.trim().slice(0,160), content=noteBodyInput.value.trim().slice(0,30000);
+        if(!title&&!content){toast('Сарлавҳа ё матни ёддоштро ворид кунед.');return;}
+        if(!title)title=content.split(/\r?\n/)[0].slice(0,80)||'Ёддошти нав';
+        var oldChecklist=editingNote&&Array.isArray(editingNote.checklist)?editingNote.checklist:[];
+        var checklist=noteChecklistInput.value.split(/\r?\n/).map(function(text){return text.trim().slice(0,300);}).filter(Boolean).slice(0,50).map(function(text){var old=oldChecklist.find(function(item){return item.text===text;});return {text:text,done:!!(old&&old.done)};});
+        var metadata={pinned:!!(editingNote&&editingNote.pinned),colorIndex:Number(noteColorInput.value)||0,checklist:checklist};
+        try {
+          if(editingNote){var updated=Object.assign({},editingNote,{title:title,content:content,pinned:metadata.pinned,colorIndex:metadata.colorIndex,checklist:checklist});await window.AliyaCore.updateNote(updated);}
+          else await window.AliyaCore.saveNote(title,content,[],metadata);
+          closeNoteEditor();await renderNotes();toast('Ёддошт захира шуд.');
+        } catch(error){toast('Ёддошт захира нашуд: '+(error.message||''));}
       });
+      async function renderNotes() {
+        var list=await window.AliyaCore.getNotes();
+        var container=document.getElementById('notesList');
+        var query=(document.getElementById('notesSearch').value||'').trim().toLocaleLowerCase();
+        var matched=list.filter(function(n){return !query||(String(n.title||'')+' '+String(n.content||'')+' '+(Array.isArray(n.checklist)?n.checklist.map(function(x){return x.text;}).join(' '):'')).toLocaleLowerCase().includes(query);})
+          .sort(function(a,b){return Number(!!b.pinned)-Number(!!a.pinned)||String(b.updatedAt||'').localeCompare(String(a.updatedAt||''));});
+        document.getElementById('notesCount').textContent=list.length+' ёддошт · маҳаллӣ дар ҳамин дастгоҳ';
+        container.replaceChildren();
+        matched.forEach(function(n){
+          var card=document.createElement('article');card.className='note-item note-color-'+(Number(n.colorIndex)||0)+(n.pinned?' is-pinned':'');
+          var head=document.createElement('div');head.className='note-card-head';
+          var title=document.createElement('h3');title.className='note-title';title.textContent=n.title||'Бе ном';
+          var pin=document.createElement('button');pin.type='button';pin.className='note-icon-action note-pin-btn';pin.textContent=n.pinned?'📌':'⌑';pin.title=n.pinned?'Аз маҳкамшуда хориҷ кардан':'Маҳкам кардан';pin.setAttribute('aria-label',pin.title);
+          pin.addEventListener('click',async function(){n.pinned=!n.pinned;await window.AliyaCore.updateNote(n);renderNotes();});
+          var edit=document.createElement('button');edit.type='button';edit.className='note-icon-action';edit.textContent='✎';edit.title='Таҳрири ёддошт';edit.setAttribute('aria-label',edit.title);edit.addEventListener('click',function(){openNoteEditor(n);});
+          var del=document.createElement('button');del.type='button';del.className='note-icon-action note-delete-action';del.textContent='×';del.title='Нест кардани ёддошт';del.setAttribute('aria-label',del.title);del.addEventListener('click',async function(){if(!window.confirm('Ин ёддоштро нест мекунед?'))return;await window.AliyaCore.deleteNote(n.id);renderNotes();toast('Ёддошт нест карда шуд.');});
+          head.append(title,pin,edit,del);card.appendChild(head);
+          var body=document.createElement('p');body.className='note-body';body.textContent=n.content||'';if(n.content)card.appendChild(body);
+          if(Array.isArray(n.checklist)&&n.checklist.length){var tasks=document.createElement('div');tasks.className='note-checklist';n.checklist.forEach(function(item,index){var label=document.createElement('label');label.className='note-check-item'+(item.done?' is-done':'');var checkbox=document.createElement('input');checkbox.type='checkbox';checkbox.checked=!!item.done;checkbox.addEventListener('change',async function(){n.checklist[index].done=checkbox.checked;await window.AliyaCore.updateNote(n);renderNotes();});var text=document.createElement('span');text.textContent=item.text||'';label.append(checkbox,text);tasks.appendChild(label);});card.appendChild(tasks);}
+          var date=document.createElement('time');date.className='note-date';date.dateTime=String(n.updatedAt||'');date.textContent=new Date(n.updatedAt||Date.now()).toLocaleString('tg-TJ');card.appendChild(date);container.appendChild(card);
+        });
+        if(!container.children.length){var empty=document.createElement('div');empty.className='notes-empty';empty.textContent=query?'Ёддошти мувофиқ ёфт нашуд.':'Ёддошт надоред. Барои оғоз «Ёддошти нав»-ро пахш кунед.';container.appendChild(empty);}
+      }
+      document.getElementById('notesSearch').addEventListener('input',renderNotes);
 
       // Оғоз
-      window.AliyaCore.init().then(function () {
+      window.AliyaCore.init().then(async function () {
         updateQuotaBadge();
+        try {
+          var pending = JSON.parse(sessionStorage.getItem('aliya_pending_note') || 'null');
+          if (pending && pending.content) {
+            await window.AliyaCore.saveNote(pending.title || 'Ёддошти китоб', pending.content, ['reader']);
+            sessionStorage.removeItem('aliya_pending_note');
+            toast('Хулосаи саҳифа ба Ёддоштҳо илова шуд.');
+          }
+        } catch (e) { console.warn('[Aliya] Pending note not saved', e); }
       });
     })();
   </script>
