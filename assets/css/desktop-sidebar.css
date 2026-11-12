@@ -19,21 +19,7 @@
 }
 @media(max-width:1199px),(hover:none){.kkh-desktop-nav,.kkh-dnav-toggle{display:none!important}}
 @media (min-width:1200px) and (hover:hover) and (pointer:fine){
- body:has(.reader-wrapper) .kkh-dnav-toggle{left:16px;top:8px}
+ body:has(.reader-wrapper) .kkh-dnav-toggle{left:54px;top:8px}
  body.kkh-dnav-open:has(.reader-wrapper) .kkh-dnav-toggle{left:274px;top:8px}
- body:has(.aliya-app) .kkh-dnav-toggle,body.kkh-dnav-open:has(.aliya-app) .kkh-dnav-toggle{display:none!important}
-}
-
-/* Reflow every fixed-width page shell when the shared navigation is opened. */
-@media (min-width:1200px) and (hover:hover) and (pointer:fine) {
-  body:has(.reader-wrapper) .reader-wrapper { transition:width .22s ease,margin .22s ease; }
-  body.kkh-dnav-open:has(.reader-wrapper) .reader-wrapper {
-    width:calc(100vw - 292px) !important; max-width:none !important;
-    margin-left:278px !important; margin-right:14px !important;
-  }
-  body:has(> .app) > .app,body:has(> .page) > .page { transition:width .22s ease,margin .22s ease; }
-  body.kkh-dnav-open:has(> .app) > .app,
-  body.kkh-dnav-open:has(> .page) > .page {
-    width:calc(100vw - 292px) !important; max-width:none !important; margin-left:278px !important; margin-right:14px !important;
-  }
+ body:has(.aliya-app) .kkh-dnav-toggle,body.kkh-dnav-open:has(.aliya-app) .kkh-dnav-toggle{left:330px;top:20px}
 }

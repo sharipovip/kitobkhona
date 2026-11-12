@@ -21,7 +21,7 @@
   var DB_VERSION = 1;
   var PHOTO_QUOTA_KEY = 'aliya_photo_quota_v1';
   var MAX_PHOTOS_PER_DAY = 10;
-  var REQUEST_TIMEOUT_MS = 90000;
+  var REQUEST_TIMEOUT_MS = 60000;
 
   function decodeBase64Blob(base64, mimeType) {
     var binary = atob(String(base64 || '').replace(/^data:[^,]+,/, ''));
@@ -327,16 +327,13 @@
         });
         var body = await response.json().catch(function () { return {}; });
         if (!response.ok) {
-          var httpError = new Error(response.status >= 500
-            ? 'Хизмати посухдиҳии Алия муваққатан дастнорас аст.'
-            : 'Дархост иҷро нашуд. Лутфан матнро санҷида, дубора кӯшиш кунед.');
-          httpError.code = 'http_' + response.status;
-          throw httpError;
+          var message = body.detail || body.error || ('HTTP ' + response.status);
+          throw new Error('Сервер Алия ҷавоб надод дуруст: ' + message);
         }
         if (body.error) {
           var code = String(body.error);
           if (code === 'chat_providers_unavailable' || code === 'no_chat_provider_configured') {
-            var providerError = new Error('Хизмати посухдиҳии Алия ҳоло дастнорас аст. Саволи шумо нигоҳ дошта шуд; каме баъдтар дубора кӯшиш кунед.');
+            var providerError = new Error('Шлюзи Алия дастрас аст, аммо ҳоло провайдерҳои зеҳни сунъӣ ҷавоб намедиҳанд. Баъдтар дубора кӯшиш кунед; соҳиби сервер бояд иҷозати HF, лимити Gemini ва кредити провайдерҳоро санҷад.');
             providerError.code = code;
             throw providerError;
           }
@@ -349,7 +346,7 @@
           if (code === 'vision_unavailable') {
             throw new Error('Хизмати хондани акс муваққатан дастнорас аст.');
           }
-          if (!body.reply && !body.file_base64 && !body.image_base64) { var serviceError = new Error('Амал ҳоло иҷро нашуд. Каме баъдтар дубора кӯшиш кунед.'); serviceError.code = 'service_error'; throw serviceError; }
+          if (!body.reply && !body.file_base64 && !body.image_base64) throw new Error(code);
         }
         return body;
       } catch (err) {
@@ -359,14 +356,10 @@
           throw cancelled;
         }
         if (err && err.name === 'AbortError') {
-          var timeoutError = new Error('Ҷавоб каме дер шуд. Саволи шумо нигоҳ дошта шуд; лутфан дубора кӯшиш кунед.');
-          timeoutError.code = 'timeout';
-          throw timeoutError;
+          throw new Error('Сервери Алия дер ҷавоб дод. Пайвастро санҷед ва дубора кӯшиш кунед.');
         }
         if (err instanceof TypeError) {
-          var networkError = new Error('Пайвастшавӣ қатъ шуд. Интернетро санҷида, дубора кӯшиш кунед.');
-          networkError.code = 'network';
-          throw networkError;
+          throw new Error('Бо сервери Алия пайваст нашуд. Интернет ё дастрасии серверро санҷед.');
         }
         throw err;
       } finally {
@@ -407,18 +400,15 @@
         max_tokens: this.state.depth === 'deep' ? 4096 : 1400
       };
       var result, lastError;
-      for (var attempt = 0; attempt < 2; attempt++) {
+      for (var attempt = 0; attempt < 3; attempt++) {
         try {
           result = await this.requestJson('/v1/chat', payload, options.timeoutMs || REQUEST_TIMEOUT_MS, options.signal);
           lastError = null;
           break;
         } catch (requestError) {
           lastError = requestError;
-          // The gateway already tries its configured teachers in sequence. A provider-exhausted
-          // response is not retried immediately; the visible retry action leaves control to the user.
-          var transient = requestError.code === 'timeout' || requestError.code === 'network' || /^http_5\d\d$/.test(String(requestError.code || ''));
-          if (requestError.code === 'aborted' || !transient || attempt === 1) break;
-          await new Promise(function (resolve) { setTimeout(resolve, 900); });
+          if (requestError.code === 'aborted' || !(requestError.code === 'chat_providers_unavailable' || /пайваст нашуд|HTTP 5\d\d/i.test(String(requestError.message || ''))) || attempt === 2) break;
+          await new Promise(function (resolve) { setTimeout(resolve, 700 * (attempt + 1)); });
         }
       }
       if (lastError) throw lastError;

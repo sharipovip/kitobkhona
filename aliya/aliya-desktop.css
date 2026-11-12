@@ -8,7 +8,7 @@
     border:0 !important; box-shadow:none !important; background:radial-gradient(ellipse at 78% 8%,rgba(255,106,61,.055),transparent 38%),#0e0f12;
   }
   .aliya-header {
-    position:fixed !important; z-index:20 !important; left:24px !important; right:20px !important; top:14px !important;
+    position:fixed !important; z-index:20 !important; left:284px !important; right:20px !important; top:14px !important;
     width:auto !important; height:66px !important; min-height:66px !important; padding:0 24px !important;
     border:1px solid rgba(255,255,255,.075); border-radius:20px; background:rgba(23,24,29,.92) !important;
     box-shadow:0 14px 40px rgba(0,0,0,.22); backdrop-filter:blur(18px);
@@ -29,19 +29,13 @@
     align-items:stretch !important; justify-content:flex-start !important; gap:8px !important; overflow-y:auto !important;
     border:1px solid rgba(255,255,255,.075) !important; border-radius:23px !important;
     background:linear-gradient(180deg,#191a1f,#131419) !important; box-shadow:0 18px 55px rgba(0,0,0,.25);
-    transform:translateX(calc(-100% - 22px)); transition:transform .22s ease;
   }
-  body.aliya-tools-open .aliya-tabs-bar { transform:translateX(0); }
-  body.aliya-tools-open .aliya-header { left:284px !important; }
-  body.aliya-tools-open .aliya-main { left:284px !important; }
-  .aliya-header,.aliya-main { transition:left .22s ease; }
-  .aliya-tools-toggle { display:inline-flex !important; width:40px !important; height:40px !important; flex:0 0 40px !important; }
   .aliya-tabs-bar::before { content:'АЛИЯ · АСБОБҲО'; display:block; padding:5px 10px 14px; color:#888985; font-size:10px; font-weight:800; letter-spacing:.16em; }
   .tab-chip { flex:0 0 auto !important; min-height:49px !important; justify-content:flex-start !important; gap:12px !important; padding:0 15px !important; border-radius:14px !important; font-size:13px !important; }
   .tab-chip:hover { transform:translateX(2px); }
   .tab-chip.active { background:linear-gradient(100deg,rgba(255,106,61,.18),rgba(255,106,61,.055)) !important; border-color:rgba(255,139,104,.3) !important; }
   .aliya-main {
-    position:absolute !important; inset:94px 20px 16px 24px !important; width:auto !important; height:auto !important;
+    position:absolute !important; inset:94px 20px 16px 284px !important; width:auto !important; height:auto !important;
     min-height:0 !important; overflow:hidden !important; border:1px solid rgba(255,255,255,.06); border-radius:22px;
     background:rgba(19,20,24,.54);
   }
@@ -69,9 +63,3 @@
   .notes-list { grid-template-columns:repeat(3,minmax(0,1fr)) !important; }
   .form-grid { grid-template-columns:repeat(2,minmax(0,1fr)) !important; }
 }
-
-@media screen and (min-width:1200px) and (hover:hover) and (pointer:fine) {
-  /* Алия аллакай панели асбобҳои худро дорад: онро ба панели умумӣ ҳамроҳ намекунем. */
-  .kkh-desktop-nav,.kkh-dnav-toggle { display:none !important; }
-}
-@media screen and (max-width:1199px),(hover:none) { .aliya-tools-toggle { display:none !important; } }

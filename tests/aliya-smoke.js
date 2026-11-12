@@ -12,15 +12,13 @@ let lastPath = '';
 let lastPayload = null;
 let simulateUnavailable = false;
 let unavailableCalls = 0;
-let networkFailures = 0;
 global.fetch = async (url, options) => {
   if (options.signal && options.signal.aborted) throw new DOMException('Aborted','AbortError');
   lastPath = new URL(url).pathname;
   lastPayload = JSON.parse(options.body || '{}');
   let body;
   if (lastPath === '/v1/chat') {
-    if (networkFailures > 0) { networkFailures--; throw new TypeError('simulated network break'); }
-    if (simulateUnavailable) { unavailableCalls++; body = { reply:'', error:'chat_providers_unavailable', diagnostics:{attempts:[{provider:'private-provider',status:402,error:'insufficient_credits'}]} }; return { ok:true, status:200, json:async()=>body }; }
+    if (simulateUnavailable) { unavailableCalls++; body = { reply:'', error:'chat_providers_unavailable' }; return { ok:true, status:200, json:async()=>body }; }
     const ask = lastPayload.messages[lastPayload.messages.length - 1].content;
     if (ask.includes('Танҳо JSON')) {
       body = { reply: JSON.stringify({ questions: [1,2,3].map((n) => ({
@@ -110,16 +108,9 @@ function isZipBlob(blob) { return blob && blob.size > 1000; }
   const alreadyCancelled = new AbortController(); alreadyCancelled.abort();
   await assert.rejects(() => AliyaCore.sendMessage('Ин бояд фавран қатъ шавад',{signal:alreadyCancelled.signal}), error=>error.code==='aborted');
   simulateUnavailable = true;
-  await assert.rejects(() => AliyaCore.sendMessage('Саволи санҷишӣ'), error => {
-    assert.equal(error.code,'chat_providers_unavailable');
-    assert.match(error.message,/ҳоло дастнорас аст/i);
-    assert.doesNotMatch(error.message,/private-provider|402|credits|Gemini|HF/i);
-    return true;
-  });
-  assert.equal(unavailableCalls, 1, 'the client does not repeat a gateway response after its provider fallbacks are exhausted');
+  await assert.rejects(() => AliyaCore.sendMessage('Саволи санҷишӣ'), /провайдерҳои зеҳни сунъӣ ҷавоб намедиҳанд/i);
+  assert.equal(unavailableCalls, 3, 'temporary provider failure is retried only a bounded number of times');
   simulateUnavailable = false;
-  networkFailures = 1;
-  assert.equal(await AliyaCore.sendMessage('Пас аз қатъи шабака дубора кӯшиш кун'), 'Ҷавоби санҷишии Алия.');
   const templates = fs.readFileSync(path.join(__dirname,'../aliya/aliya-doc-templates.js'),'utf8');
   for (const brand of ['Зеҳни сунъии Тоҷикӣ','Китобхонаи электронии Тоҷикӣ','https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share']) assert.ok(templates.includes(brand));
   console.log('PASS Aliya client: secure Markdown headings/lists/tables/code/links, chat/document context, local TXT/DOCX/XLSX/PDF extraction, photo OCR contract, image endpoint, student/teacher test separation, lesson DOCX, PDF export, branding.');

@@ -7,14 +7,13 @@
   <title>Алия — Зеҳни сунъии Тоҷикӣ · Китобхона</title>
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
   <link rel="stylesheet" href="aliya-ui.css?v=120">
-  <link rel="stylesheet" href="aliya-desktop.css?v=2">
+  <link rel="stylesheet" href="aliya-desktop.css?v=1">
 </head>
 <body>
   <div class="aliya-app">
     <!-- Header -->
     <header class="aliya-header">
       <div class="aliya-header-left">
-        <button type="button" class="header-icon-btn aliya-tools-toggle" id="aliyaToolsToggle" aria-label="Кушодани асбобҳо" aria-controls="aliyaToolTabs" aria-expanded="false">☰</button>
         <a href="../index.html" class="aliya-back-btn" title="Бозгашт ба Китобхона" aria-label="Бозгашт">‹</a>
         <div class="aliya-brand">
           <button type="button" class="aliya-avatar-3d" id="aliyaHistoryTrigger" title="Чатҳо ва таърих" aria-label="Кушодани чатҳо ва таърих" aria-expanded="false">
@@ -36,7 +35,7 @@
     </header>
 
     <!-- Navigation Tabs -->
-    <nav class="aliya-tabs-bar" id="aliyaToolTabs" role="tablist" aria-label="Асбобҳои Алия">
+    <nav class="aliya-tabs-bar" role="tablist">
       <button type="button" class="tab-chip active" data-tab="chat">💬 Чат</button>
       <button type="button" class="tab-chip" data-tab="lesson">📝 Нақшаи дарс</button>
       <button type="button" class="tab-chip" data-tab="test">📊 Санҷиш & Тест</button>
@@ -423,7 +422,7 @@
 
   <script src="aliya-bridge.js?v=120"></script>
   <script src="aliya-doc-templates.js?v=120"></script>
-  <script src="aliya-core.js?v=121"></script>
+  <script src="aliya-core.js?v=120"></script>
   <script>
     (function () {
       'use strict';
@@ -442,14 +441,6 @@
         el.classList.add('show');
         setTimeout(function () { el.classList.remove('show'); }, 2600);
       }
-
-      // Ҷойи кор дар мизи корӣ озод аст; панели асбобҳо танҳо бо дархости корбар кушода мешавад.
-      var toolsToggle = document.getElementById('aliyaToolsToggle');
-      if (toolsToggle) toolsToggle.addEventListener('click', function () {
-        var open = document.body.classList.toggle('aliya-tools-open');
-        toolsToggle.setAttribute('aria-expanded', String(open));
-        toolsToggle.setAttribute('aria-label', open ? 'Пӯшонидани асбобҳо' : 'Кушодани асбобҳо');
-      });
 
       // 1. Интихоби Tab
       document.querySelectorAll('.tab-chip').forEach(function (btn) {
@@ -846,7 +837,7 @@
           appendHistory('assistant', reply);
           addMessageActions(botBubble, reply);
         } catch (err) {
-          var message=err.code === 'aborted' ? 'Ҷавоб қатъ карда шуд.' : 'Алия ҳоло ҷавоб гирифта натавонист. Саволи шумо дар таърихи чат нигоҳ дошта шуд. Каме баъдтар дубора фиристед.';
+          var message=err.code === 'aborted' ? 'Ҷавоб қатъ карда шуд.' : 'Алия ҳоло ҷавоб гирифта натавонист. Паёми шумо дар таърихи чат нигоҳ дошта шуд. ' + (err.message || 'Пайвастро санҷида, дубора фиристед.');
           botBubble.textContent=message; botBubble.classList.add('error-bubble');
           var retry=document.createElement('button');retry.type='button';retry.className='aliya-retry-message';retry.textContent='↻ Дубора фиристодан';retry.addEventListener('click',function(){retry.remove();handleSend(text);});botBubble.appendChild(retry);
         } finally {
