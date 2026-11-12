@@ -1262,3 +1262,12 @@ html.aliya-light .rich-inline-code { background:#E8E7E3; }
 /* Clickable native Aliya emblem opens the conversation sidebar. */
 .aliya-avatar-3d { padding:0; border:0; color:inherit; cursor:pointer; }
 .aliya-avatar-3d:focus-visible { outline:2px solid #FF8B68; outline-offset:3px; }
+/* Variant 1: opposing type-on animation for Aliya's waiting state. */
+.aliya-wait-brand{width:128px;min-height:36px;position:relative;display:flex;flex-direction:column;justify-content:center;line-height:1;overflow:hidden;color:#f7f5f2;font-family:Georgia,serif;letter-spacing:.08em}
+.aliya-wait-brand b{font-size:17px;clip-path:inset(0 100% 0 0);animation:aliyaWriteForward 1.25s cubic-bezier(.4,0,.2,1) infinite alternate}
+.aliya-wait-brand em{font-size:9px;font-style:normal;align-self:flex-end;color:#f7f5f2;clip-path:inset(0 0 0 100%);animation:aliyaWriteReverse 1.25s cubic-bezier(.4,0,.2,1) infinite alternate}
+.aliya-wait-brand i{position:absolute;right:2px;top:21px;width:0;height:2px;border-radius:2px;background:#ff6a3d;transform-origin:right center;animation:aliyaLineReverse 1.25s ease-in-out infinite alternate}
+@keyframes aliyaWriteForward{to{clip-path:inset(0 0 0 0)}}@keyframes aliyaWriteReverse{to{clip-path:inset(0 0 0 0)}}@keyframes aliyaLineReverse{to{width:92px}}
+.aliya-wait-label{display:block;margin-top:7px;color:#ff9b7f;font-size:12px}
+.aliya-retry-message{display:block;margin-top:10px;padding:7px 11px;border:1px solid rgba(255,106,61,.4);border-radius:10px;background:rgba(255,106,61,.1);color:#ff9b7f;cursor:pointer}
+.aliya-wait-emblem{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;flex:0 0 76px;overflow:visible}

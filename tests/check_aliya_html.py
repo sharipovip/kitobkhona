@@ -36,7 +36,7 @@ core=(ROOT/'aliya/aliya-core.js').read_text(encoding='utf-8')
 assert "'/v1/vision'" in core and "'/v1/image'" in core and "'/v1/document/generate'" in core
 assert 'picsum.photos' not in core and 'generateTestFromContext' not in core
 sw=(ROOT/'sw.js').read_text(encoding='utf-8')
-assert "kitobkhona-v155-desktop-aliya-redesign" in sw
+assert "kitobkhona-v156-desktop-aliya-redesign" in sw
 assert 'chat старй.html' not in sw and not (ROOT/'chat старй.html').exists()
 
 desktop_css=(ROOT/'assets/css/desktop-layout.css').read_text(encoding='utf-8')
@@ -99,6 +99,9 @@ assert aliya_css.count('{') == aliya_css.count('}'), 'unbalanced CSS blocks'
 aliya_desktop=(ROOT/'aliya/aliya-desktop.css').read_text(encoding='utf-8')
 assert '@media screen and (min-width:1200px) and (hover:hover) and (pointer:fine)' in aliya_desktop
 home_desktop=(ROOT/'assets/css/home-desktop.css').read_text(encoding='utf-8')
+sidebar=(ROOT/'assets/css/desktop-sidebar.css').read_text(encoding='utf-8')
+brand=(ROOT/'aliya/aliya-brand-animation.js').read_text(encoding='utf-8')
+reader=(ROOT/'reader.html').read_text(encoding='utf-8')
 assert '@media screen and (min-width: 1200px) and (hover: hover) and (pointer: fine)' in home_desktop
 assert home_desktop.count('{') == home_desktop.count('}'), 'unbalanced home desktop CSS'
 assert aliya_desktop.count('{') == aliya_desktop.count('}'), 'unbalanced Aliya desktop CSS'
@@ -106,4 +109,9 @@ assert '#notifBtn' in home_desktop and 'display: flex !important' in home_deskto
 assert 'id="notifBtn"' in (ROOT/'index.html').read_text(encoding='utf-8')
 assert '<button type="button" class="new-icon-btn-v3" id="notifBtn"' in (ROOT/'index.html').read_text(encoding='utf-8')
 assert "'./assets/css/home-desktop.css'" in sw and "'./aliya/aliya-desktop.css'" in sw
+assert "'./assets/css/desktop-sidebar.css'" in sw and "'./aliya/aliya-brand-animation.js'" in sw
+assert 'kkh-dnav-open' in sidebar and 'aria-expanded' in (ROOT/'config.js').read_text(encoding='utf-8')
+assert 'renderEmblem(canvas,target,p)' in brand and 'reverseOrder = [7, 6, 5, 4, 3, 2, 1, 0]' in brand
+assert 'readerAliyaFromPage' in reader and 'readerAliyaQuestionCount' in reader and "reasoning_mode: 'high'" in reader and 'readerFormatMarkdown' in reader and 'readerGatewayRequest' in reader
+assert 'id="tPageFrom"' in aliya_html and 'id="tPageTo"' in aliya_html and 'pageFrom: document.getElementById' in aliya_html and 'pageScope' in core
 print('PASS multi-chat local history UI, search, pin/rename/delete hooks, SVG and CSS structure')

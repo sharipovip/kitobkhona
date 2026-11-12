@@ -149,3 +149,21 @@
   .ozmun-scroll-v3 { grid-template-columns:repeat(6,minmax(0,1fr)) !important; }
   .cat-scroll-v3 { grid-template-columns:repeat(8,minmax(0,1fr)) !important; }
 }
+
+@media screen and (min-width:1200px) and (hover:hover) and (pointer:fine){
+  .main-content{left:24px!important;padding-top:4px!important}
+  body.kkh-dnav-open .main-content{left:292px!important}
+  .hero-v3{height:clamp(235px,30vh,330px)!important;min-height:235px!important;margin:0 0 12px!important;border-radius:20px!important}
+  .hero-v3-left{padding:22px 28px!important;gap:10px!important}
+  .hero-kicker-v3{font-size:12px!important}.hero-quote-v3{font-size:clamp(20px,1.65vw,29px)!important;line-height:1.38!important;-webkit-line-clamp:5!important}
+  .hero-author-v3{margin-top:0!important}.hero-dots-v3{margin-top:4px!important}
+  .ozmun-v3{margin:0 0 8px!important}.sec-head-v3{padding:10px 2px 8px!important}
+  .ozmun-scroll-v3{grid-template-columns:repeat(5,minmax(0,1fr))!important;gap:9px!important}
+  .ozmun-item-v3{min-height:76px!important;padding:9px 11px!important;gap:9px!important;border-radius:14px!important}
+  .ozmun-circle-v3{width:54px!important;height:54px!important;flex-basis:54px!important}.ozmun-label-v3{font-size:12px!important}
+  #prezSection .prez-card{min-height:76px!important;padding:8px 12px!important;gap:12px!important}
+  #prezSection .prez-thumb-box,#prezSection .prez-thumb-box.ok{width:60px!important;height:60px!important;flex-basis:60px!important}
+  #prezSection .prez-title{font-size:13px!important;-webkit-line-clamp:2!important}#prezSection .prez-meta{font-size:10px!important;margin-top:3px!important}
+  #prezSection .prez-chips{padding:2px 0 6px!important}.books-scroll-v3{grid-template-columns:repeat(auto-fill,minmax(140px,1fr))!important;gap:12px!important}
+  .book-card-v3{width:auto!important;min-width:0!important;max-width:none!important}.book-cover-v3{height:auto!important;aspect-ratio:0.68!important;min-height:155px!important;max-height:220px!important}
+}

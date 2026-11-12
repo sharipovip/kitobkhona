@@ -13,8 +13,24 @@
       break;
     }
   }
-  link.href = (basePath || '') + 'assets/css/desktop-layout.css?v=100';
+  link.href = (basePath || '') + 'assets/css/desktop-layout.css?v=101';
   (document.head || document.documentElement).appendChild(link);
+  var extra = document.createElement('link'); extra.rel = 'stylesheet'; extra.href = (basePath || '') + 'assets/css/desktop-sidebar.css?v=1';
+  (document.head || document.documentElement).appendChild(extra);
+  function mountDesktopSidebar() {
+    if (document.getElementById('kkhDesktopNav')) return;
+    var path = location.pathname || '';
+    var links = [
+      ['index.html','⌂','Асосӣ'],['kitobho.html','▤','Китобҳо'],['winners.html','♛','Ғолибон'],
+      ['aliya/index.html','✦','Алия'],['dovtalab/index.html','🎓','Довталаб'],['Lenta.html','♡','Лента'],['chats.html','☏','Чатҳо']
+    ];
+    var nav = document.createElement('aside'); nav.id='kkhDesktopNav'; nav.className='kkh-desktop-nav'; nav.setAttribute('aria-label','Навигатсияи асосӣ');
+    nav.innerHTML = '<div class="kkh-dnav-title">КИТОБХОНА</div>' + links.map(function(x){var href=(basePath||'')+x[0];var active=path.endsWith('/'+x[0])||(x[0]==='index.html'&&(path.endsWith('/')||path.endsWith('/index.html')));return '<a class="kkh-dnav-link'+(active?' active':'')+'" href="'+href+'"><span class="kkh-dnav-icon">'+x[1]+'</span><span>'+x[2]+'</span></a>';}).join('');
+    var toggle=document.createElement('button'); toggle.id='kkhDesktopNavToggle';toggle.className='kkh-dnav-toggle';toggle.type='button';toggle.setAttribute('aria-label','Кушодани меню');toggle.setAttribute('aria-expanded','false');toggle.innerHTML='<span>☰</span>';
+    toggle.addEventListener('click',function(){var open=document.body.classList.toggle('kkh-dnav-open');toggle.setAttribute('aria-expanded',String(open));toggle.setAttribute('aria-label',open?'Пӯшидани меню':'Кушодани меню');});
+    document.body.appendChild(nav);document.body.appendChild(toggle);
+  }
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',mountDesktopSidebar,{once:true});else mountDesktopSidebar();
 })();
 
 (function installResponsiveViewportGuard() {

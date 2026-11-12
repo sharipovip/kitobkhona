@@ -609,8 +609,11 @@
       var isOpen = params.format === 'open';
       var count = Math.max(3, Math.min(20, Number(params.count) || 5));
       var contextText = String(params.contextText || '').slice(0, 12000);
+      var pageFrom=Number(params.pageFrom)||0,pageTo=Number(params.pageTo)||pageFrom;
+      if(pageFrom&&pageTo&&pageTo<pageFrom){var pageSwap=pageFrom;pageFrom=pageTo;pageTo=pageSwap;}
+      var pageScope=pageFrom?' Доираи китобро танҳо ба саҳифаҳои '+pageFrom+(pageTo&&pageTo!==pageFrom?'–'+pageTo:'')+' маҳдуд кун; рақамҳои саҳифаро тағйир надиҳ.':'';
       var ask = 'Барои синфи ' + (params.grade || '') + ', фанни «' + (params.subject || '') +
-        '», мавзӯи «' + (params.topic || '') + '» ' + count + ' савол омода кун. ' +
+        '», мавзӯи «' + (params.topic || '') + '» ' + count + ' савол омода кун.' + pageScope + ' ' +
         (contextText ? 'Асоси саволҳо танҳо ҳамин матн бошад: ' + contextText : 'Агар матн дода нашуда бошад, танҳо маълумоти боэътимоди мавзӯъро истифода бар ва далели китоб/саҳифа насоз.') +
         (isOpen ? ' Навъ: саволҳои кушода. ' : ' Навъ: тестҳои пӯшида, барои ҳар савол маҳз 4 ҷавоби A, B, C, D ва як ҷавоби дуруст. ') +
         'Барои муаллим ҷавоби намунавӣ ва шарҳи кӯтоҳ низ илова кун. Танҳо JSON: {"questions":[{"question":"...","options":[{"key":"A","text":"..."}],"correctKey":"A","answer":"...","explanation":"..."}]}. Барои саволҳои кушода options метавонад [].';

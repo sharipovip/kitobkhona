@@ -1,0 +1,25 @@
+/* Shared collapsible desktop navigation; mobile/touch UI remains unchanged. */
+@media (min-width:1200px) and (hover:hover) and (pointer:fine){
+  .kkh-desktop-nav{position:fixed;z-index:5000;left:14px;top:14px;bottom:14px;width:250px;padding:20px 12px;display:flex;flex-direction:column;gap:7px;border:1px solid rgba(201,168,76,.18);border-radius:22px;background:linear-gradient(180deg,rgba(20,36,57,.98),rgba(10,20,34,.98));box-shadow:0 20px 55px rgba(0,0,0,.38);backdrop-filter:blur(18px);transform:translateX(calc(-100% - 20px));transition:transform .22s ease;overflow:auto}
+  body.kkh-dnav-open .kkh-desktop-nav{transform:translateX(0)}
+  .kkh-dnav-title{padding:7px 12px 16px;color:#e8c96d;font-size:12px;font-weight:900;letter-spacing:.18em}
+  .kkh-dnav-link{height:50px;flex:0 0 50px;display:flex;align-items:center;gap:13px;padding:0 14px;border:1px solid transparent;border-radius:14px;color:#afbdd0;text-decoration:none;font-size:13px;font-weight:750;transition:.16s}
+  .kkh-dnav-link:hover,.kkh-dnav-link.active{background:rgba(232,201,109,.1);border-color:rgba(232,201,109,.24);color:#f1d681}
+  .kkh-dnav-icon{width:25px;text-align:center;font-size:20px;color:#e8c96d}
+  .kkh-dnav-toggle{position:fixed;z-index:5002;left:16px;top:16px;width:44px;height:44px;border:1px solid rgba(232,201,109,.28);border-radius:14px;background:rgba(15,27,43,.94);color:#f1d681;font-size:20px;cursor:pointer;box-shadow:0 8px 24px rgba(0,0,0,.28);transition:left .22s ease,transform .18s ease}
+  body.kkh-dnav-open .kkh-dnav-toggle{left:274px} .kkh-dnav-toggle:hover{transform:translateY(-1px)}
+  /* Replace permanently-open page-specific navigation with the shared toggle. */
+  .nav-bottom{display:none!important}
+  body.kkh-dnav-open .new-top-bar-v3{left:292px!important}
+  body.kkh-dnav-open .main-content{left:292px!important}
+  body.kkh-dnav-open .aliya-header{left:292px!important}
+  body.kkh-dnav-open .aliya-main{left:292px!important}
+  body.kkh-dnav-open .aliya-tabs-bar{left:14px!important}
+  body.kkh-dnav-open .history-drawer:not([hidden]){inset:0 0 0 264px!important}
+}
+@media(max-width:1199px),(hover:none){.kkh-desktop-nav,.kkh-dnav-toggle{display:none!important}}
+@media (min-width:1200px) and (hover:hover) and (pointer:fine){
+ body:has(.reader-wrapper) .kkh-dnav-toggle{left:54px;top:8px}
+ body.kkh-dnav-open:has(.reader-wrapper) .kkh-dnav-toggle{left:274px;top:8px}
+ body:has(.aliya-app) .kkh-dnav-toggle,body.kkh-dnav-open:has(.aliya-app) .kkh-dnav-toggle{left:330px;top:20px}
+}
