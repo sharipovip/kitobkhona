@@ -18,7 +18,15 @@
   var extra = document.createElement('link'); extra.rel = 'stylesheet'; extra.href = (basePath || '') + 'assets/css/desktop-sidebar.css?v=1';
   (document.head || document.documentElement).appendChild(extra);
   function mountDesktopSidebar() {
+    // Этап C: старая панель-оверлей заменена боковой панелью, которая сдвигает содержимое (desktop-sidebar.js)
     if (document.getElementById('kkhDesktopNav')) return;
+    if (!window.__kkSideLoaded) {
+      var sideScript = document.createElement('script');
+      sideScript.src = (basePath || '') + 'desktop-sidebar.js?v=1';
+      sideScript.defer = true;
+      (document.head || document.documentElement).appendChild(sideScript);
+    }
+    return;
     var path = location.pathname || '';
     var links = [
       ['index.html','⌂','Асосӣ'],['kitobho.html','▤','Китобҳо'],['winners.html','♛','Ғолибон'],
