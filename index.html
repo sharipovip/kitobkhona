@@ -2296,6 +2296,8 @@ function hydrateBookCardCovers(root=document){ if(window.CacheManager&&typeof Ca
 function theme(t){ document.body.classList.toggle('light-theme',t==='light'); localStorage.setItem('kk_theme',t); }
 theme(localStorage.getItem('kk_theme')||'dark');
 let hero = window.QUOTES || [];
+// Тартиби цитату-фото ҳар бор ба таври тасодуфӣ омехта мешавад (ҳар бори навсозии саҳифа дигар)
+(function shuffleHero(){ for(let i=hero.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [hero[i],hero[j]]=[hero[j],hero[i]]; } })();
 if(!hero.length){ hero=[ {img:'assets/hero/01-president-official.jpg',topic:'маориф',quote:'Илм фурӯғи маърифат аст ва маърифат пешрафти инсоният мебошад.',color:'#ffffff',fontSize:15,displayDuration:12,fontFamily:'Manrope, sans-serif'}, {img:'assets/hero/02-istiqlol-flag.jpg',topic:'истиқлолият',quote:'Истиқлолият неъмати бебаҳо ва асоси ҳастии давлатдории миллӣ аст.',color:'#ffffff',fontSize:15,displayDuration:12,fontFamily:'Manrope, sans-serif'}, {img:'assets/hero/03-vahdat-diplomacy.jpg',topic:'ваҳдати миллӣ',quote:'Ваҳдати миллӣ пояи сулҳу субот ва рушди ҷомеа мебошад.',color:'#ffffff',fontSize:15,displayDuration:12,fontFamily:'Manrope, sans-serif'} ];}
 let hi=0,typeTimer=null,heroAuto=null;
 function typeText(text){ clearInterval(typeTimer); const el=$('heroQuote'); if(!el) return; el.textContent=''; let n=0; typeTimer=setInterval(()=>{ el.textContent=text.slice(0,++n); if(n>=text.length) clearInterval(typeTimer); }, 70); }
@@ -2320,7 +2322,7 @@ function setHero(i){
   setTimeout(()=>{const imgEl=$('heroImg');if(imgEl){imgEl.onerror=function(){imgEl.onerror=null;imgEl.src='assets/hero/01-president-official.jpg'};imgEl.src=h.img;imgEl.alt='Пешвои миллат — '+h.topic;const right=imgEl.closest('.hero-v3-right');if(right)right.style.setProperty('--hero-image',`url("${String(h.img).replace(/"/g,'')}")`)}const kicker=$('heroKicker');if(kicker)kicker.innerHTML='Суханҳои Пешвои муаззами миллат дар бораи <b>'+h.topic+'</b>';const quoteEl=$('heroQuote');if(quoteEl){quoteEl.style.color=h.color||'#fff';quoteEl.style.fontFamily=h.fontFamily||"Georgia,'Times New Roman',serif";quoteEl.title='Манбаъ: '+(h.sourceTitle||'president.tj');quoteEl.textContent=h.quote;scheduleHeroFit(h.fontSize)}if($('heroDots'))$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot-v3 ${j===hi?'active':''}"></div>`).join('');requestAnimationFrame(()=>inner?.classList.remove('hero-changing'))},220);
   clearTimeout(heroAuto);heroAuto=setTimeout(()=>setHero(hi+1),(h.displayDuration||12)*1000)
 }
-setHero(Math.floor(Math.random()*hero.length));
+setHero(0);
 document.fonts?.ready?.then(()=>scheduleHeroFit(hero[hi]?.fontSize)).catch(()=>{});
 
 function hideAnnouncementTop(){ const el=document.getElementById('announcementBannerTop'); if(el){ el.classList.remove('show'); setTimeout(()=>el.style.display='none',400);} }
