@@ -9,25 +9,47 @@
   <script src="../assets/libs/pdf.min.js"></script>
   <style>
     *{box-sizing:border-box}
-    html,body{margin:0;height:100%;background:#06101d;color:#F0EAD6;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+    html,body{margin:0;min-height:100%;background:#06101d;color:#F0EAD6;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
     .ra-app{min-height:100dvh;display:flex;flex-direction:column}
-    .ra-head{display:flex;align-items:center;gap:10px;padding:12px 16px;border-bottom:1px solid rgba(201,168,76,.22);position:sticky;top:0;background:#0b1729;z-index:2}
-    .ra-back{color:#E8C96D;text-decoration:none;font-size:28px;line-height:1;padding:2px 10px}
-    .ra-title{font-weight:700;color:#E8C96D;font-size:16px;flex:1;min-width:0}
+    .ra-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.22);position:sticky;top:0;background:#0b1729;z-index:2}
+    .ra-back{color:#E8C96D;text-decoration:none;font-size:26px;line-height:1;padding:2px 8px}
+    .ra-title{font-weight:700;color:#E8C96D;font-size:15px;flex:1;min-width:0}
     .ra-title small{display:block;color:#aebbd0;font-weight:400;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-    .ra-body{width:min(1100px,100%);margin:0 auto;padding:16px;display:flex;flex-direction:column;gap:12px;flex:1}
-    .ra-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;padding:12px;background:rgba(7,15,26,.6);border:1px solid rgba(201,168,76,.18);border-radius:12px}
-    .ra-settings label{display:flex;flex-direction:column;gap:4px;color:#aebbd0;font-size:11px;font-weight:700}
-    .ra-settings input,.ra-settings select{width:100%;height:38px;background:#101e31;color:#f0ead6;border:1px solid rgba(201,168,76,.24);border-radius:8px;padding:0 8px;font:inherit}
-    .ra-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
-    .ra-btn{min-height:46px;background:#14263e;color:#F0EAD6;border:1px solid rgba(201,168,76,.25);border-radius:12px;padding:10px;font:inherit;font-weight:600;cursor:pointer;text-align:left}
+    .ra-body{width:min(1100px,100%);margin:0 auto;padding:12px 14px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+    .ra-tasks{display:flex;flex-wrap:wrap;gap:6px}
+    .ra-btn{height:34px;background:#14263e;color:#F0EAD6;border:1px solid rgba(201,168,76,.28);border-radius:999px;padding:0 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
+    .ra-btn:hover{border-color:#E8C96D}
     .ra-btn:disabled{opacity:.5;cursor:default}
-    .ra-row{display:flex;gap:8px}
-    .ra-row input{flex:1;min-width:0;background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:10px 12px;color:#F0EAD6;font:inherit;font-size:14px}
-    .ra-send{background:#E8C96D;color:#0D1B2A;border:0;border-radius:10px;padding:10px 16px;font-weight:700;cursor:pointer}
-    .ra-result{min-height:180px;background:#0D1B2A;border:1px solid rgba(201,168,76,.2);border-radius:12px;padding:16px;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;font-size:15px}
-    .ra-note{color:#aebbd0;font-size:12px}
-    @media(max-width:700px){.ra-grid{grid-template-columns:1fr}.ra-settings{grid-template-columns:repeat(2,minmax(0,1fr))}}
+    .ra-panel{flex:1;display:flex;flex-direction:column;min-height:min(560px,calc(100dvh - 210px));background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:14px;overflow:hidden}
+    .ra-out{flex:1;overflow:auto;padding:14px 16px;line-height:1.7;word-wrap:break-word;font-size:15px;min-height:0}
+    .ra-out.ra-empty{color:#7f8ea6;font-size:14px}
+    .ra-ask{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-top:1px solid rgba(201,168,76,.22);background:#0b1729}
+    .ra-ask textarea{width:100%;height:84px;min-height:84px;max-height:30vh;resize:vertical;background:transparent;border:0;outline:0;color:#F0EAD6;font:inherit;font-size:16px;line-height:1.5}
+    .ra-ask-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid rgba(201,168,76,.15);padding-top:8px}
+    .ra-pages{display:flex;align-items:center;gap:6px;color:#aebbd0;font-size:12px}
+    .ra-pages input{width:64px;height:30px;background:#101e31;color:#f0ead6;border:1px solid rgba(201,168,76,.24);border-radius:8px;padding:0 6px;font:inherit}
+    .ra-send{margin-left:auto;background:#E8C96D;color:#0D1B2A;border:0;border-radius:10px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:14px}
+    .ra-send:disabled{opacity:.5}
+        .ra-result h4{margin:12px 0 4px;color:#E8C96D;font-size:15px}
+    .ra-result ul{margin:4px 0 8px;padding-left:20px}
+    .ra-result p{margin:6px 0}
+    .ra-note{color:#aebbd0;font-size:12px;margin:0}
+    /* окно выбора */
+    .ra-modal{position:fixed;inset:0;background:rgba(2,6,14,.7);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+    .ra-modal[hidden]{display:none}
+    .ra-sheet{width:min(460px,100%);min-width:0;background:#0b1729;border:1px solid rgba(201,168,76,.3);border-radius:16px 16px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px}
+    @media(min-width:700px){.ra-modal{align-items:center}.ra-sheet{border-radius:16px}}
+    .ra-sheet h3{margin:0;color:#E8C96D;font-size:16px}
+    .ra-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;min-width:0}
+    .ra-fields label{display:flex;flex-direction:column;gap:4px;color:#aebbd0;font-size:12px;font-weight:600;min-width:0}
+    .ra-fields .full{grid-column:1/-1}
+    .ra-fields input,.ra-fields select{width:100%;min-width:0;height:40px;background:#101e31;color:#f0ead6;border:1px solid rgba(201,168,76,.24);border-radius:8px;padding:0 8px;font:inherit;font-size:15px}
+    .ra-sheet-act{display:flex;gap:8px;justify-content:flex-end}
+    .ra-sheet-act button{height:40px;border-radius:10px;padding:0 16px;font:inherit;font-weight:700;cursor:pointer;border:1px solid rgba(201,168,76,.3)}
+    #raMCancel{background:transparent;color:#aebbd0}
+    #raMOk{background:#E8C96D;color:#0D1B2A;border-color:#E8C96D}
+    .ra-err{color:#ff8a8a;font-size:12px;min-height:14px}
+    @media(max-width:420px){.ra-btn{font-size:12px;padding:0 10px}}
   </style>
 </head>
 <body>
@@ -38,16 +60,7 @@
   </header>
 
   <main class="ra-body">
-    <div class="ra-settings" aria-label="Танзимоти омӯзиш">
-      <label>Аз саҳифа <input id="raFrom" type="number" min="1" value="1"></label>
-      <label>То саҳифа <input id="raTo" type="number" min="1" value="1"></label>
-      <label>Синф <select id="raGrade"><option value="">Муайян накарда</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select></label>
-      <label>Забони нақша <select id="raLang"><option value="Тоҷикӣ" selected>Тоҷикӣ</option><option value="Русский">Русский</option><option value="English">English</option></select></label>
-      <label>Савол <select id="raCount"><option>4</option><option>6</option><option>8</option><option>10</option></select></label>
-      <label>Навъи тест <select id="raType"><option value="multiple choice">Вариантҳо</option><option value="open-ended">Кушода</option><option value="mixed">Омехта</option></select></label>
-    </div>
-
-    <div class="ra-grid">
+    <div class="ra-tasks">
       <button class="ra-btn" data-task="summary">📝 Хулосаи саҳифа</button>
       <button class="ra-btn" data-task="words">📖 Калимаҳои мушкил</button>
       <button class="ra-btn" data-task="test">❓ Санҷиш ва тест</button>
@@ -56,14 +69,33 @@
       <button class="ra-btn" data-task="notes">📌 Сабт дар ёддошт</button>
     </div>
 
-    <form class="ra-row" id="raForm">
-      <input id="raPrompt" type="text" placeholder="Саволи худро оид ба ин китоб нависед...">
-      <button class="ra-send" type="submit">Ирсол</button>
-    </form>
-
-    <div class="ra-result" id="raResult">Барои таҳлил тугмаҳои болоро пахш кунед ё савол нависед.</div>
+    <section class="ra-panel">
+      <div class="ra-out ra-empty" id="raResult">Тугмаҳоро пахш кунед ё савол нависед. Ҷавоби Алия дар ин ҷо нишон дода мешавад.</div>
+      <form class="ra-ask" id="raForm">
+        <textarea id="raPrompt" placeholder="Саволи худро оид ба ин китоб нависед…"></textarea>
+        <div class="ra-ask-bar">
+          <div class="ra-pages">
+            Саҳифа: <input id="raQFrom" type="number" min="1" value="1" aria-label="Аз саҳифа"> –
+            <input id="raQTo" type="number" min="1" value="1" aria-label="То саҳифа">
+          </div>
+          <button class="ra-send" id="raSend" type="submit">Ирсол</button>
+        </div>
+      </form>
+    </section>
     <p class="ra-note" id="raNote">Танҳо китобҳои матнии PDF дастрасанд. Барои PDF-и скан ҳоло танҳо матни дастрас таҳлил мешавад.</p>
   </main>
+</div>
+
+<div class="ra-modal" id="raModal" hidden>
+  <div class="ra-sheet" role="dialog" aria-modal="true" aria-labelledby="raMTitle">
+    <h3 id="raMTitle"></h3>
+    <div class="ra-fields" id="raMFields"></div>
+    <div class="ra-err" id="raMErr"></div>
+    <div class="ra-sheet-act">
+      <button id="raMCancel" type="button">Бекор</button>
+      <button id="raMOk" type="button">Оғоз</button>
+    </div>
+  </div>
 </div>
 
 <script>
@@ -76,25 +108,53 @@
   var curPage = Math.max(1, Number(qs.get('page')) || 1);
   var totalPages = 0;
   var pdfDoc = null;
+  var busy = false;
 
   var $ = function (id) { return document.getElementById(id); };
   var resBox = $('raResult');
   var label = $('raLabel');
-  var fromEl = $('raFrom'), toEl = $('raTo');
 
-  // Ссылка «назад» ведёт к той же книге на той же странице
   if (bookUrl) {
     $('raBack').href = '../reader.html?url=' + encodeURIComponent(bookUrl) +
       '&name=' + encodeURIComponent(bookName) + '&page=' + curPage;
   }
+  $('raQFrom').value = curPage; $('raQTo').value = curPage;
 
   function setLabel(extra) {
     label.textContent = '«' + bookName + '» · саҳифаи ' + curPage + (totalPages ? ' аз ' + totalPages : '') + (extra ? ' · ' + extra : '');
   }
-
   function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-  // Загрузка книги (PDF) через pdf.js
+  // Безопасный вывод: сначала экранируем HTML, потом превращаем **жирный**, заголовки и списки.
+  // Одиночные звёздочки и решётки, которые остались без смысла, убираются.
+  function renderMarkdown(src) {
+    var lines = escHtml(String(src || '')).split(/\r?\n/);
+    var out = [], inList = false;
+    function inline(t) {
+      return t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+              .replace(/__(.+?)__/g, '<strong>$1</strong>')
+              .replace(/`([^`]+)`/g, '$1')
+              .replace(/\*/g, '');
+    }
+    lines.forEach(function (raw) {
+      var line = raw.replace(/\s+$/, '');
+      var h = line.match(/^\s*#{1,6}\s+(.*)$/);
+      var li = line.match(/^\s*[-*•]\s+(.*)$/);
+      if (li) {
+        if (!inList) { out.push('<ul>'); inList = true; }
+        out.push('<li>' + inline(li[1]) + '</li>');
+        return;
+      }
+      if (inList) { out.push('</ul>'); inList = false; }
+      if (h) { out.push('<h4>' + inline(h[1]) + '</h4>'); return; }
+      if (!line.trim()) { out.push(''); return; }
+      out.push('<p>' + inline(line) + '</p>');
+    });
+    if (inList) out.push('</ul>');
+    return out.join('\n');
+  }
+  function showResult(text) { resBox.classList.remove('ra-empty'); resBox.innerHTML = renderMarkdown(text); resBox.scrollTop = 0; }
+
   async function loadBook() {
     if (!bookUrl) { setLabel('китоб интихоб нашудааст'); resBox.textContent = 'Китоб интихоб нашудааст. Аз Китобхона дубора кушоед.'; return; }
     try {
@@ -104,8 +164,7 @@
       var buf = await resp.arrayBuffer();
       pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
       totalPages = pdfDoc.numPages;
-      fromEl.max = totalPages; toEl.max = totalPages;
-      fromEl.value = curPage; toEl.value = curPage;
+      $('raQFrom').max = totalPages; $('raQTo').max = totalPages;
       setLabel();
     } catch (e) {
       setLabel('хатогии боркунӣ');
@@ -113,7 +172,6 @@
     }
   }
 
-  // Матни диапазони саҳифаҳо (ё PDF-и скан: ҳоло холӣ)
   async function extractRange(first, last) {
     if (!pdfDoc) throw new Error('Китоб боргузорӣ нашудааст.');
     var parts = [];
@@ -123,11 +181,9 @@
       var t = c.items.map(function (it) { return it.str; }).join(' ').trim();
       if (t) parts.push('[САҲИФА ' + n + ']\n' + t);
     }
-    var text = parts.join('\n\n').slice(0, 28000);
-    return text;
+    return parts.join('\n\n').slice(0, 28000);
   }
 
-  // PDF-и скан (матн нест): картинкаи як саҳифаро ба /v1/vision мефиристем
   async function renderPageJpeg(n) {
     var p = await pdfDoc.getPage(n);
     var vp = p.getViewport({ scale: 1.4 });
@@ -145,7 +201,7 @@
     return String(d.reply || d.analysis || '').trim();
   }
 
-  // Запрос к шлюзу: 2 попытки при временных сбоях
+  // Шлюз сам перебирает модели по очереди; здесь — 2 попытки при временном сбое
   async function gatewayChat(payload, signal) {
     var last;
     for (var attempt = 0; attempt < 2; attempt++) {
@@ -167,36 +223,89 @@
     throw last || new Error('Дархост муваффақ нашуд.');
   }
 
+  var LANGS = [['Тоҷикӣ', 'Тоҷикӣ'], ['Русский', 'Русский'], ['English', 'English']];
+  var GRADES = [['', 'Муайян накарда']].concat([5,6,7,8,9,10,11].map(function (g) { return [String(g), String(g)]; }));
   var TASKS = {
-    summary: function (f, t, g, l) { return 'Саҳифаҳои ' + f + '–' + t + '-ро ба забони ' + l + ' кӯтоҳ хулоса кун ва фикри асосиро ҷудо намо.' + (g ? ' Барои синфи ' + g + '.' : ''); },
-    words: function (f, t, g, l) { return 'Калимаҳои душворфаҳм ва истилоҳоти воқеан дар саҳифаҳои ' + f + '–' + t + ' бударо ҷудо карда, маънояшонро ба забони ' + l + ' шарҳ деҳ.'; },
-    test: function (f, t, g, l, cnt, typ) { return 'Аз рӯи матни дақиқи саҳифаҳои ' + f + '–' + t + ' ' + cnt + ' савол соз (навъи ' + typ + ')' + (g ? ' барои синфи ' + g : '') + '; дар охир калиди ҷавобҳоро низ нишон деҳ.'; },
-    lesson: function (f, t, g, l) { return 'Аз рӯи мазмуни саҳифаҳои ' + f + '–' + t + ' нақшаи дарси яксоата ба забони ' + l + ' соз' + (g ? ' барои синфи ' + g : '') + '.'; },
-    translate: function (f, t) { return 'Матни саҳифаҳои ' + f + '–' + t + '-ро ба забони русӣ тарҷума кун. Сохтор ва мафҳумҳоро нигоҳ дор.'; },
-    notes: function (f, t, g, l) { return 'Аз саҳифаҳои интихобшуда танҳо фикрҳои асосӣ ва иқтибосҳои воқеан намоёнро ба забони ' + l + ' ёддошт кун.'; }
+    summary:   { title: '📝 Хулосаи саҳифа', fields: ['range'] },
+    words:     { title: '📖 Калимаҳои мушкил', fields: ['range', 'lang'] },
+    test:      { title: '❓ Санҷиш ва тест', fields: ['range', 'grade', 'count', 'type'] },
+    lesson:    { title: '🎓 Нақшаи дарс', fields: ['range', 'grade', 'lang'] },
+    translate: { title: '🌐 Тарҷума ба русӣ', fields: ['range'] },
+    notes:     { title: '📌 Сабт дар ёддошт', fields: ['range', 'lang'] }
   };
 
-  async function run(type, customPrompt) {
-    var f = Number(fromEl.value) || curPage, t = Number(toEl.value) || f;
+  function opt(v, t) { return '<option value="' + v + '">' + t + '</option>'; }
+  function fieldHtml(name) {
+    if (name === 'range') return '<label>Аз саҳифа<input id="mFrom" type="number" min="1" value="' + curPage + '"></label>' +
+                                  '<label>То саҳифа<input id="mTo" type="number" min="1" value="' + curPage + '"></label>';
+    if (name === 'lang') return '<label class="full">Забони ҷавоб<select id="mLang">' + LANGS.map(function (l) { return opt(l[0], l[1]); }).join('') + '</select></label>';
+    if (name === 'grade') return '<label>Синф<select id="mGrade">' + GRADES.map(function (g) { return opt(g[0], g[1]); }).join('') + '</select></label>';
+    if (name === 'count') return '<label>Шумораи савол<select id="mCount">' + [4,6,8,10].map(function (n) { return opt(n, n); }).join('') + '</select></label>';
+    if (name === 'type') return '<label>Навъи тест<select id="mType">' + opt('multiple choice', 'Вариантҳо') + opt('open-ended', 'Кушода') + opt('mixed', 'Омехта') + '</select></label>';
+    return '';
+  }
+
+  var modal = $('raModal'), mErr = $('raMErr'), activeTask = null;
+  function openModal(task) {
+    if (busy) return;
+    activeTask = task;
+    var def = TASKS[task];
+    $('raMTitle').textContent = def.title;
+    $('raMFields').innerHTML = def.fields.map(fieldHtml).join('');
+    mErr.textContent = '';
+    modal.hidden = false;
+    var first = $('mFrom') || $('mLang') || $('mGrade');
+    if (first) first.focus();
+  }
+  function closeModal() { modal.hidden = true; activeTask = null; }
+
+  function readRange() {
+    var f = Number($('mFrom') ? $('mFrom').value : curPage) || curPage;
+    var t = Number($('mTo') ? $('mTo').value : f) || f;
+    return normalizeRange(f, t);
+  }
+  function normalizeRange(f, t) {
     if (t < f) { var s = f; f = t; t = s; }
-    var g = $('raGrade').value, l = $('raLang').value, cnt = $('raCount').value, typ = $('raType').value;
-    var prompt = customPrompt || (TASKS[type] ? TASKS[type](f, t, g, l, cnt, typ) : 'Саҳифаҳои интихобшударо таҳлил кун.');
-    var buttons = document.querySelectorAll('.ra-btn');
-    buttons.forEach(function (b) { b.disabled = true; });
-    resBox.textContent = 'Алия китобро мехонад ва ҷавоб омода мекунад… (то 75 сония)';
+    f = Math.max(1, f); t = Math.max(1, t);
+    if (totalPages) { f = Math.min(f, totalPages); t = Math.min(t, totalPages); }
+    return { f: f, t: t };
+  }
+  function val(id, dflt) { var el = $(id); return el ? el.value : dflt; }
+
+  // Текст задания для каждой кнопки
+  function buildPrompt(task, r, o) {
+    var f = r.f, t = r.t, g = o.grade, l = o.lang;
+    var gr = g ? ' Барои синфи ' + g + '.' : '';
+    switch (task) {
+      case 'summary': return 'Саҳифаҳои ' + f + '–' + t + '-ро ба забони ' + l + ' кӯтоҳ хулоса кун ва фикри асосиро ҷудо намо.' + gr;
+      case 'words': return 'Калимаҳои душворфаҳм ва истилоҳоти воқеан дар саҳифаҳои ' + f + '–' + t + ' бударо ҷудо карда, маънояшонро ба забони ' + l + ' шарҳ деҳ.';
+      case 'test': return 'Аз рӯи матни дақиқи саҳифаҳои ' + f + '–' + t + ' ' + o.count + ' савол соз (навъи ' + o.type + ')' + (g ? ' барои синфи ' + g : '') + '; дар охир калиди ҷавобҳоро низ нишон деҳ.';
+      case 'lesson': return 'Аз рӯи мазмуни саҳифаҳои ' + f + '–' + t + ' нақшаи дарси яксоата ба забони ' + l + ' соз' + (g ? ' барои синфи ' + g : '') + '.';
+      case 'translate': return 'Матни саҳифаҳои ' + f + '–' + t + '-ро ба забони русӣ тарҷума кун. Сохтор ва мафҳумҳоро нигоҳ дор.';
+      case 'notes': return 'Аз саҳифаҳои интихобшуда танҳо фикрҳои асосӣ ва иқтибосҳои воқеан намоёнро ба забони ' + l + ' ёддошт кун.';
+    }
+    return 'Саҳифаҳои интихобшударо таҳлил кун.';
+  }
+
+  async function run(prompt, r, label2) {
+    if (busy) return;
+    busy = true;
+    var btns = document.querySelectorAll('.ra-btn'), sendBtn = $('raSend');
+    btns.forEach(function (b) { b.disabled = true; }); sendBtn.disabled = true;
+    resBox.classList.remove('ra-empty'); resBox.textContent = 'Алия китобро мехонад ва ҷавоб омода мекунад… (то 75 сония)';
     var output = '';
     var ctrl = new AbortController();
     var timer = setTimeout(function () { ctrl.abort(); }, 75000);
     try {
-      var text = await extractRange(f, t);
+      var text = await extractRange(r.f, r.t);
       if (text) {
-        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bookName + '», саҳифаҳои ' + f + '–' + t + (g ? ', синфи ' + g : '') + '. Ба савол танҳо бо такя ба матни додашуда ҷавоб деҳ.\n\nМАТН:\n' + text;
+        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bookName + '», саҳифаҳои ' + r.f + '–' + r.t + '. Ба савол танҳо бо такя ба матни додашуда ҷавоб деҳ.\n\nМАТН:\n' + text;
         output = await gatewayChat({ messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }], reasoning_mode: 'high', temperature: 0.45, max_tokens: 2200 }, ctrl.signal);
       } else {
-        // Скан: ҳоло танҳо саҳифаи аввали диапазон (ё саҳифаи кушода) таҳлил мешавад
-        var pg = (f === t) ? f : curPage;
+        // Скан: пока анализируем только первую страницу выбранного диапазона
+        var pg = r.f;
         output = await visionPage(pg, prompt, ctrl.signal);
-        if (f !== t) output = 'Ин PDF скан аст: ҳоло танҳо саҳифаи ' + pg + ' таҳлил шуд.\n\n' + output;
+        if (r.f !== r.t) output = 'Ин PDF скан аст: ҳоло танҳо саҳифаи ' + pg + ' таҳлил шуд.\n\n' + output;
       }
       if (!output) throw new Error('Сервер ҷавоби холӣ баргардонд.');
     } catch (err) {
@@ -205,19 +314,41 @@
       output = 'Алия ҳоло ин саҳифаҳоро таҳлил карда натавонист. ' + msg;
     } finally {
       clearTimeout(timer);
-      buttons.forEach(function (b) { b.disabled = false; });
+      busy = false;
+      btns.forEach(function (b) { b.disabled = false; }); sendBtn.disabled = false;
     }
-    resBox.textContent = output;
-    setLabel(f + '–' + t);
+    showResult(output);
+    setLabel(label2);
   }
 
-  document.querySelectorAll('.ra-btn').forEach(function (b) {
-    b.addEventListener('click', function () { run(b.getAttribute('data-task')); });
+  $('raMCancel').addEventListener('click', closeModal);
+  modal.addEventListener('click', function (e) { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && !modal.hidden) closeModal(); });
+
+  $('raMOk').addEventListener('click', function () {
+    if (!activeTask) return;
+    var task = activeTask;
+    var def = TASKS[task];
+    var r = def.fields.indexOf('range') >= 0 ? readRange() : normalizeRange(curPage, curPage);
+    if (totalPages && (r.f > totalPages || r.t > totalPages)) { mErr.textContent = 'Саҳифаҳо аз ' + totalPages + ' зиёд нест.'; return; }
+    var o = {
+      lang: val('mLang', 'Тоҷикӣ'), grade: val('mGrade', ''),
+      count: val('mCount', '4'), type: val('mType', 'multiple choice')
+    };
+    closeModal();
+    run(buildPrompt(task, r, o), r, r.f + '–' + r.t);
   });
+
+  document.querySelectorAll('.ra-btn').forEach(function (b) {
+    b.addEventListener('click', function () { openModal(b.getAttribute('data-task')); });
+  });
+
   $('raForm').addEventListener('submit', function (e) {
     e.preventDefault();
     var q = $('raPrompt').value.trim();
-    if (q) run('custom', q);
+    if (!q) return;
+    var r = normalizeRange(Number($('raQFrom').value) || curPage, Number($('raQTo').value) || curPage);
+    run(q + '\n(Саҳифаҳои ' + r.f + '–' + r.t + ')', r, r.f + '–' + r.t);
   });
 
   loadBook();
