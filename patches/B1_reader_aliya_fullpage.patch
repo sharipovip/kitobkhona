@@ -1,0 +1,24 @@
+diff --git a/reader.html b/reader.html
+index 5c9e318..40f8523 100644
+--- a/reader.html
++++ b/reader.html
+@@ -2765,6 +2765,7 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
+     <div class="aliya-reader-panel">
+       <div class="aliya-rp-head">
+         <div class="aliya-rp-title">
++          <button type="button" class="aliya-rp-back" title="Бозгашт ба китоб" aria-label="Бозгашт ба китоб" onclick="document.getElementById('readerAliyaClose').click()">‹</button>
+           <span style="font-size:18px;">✨</span>
+           <span>Алия — Ёвари китобхон</span>
+         </div>
+@@ -2825,6 +2826,11 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
+  #readerAliyaResult{min-height:170px!important;flex:1 0 170px!important;font-size:15px!important;padding:24px!important}
+ }
+ @media(max-width:700px){.reader-aliya-settings{grid-template-columns:repeat(2,minmax(0,1fr))}}
++/* Этап B1: Алия — полноэкранная страница с кнопкой «назад» (телефон и ПК) */
++.aliya-reader-modal{padding:0!important;align-items:stretch!important;justify-content:stretch!important;background:#06101d!important;backdrop-filter:none!important}
++.aliya-reader-panel{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;border:0!important;box-shadow:none!important}
++.aliya-rp-back{font-size:26px!important;line-height:1!important;margin-right:8px;background:none;border:0;color:#E8C96D;cursor:pointer;padding:4px 8px}
++.aliya-rp-body{overflow:auto!important;-webkit-overflow-scrolling:touch}
+ </style>
+ <script src="./aliya/aliya-brand-animation.js?v=1" defer></script>
+ </body>

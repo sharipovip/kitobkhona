@@ -1,0 +1,553 @@
+diff --git a/aliya/reader-aliya.html b/aliya/reader-aliya.html
+index 2cde70b..3a699d4 100644
+--- a/aliya/reader-aliya.html
++++ b/aliya/reader-aliya.html
+@@ -3,41 +3,58 @@
+ <head>
+   <meta charset="UTF-8">
+   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+-  <meta name="theme-color" content="#0E0F12">
+-  <title>Алия — Ёвари китобхон</title>
++  <meta name="theme-color" content="#06101d">
++  <title>Алия — Китобхона</title>
+   <link rel="icon" type="image/x-icon" href="../favicon.ico">
+   <script src="../assets/libs/pdf.min.js"></script>
+   <style>
+     *{box-sizing:border-box}
+-    html,body{margin:0;min-height:100%;background:#06101d;color:#F0EAD6;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+-    .ra-app{min-height:100dvh;display:flex;flex-direction:column}
+-    .ra-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.22);position:sticky;top:0;background:#0b1729;z-index:2}
++    html,body{margin:0;height:100%;background:#06101d;color:#F0EAD6;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;overflow:hidden}
++    .ra-app{height:100dvh;display:flex;flex-direction:column;min-height:0}
++    .ra-head{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid rgba(201,168,76,.22);background:#0b1729;flex:0 0 auto}
+     .ra-back{color:#E8C96D;text-decoration:none;font-size:26px;line-height:1;padding:2px 8px}
+     .ra-title{font-weight:700;color:#E8C96D;font-size:15px;flex:1;min-width:0}
+     .ra-title small{display:block;color:#aebbd0;font-weight:400;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+-    .ra-body{width:min(1100px,100%);margin:0 auto;padding:12px 14px 20px;display:flex;flex-direction:column;gap:10px;flex:1}
+-    .ra-tasks{display:flex;flex-wrap:wrap;gap:6px}
+-    .ra-btn{height:34px;background:#14263e;color:#F0EAD6;border:1px solid rgba(201,168,76,.28);border-radius:999px;padding:0 12px;font:inherit;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap}
++    .ra-body{width:min(1100px,100%);margin:0 auto;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
++
++    /* 6 кнопок: компактная сетка */
++    .ra-tasks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex:0 0 auto}
++    @media(min-width:700px){.ra-tasks{grid-template-columns:repeat(6,minmax(0,1fr))}}
++    .ra-btn{min-height:38px;background:#14263e;color:#F0EAD6;border:1px solid rgba(201,168,76,.26);border-radius:10px;padding:6px 8px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;line-height:1.2;text-align:center}
+     .ra-btn:hover{border-color:#E8C96D}
+-    .ra-btn:disabled{opacity:.5;cursor:default}
+-    .ra-panel{flex:1;display:flex;flex-direction:column;min-height:min(560px,calc(100dvh - 210px));background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:14px;overflow:hidden}
+-    .ra-out{flex:1;overflow:auto;padding:14px 16px;line-height:1.7;word-wrap:break-word;font-size:15px;min-height:0}
++    .ra-btn:disabled{opacity:.45;cursor:default}
++
++    /* Единый блок: ответ сверху, ввод внизу */
++    .ra-panel{flex:1;min-height:0;display:flex;flex-direction:column;background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:14px;overflow:hidden}
++    .ra-out{flex:1;min-height:0;overflow:auto;padding:12px 14px;line-height:1.7;font-size:15px;word-wrap:break-word}
+     .ra-out.ra-empty{color:#7f8ea6;font-size:14px}
+-    .ra-ask{display:flex;flex-direction:column;gap:6px;padding:10px 12px;border-top:1px solid rgba(201,168,76,.22);background:#0b1729}
+-    .ra-ask textarea{width:100%;height:84px;min-height:84px;max-height:30vh;resize:vertical;background:transparent;border:0;outline:0;color:#F0EAD6;font:inherit;font-size:16px;line-height:1.5}
+-    .ra-ask-bar{display:flex;align-items:center;gap:8px;flex-wrap:wrap;border-top:1px solid rgba(201,168,76,.15);padding-top:8px}
+-    .ra-pages{display:flex;align-items:center;gap:6px;color:#aebbd0;font-size:12px}
+-    .ra-pages input{width:64px;height:30px;background:#101e31;color:#f0ead6;border:1px solid rgba(201,168,76,.24);border-radius:8px;padding:0 6px;font:inherit}
+-    .ra-send{margin-left:auto;background:#E8C96D;color:#0D1B2A;border:0;border-radius:10px;padding:9px 18px;font-weight:700;cursor:pointer;font-size:14px}
++    .ra-status{display:flex;align-items:center;gap:8px;color:#E8C96D;font-size:14px;min-height:22px;margin-bottom:6px}
++    .ra-av{width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:radial-gradient(circle,#E8C96D 0%,#8a6d1f 100%);display:inline-flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 0 8px rgba(232,201,109,.45);animation:raPulse 1.4s ease-in-out infinite}
++    @keyframes raPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
++    .ra-dots{display:inline-block;width:1.4em;text-align:left;overflow:hidden;vertical-align:bottom;animation:raDots 1.2s steps(4,end) infinite}
++    @keyframes raDots{from{width:0}to{width:1.4em}}
++    .ra-cursor{display:inline-block;width:2px;height:1em;background:#E8C96D;margin-left:2px;vertical-align:text-bottom;animation:raBlink .9s steps(2,start) infinite}
++    @keyframes raBlink{to{visibility:hidden}}
++    .ra-out h4{margin:12px 0 4px;color:#E8C96D;font-size:15px}
++    .ra-out ul{margin:4px 0 8px;padding-left:20px}
++    .ra-out p{margin:6px 0}
++    .ra-out strong{color:#FFD97A;font-weight:700}
++
++    .ra-tools{display:none;gap:6px;flex-wrap:wrap;padding:8px 12px;border-top:1px solid rgba(201,168,76,.15);background:#0b1729}
++    .ra-tools.on{display:flex}
++    .ra-tool{height:32px;background:#14263e;color:#E8C96D;border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:0 10px;font:inherit;font-size:12.5px;cursor:pointer}
++    .ra-tool:hover{border-color:#E8C96D}
++
++    .ra-ask{display:flex;gap:8px;padding:8px 10px;border-top:1px solid rgba(201,168,76,.22);background:#0b1729;flex:0 0 auto}
++    .ra-ask input{flex:1;min-width:0;height:40px;background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:0 12px;color:#F0EAD6;font:inherit;font-size:15px;outline:0}
++    .ra-ask input:focus{border-color:#E8C96D}
++    .ra-send{height:40px;background:#E8C96D;color:#0D1B2A;border:0;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer;font-size:14px}
+     .ra-send:disabled{opacity:.5}
+-        .ra-result h4{margin:12px 0 4px;color:#E8C96D;font-size:15px}
+-    .ra-result ul{margin:4px 0 8px;padding-left:20px}
+-    .ra-result p{margin:6px 0}
+-    .ra-note{color:#aebbd0;font-size:12px;margin:0}
+-    /* окно выбора */
++
++    /* Окно выбора */
+     .ra-modal{position:fixed;inset:0;background:rgba(2,6,14,.7);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+     .ra-modal[hidden]{display:none}
+-    .ra-sheet{width:min(460px,100%);min-width:0;background:#0b1729;border:1px solid rgba(201,168,76,.3);border-radius:16px 16px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px}
++    .ra-sheet{width:min(460px,100%);min-width:0;background:#0b1729;border:1px solid rgba(201,168,76,.3);border-radius:16px 16px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px;max-height:90dvh;overflow:auto}
+     @media(min-width:700px){.ra-modal{align-items:center}.ra-sheet{border-radius:16px}}
+     .ra-sheet h3{margin:0;color:#E8C96D;font-size:16px}
+     .ra-fields{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px;min-width:0}
+@@ -49,40 +66,43 @@
+     #raMCancel{background:transparent;color:#aebbd0}
+     #raMOk{background:#E8C96D;color:#0D1B2A;border-color:#E8C96D}
+     .ra-err{color:#ff8a8a;font-size:12px;min-height:14px}
+-    @media(max-width:420px){.ra-btn{font-size:12px;padding:0 10px}}
++
++    @media(max-width:420px){.ra-btn{font-size:12px}}
+   </style>
+ </head>
+ <body>
+ <div class="ra-app">
+   <header class="ra-head">
+     <a class="ra-back" id="raBack" href="../reader.html" aria-label="Бозгашт ба китоб">‹</a>
+-    <div class="ra-title">✨ Алия — Ёвари китобхон<small id="raLabel">Китоб загун мешавад…</small></div>
++    <div class="ra-title">✨ Алия<small id="raLabel">Китоб загун мешавад…</small></div>
+   </header>
+ 
+   <main class="ra-body">
+-    <div class="ra-tasks">
+-      <button class="ra-btn" data-task="summary">📝 Хулосаи саҳифа</button>
+-      <button class="ra-btn" data-task="words">📖 Калимаҳои мушкил</button>
++    <nav class="ra-tasks" aria-label="Амалҳо">
++      <button class="ra-btn" data-task="summary">📝 Хулосаи мавзӯъ</button>
++      <button class="ra-btn" data-task="words">📖 Калимаҳо ва истилоҳот</button>
++      <button class="ra-btn" data-task="translate">🌐 Тарҷума</button>
+       <button class="ra-btn" data-task="test">❓ Санҷиш ва тест</button>
+       <button class="ra-btn" data-task="lesson">🎓 Нақшаи дарс</button>
+-      <button class="ra-btn" data-task="translate">🌐 Тарҷума ба русӣ</button>
+       <button class="ra-btn" data-task="notes">📌 Сабт дар ёддошт</button>
+-    </div>
++    </nav>
+ 
+     <section class="ra-panel">
+-      <div class="ra-out ra-empty" id="raResult">Тугмаҳоро пахш кунед ё савол нависед. Ҷавоби Алия дар ин ҷо нишон дода мешавад.</div>
++      <div class="ra-out ra-empty" id="raOut">
++        <div class="ra-status" id="raStatus" hidden><span class="ra-av">✨</span><span id="raStatusText"></span></div>
++        <div id="raResult">Тугмаҳоро пахш кунед ё савол нависед.</div>
++      </div>
++      <div class="ra-tools" id="raTools">
++        <button class="ra-tool" id="raCopy" type="button">📋 Нусхабардорӣ</button>
++        <button class="ra-tool" id="raWord" type="button">📄 Word</button>
++        <button class="ra-tool" id="raPdf" type="button">🖨 PDF</button>
++        <button class="ra-tool" id="raSave" type="button">💾 Ба ёддошт</button>
++      </div>
+       <form class="ra-ask" id="raForm">
+-        <textarea id="raPrompt" placeholder="Саволи худро оид ба ин китоб нависед…"></textarea>
+-        <div class="ra-ask-bar">
+-          <div class="ra-pages">
+-            Саҳифа: <input id="raQFrom" type="number" min="1" value="1" aria-label="Аз саҳифа"> –
+-            <input id="raQTo" type="number" min="1" value="1" aria-label="То саҳифа">
+-          </div>
+-          <button class="ra-send" id="raSend" type="submit">Ирсол</button>
+-        </div>
++        <input id="raPrompt" type="text" placeholder="Саволи худро нависед…" autocomplete="off">
++        <button class="ra-send" id="raSend" type="submit">Ирсол</button>
+       </form>
+     </section>
+-    <p class="ra-note" id="raNote">Танҳо китобҳои матнии PDF дастрасанд. Барои PDF-и скан ҳоло танҳо матни дастрас таҳлил мешавад.</p>
+   </main>
+ </div>
+ 
+@@ -109,51 +129,82 @@
+   var totalPages = 0;
+   var pdfDoc = null;
+   var busy = false;
++  var lastOutput = '';
++  var lastTask = '';
++  var typeTimer = null;
++  var statusTimer = null;
+ 
+   var $ = function (id) { return document.getElementById(id); };
+-  var resBox = $('raResult');
+-  var label = $('raLabel');
++  var out = $('raOut'), resBox = $('raResult'), statusBox = $('raStatus'), statusText = $('raStatusText');
++  var label = $('raLabel'), tools = $('raTools');
+ 
+   if (bookUrl) {
+     $('raBack').href = '../reader.html?url=' + encodeURIComponent(bookUrl) +
+       '&name=' + encodeURIComponent(bookName) + '&page=' + curPage;
+   }
+-  $('raQFrom').value = curPage; $('raQTo').value = curPage;
+ 
+   function setLabel(extra) {
+     label.textContent = '«' + bookName + '» · саҳифаи ' + curPage + (totalPages ? ' аз ' + totalPages : '') + (extra ? ' · ' + extra : '');
+   }
+   function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
+ 
+-  // Безопасный вывод: сначала экранируем HTML, потом превращаем **жирный**, заголовки и списки.
+-  // Одиночные звёздочки и решётки, которые остались без смысла, убираются.
++  // Безопасный Markdown: сначала экранируем HTML. **текст** = выделенные имена и термины.
++  function inline(t) {
++    return t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
++            .replace(/__(.+?)__/g, '<strong>$1</strong>')
++            .replace(/`([^`]+)`/g, '$1')
++            .replace(/\*/g, '');
++  }
+   function renderMarkdown(src) {
+     var lines = escHtml(String(src || '')).split(/\r?\n/);
+-    var out = [], inList = false;
+-    function inline(t) {
+-      return t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
+-              .replace(/__(.+?)__/g, '<strong>$1</strong>')
+-              .replace(/`([^`]+)`/g, '$1')
+-              .replace(/\*/g, '');
+-    }
++    var html = [], inList = false;
+     lines.forEach(function (raw) {
+       var line = raw.replace(/\s+$/, '');
+       var h = line.match(/^\s*#{1,6}\s+(.*)$/);
+       var li = line.match(/^\s*[-*•]\s+(.*)$/);
+       if (li) {
+-        if (!inList) { out.push('<ul>'); inList = true; }
+-        out.push('<li>' + inline(li[1]) + '</li>');
++        if (!inList) { html.push('<ul>'); inList = true; }
++        html.push('<li>' + inline(li[1]) + '</li>');
+         return;
+       }
+-      if (inList) { out.push('</ul>'); inList = false; }
+-      if (h) { out.push('<h4>' + inline(h[1]) + '</h4>'); return; }
+-      if (!line.trim()) { out.push(''); return; }
+-      out.push('<p>' + inline(line) + '</p>');
++      if (inList) { html.push('</ul>'); inList = false; }
++      if (h) { html.push('<h4>' + inline(h[1]) + '</h4>'); return; }
++      if (!line.trim()) return;
++      html.push('<p>' + inline(line) + '</p>');
+     });
+-    if (inList) out.push('</ul>');
+-    return out.join('\n');
++    if (inList) html.push('</ul>');
++    return html.join('\n');
++  }
++
++  // ---- Статус: одна строка с маленькой иконкой и анимацией «читаю / готовлю» ----
++  function stopStatus() { clearInterval(statusTimer); statusTimer = null; statusBox.hidden = true; }
++  function startStatus(lines) {
++    stopStatus();
++    var i = 0;
++    statusBox.hidden = false;
++    function show() {
++      statusText.innerHTML = '<span>' + escHtml(lines[i % lines.length]) + '</span><span class="ra-dots">...</span>';
++      i++;
++    }
++    show();
++    statusTimer = setInterval(show, 1700);
++  }
++
++  // ---- Печать ответа по буквам ----
++  function typeOutput(text, done) {
++    clearInterval(typeTimer);
++    out.classList.remove('ra-empty');
++    resBox.innerHTML = '';
++    var n = 0, step = Math.max(2, Math.ceil(text.length / 260));
++    var holder = document.createElement('div');
++    resBox.appendChild(holder);
++    typeTimer = setInterval(function () {
++      n = Math.min(text.length, n + step);
++      holder.innerHTML = renderMarkdown(text.slice(0, n)) + (n < text.length ? '<span class="ra-cursor"></span>' : '');
++      out.scrollTop = out.scrollHeight;
++      if (n >= text.length) { clearInterval(typeTimer); typeTimer = null; if (done) done(); }
++    }, 22);
+   }
+-  function showResult(text) { resBox.classList.remove('ra-empty'); resBox.innerHTML = renderMarkdown(text); resBox.scrollTop = 0; }
+ 
+   async function loadBook() {
+     if (!bookUrl) { setLabel('китоб интихоб нашудааст'); resBox.textContent = 'Китоб интихоб нашудааст. Аз Китобхона дубора кушоед.'; return; }
+@@ -164,7 +215,6 @@
+       var buf = await resp.arrayBuffer();
+       pdfDoc = await pdfjsLib.getDocument({ data: buf }).promise;
+       totalPages = pdfDoc.numPages;
+-      $('raQFrom').max = totalPages; $('raQTo').max = totalPages;
+       setLabel();
+     } catch (e) {
+       setLabel('хатогии боркунӣ');
+@@ -195,13 +245,13 @@
+ 
+   async function visionPage(n, prompt, signal) {
+     var img = await renderPageJpeg(n);
+-    var r = await fetch(GATEWAY + '/v1/vision', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ image_base64: img, prompt: prompt + ' Китоб: «' + bookName + '», саҳифаи ' + n + '.', system: 'Шумо ёвари таълимии Китобхона ҳастед. Матни намоёни акси саҳифаро дақиқ хонед ва ба савол ҷавоб деҳ.' }), signal: signal, cache: 'no-store' });
++    var r = await fetch(GATEWAY + '/v1/vision', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ image_base64: img, prompt: prompt + ' Китоб: «' + bookName + '», саҳифаи ' + n + '.', system: 'Шумо ёвари таълимии Китобхона ҳастед. Матни намоёни акси саҳифаро дақиқ хонед ва ба савол ҷавоб деҳ. Номҳои шахсиятҳо ва истилоҳоти асосиро дар **...** гузоред.' }), signal: signal, cache: 'no-store' });
+     var d = await r.json().catch(function () { return {}; });
+     if (!r.ok || d.error) throw new Error(String(d.detail || d.error || ('HTTP ' + r.status)));
+     return String(d.reply || d.analysis || '').trim();
+   }
+ 
+-  // Шлюз сам перебирает модели по очереди; здесь — 2 попытки при временном сбое
++  // Шлюз сам перебирает модели по очереди; здесь 2 попытки при временном сбое
+   async function gatewayChat(payload, signal) {
+     var last;
+     for (var attempt = 0; attempt < 2; attempt++) {
+@@ -223,25 +273,31 @@
+     throw last || new Error('Дархост муваффақ нашуд.');
+   }
+ 
+-  var LANGS = [['Тоҷикӣ', 'Тоҷикӣ'], ['Русский', 'Русский'], ['English', 'English']];
+-  var GRADES = [['', 'Муайян накарда']].concat([5,6,7,8,9,10,11].map(function (g) { return [String(g), String(g)]; }));
++  // ---- Задания ----
++  var LANGS = [['Русский', 'Русский'], ['English', 'English'], ['Тоҷикӣ', 'Тоҷикӣ'], ['Oʻzbekcha', 'Oʻzbekcha'], ['Türkçe', 'Türkçe']];
++  var MATERIALS = [
++    ['test_answers', 'Тест — бо ҷавоб (✔ дар варианти дуруст)'],
++    ['test_key', 'Тест — бо калид (ҷавобҳо дар охир)'],
++    ['essay', 'Иншо'],
++    ['essay_long', 'Эссе'],
++    ['essay_short', 'Иншои хурд']
++  ];
+   var TASKS = {
+-    summary:   { title: '📝 Хулосаи саҳифа', fields: ['range'] },
+-    words:     { title: '📖 Калимаҳои мушкил', fields: ['range', 'lang'] },
+-    test:      { title: '❓ Санҷиш ва тест', fields: ['range', 'grade', 'count', 'type'] },
+-    lesson:    { title: '🎓 Нақшаи дарс', fields: ['range', 'grade', 'lang'] },
+-    translate: { title: '🌐 Тарҷума ба русӣ', fields: ['range'] },
+-    notes:     { title: '📌 Сабт дар ёддошт', fields: ['range', 'lang'] }
++    summary:   { title: '📝 Хулосаи мавзӯъ', fields: ['range'], wait: ['Ба хондан шурӯъ кардам', 'Мехонам', 'Хулосаро омода мекунам'] },
++    words:     { title: '📖 Калимаҳо ва истилоҳот', fields: [], wait: ['Калимаҳоро меҷӯям', 'Маънояшонро омода месозам'] },
++    translate: { title: '🌐 Тарҷума', fields: ['range', 'tlang'], wait: ['Хонда истодаам', 'Тарҷума мекунам'] },
++    test:      { title: '❓ Санҷиш ва тест', fields: ['range', 'material', 'count'], wait: ['Хонда истодаам', 'Тест месозам', 'Саволҳоро тафтиш мекунам'] },
++    lesson:    { title: '🎓 Нақшаи дарс', fields: ['range'], wait: ['Мавзӯъро мехонам', 'Нақшаи дарс месозам', 'Конспект тайёр мешавад'] },
++    notes:     { title: '📌 Сабт дар ёддошт', fields: ['range'], wait: ['Мехонам', 'Асосҳоро ҷудо мекунам'] }
+   };
+ 
+   function opt(v, t) { return '<option value="' + v + '">' + t + '</option>'; }
+   function fieldHtml(name) {
+     if (name === 'range') return '<label>Аз саҳифа<input id="mFrom" type="number" min="1" value="' + curPage + '"></label>' +
+                                   '<label>То саҳифа<input id="mTo" type="number" min="1" value="' + curPage + '"></label>';
+-    if (name === 'lang') return '<label class="full">Забони ҷавоб<select id="mLang">' + LANGS.map(function (l) { return opt(l[0], l[1]); }).join('') + '</select></label>';
+-    if (name === 'grade') return '<label>Синф<select id="mGrade">' + GRADES.map(function (g) { return opt(g[0], g[1]); }).join('') + '</select></label>';
+-    if (name === 'count') return '<label>Шумораи савол<select id="mCount">' + [4,6,8,10].map(function (n) { return opt(n, n); }).join('') + '</select></label>';
+-    if (name === 'type') return '<label>Навъи тест<select id="mType">' + opt('multiple choice', 'Вариантҳо') + opt('open-ended', 'Кушода') + opt('mixed', 'Омехта') + '</select></label>';
++    if (name === 'tlang') return '<label class="full">Забони тарҷума<select id="mTLang">' + LANGS.map(function (l) { return opt(l[0], l[1]); }).join('') + '</select></label>';
++    if (name === 'material') return '<label class="full">Намуди материал<select id="mMaterial">' + MATERIALS.map(function (m) { return opt(m[0], m[1]); }).join('') + '</select></label>';
++    if (name === 'count') return '<label class="full">Шумораи савол / бандҳо<input id="mCount" type="number" min="1" max="30" value="5"></label>';
+     return '';
+   }
+ 
+@@ -254,17 +310,13 @@
+     $('raMFields').innerHTML = def.fields.map(fieldHtml).join('');
+     mErr.textContent = '';
+     modal.hidden = false;
+-    var first = $('mFrom') || $('mLang') || $('mGrade');
++    var first = $('mFrom') || $('mTLang') || $('mMaterial');
+     if (first) first.focus();
+   }
+   function closeModal() { modal.hidden = true; activeTask = null; }
+ 
+-  function readRange() {
+-    var f = Number($('mFrom') ? $('mFrom').value : curPage) || curPage;
+-    var t = Number($('mTo') ? $('mTo').value : f) || f;
+-    return normalizeRange(f, t);
+-  }
+   function normalizeRange(f, t) {
++    f = Number(f) || curPage; t = Number(t) || f;
+     if (t < f) { var s = f; f = t; t = s; }
+     f = Math.max(1, f); t = Math.max(1, t);
+     if (totalPages) { f = Math.min(f, totalPages); t = Math.min(t, totalPages); }
+@@ -272,53 +324,62 @@
+   }
+   function val(id, dflt) { var el = $(id); return el ? el.value : dflt; }
+ 
+-  // Текст задания для каждой кнопки
++  // Язык ответа — автоматически (по языку текста книги), кроме тарҷума, где выбирает читатель
+   function buildPrompt(task, r, o) {
+-    var f = r.f, t = r.t, g = o.grade, l = o.lang;
+-    var gr = g ? ' Барои синфи ' + g + '.' : '';
++    var f = r.f, t = r.t, rng = (f === t ? 'саҳифаи ' + f : 'саҳифаҳои ' + f + '–' + t);
+     switch (task) {
+-      case 'summary': return 'Саҳифаҳои ' + f + '–' + t + '-ро ба забони ' + l + ' кӯтоҳ хулоса кун ва фикри асосиро ҷудо намо.' + gr;
+-      case 'words': return 'Калимаҳои душворфаҳм ва истилоҳоти воқеан дар саҳифаҳои ' + f + '–' + t + ' бударо ҷудо карда, маънояшонро ба забони ' + l + ' шарҳ деҳ.';
+-      case 'test': return 'Аз рӯи матни дақиқи саҳифаҳои ' + f + '–' + t + ' ' + o.count + ' савол соз (навъи ' + o.type + ')' + (g ? ' барои синфи ' + g : '') + '; дар охир калиди ҷавобҳоро низ нишон деҳ.';
+-      case 'lesson': return 'Аз рӯи мазмуни саҳифаҳои ' + f + '–' + t + ' нақшаи дарси яксоата ба забони ' + l + ' соз' + (g ? ' барои синфи ' + g : '') + '.';
+-      case 'translate': return 'Матни саҳифаҳои ' + f + '–' + t + '-ро ба забони русӣ тарҷума кун. Сохтор ва мафҳумҳоро нигоҳ дор.';
+-      case 'notes': return 'Аз саҳифаҳои интихобшуда танҳо фикрҳои асосӣ ва иқтибосҳои воқеан намоёнро ба забони ' + l + ' ёддошт кун.';
++      case 'summary': return 'Мавзӯъи ' + rng + '-ро кӯтоҳ шарҳ деҳ: мавзӯъи асосӣ, фикрҳои калидӣ. Ба забони матн ҷавоб деҳ.';
++      case 'words': return 'Калимаҳо ва истилоҳоти душворфаҳмро аз ' + rng + ' ҷудо кун ва маънояшонро шарҳ деҳ. Ба забони матн ҷавоб деҳ.';
++      case 'translate': return 'Матни ' + rng + '-ро ба забони ' + o.tlang + ' тарҷума кун. Сохтор ва мафҳумҳоро нигоҳ дор.';
++      case 'test':
++        var cnt = o.count || 5;
++        if (o.material === 'test_answers') return 'Аз рӯи матни ' + rng + ' ' + cnt + ' саволи тест соз. Ҳар савол 3 варианти А) Б) В) дошта бошад. Дар варианти дуруст нишонаи ✔ гузор. Ҷавоби иловагӣ нанавис.';
++        if (o.material === 'test_key') return 'Аз рӯи матни ' + rng + ' ' + cnt + ' саволи тест соз, ҳар савол 3 варианти А) Б) В). Баъд аз ҳамаи саволҳо бахши "Калид" бо ҷавобҳои дуруст (масалан: 1–Б) гузор.';
++        if (o.material === 'essay') return 'Аз рӯи матни ' + rng + ' як иншои мукаммал нависед (мавзӯъ, муқаддима, асоси асосӣ, хулоса).';
++        if (o.material === 'essay_long') return 'Аз рӯи матни ' + rng + ' эссе нависед: муаллиф, фикри асосӣ, далелҳо ва хулоса.';
++        return 'Аз рӯи матни ' + rng + ' иншои хурд нависед (3–5 ҷумла).';
++      case 'lesson': return 'Аз рӯи мазмуни ' + rng + ' нақшаи дарси яксоата созед: мақсад, марҳилаҳо, саволҳо ва супориш. Ба забони матн ҷавоб деҳ.';
++      case 'notes': return 'Аз ' + rng + ' танҳо фикрҳои асосӣ ва иқтибосҳои воқеан намоёнро ёддошт кун. Ба забони матн ҷавоб деҳ.';
+     }
+-    return 'Саҳифаҳои интихобшударо таҳлил кун.';
++    return 'Саҳифаи ҷориро таҳлил кун.';
+   }
+ 
+-  async function run(prompt, r, label2) {
++  async function run(task, prompt, r, title) {
+     if (busy) return;
+     busy = true;
+     var btns = document.querySelectorAll('.ra-btn'), sendBtn = $('raSend');
+     btns.forEach(function (b) { b.disabled = true; }); sendBtn.disabled = true;
+-    resBox.classList.remove('ra-empty'); resBox.textContent = 'Алия китобро мехонад ва ҷавоб омода мекунад… (то 75 сония)';
++    tools.classList.remove('on');
++    clearInterval(typeTimer);
++    resBox.innerHTML = '';
++    startStatus(TASKS[task] ? TASKS[task].wait : ['Саволатонро мехонам', 'Ҷавоб омода мекунам']);
+     var output = '';
+     var ctrl = new AbortController();
+     var timer = setTimeout(function () { ctrl.abort(); }, 75000);
+     try {
+       var text = await extractRange(r.f, r.t);
+       if (text) {
+-        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bookName + '», саҳифаҳои ' + r.f + '–' + r.t + '. Ба савол танҳо бо такя ба матни додашуда ҷавоб деҳ.\n\nМАТН:\n' + text;
++        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bookName + '», саҳифаҳои ' + r.f + '–' + r.t + '. Ба савол танҳо бо такя ба матни додашуда ҷавоб деҳ. Номҳои шахсиятҳо ва истилоҳоти асосиро дар **...** гузоред.\n\nМАТН:\n' + text;
+         output = await gatewayChat({ messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }], reasoning_mode: 'high', temperature: 0.45, max_tokens: 2200 }, ctrl.signal);
+       } else {
+-        // Скан: пока анализируем только первую страницу выбранного диапазона
+-        var pg = r.f;
+-        output = await visionPage(pg, prompt, ctrl.signal);
+-        if (r.f !== r.t) output = 'Ин PDF скан аст: ҳоло танҳо саҳифаи ' + pg + ' таҳлил шуд.\n\n' + output;
++        // Скан: пока только первая страница диапазона (OCR в браузере — следующий шаг)
++        output = await visionPage(r.f, prompt, ctrl.signal);
++        if (r.f !== r.t) output = 'Ин PDF скан аст: ҳоло танҳо саҳифаи ' + r.f + ' таҳлил шуд.\n\n' + output;
+       }
+       if (!output) throw new Error('Сервер ҷавоби холӣ баргардонд.');
+     } catch (err) {
+       var msg = (err && err.name === 'AbortError') ? 'Ҷавоби сервер дер шуд.' : String(err && err.message || 'Хатои пайвастшавӣ.');
+-      if (/chat_providers_unavailable|no_chat_provider_configured/.test(msg)) msg = 'Шлюзи Алия фаъол аст, аммо провайдери модели ҷавоб надод. Матни китоб гум нашудааст; баъдтар дубора кӯшиш кунед.';
++      if (/chat_providers_unavailable|no_chat_provider_configured/.test(msg)) msg = 'Алия ҳоло ҷавоб дода наметавонад. Матни китоб гум нашудааст; баъдтар дубора кӯшиш кунед.';
+       output = 'Алия ҳоло ин саҳифаҳоро таҳлил карда натавонист. ' + msg;
+     } finally {
+       clearTimeout(timer);
+       busy = false;
+       btns.forEach(function (b) { b.disabled = false; }); sendBtn.disabled = false;
+     }
+-    showResult(output);
+-    setLabel(label2);
++    lastOutput = output; lastTask = title || '';
++    stopStatus();
++    typeOutput(output, function () { tools.classList.add('on'); });
++    setLabel(r.f === r.t ? String(r.f) : r.f + '–' + r.t);
+   }
+ 
+   $('raMCancel').addEventListener('click', closeModal);
+@@ -327,28 +388,72 @@
+ 
+   $('raMOk').addEventListener('click', function () {
+     if (!activeTask) return;
+-    var task = activeTask;
+-    var def = TASKS[task];
+-    var r = def.fields.indexOf('range') >= 0 ? readRange() : normalizeRange(curPage, curPage);
+-    if (totalPages && (r.f > totalPages || r.t > totalPages)) { mErr.textContent = 'Саҳифаҳо аз ' + totalPages + ' зиёд нест.'; return; }
+-    var o = {
+-      lang: val('mLang', 'Тоҷикӣ'), grade: val('mGrade', ''),
+-      count: val('mCount', '4'), type: val('mType', 'multiple choice')
+-    };
++    var task = activeTask, def = TASKS[task];
++    var r = { f: curPage, t: curPage };
++    if (def.fields.indexOf('range') >= 0) {
++      r = normalizeRange(val('mFrom', curPage), val('mTo', curPage));
++      if (totalPages && (Number(val('mFrom', 1)) > totalPages || Number(val('mTo', 1)) > totalPages)) { mErr.textContent = 'Саҳифаҳо аз ' + totalPages + ' зиёд нест.'; return; }
++    }
++    var cntRaw = Number(val('mCount', 5));
++    if (task === 'test' && !(cntRaw >= 1 && cntRaw <= 30)) { mErr.textContent = 'Шумораро ворид кунед (1–30).'; return; }
++    var o = { tlang: val('mTLang', 'Русский'), material: val('mMaterial', 'test_answers'), count: cntRaw || 5 };
+     closeModal();
+-    run(buildPrompt(task, r, o), r, r.f + '–' + r.t);
++    run(task, buildPrompt(task, r, o), r, def.title);
+   });
+ 
+   document.querySelectorAll('.ra-btn').forEach(function (b) {
+-    b.addEventListener('click', function () { openModal(b.getAttribute('data-task')); });
++    b.addEventListener('click', function () {
++      var task = b.getAttribute('data-task');
++      if (task === 'words') {
++        // Калимаҳо: бе интихоби саҳифа ва забон — саҳифаи ҷорӣ, забонро Алия худаш муайян мекунад
++        run(task, buildPrompt(task, { f: curPage, t: curPage }, {}), { f: curPage, t: curPage }, TASKS.words.title);
++        return;
++      }
++      openModal(task);
++    });
+   });
+ 
+   $('raForm').addEventListener('submit', function (e) {
+     e.preventDefault();
+     var q = $('raPrompt').value.trim();
+     if (!q) return;
+-    var r = normalizeRange(Number($('raQFrom').value) || curPage, Number($('raQTo').value) || curPage);
+-    run(q + '\n(Саҳифаҳои ' + r.f + '–' + r.t + ')', r, r.f + '–' + r.t);
++    run('custom', q + '\n(Саҳифаи ' + curPage + ')', { f: curPage, t: curPage }, 'Савол');
++  });
++
++  // ---- Инструменты ответа ----
++  function fileBase() { return (bookName || 'Алия').replace(/[\\\/:*?"<>|]+/g, '_').slice(0, 60) + '_саҳифа_' + curPage; }
++  $('raCopy').addEventListener('click', function () {
++    var txt = lastOutput;
++    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(
++      function () { $('raCopy').textContent = '✓ Нусхабардорӣ шуд'; setTimeout(function () { $('raCopy').textContent = '📋 Нусхабардорӣ'; }, 1600); },
++      function () { alert('Нусхабардорӣ кор накард. Матнро дастӣ интихоб кунед.'); });
++  });
++  $('raWord').addEventListener('click', function () {
++    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body style="font-family:Calibri,Arial;font-size:12pt">' +
++      '<h2>' + escHtml(bookName) + '</h2><p>' + escHtml('Саҳифаи ' + curPage) + '</p>' + renderMarkdown(lastOutput) + '</body></html>';
++    var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
++    var a = document.createElement('a');
++    a.href = URL.createObjectURL(blob); a.download = fileBase() + '.doc';
++    document.body.appendChild(a); a.click(); a.remove();
++    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
++  });
++  $('raPdf').addEventListener('click', function () {
++    var w = window.open('', '_blank');
++    if (!w) { alert('Равзанаро кушоед, то PDF сохта шавад.'); return; }
++    w.document.write('<html><head><meta charset="utf-8"><title>' + escHtml(fileBase()) + '</title><style>body{font-family:Georgia,serif;font-size:13pt;line-height:1.6;padding:24px;color:#000}h4{color:#000}</style></head><body><h2>' + escHtml(bookName) + '</h2><p>' + escHtml('Саҳифаи ' + curPage) + '</p>' + renderMarkdown(lastOutput) + '</body></html>');
++    w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 300);
++  });
++  $('raSave').addEventListener('click', function () {
++    if (!lastOutput) return;
++    var key = 'kk_aliya_notes';
++    var all = {};
++    try { all = JSON.parse(localStorage.getItem(key) || '{}'); } catch (e) { all = {}; }
++    var list = all[bookUrl] || [];
++    list.push({ ts: Date.now(), page: curPage, task: lastTask, text: lastOutput });
++    all[bookUrl] = list;
++    try { localStorage.setItem(key, JSON.stringify(all)); } catch (e) {}
++    $('raSave').textContent = '✓ Захира шуд';
++    setTimeout(function () { $('raSave').textContent = '💾 Ба ёддошт'; }, 1600);
+   });
+ 
+   loadBook();
+diff --git a/index.html b/index.html
+index 4b0ef1d..19746d2 100644
+--- a/index.html
++++ b/index.html
+@@ -2145,20 +2145,6 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
+     </section>
+     <div class="hero-dots-v3" id="heroDots"></div>
+ 
+-    <!-- КАРТОЧКА АЛИЯ ИИ (ЗЕҲНИ СУНЪӢ) -->
+-    <section class="aliya-home-card-v3">
+-      <div style="position: absolute; right: -10px; top: -10px; width: 100px; height: 100px; background: radial-gradient(circle, rgba(232,201,109,0.25) 0%, transparent 70%); pointer-events: none;"></div>
+-      <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px;">
+-        <div style="display: flex; align-items: center; gap: 12px; min-width: 0;">
+-          <div style="width: 46px; height: 46px; border-radius: 14px; background: linear-gradient(135deg, #1E3350, #0D1B2A); border: 1.5px solid #E8C96D; display: flex; align-items: center; justify-content: center; font-size: 22px; flex-shrink: 0; box-shadow: 0 0 16px rgba(232,201,109,0.4);">✨</div>
+-          <div style="min-width: 0;">
+-            <div style="font-size: 14px; font-weight: 900; color: #E8C96D; letter-spacing: 0.3px;">АЛИЯ — Зеҳни сунъӣ</div>
+-            <div style="font-size: 11px; color: #CBD5E1; margin-top: 2px; line-height: 1.35;">Нақшаи дарс, саволу ҷавоб, тестҳо ва хулосаи китобҳо</div>
+-          </div>
+-        </div>
+-        <a href="aliya/index.html" style="background: linear-gradient(135deg, #C9A84C, #E8C96D); color: #141103; font-size: 12px; font-weight: 900; padding: 9px 16px; border-radius: 12px; text-decoration: none; white-space: nowrap; box-shadow: 0 4px 14px rgba(201,168,76,0.4); flex-shrink: 0;">Кушодан ›</a>
+-      </div>
+-    </section>
+ 
+ 
+     <!-- Search hidden -->
+diff --git a/reader.html b/reader.html
+index f15ec89..d1befed 100644
+--- a/reader.html
++++ b/reader.html
+@@ -767,7 +767,7 @@ body.light-reading .page-slot canvas{filter:none!important}
+ /* Кнопка Алия дар дохили хонанда (Reader) */
+ .reader-aliya-btn {
+   position: fixed;
+-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
++  bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+   right: 16px;
+   width: 46px;
+   height: 46px;
+@@ -890,7 +890,6 @@ body.light-reading .page-slot canvas{filter:none!important}
+     <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
+     <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
+     <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
+-    <button class="top-btn" id="topBarAliyaBtn" onclick="document.getElementById('readerAliyaBtn')?.click()" title="Алия — Ёвари китобхон" style="color:var(--gold);font-weight:bold;">✨</button>
+     <button class="top-btn pc-fullscreen-btn" onclick="if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(function(){});}else{document.exitFullscreen().catch(function(){});}" title="Экрани пурра (F)">⛶</button>
+     <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
+     <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>

@@ -767,7 +767,7 @@ body.light-reading .page-slot canvas{filter:none!important}
 /* Кнопка Алия дар дохили хонанда (Reader) */
 .reader-aliya-btn {
   position: fixed;
-  bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(108px + env(safe-area-inset-bottom, 0px));
   right: 16px;
   width: 46px;
   height: 46px;
@@ -890,7 +890,6 @@ body.light-reading .page-slot canvas{filter:none!important}
     <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
     <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
     <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
-    <button class="top-btn" id="topBarAliyaBtn" onclick="document.getElementById('readerAliyaBtn')?.click()" title="Алия — Ёвари китобхон" style="color:var(--gold);font-weight:bold;">✨</button>
     <button class="top-btn pc-fullscreen-btn" onclick="if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(function(){});}else{document.exitFullscreen().catch(function(){});}" title="Экрани пурра (F)">⛶</button>
     <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
     <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>
