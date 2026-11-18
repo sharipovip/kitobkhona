@@ -1336,11 +1336,15 @@ function translatePage(lang) {
     if (!originals) { originals = new Map(); kkhOriginalAttributes.set(el, originals); }
     ['placeholder','title','aria-label','alt','value'].forEach(attr => {
       if (!el.hasAttribute(attr)) return;
-      if (!originals.has(attr)) originals.set(attr, el.getAttribute(attr));
+      const current = el.getAttribute(attr);
+      // v159: агар барнома атрибутро худаш иваз карда бошад (масалан «6/192»), онро асл мешуморем —
+      // пештар тарҷумон қимати кӯҳнаро («1/1») бармегардонд.
+      if (!originals.has(attr) || (originals.has(attr + '\u0000set') && current !== originals.get(attr + '\u0000set'))) originals.set(attr, current);
       const original = originals.get(attr);
       const translated = lookupKkhTranslation(original, lang);
       const next = translated !== null ? translated : original;
-      if (el.getAttribute(attr) !== next) el.setAttribute(attr, next);
+      originals.set(attr + '\u0000set', next);
+      if (current !== next) el.setAttribute(attr, next);
     });
   });
 }

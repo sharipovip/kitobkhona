@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="./assets/libs/pdf.min.js"></script>
-<script src="config.js?v=75"></script>
+<script src="config.js?v=76"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -767,7 +767,7 @@ body.light-reading .page-slot canvas{filter:none!important}
 /* Кнопка Алия дар дохили хонанда (Reader) */
 .reader-aliya-btn {
   position: fixed;
-  bottom: calc(108px + env(safe-area-inset-bottom, 0px));
+  bottom: calc(152px + env(safe-area-inset-bottom, 0px)); /* v159: выше нижней панели, чтобы она не перекрывала кнопку */
   right: 16px;
   width: 46px;
   height: 46px;
@@ -882,6 +882,17 @@ body.light-reading .page-slot canvas{filter:none!important}
 </style>
 
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
+
+<style id="reader-notes-v159">
+.notes-btn{position:relative}
+.notes-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:#C9A84C;color:#fff;font-size:9.5px;font-weight:800;display:grid;place-items:center;padding:0 4px;line-height:1;pointer-events:none}
+.notes-badge[hidden]{display:none}
+.notes-panel{width:auto}
+.notes-panel #notesList{padding-top:2px}
+.light-reading .notes-panel.at-navy{--at-card:#FFFFFF;--at-card2:#F6F1E6;--at-line:rgba(0,0,0,.10);--at-gold:#8A6A15;--at-txt:#1A1F29;--at-mut:#5B6575;--at-nm:#9A6B00;--at-acc:#C9A84C;--at-accTxt:#fff}
+.light-reading .notes-panel .at-nt-card{box-shadow:0 2px 10px rgba(0,0,0,.05)}
+</style>
+<script src="./aliya/aliya-tasks.js?v=159" defer></script>
 </head>
 <body class="light-reading">
 <div class="reader-wrapper">
@@ -890,6 +901,7 @@ body.light-reading .page-slot canvas{filter:none!important}
     <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
     <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
     <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
+    <button class="top-btn notes-btn" id="notesBtn" onclick="toggleNotes()" aria-label="Ёддоштҳо" title="Ёддоштҳо">🔖<span class="notes-badge" id="notesBadge" hidden>0</span></button>
     <button class="top-btn pc-fullscreen-btn" onclick="if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(function(){});}else{document.exitFullscreen().catch(function(){});}" title="Экрани пурра (F)">⛶</button>
     <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
     <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>
@@ -984,6 +996,16 @@ body.light-reading .page-slot canvas{filter:none!important}
       <button class="pill" onclick="nextFind()">↓ Баъдӣ</button>
     </div>
     <div id="findResult" class="find-results"></div>
+  </div>
+
+
+  <!-- v159: Ёддоштҳо -->
+  <div class="panel search-panel notes-panel at-navy" id="notesPanel" role="dialog" aria-label="Ёддоштҳо">
+    <div class="settings-header">
+      <div class="panel-title">🔖 Ёддоштҳо</div>
+      <button class="close-panel" onclick="toggleNotes(false)" aria-label="Пӯшидан">✕</button>
+    </div>
+    <div id="notesList"></div>
   </div>
 
   
@@ -1353,7 +1375,8 @@ body.light-reading .page-slot canvas{filter:none!important}
       }
       pages = pdf.numPages;
       const pr = getProgress();
-      page = pr ? Math.min(pr.page, pages) : 1;
+      const qPage = parseInt(qs.get('page'), 10); // v159: «Ба саҳифа» аз ёддоштҳо ва бозгашт аз Алия
+      page = qPage > 0 ? Math.min(qPage, pages) : (pr ? Math.min(pr.page, pages) : 1);
       await renderPage(page);
     } catch(e) {
       console.error('[Reader] Error:', e);
@@ -1735,11 +1758,13 @@ body.light-reading .page-slot canvas{filter:none!important}
   function toggleSettings(force) {
     $('settingsPanel').classList.toggle('open', force === undefined ? !$('settingsPanel').classList.contains('open') : !!force);
     $('searchPanel').classList.remove('open');
+    if ($('notesPanel')) $('notesPanel').classList.remove('open');
   }
 
   function toggleSearch(force) {
     $('searchPanel').classList.toggle('open', force === undefined ? !$('searchPanel').classList.contains('open') : !!force);
     $('settingsPanel').classList.remove('open');
+    if ($('notesPanel')) $('notesPanel').classList.remove('open');
     setTimeout(() => $('findInput').focus(), 80);
   }
 
@@ -2451,8 +2476,7 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
         document.exitFullscreen().catch(function(){});
       }
     } else if (e.key === 'Escape') {
-      var modal = document.getElementById('readerAliyaModal');
-      if (modal) modal.classList.remove('on');
+      document.querySelectorAll('.panel.open').forEach(function (el) { el.classList.remove('open'); });
     }
   });
 
@@ -2460,304 +2484,62 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
   var wheelTimer = null;
   window.addEventListener('wheel', function (e) {
     if (Math.abs(e.deltaY) < 30) return;
+    if (e.target && e.target.closest && e.target.closest('.panel, .at-sheet, .at-dlg-bg')) return; // v159: прокрутка панелей не листает книгу
     if (wheelTimer) return;
     wheelTimer = setTimeout(function () { wheelTimer = null; }, 320);
     turnPage(e.deltaY > 0 ? 1 : -1);
   }, { passive: true });
 
-  // 3. Dual-Engine Text / Scanned PDF Extraction for Aliya
-  async function extractCurrentPageContent() {
-    var pageNum = typeof page !== 'undefined' ? page : 1;
-    var total = typeof pages !== 'undefined' ? pages : 1;
-    var result = { text: '', isScan: false, dataUrl: null };
-
-    // Try text extraction if PDF object exists
-    if (typeof pdf !== 'undefined' && pdf && typeof pdf.getPage === 'function') {
-      try {
-        var pageObj = await pdf.getPage(pageNum);
-        var textContent = await pageObj.getTextContent();
-        var str = textContent.items.map(function(item){ return item.str; }).join(' ').trim();
-        if (str && str.length > 35) {
-          result.text = str;
-          return result;
-        }
-      } catch (err) {
-        console.warn('[ReaderAliya] Text extraction error:', err);
-      }
-    }
-
-    // Scanned PDF / Canvas Fallback
-    var canvas = document.querySelector('#currentSlot canvas');
-    if (canvas) {
-      try {
-        var maxEdge = 1600;
-        var scale = Math.min(1, maxEdge / Math.max(canvas.width || 1, canvas.height || 1));
-        var imageCanvas = document.createElement('canvas');
-        imageCanvas.width = Math.max(1, Math.round(canvas.width * scale));
-        imageCanvas.height = Math.max(1, Math.round(canvas.height * scale));
-        imageCanvas.getContext('2d').drawImage(canvas, 0, 0, imageCanvas.width, imageCanvas.height);
-        result.dataUrl = imageCanvas.toDataURL('image/jpeg', 0.78);
-        result.isScan = true;
-      } catch (e) {}
-    }
-    return result;
-  }
-
-  async function extractReaderRange(startPage, endPage) {
-    var first=Math.max(1,Math.min(Number(startPage)||1,typeof pages!=='undefined'?pages:1));
-    var last=Math.max(first,Math.min(Number(endPage)||first,typeof pages!=='undefined'?pages:first));
-    if(typeof pdf!=='undefined'&&pdf&&typeof pdf.getPage==='function'){
-      var parts=[];
-      for(var n=first;n<=last;n++){
-        var pageObj=await pdf.getPage(n), content=await pageObj.getTextContent();
-        var text=content.items.map(function(item){return item.str;}).join(' ').trim();
-        if(text)parts.push('[САҲИФА '+n+']\n'+text);
-      }
-      if(parts.length)return {text:parts.join('\n\n').slice(0,28000),isScan:false,dataUrl:null,from:first,to:last};
-    }
-    if(first===last&&first===(typeof page!=='undefined'?page:1)){
-      var one=await extractCurrentPageContent(); one.from=first;one.to=last;return one;
-    }
-    throw new Error('Барои ин диапазон матни интихобшаванда дастрас нест. Барои PDF-и сканшуда ҳоло танҳо саҳифаи кушодаро таҳлил кардан мумкин аст.');
-  }
-
-  // 4. Aliya Modal Controller
-  var modal = document.getElementById('readerAliyaModal');
+  // 3. v159: Алия — саҳифаи алоҳида (aliya/reader-aliya.html); модали кӯҳна ва тугмаи болоии Алия хориҷ шуданд
   var btnOpen = document.getElementById('readerAliyaBtn');
-  var btnClose = document.getElementById('readerAliyaClose');
-  var resBox = document.getElementById('readerAliyaResult');
-  var labelBox = document.getElementById('readerAliyaPageLabel');
-  var copyBtn = document.getElementById('btnCopyAliyaResult');
-  var exportDocxBtn = document.getElementById('btnExportAliyaDocx');
-  var exportPdfBtn = document.getElementById('btnExportAliyaPdf');
-  var lastAliyaOutput = '';
-  var lastAliyaExportable = false;
-
   if (btnOpen) {
     btnOpen.addEventListener('click', function (e) {
       e.stopPropagation();
-      // Этап B2: Алия открывается отдельной страницей с адресом (aliya/reader-aliya.html)
-      if (url) {
-        var pCur = typeof page !== 'undefined' ? page : 1;
-        var bNm = typeof name !== 'undefined' ? name : 'Китоб';
-        location.href = 'aliya/reader-aliya.html?url=' + encodeURIComponent(url) +
-          '&name=' + encodeURIComponent(bNm) + '&page=' + pCur;
-        return;
-      }
-      modal.classList.add('on');
-      var pNum = typeof page !== 'undefined' ? page : 1;
-      var pTot = typeof pages !== 'undefined' ? pages : 1;
-      var bName = typeof name !== 'undefined' ? name : 'Китоб';
-      labelBox.textContent = 'Китоб: «' + bName + '» · Саҳифаи ' + pNum + ' аз ' + pTot;
-      var from=document.getElementById('readerAliyaFromPage'),to=document.getElementById('readerAliyaToPage'); if(from){from.max=pTot;from.value=pNum;} if(to){to.max=pTot;to.value=pNum;}
+      if (!url) { if (typeof toast === 'function') toast('Аввал китобро кушоед'); return; }
+      location.href = 'aliya/reader-aliya.html?url=' + encodeURIComponent(url) +
+        '&name=' + encodeURIComponent(typeof name !== 'undefined' ? name : 'Китоб') + '&page=' + (typeof page !== 'undefined' ? page : 1);
     });
   }
+});
 
-  if (btnClose) {
-    btnClose.addEventListener('click', function () {
-      modal.classList.remove('on');
-    });
-  }
-
-  function readerFormatMarkdown(raw) {
-    var text=String(raw||'').replace(/\r\n?/g,'\n');
-    function escHtml(s){return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;');}
-    text=escHtml(text).replace(/^###\s+(.+)$/gm,'<h3>$1</h3>').replace(/^##\s+(.+)$/gm,'<h2>$1</h2>').replace(/^#\s+(.+)$/gm,'<h2>$1</h2>')
-      .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>').replace(/\*(.+?)\*/g,'<em>$1</em>').replace(/`([^`]+)`/g,'<code>$1</code>');
-    var lines=text.split('\n'), html=[], list=null;
-    lines.forEach(function(line){var m=line.match(/^\s*(?:[-*•]|(\d+)[.)])\s+(.+)$/);if(m){var type=m[1]?'ol':'ul';if(list!==type){if(list)html.push('</'+list+'>');html.push('<'+type+'>');list=type;}html.push('<li>'+m[2]+'</li>');}else{if(list){html.push('</'+list+'>');list=null;}if(line.trim())html.push('<p>'+line+'</p>');}});
-    if(list)html.push('</'+list+'>');return html.join('');
-  }
-
-  async function readerGatewayRequest(path, payload, signal) {
-    var lastError;
-    for (var attempt=0; attempt<2; attempt++) {
-      try {
-        var response=await fetch('https://sharipovip-aliya-gateway.hf.space'+path,{
-          method:'POST',headers:{'Content-Type':'application/json','Accept':'application/json'},
-          body:JSON.stringify(payload),signal:signal,cache:'no-store'
-        });
-        var data=await response.json().catch(function(){return {};});
-        if(response.ok&&!data.error)return data;
-        var code=String(data.detail||data.error||('HTTP '+response.status));
-        lastError=new Error(code);
-        var transient=response.status>=500||code.indexOf('chat_providers_unavailable')>=0||code.indexOf('no_chat_provider_configured')>=0;
-        if(!transient||attempt===1)throw lastError;
-      } catch(error) {
-        if(error&&error.name==='AbortError')throw error;
-        lastError=error;
-        var transientError=/chat_providers_unavailable|no_chat_provider_configured|HTTP 5\d\d/i.test(String(error&&error.message||''));
-        if(!transientError||attempt===1)throw error;
-      }
-      await new Promise(function(resolve){setTimeout(resolve,650);});
+// v159: Ёддоштҳо — матнҳое, ки дар Алия бо 🔖 сабт шудаанд (танҳо дар ҳамин дастгоҳ, localStorage «kk_aliya_notes»)
+function readerNotesCount() {
+  try { return window.AliyaTasks ? window.AliyaTasks.notes.count(url) : 0; } catch (e) { return 0; }
+}
+function updateNotesBadge() {
+  var b = document.getElementById('notesBadge'); if (!b) return;
+  var n = readerNotesCount();
+  b.textContent = n > 99 ? '99+' : String(n);
+  b.hidden = !n;
+}
+function renderReaderNotes() {
+  var box = document.getElementById('notesList');
+  if (!box || !window.AliyaTasks) return;
+  window.AliyaTasks.renderNotesList(box, {
+    book: url,
+    onChange: updateNotesBadge,
+    onGo: function (p) {
+      toggleNotes(false);
+      var target = Math.max(1, Math.min(Number(p) || 1, pages || 1));
+      if (typeof renderPage === 'function') renderPage(target, target >= page ? 1 : -1);
     }
-    throw lastError||new Error('Дархости Алия муваффақ нашуд.');
-  }
-
-  async function handleAliyaTask(type, customQuery) {
-    resBox.innerHTML = '<div class="aliya-reader-wait"><span class="aliya-wait-emblem" data-aliya-emblem aria-label="Алия — нишони аниматсионӣ"></span><span>Алия китобро мехонад ва ҷавоб омода мекунад…</span></div>';
-    copyBtn.style.display = 'none';
-    var fromPage=Number(document.getElementById('readerAliyaFromPage')?.value)|| (typeof page!=='undefined'?page:1);
-    var toPage=Number(document.getElementById('readerAliyaToPage')?.value)||fromPage;
-    if(toPage<fromPage){var swap=fromPage;fromPage=toPage;toPage=swap;}
-    var extracted;
-    var grade=document.getElementById('readerAliyaGrade')?.value||'';
-    var lessonLanguage=document.getElementById('readerAliyaLanguage')?.value||'Тоҷикӣ';
-    var questionCount=document.getElementById('readerAliyaQuestionCount')?.value||'4';
-    var questionType=document.getElementById('readerAliyaQuestionType')?.value||'multiple choice';
-    var GATEWAY = 'https://sharipovip-aliya-gateway.hf.space';
-    var pNum = typeof page !== 'undefined' ? page : 1;
-    var bName = typeof name !== 'undefined' ? name : 'Китоб';
-    var promptMap = {
-      summary: 'Саҳифаҳои '+fromPage+'–'+toPage+'-ро кӯтоҳ хулоса кун ва фикри асосиро ба забони '+lessonLanguage+' баён намо.'+(grade?' Барои синфи '+grade+'.':''),
-      words: 'Калимаҳои душворфаҳм ва истилоҳоти воқеан дар саҳифаҳои '+fromPage+'–'+toPage+' бударо ҷудо карда, маънояшонро шарҳ деҳ. Агар калимаи норавшан бошад, тахмин накун.',
-      test: 'Аз рӯи матни дақиқи саҳифаҳои '+fromPage+'–'+toPage+' '+questionCount+' саволи навъи '+questionType+' соз'+(grade?' барои синфи '+grade:'')+'; дар охир калиди ҷавобҳоро алоҳида биёр.',
-      lesson: 'Аз рӯи мазмуни саҳифаҳои интихобшуда нақшаи дарси яксоата ба забони '+lessonLanguage+' соз'+(grade?' барои синфи '+grade:'')+'. Мазмуни китобро аз контекст бигир; маълумоти мавҷударо насоз.',
-      translate: 'Матни саҳифаҳои '+fromPage+'–'+toPage+'-ро ба забони русӣ тарҷума кун. Сохтор ва мафҳумҳоро нигоҳ дор.',
-      notes: 'Аз саҳифаҳои интихобшуда танҳо фикрҳои асосӣ ва иқтибосҳои воқеан намоёнро ба забони '+lessonLanguage+' ёддошт кун'+(grade?' барои синфи '+grade:'')+'.'
-    };
-    var prompt = customQuery || promptMap[type] || 'Саҳифаҳои интихобшударо таҳлил кун.';
-    if(type==='summary') prompt='Саҳифаҳои '+fromPage+'–'+toPage+'-ро ба забони '+lessonLanguage+' кӯтоҳ хулоса кун ва фикри асосиро ҷудо намо.'+(grade?' Барои синфи '+grade+'.':'');
-    var output = '';
-    var timeoutId = null;
-    try {
-      extracted = await extractReaderRange(fromPage,toPage);
-      var controller = new AbortController();
-      timeoutId = setTimeout(function () { controller.abort(); }, 75000);
-      if (extracted.isScan && extracted.dataUrl) {
-        var imageBase64 = extracted.dataUrl.replace(/^data:image\/[^;]+;base64,/i, '');
-        var visionData = await readerGatewayRequest('/v1/vision', {
-          image_base64: imageBase64,
-          prompt: prompt + ' Китоб: «' + bName + '», саҳифаи ' + pNum + '.',
-          system: 'Шумо ёвари таълимии Китобхона ҳастед. Матни намоёни акси саҳифаро дақиқ хонед. Агар сифат паст бошад ё қисми матн норавшан бошад, инро ошкоро қайд кунед ва матнро насозед.'
-        }, controller.signal);
-        output = String(visionData.reply || visionData.analysis || '').trim();
-      } else {
-        if (!extracted.text) throw new Error('Матни ин саҳифаро гирифта натавонистам ва тасвири саҳифа низ дастрас нест.');
-        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bName + '», саҳифаҳои ' + fromPage + '–' + toPage + (grade?', синфи '+grade:'') + '. Ба савол танҳо бо такя ба матни дар поён омада ҷавоб диҳед; агар ҷавоб дар он набошад, бигӯед, ки дар ин порча нест.\n\n[МАТНИ САҲИФА]:\n' + extracted.text.slice(0, 26000);
-        var chatData = await readerGatewayRequest('/v1/chat', {
-          messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }],
-          reasoning_mode: 'high', temperature: 0.45, max_tokens: 2200
-        }, controller.signal);
-        output = String(chatData.reply || (chatData.choices && chatData.choices[0] && chatData.choices[0].message && chatData.choices[0].message.content) || '').trim();
-      }
-      clearTimeout(timeoutId);
-      if (!output) throw new Error('Сервер ҷавоби холӣ баргардонд. Дубора кӯшиш кунед.');
-    } catch (err) {
-      if (timeoutId) clearTimeout(timeoutId);
-      var errText = String(err && err.message || 'Хатои пайвастшавӣ.');
-      if (errText.indexOf('chat_providers_unavailable') >= 0 || errText.indexOf('no_chat_provider_configured') >= 0) {
-        errText = 'Шлюзи Алия фаъол аст, аммо провайдери модели ҷавоб надод. Матни саҳифа гум нашудааст; дубора кӯшиш кунед ё баъдтар баргардед.';
-      }
-      output = 'Алия ҳоло ин саҳифаро таҳлил карда натавонист. ' +
-        (err && err.name === 'AbortError' ? 'Ҷавоби сервер дер шуд.' : errText) +
-        ' Интернетро санҷед ва дубора кӯшиш кунед.';
-      console.error('[ReaderAliya] Request failed:', err);
-    }
-    resBox.innerHTML = readerFormatMarkdown(output);
-    lastAliyaOutput = output;
-    lastAliyaExportable = output.indexOf('Алия ҳоло ин саҳифаро таҳлил карда натавонист') !== 0;
-    if (type === 'notes' && lastAliyaExportable) {
-      try { sessionStorage.setItem('aliya_pending_note', JSON.stringify({ title: '«' + bName + '» · саҳифаҳои ' + fromPage + '–' + toPage, content: output })); } catch (e) {}
-    }
-    if (exportDocxBtn) exportDocxBtn.style.display = lastAliyaExportable ? 'inline-flex' : 'none';
-    if (exportPdfBtn) exportPdfBtn.style.display = lastAliyaExportable ? 'inline-flex' : 'none';
-    if(type==='custom' && lastAliyaExportable && customInput) customInput.value='';
-    copyBtn.style.display = 'block';
-    copyBtn.onclick = function () {
-      if (navigator.clipboard) navigator.clipboard.writeText(output).then(function () {
-        copyBtn.textContent = '✓ Нусха бардошта шуд!';
-        setTimeout(function () { copyBtn.textContent = '📋 Нусхабардорӣ'; }, 2000);
-      }).catch(function () {});
-    };
-  }
-
-  async function exportAliyaReaderDocument(format) {
-    if (!lastAliyaExportable || !lastAliyaOutput) return;
-    var btn = format === 'pdf' ? exportPdfBtn : exportDocxBtn;
-    if (btn) { btn.disabled = true; btn.textContent = '⏳ Омода…'; }
-    try {
-      var bookTitle = typeof name !== 'undefined' ? name : 'Китоб';
-      var docTitle = 'Алия — ' + bookTitle + ' — саҳифаи ' + (typeof page !== 'undefined' ? page : 1);
-      var branded = lastAliyaOutput + '\n\n---\n📚 Омодашуда бо ёрии «Алия» — Зеҳни сунъии Тоҷикӣ\n📖 Китобхонаи электронии Тоҷикӣ — Ҳамаи китобҳои дарсӣ ва бадеӣ\n📲 Барномаи расмии Китобхона дар Google Play: https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share';
-      var response = await fetch('https://sharipovip-aliya-gateway.hf.space/v1/document/generate', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: docTitle, content_markdown: branded, target_format: format }), cache: 'no-store'
-      });
-      var data = await response.json().catch(function () { return {}; });
-      if (!response.ok || !data.file_base64) throw new Error(data.error || data.detail || 'Ҳуҷҷат сохта нашуд.');
-      var ext = format === 'pdf' ? 'pdf' : 'docx';
-      var mime = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
-      var fileName = 'Aliya_' + String(bookTitle).replace(/[^\w\u0400-\u04FF-]+/g, '_').slice(0, 40) + '_p' + (typeof page !== 'undefined' ? page : 1) + '.' + ext;
-      if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
-        window.AndroidBridge.saveFile(data.file_base64, fileName, mime);
-      } else {
-        var binary = atob(data.file_base64), bytes = new Uint8Array(binary.length);
-        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
-        var blob = new Blob([bytes], { type: mime }), url = URL.createObjectURL(blob), a = document.createElement('a');
-        a.href = url; a.download = fileName; a.click(); setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
-      }
-      if (btn) btn.textContent = '✓ Сабт шуд';
-      setTimeout(function(){ if(btn){btn.textContent = format === 'pdf' ? '⬇ PDF' : '⬇ Word'; btn.disabled = false;} }, 1800);
-    } catch (err) {
-      resBox.textContent = 'Ҳуҷҷатро сабт карда натавонистам: ' + (err.message || 'Хатои пайвастшавӣ.');
-      if (btn) { btn.disabled = false; btn.textContent = format === 'pdf' ? '⬇ PDF' : '⬇ Word'; }
-    }
-  }
-  exportDocxBtn?.addEventListener('click', function(){ exportAliyaReaderDocument('docx'); });
-  exportPdfBtn?.addEventListener('click', function(){ exportAliyaReaderDocument('pdf'); });
-
-  document.getElementById('btnContinueInAliyaChat')?.addEventListener('click', async function () {
-    var btn = this; btn.disabled = true; btn.textContent = '⏳ Саҳифа омода мешавад…';
-    try {
-      var extracted = await extractCurrentPageContent();
-      var pageText = extracted.text || '';
-      if (extracted.isScan && extracted.dataUrl) {
-        // The chat can handle the scanned page through the image analysis button; OCR it here so the conversation gets text context.
-        var response = await fetch('https://sharipovip-aliya-gateway.hf.space/v1/vision', {
-          method: 'POST', headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ image_base64: extracted.dataUrl.replace(/^data:image\/[^;]+;base64,/i, ''),
-            prompt: 'Ин саҳифаи сканшудаи китобро ба матни хондашаванда табдил деҳ. Номуайянро қайд кун; ҷумла ё калимаро насоз.',
-            system: 'OCR саҳифаи китоби дарсӣ. Барориши танҳо матни воқеан хондашуда; чизҳои номуайянро [норавшан] қайд кун.' }),
-          cache: 'no-store'
-        });
-        var data = await response.json().catch(function () { return {}; });
-        pageText = String(data.reply || '').trim();
-        if (!response.ok || !pageText) throw new Error(data.error === 'chat_providers_unavailable' ? 'Провайдерҳои Алия ҳоло ҷавоб намедиҳанд.' : (data.error || 'Матни сканро хонда натавонистам.'));
-      }
-      if (!pageText) throw new Error('Матни саҳифа дастрас нест.');
-      sessionStorage.setItem('aliya_reader_context', JSON.stringify({
-        text: pageText.slice(0, 14000), book: typeof name !== 'undefined' ? name : 'Китоб',
-        page: typeof page !== 'undefined' ? page : 1, savedAt: Date.now()
-      }));
-      window.location.href = 'aliya/index.html';
-    } catch (err) {
-      resBox.textContent = 'Саҳифаро ба чат фиристода натавонистам: ' + (err.message || 'Хатои пайвастшавӣ.');
-    } finally { btn.disabled = false; btn.textContent = '💬 Идома дар чати Алия бо ин саҳифа'; }
   });
-
-  document.getElementById('btnSummarizePage')?.addEventListener('click', function () { handleAliyaTask('summary'); });
-  document.getElementById('btnExplainWords')?.addEventListener('click', function () { handleAliyaTask('words'); });
-  document.getElementById('btnMakePageTest')?.addEventListener('click', function () { handleAliyaTask('test'); });
-  document.getElementById('btnMakeLessonPlan')?.addEventListener('click', function () { handleAliyaTask('lesson'); });
-  document.getElementById('btnTranslatePage')?.addEventListener('click', function () { handleAliyaTask('translate'); });
-  document.getElementById('btnSavePageNote')?.addEventListener('click', function () { handleAliyaTask('notes'); });
-
-  var customInput = document.getElementById('readerAliyaCustomPrompt');
-  var sendPromptBtn = document.getElementById('btnSendReaderPrompt');
-  if (sendPromptBtn && customInput) {
-    sendPromptBtn.addEventListener('click', function () {
-      var q = (customInput.value || '').trim();
-      if (!q) return;
-      handleAliyaTask('custom', q);
-    });
-    customInput.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        sendPromptBtn.click();
-      }
-    });
+}
+function toggleNotes(force) {
+  var panel = document.getElementById('notesPanel'); if (!panel) return;
+  var open = force === undefined ? !panel.classList.contains('open') : !!force;
+  panel.classList.toggle('open', open);
+  if (open) {
+    document.getElementById('searchPanel').classList.remove('open');
+    document.getElementById('settingsPanel').classList.remove('open');
+    renderReaderNotes();
   }
+}
+window.addEventListener('pageshow', updateNotesBadge);
+window.addEventListener('storage', function (e) { if (e.key === 'kk_aliya_notes') { updateNotesBadge(); if (document.getElementById('notesPanel').classList.contains('open')) renderReaderNotes(); } });
+window.addEventListener('load', function () {
+  updateNotesBadge();
+  try { if (new URL(location.href).searchParams.get('notes') === '1') toggleNotes(true); } catch (e) {}
 });
 </script>
 
@@ -2767,78 +2549,6 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
   <div class="pc-page-arrow left" onclick="turnPage(-1)" title="Саҳифаи қаблӣ (← / PageUp)">‹</div>
   <div class="pc-page-arrow right" onclick="turnPage(1)" title="Саҳифаи навбатӣ (→ / PageDown)">›</div>
 
-  <!-- Модали ёвари Алия -->
-  <div class="aliya-reader-modal" id="readerAliyaModal">
-    <div class="aliya-reader-panel">
-      <div class="aliya-rp-head">
-        <div class="aliya-rp-title">
-          <button type="button" class="aliya-rp-back" title="Бозгашт ба китоб" aria-label="Бозгашт ба китоб" onclick="document.getElementById('readerAliyaClose').click()">‹</button>
-          <span style="font-size:18px;">✨</span>
-          <span>Алия — Ёвари китобхон</span>
-        </div>
-        <button class="aliya-rp-close" id="readerAliyaClose" title="Пӯшидан">✕</button>
-      </div>
-      <div class="aliya-rp-body">
-        <div id="readerAliyaPageLabel" style="font-size:11.5px;color:rgba(232, 201, 109, 0.9);padding:6px 10px;background:rgba(20, 38, 62, 0.6);border-radius:8px;border:1px solid rgba(201, 168, 76, 0.2);">Китобхонаи миллӣ</div>
-        <div class="reader-aliya-settings" aria-label="Танзимоти омӯзиш">
-          <label>Аз саҳифа <input id="readerAliyaFromPage" type="number" min="1" value="1"></label>
-          <label>То саҳифа <input id="readerAliyaToPage" type="number" min="1" value="1"></label>
-          <label>Синф <select id="readerAliyaGrade"><option value="">Муайян накарда</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option></select></label>
-          <label>Забони нақша <select id="readerAliyaLanguage"><option value="Тоҷикӣ" selected>Тоҷикӣ</option><option value="Русский">Русский</option><option value="English">English</option></select></label>
-          <label>Савол <select id="readerAliyaQuestionCount"><option>4</option><option>6</option><option>8</option><option>10</option></select></label>
-          <label>Навъи тест <select id="readerAliyaQuestionType"><option value="multiple choice">Вариантҳо</option><option value="open-ended">Кушода</option><option value="mixed">Омехта</option></select></label>
-        </div>
-        <button class="aliya-rp-btn reader-continue-chat" id="btnContinueInAliyaChat" type="button">💬 Идома дар чати Алия бо ин саҳифа</button>
-        <div class="aliya-rp-actions-grid">
-          <button class="aliya-rp-btn" id="btnSummarizePage">📝 Хулосаи саҳифа</button>
-          <button class="aliya-rp-btn" id="btnExplainWords">📖 Калимаҳои мушкил</button>
-          <button class="aliya-rp-btn" id="btnMakePageTest">❓ Санҷиш ва тест</button>
-          <button class="aliya-rp-btn" id="btnMakeLessonPlan">🎓 Нақшаи дарс</button>
-          <button class="aliya-rp-btn" id="btnTranslatePage">🌐 Тарҷума ба русӣ</button>
-          <button class="aliya-rp-btn" id="btnSavePageNote">📌 Сабт дар ёддошт</button>
-        </div>
-
-        <div style="display:flex;gap:6px;margin-top:4px;">
-          <input type="text" id="readerAliyaCustomPrompt" placeholder="Саволи худро оид ба ин китоб нависед..." style="flex:1;background:#0D1B2A;border:1px solid rgba(201,168,76,0.3);border-radius:10px;padding:8px 12px;color:#F0EAD6;font-size:12.5px;outline:none;">
-          <button id="btnSendReaderPrompt" style="background:#E8C96D;color:#0D1B2A;border:none;border-radius:10px;padding:8px 14px;font-weight:700;cursor:pointer;">Ирсол</button>
-        </div>
-
-        <div class="aliya-rp-result" id="readerAliyaResult">Барои таҳлил ё сохтани тест тугмаҳои болоро пахш кунед ё саволи дилхоҳро нависед.</div>
-
-        <div style="display:flex;gap:8px;justify-content:flex-end;flex-wrap:wrap;">
-          <button id="btnCopyAliyaResult" style="display:none;background:#1A2D44;border:1px solid rgba(201,168,76,0.3);color:#E8C96D;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">📋 Нусхабардорӣ</button>
-          <button id="btnExportAliyaDocx" style="display:none;background:#1A2D44;border:1px solid rgba(201,168,76,0.3);color:#E8C96D;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">⬇ Word</button>
-          <button id="btnExportAliyaPdf" style="display:none;background:#2a1b24;border:1px solid rgba(217,107,99,.45);color:#ffd8d4;border-radius:8px;padding:6px 12px;font-size:11.5px;cursor:pointer;">⬇ PDF</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-<style id="reader-aliya-desktop-polish">
-.reader-aliya-settings{display:grid;grid-template-columns:repeat(6,minmax(90px,1fr));gap:8px;margin:4px 0 8px;padding:10px;background:rgba(7,15,26,.42);border:1px solid rgba(201,168,76,.15);border-radius:12px}
-.reader-aliya-settings label{display:flex;flex-direction:column;gap:4px;color:#aebbd0;font-size:10px;font-weight:700}
-.reader-aliya-settings input,.reader-aliya-settings select{min-width:0;width:100%;height:34px;background:#101e31;color:#f0ead6;border:1px solid rgba(201,168,76,.24);border-radius:8px;padding:0 8px;font:inherit;font-size:12px}
-.aliya-reader-wait{display:flex;align-items:center;gap:14px;color:#ff9b7f}.aliya-reader-wait [data-aliya-emblem]{width:76px;height:76px;flex:0 0 76px}
-#readerAliyaResult{white-space:normal!important;line-height:1.72!important}
-#readerAliyaResult p{margin:0 0 12px}#readerAliyaResult h2,#readerAliyaResult h3{color:#e8c96d;line-height:1.3;margin:16px 0 8px}#readerAliyaResult ul,#readerAliyaResult ol{padding-left:24px;margin:6px 0 14px}#readerAliyaResult li{padding-left:3px;margin:4px 0}#readerAliyaResult strong{color:#fff1c7}
-@media(min-width:1200px) and (hover:hover) and (pointer:fine){
- .aliya-reader-modal{padding:0!important;align-items:stretch!important;justify-content:stretch!important;background:rgba(4,10,20,.92)!important;backdrop-filter:blur(10px)!important}
- .aliya-reader-panel{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;border:0!important;box-shadow:none!important}
- .aliya-rp-head{height:68px;flex:0 0 68px;padding:10px 28px!important}
- .aliya-rp-body{width:min(1280px,calc(100vw - 72px));margin:0 auto!important;padding:18px 28px 30px!important;gap:12px!important;overflow:auto!important}
- .reader-aliya-settings{grid-template-columns:repeat(6,minmax(120px,1fr));gap:12px;padding:14px}
- .aliya-rp-actions-grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;gap:10px!important}
- .aliya-rp-btn{min-height:48px!important;font-size:14px!important}
- #readerAliyaCustomPrompt{min-height:52px!important;font-size:15px!important;padding:12px 15px!important}
- #readerAliyaResult{min-height:170px!important;flex:1 0 170px!important;font-size:15px!important;padding:24px!important}
-}
-@media(max-width:700px){.reader-aliya-settings{grid-template-columns:repeat(2,minmax(0,1fr))}}
-/* Этап B1: Алия — полноэкранная страница с кнопкой «назад» (телефон и ПК) */
-.aliya-reader-modal{padding:0!important;align-items:stretch!important;justify-content:stretch!important;background:#06101d!important;backdrop-filter:none!important}
-.aliya-reader-panel{width:100%!important;max-width:none!important;height:100dvh!important;max-height:100dvh!important;border-radius:0!important;border:0!important;box-shadow:none!important}
-.aliya-rp-back{font-size:26px!important;line-height:1!important;margin-right:8px;background:none;border:0;color:#E8C96D;cursor:pointer;padding:4px 8px}
-.aliya-rp-body{overflow:auto!important;-webkit-overflow-scrolling:touch}
-</style>
 <script src="./aliya/aliya-brand-animation.js?v=1" defer></script>
 </body>
 </html>

@@ -407,8 +407,8 @@ html, body {
 }
 
 .chat-textarea-wrap:focus-within {
-  border-color: var(--gold2);
-  box-shadow: 0 0 10px var(--gold-glow);
+  border-color: rgba(255, 106, 61, .45);
+  box-shadow: none;
 }
 
 .chat-textarea {
@@ -489,7 +489,7 @@ html, body {
 
 .form-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 14px;
 }
@@ -836,7 +836,8 @@ html, body {
 .chat-textarea { min-height: 42px; max-height: 140px; resize: none; line-height: 1.45; }
 .attach-btn, .send-btn { min-width: 44px; min-height: 44px; }
 .attach-btn:hover, .send-btn:hover { transform: translateY(-1px); filter: brightness(1.08); }
-.form-input:focus, .form-select:focus, .form-textarea:focus, .notes-search:focus, .chat-textarea:focus { outline: 2px solid rgba(255,139,104,.72); outline-offset: 2px; border-color: var(--gold2); }
+.form-input:focus, .form-select:focus, .form-textarea:focus, .notes-search:focus { outline: none; border-color: rgba(255,106,61,.55); }
+.chat-textarea:focus, .chat-textarea:focus-visible { outline: none; box-shadow: none; }
 .primary-btn { min-height: 46px; transition: transform .18s ease, box-shadow .18s ease, filter .18s ease; }
 .primary-btn:not(:disabled):hover { transform: translateY(-1px); box-shadow: 0 8px 22px rgba(255,106,61,.18); }
 .primary-btn:disabled, .export-btn:disabled, .send-btn:disabled { cursor: wait; opacity: .68; }
@@ -1271,3 +1272,73 @@ html.aliya-light .rich-inline-code { background:#E8E7E3; }
 .aliya-wait-label{display:block;margin-top:7px;color:#ff9b7f;font-size:12px}
 .aliya-retry-message{display:block;margin-top:10px;padding:7px 11px;border:1px solid rgba(255,106,61,.4);border-radius:10px;background:rgba(255,106,61,.1);color:#ff9b7f;cursor:pointer}
 .aliya-wait-emblem{display:inline-flex;align-items:center;justify-content:center;width:76px;height:76px;flex:0 0 76px;overflow:visible}
+
+
+/* ===================== v159 ===================== */
+/* Чат: бе сутуни аватар — нишони хурд дар дохили корт, корт борик */
+.msg-avatar { display: none !important; }
+.msg-body { max-width: 86%; }
+.msg-row.bot .msg-body { gap: 4px; }
+.msg-top { display: flex; align-items: center; gap: 7px; min-height: 20px; font-size: 12px; color: #9b9b98; line-height: 1; }
+.msg-top .at-emb { width: 16px; height: 16px; flex: 0 0 16px; }
+.msg-top .msg-who { font-weight: 700; letter-spacing: .02em; color: #FF8B68; }
+.msg-top .at-think-txt { font-size: 13px; }
+.msg-bubble { padding: 9px 13px; line-height: 1.55; }
+.msg-row.bot .msg-bubble { padding: 9px 13px; }
+.msg-bubble.is-waiting { display: none; }
+.msg-bubble .at-nm, .msg-bubble .at-nm * { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-weight: 700; color: #FFB86B; }
+.msg-photo { display: block; max-width: min(260px, 100%); max-height: 260px; border-radius: 10px; margin-bottom: 7px; object-fit: cover; }
+.msg-action.is-icon { min-width: 30px; padding: 3px 6px; font-size: 14px; }
+.aliya-retry-message { display: block; margin-top: 8px; border: 1px solid rgba(255,106,61,.4); background: rgba(255,106,61,.1); color: #FF9A7D; border-radius: 9px; padding: 6px 10px; font: inherit; font-size: 12.5px; cursor: pointer; }
+@media (max-width: 520px) { .msg-body { max-width: 94%; } .msg-row.user .msg-body { max-width: 88%; } }
+
+/* «+» замима: тасвири хурд */
+#pendingThumb { width: 34px; height: 34px; flex: 0 0 34px; border-radius: 7px; object-fit: cover; }
+#pendingThumb[hidden], #pendingIcon[hidden] { display: none; }
+
+/* Шаш амал — як саҳифа, бе экрани дохилӣ ва бе скролли иловагӣ */
+#pane-task { padding: 0; }
+.task-wrap { width: 100%; max-width: 760px; margin: 0 auto; padding: 12px clamp(10px, 3vw, 22px) 90px; display: flex; flex-direction: column; gap: 10px; box-sizing: border-box; }
+.task-ctx { display: flex; align-items: center; gap: 10px; justify-content: space-between; padding: 8px 10px; border: 1px solid var(--border); border-radius: 14px; background: var(--bg2); }
+.ctx-book { display: flex; align-items: center; gap: 10px; min-width: 0; flex: 1; cursor: pointer; background: none; border: 0; color: var(--text); font: inherit; text-align: left; padding: 0; }
+.ctx-cv { width: 32px; height: 42px; flex: 0 0 32px; border-radius: 6px; display: flex; align-items: center; justify-content: center; font-size: 17px; background: linear-gradient(160deg, #7c2d12, #f97316); }
+.ctx-cv.none { background: transparent; border: 1px dashed rgba(255,255,255,.25); color: #FF8B68; }
+.ctx-txt { min-width: 0; }
+.ctx-txt b { display: block; font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ctx-txt small { display: block; font-size: 11.5px; color: var(--muted); }
+.ctx-cls { height: 36px; border-radius: 10px; border: 1px solid var(--border); background: var(--card); color: var(--text); font: inherit; font-size: 12.5px; font-weight: 700; padding: 0 11px; cursor: pointer; white-space: nowrap; flex: 0 0 auto; }
+.task-need { margin: 0 4px; font-size: 12.5px; color: #ffb199; }
+.task-need[hidden] { display: none; }
+.task-form { padding: 12px; border: 1px solid var(--border); border-radius: 16px; background: var(--bg2); }
+.task-title { display: flex; align-items: center; gap: 8px; margin-bottom: 10px; font-size: 15px; }
+.task-title b { color: #FF8B68; }
+.bk-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+.bk-it { display: flex; align-items: center; gap: 10px; width: 100%; padding: 8px; border-radius: 12px; border: 1px solid rgba(255,255,255,.1); background: rgba(255,255,255,.04); color: inherit; font: inherit; text-align: left; cursor: pointer; }
+.bk-it:hover { border-color: rgba(255,106,61,.45); }
+.bk-cv { width: 28px; height: 38px; flex: 0 0 28px; border-radius: 5px; display: flex; align-items: center; justify-content: center; background: rgba(255,106,61,.15); }
+.bk-t { min-width: 0; }
+.bk-t b { display: block; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.bk-t small { display: block; font-size: 11px; opacity: .65; }
+.grade-chips { display: grid; grid-template-columns: repeat(auto-fill, minmax(46px, 1fr)); gap: 6px; }
+
+/* Ёддоштҳо: китобҳо / ёддоштҳои ман */
+.notes-seg { display: inline-flex; gap: 4px; padding: 4px; border-radius: 12px; background: var(--bg2); border: 1px solid var(--border); margin-bottom: 12px; }
+.notes-seg button { border: 0; background: none; color: var(--muted); font: inherit; font-size: 13px; font-weight: 700; padding: 7px 13px; border-radius: 9px; cursor: pointer; }
+.notes-seg button.on { background: rgba(255,106,61,.16); color: #FF8B68; }
+.book-notes-list[hidden], [data-mine-only][hidden] { display: none !important; }
+
+/* Формаҳо ва диктант дар телефон — бе скролли паҳлӯӣ */
+.tab-pane, .wizard-container, .wizard-card { min-width: 0; max-width: 100%; box-sizing: border-box; }
+.tab-pane { overflow-x: hidden; }
+.form-group, .form-select, .form-input, .form-textarea { min-width: 0; max-width: 100%; box-sizing: border-box; }
+@media (max-width: 560px) {
+  .form-grid { grid-template-columns: minmax(0, 1fr); gap: 10px; }
+  .wizard-container { padding: 10px; }
+  .wizard-card { padding: 14px; border-radius: 16px; }
+  .wizard-title { font-size: 15px; }
+  .task-ctx { padding: 7px 8px; }
+}
+html.aliya-light .task-ctx, html.aliya-light .task-form, html.aliya-light .notes-seg { background: #fff; border-color: rgba(27,27,26,.12); }
+html.aliya-light .msg-bubble .at-nm, html.aliya-light .msg-bubble .at-nm * { color: #B5551F; }
+html.aliya-light .ctx-cls { background: #F6F4EF; color: #1B1B1A; }
+html.aliya-light .bk-it { border-color: rgba(27,27,26,.12); background: #fff; }

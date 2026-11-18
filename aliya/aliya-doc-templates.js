@@ -227,8 +227,58 @@
       '<w:r><w:rPr><w:sz w:val="18"/><w:color w:val="C9A84C"/></w:rPr><w:t xml:space="preserve">' + xmlEscape(AD_BRANDING.line3 + ' ' + AD_BRANDING.url) + '</w:t></w:r></w:p>\n';
   }
 
+  // v159: Markdown-и Алия → абзацҳои Word бо ғафс/курсив: **истилоҳ**, [[Ном]], ## сарлавҳа, рӯйхат, ✔, «Калид:»
+  function mdRunsXml(text, base) {
+    base = base || {};
+    var out = '', re = /(\[\[[^\]]+\]\]|\*\*[^*]+\*\*)/g, last = 0, m;
+    function run(t, o) {
+      if (!t) return;
+      out += '<w:r><w:rPr>' + (o.bold ? '<w:b/>' : '') + (o.italic ? '<w:i/>' : '') + (o.color ? '<w:color w:val="' + o.color + '"/>' : '') +
+        '<w:sz w:val="' + (o.size || '23') + '"/></w:rPr><w:t xml:space="preserve">' + xmlEscape(t) + '</w:t></w:r>';
+    }
+    text = String(text || '');
+    while ((m = re.exec(text))) {
+      run(text.slice(last, m.index), base);
+      var tok = m[0];
+      if (tok.charAt(0) === '[') run(tok.slice(2, -2), { bold: true, italic: true, color: '8A5A00', size: base.size });
+      else run(tok.slice(2, -2), { bold: true, italic: base.italic, color: base.color, size: base.size });
+      last = m.index + tok.length;
+    }
+    run(text.slice(last).replace(/\[\[|\]\]|\*\*/g, ''), base);
+    return out || run(' ', base) || out;
+  }
+  function mdPara(text, base, ppr) {
+    return '<w:p><w:pPr>' + (ppr || '') + '<w:spacing w:before="' + (base.before || 40) + '" w:after="' + (base.after || 60) + '" w:line="276" w:lineRule="auto"/></w:pPr>' + mdRunsXml(text, base) + '</w:p>\n';
+  }
+
   var AliyaTemplates = {
     AD_BRANDING: AD_BRANDING,
+
+    /** v159: ҷавоби Алия (Markdown) → Word бо формат */
+    generateMarkdownDocx: function (data) {
+      var d = data || {};
+      var xml = p(String(d.title || 'Ҷавоби Алия'), { bold: true, align: 'center', size: '30', color: '0D1B2A', after: 200 });
+      String(d.markdown || d.content || '').replace(/\r/g, '').split('\n').forEach(function (raw) {
+        var line = raw.replace(/\s+$/, ''), m;
+        if (!line.trim()) return;
+        if (/^\s*\|[\s:|-]+\|\s*$/.test(line) || /^\s*(-{3,}|\*{3,})\s*$/.test(line)) return;
+        if ((m = line.match(/^\s*#{1,6}\s+(.*)$/))) { xml += mdPara(m[1], { bold: true, size: '26', color: '1A3A5C', before: 200, after: 80 }); return; }
+        if (/^\s*\|.*\|\s*$/.test(line)) { xml += mdPara(line.trim().replace(/^\||\|$/g, '').split('|').map(function (c) { return c.trim(); }).join('  ·  '), {}); return; }
+        if ((m = line.match(/^\s*(?:🔑\s*)?((?:Калид|Ключ|Answer key|Key)\s*[:：].*)$/i))) { xml += mdPara('🔑 ' + m[1], { bold: true, before: 200 }); return; }
+        if ((m = line.match(/^\s*((?:Савол|Вопрос|Question)\s*\d+\s*[.):].*)$/i))) { xml += mdPara(m[1], { bold: true, before: 160 }); return; }
+        if ((m = line.match(/^\s*([АБВГДабвгдABCDabcd])\s*[).]\s+(.*)$/))) {
+          var ok = /[✔✓]\s*$/.test(m[2]);
+          xml += mdPara(m[1] + ') ' + m[2].replace(/\s*[✔✓]\s*$/, '') + (ok ? '  ✔' : ''), ok ? { bold: true, color: '1E7B3A' } : {}, '<w:ind w:left="360"/>');
+          return;
+        }
+        if ((m = line.match(/^\s*[-•*]\s+(.*)$/))) { xml += mdPara('•  ' + m[1], {}, '<w:ind w:left="360" w:hanging="240"/>'); return; }
+        if ((m = line.match(/^\s*(\d+[.)])\s+(.*)$/))) { xml += mdPara(m[1] + ' ' + m[2], {}, '<w:ind w:left="360" w:hanging="300"/>'); return; }
+        if ((m = line.match(/^\s*>\s?(.*)$/))) { xml += mdPara('«' + m[1].replace(/^«|»$/g, '') + '»', { italic: true, color: '4A5D73' }, '<w:ind w:left="480"/>'); return; }
+        xml += mdPara(line, {}, '<w:jc w:val="both"/>');
+      });
+      xml += adFooterXml();
+      return createDocxDocument(xml);
+    },
 
     generateResponseDocx: function (data) {
       var d = data || {};
