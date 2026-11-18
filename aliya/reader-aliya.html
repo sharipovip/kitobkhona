@@ -17,33 +17,29 @@
     .ra-title small{display:block;color:#aebbd0;font-weight:400;font-size:12px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
     .ra-body{width:min(1100px,100%);margin:0 auto;padding:10px 12px 12px;display:flex;flex-direction:column;gap:10px;flex:1;min-height:0}
 
-    /* 6 кнопок: компактная сетка */
     .ra-tasks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px;flex:0 0 auto}
     @media(min-width:700px){.ra-tasks{grid-template-columns:repeat(6,minmax(0,1fr))}}
     .ra-btn{min-height:38px;background:#14263e;color:#F0EAD6;border:1px solid rgba(201,168,76,.26);border-radius:10px;padding:6px 8px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer;line-height:1.2;text-align:center}
     .ra-btn:hover{border-color:#E8C96D}
     .ra-btn:disabled{opacity:.45;cursor:default}
 
-    /* Единый блок: ответ сверху, ввод внизу */
     .ra-panel{flex:1;min-height:0;display:flex;flex-direction:column;background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:14px;overflow:hidden}
     .ra-out{flex:1;min-height:0;overflow:auto;padding:12px 14px;line-height:1.7;font-size:15px;word-wrap:break-word}
     .ra-out.ra-empty{color:#7f8ea6;font-size:14px}
-    .ra-status{display:flex;align-items:center;gap:8px;color:#E8C96D;font-size:14px;min-height:22px;margin-bottom:6px}
-    .ra-av{width:18px;height:18px;flex:0 0 18px;border-radius:50%;background:radial-gradient(circle,#E8C96D 0%,#8a6d1f 100%);display:inline-flex;align-items:center;justify-content:center;font-size:10px;box-shadow:0 0 8px rgba(232,201,109,.45);animation:raPulse 1.4s ease-in-out infinite}
-    @keyframes raPulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
-    .ra-dots{display:inline-block;width:1.4em;text-align:left;overflow:hidden;vertical-align:bottom;animation:raDots 1.2s steps(4,end) infinite}
-    @keyframes raDots{from{width:0}to{width:1.4em}}
-    .ra-cursor{display:inline-block;width:2px;height:1em;background:#E8C96D;margin-left:2px;vertical-align:text-bottom;animation:raBlink .9s steps(2,start) infinite}
-    @keyframes raBlink{to{visibility:hidden}}
-    .ra-out h4{margin:12px 0 4px;color:#E8C96D;font-size:15px}
+    .ra-status{display:flex;align-items:center;gap:8px;color:#E8C96D;font-size:14px;margin-bottom:6px}
+    .ra-status[hidden]{display:none!important}
+    .ra-av{width:16px;height:16px;flex:0 0 16px;border-radius:50%;background:radial-gradient(circle,#E8C96D 0%,#8a6d1f 100%);display:inline-flex;align-items:center;justify-content:center;font-size:9px}
+        .ra-out h4{margin:12px 0 4px;color:#E8C96D;font-size:15px}
     .ra-out ul{margin:4px 0 8px;padding-left:20px}
     .ra-out p{margin:6px 0}
     .ra-out strong{color:#FFD97A;font-weight:700}
 
-    .ra-tools{display:none;gap:6px;flex-wrap:wrap;padding:8px 12px;border-top:1px solid rgba(201,168,76,.15);background:#0b1729}
+    .ra-tools{display:none;flex-wrap:nowrap;gap:6px;padding:8px 10px;border-top:1px solid rgba(201,168,76,.15);background:#0b1729;overflow-x:auto}
     .ra-tools.on{display:flex}
-    .ra-tool{height:32px;background:#14263e;color:#E8C96D;border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:0 10px;font:inherit;font-size:12.5px;cursor:pointer}
+    .ra-tool{height:32px;flex:0 0 auto;background:#14263e;color:#E8C96D;border:1px solid rgba(201,168,76,.3);border-radius:8px;padding:0 10px;font:inherit;font-size:12.5px;cursor:pointer;white-space:nowrap}
+    .ra-tool.ic{width:36px;padding:0;font-size:15px}
     .ra-tool:hover{border-color:#E8C96D}
+    .ra-tool:disabled{opacity:.5}
 
     .ra-ask{display:flex;gap:8px;padding:8px 10px;border-top:1px solid rgba(201,168,76,.22);background:#0b1729;flex:0 0 auto}
     .ra-ask input{flex:1;min-width:0;height:40px;background:#0D1B2A;border:1px solid rgba(201,168,76,.3);border-radius:10px;padding:0 12px;color:#F0EAD6;font:inherit;font-size:15px;outline:0}
@@ -51,7 +47,6 @@
     .ra-send{height:40px;background:#E8C96D;color:#0D1B2A;border:0;border-radius:10px;padding:0 16px;font-weight:700;cursor:pointer;font-size:14px}
     .ra-send:disabled{opacity:.5}
 
-    /* Окно выбора */
     .ra-modal{position:fixed;inset:0;background:rgba(2,6,14,.7);display:flex;align-items:flex-end;justify-content:center;z-index:10}
     .ra-modal[hidden]{display:none}
     .ra-sheet{width:min(460px,100%);min-width:0;background:#0b1729;border:1px solid rgba(201,168,76,.3);border-radius:16px 16px 0 0;padding:16px;display:flex;flex-direction:column;gap:12px;max-height:90dvh;overflow:auto}
@@ -66,7 +61,6 @@
     #raMCancel{background:transparent;color:#aebbd0}
     #raMOk{background:#E8C96D;color:#0D1B2A;border-color:#E8C96D}
     .ra-err{color:#ff8a8a;font-size:12px;min-height:14px}
-
     @media(max-width:420px){.ra-btn{font-size:12px}}
   </style>
 </head>
@@ -94,9 +88,9 @@
       </div>
       <div class="ra-tools" id="raTools">
         <button class="ra-tool" id="raCopy" type="button">📋 Нусхабардорӣ</button>
-        <button class="ra-tool" id="raWord" type="button">📄 Word</button>
-        <button class="ra-tool" id="raPdf" type="button">🖨 PDF</button>
-        <button class="ra-tool" id="raSave" type="button">💾 Ба ёддошт</button>
+        <button class="ra-tool" id="raWord" type="button">⬇ Word</button>
+        <button class="ra-tool" id="raPdf" type="button">⬇ PDF</button>
+        <button class="ra-tool ic" id="raSave" type="button" title="Ба ёддошт" aria-label="Ба ёддошт">💾</button>
       </div>
       <form class="ra-ask" id="raForm">
         <input id="raPrompt" type="text" placeholder="Саволи худро нависед…" autocomplete="off">
@@ -122,6 +116,7 @@
 (function () {
   'use strict';
   var GATEWAY = 'https://sharipovip-aliya-gateway.hf.space';
+  var MAX_OCR_PAGES = 10;
   var qs = new URLSearchParams(location.search);
   var bookUrl = qs.get('url') || '';
   var bookName = qs.get('name') || 'Китоб';
@@ -148,7 +143,6 @@
   }
   function escHtml(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
-  // Безопасный Markdown: сначала экранируем HTML. **текст** = выделенные имена и термины.
   function inline(t) {
     return t.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>')
             .replace(/__(.+?)__/g, '<strong>$1</strong>')
@@ -176,18 +170,12 @@
     return html.join('\n');
   }
 
-  // ---- Статус: одна строка с маленькой иконкой и анимацией «читаю / готовлю» ----
-  function stopStatus() { clearInterval(statusTimer); statusTimer = null; statusBox.hidden = true; }
+  // ---- Статус: одна строка с иконкой, без движущихся элементов ----
+  function stopStatus() { clearInterval(statusTimer); statusTimer = null; statusBox.hidden = true; statusText.textContent = ''; }
+  function setStatusLine(text) { statusBox.hidden = false; statusText.textContent = text; }
   function startStatus(lines) {
     stopStatus();
-    var i = 0;
-    statusBox.hidden = false;
-    function show() {
-      statusText.innerHTML = '<span>' + escHtml(lines[i % lines.length]) + '</span><span class="ra-dots">...</span>';
-      i++;
-    }
-    show();
-    statusTimer = setInterval(show, 1700);
+    setStatusLine(lines[0] + '…');
   }
 
   // ---- Печать ответа по буквам ----
@@ -200,7 +188,7 @@
     resBox.appendChild(holder);
     typeTimer = setInterval(function () {
       n = Math.min(text.length, n + step);
-      holder.innerHTML = renderMarkdown(text.slice(0, n)) + (n < text.length ? '<span class="ra-cursor"></span>' : '');
+      holder.innerHTML = renderMarkdown(text.slice(0, n)) + (n < text.length ? '' : '');
       out.scrollTop = out.scrollHeight;
       if (n >= text.length) { clearInterval(typeTimer); typeTimer = null; if (done) done(); }
     }, 22);
@@ -222,30 +210,88 @@
     }
   }
 
-  async function extractRange(first, last) {
-    if (!pdfDoc) throw new Error('Китоб боргузорӣ нашудааст.');
-    var parts = [];
-    for (var n = first; n <= last; n++) {
-      var p = await pdfDoc.getPage(n);
-      var c = await p.getTextContent();
-      var t = c.items.map(function (it) { return it.str; }).join(' ').trim();
-      if (t) parts.push('[САҲИФА ' + n + ']\n' + t);
+  // ---- Матни саҳифаҳо: текстовый слой, а если его нет — OCR (tgk+rus) в браузере ----
+  var ocrWorker = null, ocrLoading = null;
+  function loadScript(src) {
+    return new Promise(function (res, rej) {
+      var s = document.createElement('script');
+      s.src = src; s.onload = res; s.onerror = function () { rej(new Error('Скрипт бор нашуд: ' + src)); };
+      document.head.appendChild(s);
+    });
+  }
+  function getOcr() {
+    if (ocrWorker) return Promise.resolve(ocrWorker);
+    if (!ocrLoading) {
+      ocrLoading = (async function () {
+        if (!window.Tesseract) await loadScript('https://cdn.jsdelivr.net/npm/tesseract.js@5/dist/tesseract.min.js');
+        ocrWorker = await Tesseract.createWorker('tgk+rus', 1, {
+          langPath: 'https://tessdata.projectnaptha.com/4.0.0'
+        });
+        return ocrWorker;
+      })().catch(function (e) { ocrLoading = null; throw e; });
     }
-    return parts.join('\n\n').slice(0, 28000);
+    return ocrLoading;
   }
 
-  async function renderPageJpeg(n) {
+  async function renderPageCanvas(n, scale) {
     var p = await pdfDoc.getPage(n);
-    var vp = p.getViewport({ scale: 1.4 });
+    var vp = p.getViewport({ scale: scale });
     var c = document.createElement('canvas');
     c.width = Math.round(vp.width); c.height = Math.round(vp.height);
     await p.render({ canvasContext: c.getContext('2d'), viewport: vp }).promise;
+    return c;
+  }
+
+  async function pageText(n, idx, total) {
+    var p = await pdfDoc.getPage(n);
+    var c = await p.getTextContent();
+    var t = c.items.map(function (it) { return it.str; }).join(' ').replace(/\s+/g, ' ').trim();
+    if (t.length >= 40) return { text: t, method: 'text' };
+
+    // Скан: OCR в браузере
+    setStatusLine('Саҳифаи ' + n + ' (' + idx + ' аз ' + total + ') OCR…');
+    var ocrText = '', conf = 0;
+    try {
+      var w = await getOcr();
+      var canvas = await renderPageCanvas(n, 2);
+      var r = await w.recognize(canvas);
+      ocrText = String(r.data.text || '').replace(/\s+/g, ' ').trim();
+      conf = Number(r.data.confidence) || 0;
+    } catch (e) { ocrText = ''; conf = 0; }
+
+    if (ocrText.length >= 40 && conf >= 55) return { text: ocrText, method: 'ocr' };
+
+    // Слабый OCR: просим vision-модель переписать страницу через шлюз
+    setStatusLine('Саҳифаи ' + n + ' бо модели визуалӣ…');
+    try {
+      var vtext = await visionPage(n, 'Матни ҳамаи саҳифаро дақиқ нусхабардорӣ кунед. Ҳеҷ чиз иловa накунед, ҷавоб надиҳед.', new AbortController().signal);
+      if (vtext && vtext.length >= 20) return { text: vtext, method: 'vision' };
+    } catch (e) {}
+    return { text: ocrText, method: ocrText ? 'ocr-weak' : 'none' };
+  }
+
+  async function getRangeText(first, last) {
+    if (!pdfDoc) throw new Error('Китоб боргузорӣ нашудааст.');
+    var parts = [], methods = {};
+    var total = Math.min(last - first + 1, MAX_OCR_PAGES);
+    for (var n = first, i = 0; n <= last && i < total; n++, i++) {
+      var r = await pageText(n, i + 1, total);
+      methods[r.method] = true;
+      if (r.text) parts.push('[САҲИФА ' + n + ']\n' + r.text);
+    }
+    var text = parts.join('\n\n').slice(0, 28000);
+    if (last - first + 1 > MAX_OCR_PAGES) text += '\n\n[Танҳо ' + MAX_OCR_PAGES + ' саҳифаи аввал таҳлил шуд.]';
+    return { text: text, methods: Object.keys(methods) };
+  }
+
+  async function renderPageJpeg(n) {
+    var c = await renderPageCanvas(n, 1.4);
     return c.toDataURL('image/jpeg', 0.8).replace(/^data:image\/[^;]+;base64,/i, '');
   }
 
   async function visionPage(n, prompt, signal) {
     var img = await renderPageJpeg(n);
-    var r = await fetch(GATEWAY + '/v1/vision', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ image_base64: img, prompt: prompt + ' Китоб: «' + bookName + '», саҳифаи ' + n + '.', system: 'Шумо ёвари таълимии Китобхона ҳастед. Матни намоёни акси саҳифаро дақиқ хонед ва ба савол ҷавоб деҳ. Номҳои шахсиятҳо ва истилоҳоти асосиро дар **...** гузоред.' }), signal: signal, cache: 'no-store' });
+    var r = await fetch(GATEWAY + '/v1/vision', { method: 'POST', headers: { 'Content-Type': 'application/json', 'Accept': 'application/json' }, body: JSON.stringify({ image_base64: img, prompt: prompt + ' Китоб: «' + bookName + '», саҳифаи ' + n + '.', system: 'Шумо ёвари таълимии Китобхона ҳастед. Матни намоёни акси саҳифаро дақиқ хонед. Номҳои шахсиятҳо ва истилоҳоти асосиро дар **...** гузоред.' }), signal: signal, cache: 'no-store' });
     var d = await r.json().catch(function () { return {}; });
     if (!r.ok || d.error) throw new Error(String(d.detail || d.error || ('HTTP ' + r.status)));
     return String(d.reply || d.analysis || '').trim();
@@ -324,7 +370,6 @@
   }
   function val(id, dflt) { var el = $(id); return el ? el.value : dflt; }
 
-  // Язык ответа — автоматически (по языку текста книги), кроме тарҷума, где выбирает читатель
   function buildPrompt(task, r, o) {
     var f = r.f, t = r.t, rng = (f === t ? 'саҳифаи ' + f : 'саҳифаҳои ' + f + '–' + t);
     switch (task) {
@@ -352,19 +397,18 @@
     tools.classList.remove('on');
     clearInterval(typeTimer);
     resBox.innerHTML = '';
-    startStatus(TASKS[task] ? TASKS[task].wait : ['Саволатонро мехонам', 'Ҷавоб омода мекунам']);
     var output = '';
     var ctrl = new AbortController();
-    var timer = setTimeout(function () { ctrl.abort(); }, 75000);
+    var timer = setTimeout(function () { ctrl.abort(); }, 150000);
     try {
-      var text = await extractRange(r.f, r.t);
-      if (text) {
-        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bookName + '», саҳифаҳои ' + r.f + '–' + r.t + '. Ба савол танҳо бо такя ба матни додашуда ҷавоб деҳ. Номҳои шахсиятҳо ва истилоҳоти асосиро дар **...** гузоред.\n\nМАТН:\n' + text;
+      startStatus(TASKS[task] ? TASKS[task].wait : ['Саволатонро мехонам', 'Ҷавоб омода мекунам']);
+      var got = await getRangeText(r.f, r.t);
+      setStatusLine('Ҷавоб омода мекунам…');
+      if (got.text) {
+        var sys = 'Шумо ёвари расмии Китобхона ҳастед. Китоб: «' + bookName + '», саҳифаҳои ' + r.f + '–' + r.t + '. Ба савол танҳо бо такя ба матни додашуда ҷавоб деҳ. Номҳои шахсиятҳо ва истилоҳоти асосиро дар **...** гузоред.\n\nМАТН:\n' + got.text;
         output = await gatewayChat({ messages: [{ role: 'system', content: sys }, { role: 'user', content: prompt }], reasoning_mode: 'high', temperature: 0.45, max_tokens: 2200 }, ctrl.signal);
       } else {
-        // Скан: пока только первая страница диапазона (OCR в браузере — следующий шаг)
-        output = await visionPage(r.f, prompt, ctrl.signal);
-        if (r.f !== r.t) output = 'Ин PDF скан аст: ҳоло танҳо саҳифаи ' + r.f + ' таҳлил шуд.\n\n' + output;
+        throw new Error('Матн аз саҳифаҳо хонда нашуд.');
       }
       if (!output) throw new Error('Сервер ҷавоби холӣ баргардонд.');
     } catch (err) {
@@ -405,7 +449,6 @@
     b.addEventListener('click', function () {
       var task = b.getAttribute('data-task');
       if (task === 'words') {
-        // Калимаҳо: бе интихоби саҳифа ва забон — саҳифаи ҷорӣ, забонро Алия худаш муайян мекунад
         run(task, buildPrompt(task, { f: curPage, t: curPage }, {}), { f: curPage, t: curPage }, TASKS.words.title);
         return;
       }
@@ -421,28 +464,51 @@
   });
 
   // ---- Инструменты ответа ----
-  function fileBase() { return (bookName || 'Алия').replace(/[\\\/:*?"<>|]+/g, '_').slice(0, 60) + '_саҳифа_' + curPage; }
+  function fileBase() { return (bookName || 'Алия').replace(/[^\w\u0400-\u04FF-]+/g, '_').slice(0, 40) + '_p' + curPage; }
+
   $('raCopy').addEventListener('click', function () {
-    var txt = lastOutput;
-    (navigator.clipboard ? navigator.clipboard.writeText(txt) : Promise.reject()).then(
+    (navigator.clipboard ? navigator.clipboard.writeText(lastOutput) : Promise.reject()).then(
       function () { $('raCopy').textContent = '✓ Нусхабардорӣ шуд'; setTimeout(function () { $('raCopy').textContent = '📋 Нусхабардорӣ'; }, 1600); },
       function () { alert('Нусхабардорӣ кор накард. Матнро дастӣ интихоб кунед.'); });
   });
-  $('raWord').addEventListener('click', function () {
-    var html = '<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word"><head><meta charset="utf-8"></head><body style="font-family:Calibri,Arial;font-size:12pt">' +
-      '<h2>' + escHtml(bookName) + '</h2><p>' + escHtml('Саҳифаи ' + curPage) + '</p>' + renderMarkdown(lastOutput) + '</body></html>';
-    var blob = new Blob(['\ufeff', html], { type: 'application/msword' });
-    var a = document.createElement('a');
-    a.href = URL.createObjectURL(blob); a.download = fileBase() + '.doc';
-    document.body.appendChild(a); a.click(); a.remove();
-    setTimeout(function () { URL.revokeObjectURL(a.href); }, 4000);
-  });
-  $('raPdf').addEventListener('click', function () {
-    var w = window.open('', '_blank');
-    if (!w) { alert('Равзанаро кушоед, то PDF сохта шавад.'); return; }
-    w.document.write('<html><head><meta charset="utf-8"><title>' + escHtml(fileBase()) + '</title><style>body{font-family:Georgia,serif;font-size:13pt;line-height:1.6;padding:24px;color:#000}h4{color:#000}</style></head><body><h2>' + escHtml(bookName) + '</h2><p>' + escHtml('Саҳифаи ' + curPage) + '</p>' + renderMarkdown(lastOutput) + '</body></html>');
-    w.document.close(); w.focus(); setTimeout(function () { w.print(); }, 300);
-  });
+
+  // Word / PDF — тавассути шлюз, ҳамон тарзе ки дар Reader
+  async function exportDoc(format) {
+    if (!lastOutput) return;
+    var btn = format === 'pdf' ? $('raPdf') : $('raWord');
+    var idle = format === 'pdf' ? '⬇ PDF' : '⬇ Word';
+    btn.disabled = true; btn.textContent = '⏳ Омода…';
+    try {
+      var docTitle = 'Алия — ' + bookName + ' — саҳифаи ' + curPage;
+      var branded = lastOutput + '\n\n---\n📚 Омодашуда бо ёрии «Алия» — Зеҳни сунъии Тоҷикӣ\n📖 Китобхонаи электронии Тоҷикӣ';
+      var response = await fetch(GATEWAY + '/v1/document/generate', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: docTitle, content_markdown: branded, target_format: format }), cache: 'no-store'
+      });
+      var data = await response.json().catch(function () { return {}; });
+      if (!response.ok || !data.file_base64) throw new Error(data.error || data.detail || 'Ҳуҷҷат сохта нашуд.');
+      var ext = format === 'pdf' ? 'pdf' : 'docx';
+      var mime = format === 'pdf' ? 'application/pdf' : 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
+      var fileName = 'Aliya_' + fileBase() + '.' + ext;
+      if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
+        window.AndroidBridge.saveFile(data.file_base64, fileName, mime);
+      } else {
+        var binary = atob(data.file_base64), bytes = new Uint8Array(binary.length);
+        for (var i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+        var blob = new Blob([bytes], { type: mime }), url = URL.createObjectURL(blob), a = document.createElement('a');
+        a.href = url; a.download = fileName; document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 1500);
+      }
+      btn.textContent = '✓ Сабт шуд';
+      setTimeout(function () { btn.textContent = idle; btn.disabled = false; }, 1800);
+    } catch (err) {
+      alert('Ҳуҷҷатро сабт карда натавонистам: ' + (err.message || 'хатои пайвастшавӣ'));
+      btn.textContent = idle; btn.disabled = false;
+    }
+  }
+  $('raWord').addEventListener('click', function () { exportDoc('docx'); });
+  $('raPdf').addEventListener('click', function () { exportDoc('pdf'); });
+
   $('raSave').addEventListener('click', function () {
     if (!lastOutput) return;
     var key = 'kk_aliya_notes';
@@ -452,8 +518,8 @@
     list.push({ ts: Date.now(), page: curPage, task: lastTask, text: lastOutput });
     all[bookUrl] = list;
     try { localStorage.setItem(key, JSON.stringify(all)); } catch (e) {}
-    $('raSave').textContent = '✓ Захира шуд';
-    setTimeout(function () { $('raSave').textContent = '💾 Ба ёддошт'; }, 1600);
+    var b = $('raSave');
+    b.textContent = '✓'; setTimeout(function () { b.textContent = '💾'; }, 1400);
   });
 
   loadBook();
