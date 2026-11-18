@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v160-aliya-lesson-safety';
+const CACHE_NAME = 'kitobkhona-v161-aliya-export-stop';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -10,6 +10,7 @@ const LOCAL_FILES = [
   './aliya/aliya-bridge.js',
   './aliya/aliya-doc-templates.js',
   './aliya/aliya-tasks.js',
+  './aliya/aliya-pdf.js',
   './aliya/reader-aliya.html',
   './assets/css/desktop-layout.css',
   './assets/css/desktop-sidebar.css',

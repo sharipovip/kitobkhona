@@ -216,6 +216,9 @@
     '.at-caret{display:inline-block;width:2px;height:1.05em;background:var(--at-gold);vertical-align:-2px;margin-left:1px;animation:atBlink .8s steps(1) infinite}',
     '@keyframes atBlink{50%{opacity:0}}',
     '.at-think{display:flex;align-items:center;gap:9px;min-height:26px}',
+    '.at-stop{margin-left:auto;flex:none;height:30px;padding:0 12px;border-radius:9px;border:1px solid rgba(238,107,103,.45);background:rgba(238,107,103,.12);color:#ffb4a6;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}',
+    '.at-stop:hover{background:rgba(238,107,103,.22)}',
+    '.at-errbox.at-stopped{color:var(--at-mut,#9aa7b8)}',
     '.at-think-txt{font-size:14px;font-weight:650;background:linear-gradient(90deg,var(--at-mut) 0%,var(--at-gold) 45%,#fff 50%,var(--at-gold) 55%,var(--at-mut) 100%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:atShim 1.6s linear infinite}',
     '.at-think-txt.swap{animation:atShim 1.6s linear infinite,atIn .35s ease}',
     '@keyframes atShim{from{background-position:120% 0}to{background-position:-120% 0}}',
@@ -494,6 +497,7 @@
     var msgs = [{ role: 'system', content: system }];
     if (opt.material) msgs.push({ role: 'user', content: opt.material }, { role: 'assistant', content: opt.materialAck || 'Матн қабул шуд.' });
     msgs.push({ role: 'user', content: user });
+    if (opt.history) msgs = msgs.concat(opt.history);   // v161: идомаи ҷавоби нопурра
     var payload = {
       messages: msgs,
       reasoning_mode: opt.reasoning || 'medium', temperature: opt.temperature == null ? 0.4 : opt.temperature, max_tokens: opt.maxTokens || 2200
@@ -564,9 +568,16 @@
       try {
         var cache = await caches.open('kitobkhona-pdf-cache-v1');
         var hit = await cache.match(key) || (url !== key ? await cache.match(url) : null);
-        if (hit) buf = await hit.arrayBuffer();
+        if (!hit) {
+          // v159: Reader китобро бо адреси оинаи jsdelivr ё бо рамзгузории дигар сабт карда метавонад —
+          // ҳамаи калидҳо бо шакли каноникӣ муқоиса мешаванд (пештар Алия китобро аз нав зеркашӣ мекард)
+          var reqs = await cache.keys();
+          for (var q = 0; q < reqs.length && !hit; q++) { if (bookKey(reqs[q].url) === key) hit = await cache.match(reqs[q]); }
+        }
+        if (hit) { buf = await hit.arrayBuffer(); if (onProgress) onProgress(1, 1); }
       } catch (e) {}
     }
+    var fromNetwork = !buf;
     if (!buf) {
       var urls = [key, jsdelivrUrl(key), url].filter(function (x, i, a) { return x && a.indexOf(x) === i; });
       var lastErr = null;
@@ -587,6 +598,13 @@
         } catch (e) { lastErr = e; }
       }
       if (!buf) throw lastErr || new Error('Китоб бор нашуд.');
+    }
+    if (fromNetwork && 'caches' in window) {
+      // нусха ПЕШ аз pdf.js (pdf.js буферро ба worker мегузаронад ва он холӣ мешавад)
+      var copy = buf.slice(0);
+      caches.open('kitobkhona-pdf-cache-v1').then(function (c) {
+        return c.put(key, new Response(copy, { status: 200, headers: { 'Content-Type': 'application/pdf', 'Content-Length': String(copy.byteLength), 'X-Kitob-Canonical': encodeURIComponent(key), 'X-Kitob-Cached-At': String(Date.now()) } }));
+      }).catch(function () {});
     }
     return lib.getDocument({ data: buf }).promise;
   }
@@ -709,7 +727,8 @@
     '• Истилоҳ ва калимаҳои калидиро **ғафс** нависед.\n' +
     '• Сарлавҳаҳо бо «## », рӯйхат бо «- », рақамгузорӣ бо «1. ».\n' +
     '• ҲЕҶ ҷумлаи иловагӣ нанавис: на муқаддима («Албатта», «Инак», «Дар зер…», «Ин матн аз китоб омода шуд»), на хотима («Агар хоҳед…», «Умедворам…»). Фавран натиҷаро нависед.\n' +
-    '• Матн метавонад аз OCR бошад: хатогиҳои хурди ҳарфиро худатон ислоҳ кунед, вале чизе аз худ наофаред.';
+    '• Матн метавонад аз OCR бошад: хатогиҳои хурди ҳарфиро худатон ислоҳ кунед, вале чизе аз худ наофаред.\n' +
+    '• Дар сатри ОХИРИН, алоҳида, қатъан чунин нависед: «@@МАВЗӮЪ: номи кӯтоҳи мавзӯи ҳамин саҳифаҳо (1–6 калима, бо забони ҷавоб, бе нохунак)». Ин сатр ба корбар нишон дода намешавад, танҳо барои номи файл аст.';
 
   function gradeText(g) { return g ? 'синфи ' + g : 'сатҳи мувофиқ ба мураккабии матн (синфро худатон аз рӯи матн муайян кунед)'; }
 
@@ -931,21 +950,49 @@
     for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
     return new Blob([bytes], { type: mime });
   }
-  async function exportDoc(format, title, text, baseName) {
-    var fileName = 'Алия_' + safeName(baseName || title) + (format === 'pdf' ? '.pdf' : '.docx');
+  var pdfModule = null;
+  function ensureAliyaPdf() {
+    if (window.AliyaPdf) return Promise.resolve(window.AliyaPdf);
+    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=161').then(function () {
+      if (!window.AliyaPdf) throw new Error('aliya-pdf.js');
+      return window.AliyaPdf;
+    }).catch(function (e) { pdfModule = null; throw e; });
+    return pdfModule;
+  }
+  /**
+   * exportDoc(format, title, text, meta)
+   * meta: { topic, docType, book, lang, pages, title, subtitle } — ё сатр (номи кӯҳна, барои мутобиқат)
+   * v161: номи файл «Мавзӯъ Навъ Китоб», колонтитули «Алия · Китобхона» + Google Play дар ҳар саҳифа
+   */
+  async function exportDoc(format, title, text, meta) {
+    if (!meta || typeof meta === 'string') meta = { docType: String(title || 'Ҷавоби Алия'), topic: typeof meta === 'string' ? meta : '' };
+    meta.lang = meta.lang || (detectLang(plain(text)) === 'ru' ? 'ru' : 'tg');
+    var fileName = docFileName(meta, format === 'pdf' ? 'pdf' : 'docx');
+    var docTitleMain = meta.title || title;
     var blob;
-    if (format === 'docx' && window.AliyaTemplates) {
-      blob = typeof window.AliyaTemplates.generateMarkdownDocx === 'function'
-        ? window.AliyaTemplates.generateMarkdownDocx({ title: title, markdown: text })
-        : window.AliyaTemplates.generateResponseDocx({ title: title, content: plain(text) });
+    if (format === 'docx') {
+      if (!window.AliyaTemplates) throw new Error('Қолаби Word бор нашуд.');
+      blob = window.AliyaTemplates.generateMarkdownDocx({
+        title: docTitleMain, subtitle: meta.subtitle, markdown: text,
+        lang: meta.lang, docType: meta.docType, book: meta.book, fileTitle: fileName.replace(/\.docx$/, '')
+      });
     } else {
-      var d = await postJson('/v1/document/generate', {
-        title: String(title).slice(0, 180),
-        content_markdown: pdfMarkdown(text) + '\n\n---\n📚 Омодашуда бо ёрии «Алия» — Зеҳни сунъии Тоҷикӣ\n📖 Китобхонаи электронии Тоҷикӣ\n📲 https://play.google.com/store/apps/details?id=com.kitobkhona.app',
-        target_format: format
-      }, 90000);
-      if (!d.file_base64) throw new Error('Ҳуҷҷат аз сервер қабул нашуд.');
-      blob = b64ToBlob(d.file_base64, format === 'pdf' ? 'application/pdf' : DOCX_MIME);
+      var arabic = /[\u0600-\u06FF]/.test(text);
+      var P = await ensureAliyaPdf();
+      if (!arabic) {
+        blob = await P.build({
+          title: docTitleMain, subtitle: meta.subtitle, markdown: text,
+          lang: meta.lang, docType: meta.docType, book: meta.book, fileTitle: fileName.replace(/\.pdf$/, '')
+        });
+      } else {
+        // матни форсӣ (арабиасос): саҳифаҳоро сервер месозад, колонтитулҳо дар дастгоҳ илова мешаванд
+        var d = await postJson('/v1/document/generate', {
+          title: String(docTitleMain).slice(0, 180), content_markdown: pdfMarkdown(text), target_format: 'pdf'
+        }, 90000);
+        if (!d.file_base64) throw new Error('Ҳуҷҷат аз сервер қабул нашуд.');
+        var raw = b64ToBlob(d.file_base64, 'application/pdf');
+        try { blob = await P.stamp(await raw.arrayBuffer(), meta); } catch (e) { blob = raw; }
+      }
     }
     await saveBlob(blob, fileName, format === 'pdf' ? 'application/pdf' : DOCX_MIME);
     return fileName;
@@ -985,7 +1032,22 @@
     function showStep(i) {
       if (i === step || !think.isConnected) return;
       step = i;
-      think.innerHTML = emblem(true, theme) + '<span class="at-think-txt swap">' + esc(steps[i]) + '</span><span class="at-dots"><i></i><i></i><i></i></span>';
+      think.innerHTML = emblem(true, theme) + '<span class="at-think-txt swap">' + esc(steps[i]) + '</span><span class="at-dots"><i></i><i></i><i></i></span>' +
+        '<button type="button" class="at-stop" title="Қатъ кардан" aria-label="Қатъ кардан">■ Бас</button>';
+      think.querySelector('.at-stop').onclick = function () { stop(true); };
+    }
+    // v159: «■ Бас» — қатъи амал; ҳангоми баромадан аз саҳифа худкор қатъ мешавад
+    var handle;
+    function stop(showUi) {
+      if (finished || ctrl.signal.aborted) return;
+      ctrl.abort(); clearTimers();
+      ACTIVE_RUNS.delete(handle);
+      if (cfg.onBusy) cfg.onBusy(false);
+      if (showUi && card.isConnected) {
+        if (think.isConnected) think.remove();
+        body.innerHTML = '<div class="at-errbox at-stopped"><span>⏹ Қатъ карда шуд.</span><button type="button">↻ Аз нав оғоз</button></div>';
+        body.querySelector('button').onclick = function () { run(cfg); };
+      }
     }
     function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
     function clearTimers() { timers.forEach(clearTimeout); timers = []; }
@@ -1021,11 +1083,28 @@
         // 'medium': дар шлюз 'high' ҷустуҷӯи интернетро фаъол мекард — барои кор бо матни китоб лозим нест
         output = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
           maxTokens: maxTokens(task, o), temperature: task === 'translate' ? 0.2 : 0.45, reasoning: 'medium' });
-        output = cleanOutput(output);
+        // v161: шлюз дарозии ҷавобро маҳдуд мекунад (2400–3072 токен) — нақшаи дарси пурра метавонад дар нима қатъ шавад.
+        // Агар ҷавоб нопурра бошад, Алия худкор «идома»-ро мепурсад (то 2 бор) ва қисмҳоро пайваст мекунад.
+        for (var cont = 0; cont < 2 && looksTruncated(task, output); cont++) {
+          var more = '';
+          try { more = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
+            maxTokens: maxTokens(task, o), temperature: 0.3, reasoning: 'medium',
+            history: [{ role: 'assistant', content: output }, { role: 'user', content: bookLang === 'ru' && task !== 'translate'
+              ? 'Ответ оборвался. Продолжите ровно с того места, где остановились, без повторов и без вступления; сохраните тот же формат. В конце — строка «@@МАВЗӮЪ: …».'
+              : 'Ҷавоб нопурра монд. Аз ҳамон ҷое, ки қатъ шуд, бе такрор ва бе муқаддима идома диҳед; ҳамон форматро нигоҳ доред. Дар охир сатри «@@МАВЗӮЪ: …»-ро нависед.' }] }) } catch (ce) { if ((ce && ce.name === 'AbortError') || ctrl.signal.aborted) throw ce; break; }   // қисми гирифташуда нигоҳ дошта мешавад
+          more = String(more || '').replace(/^```(?:markdown|md)?\s*/i, '').replace(/```\s*$/, '');
+          if (!more.trim()) break;
+          output = joinContinuation(output, more);
+        }
+        var tp = extractTopicMarker(output);
+        output = cleanOutput(tp.text);
+        o.topic = tp.topic || guessTopic(task, output);
+        o.docLang = o.docLang || (task === 'translate' ? (target || 'tg') : (bookLang === 'ru' ? 'ru' : 'tg'));
       } catch (err) {
         clearTimers();
         if (cfg.onBusy) cfg.onBusy(false);
-        if (err && err.name === 'AbortError') return;
+        if ((err && err.name === 'AbortError') || ctrl.signal.aborted) return;
+        ACTIVE_RUNS.delete(handle);
         think.remove();
         body.innerHTML = '<div class="at-errbox"><span>⚠️ ' + esc(friendlyError(err)) + '</span><button type="button">↻ Дубора</button></div>';
         body.querySelector('button').onclick = function () { run(cfg); };
@@ -1033,6 +1112,7 @@
       }
       clearTimers();
       if (ctrl.signal.aborted) return;
+      ACTIVE_RUNS.delete(handle);
       if (fin) {
         think.outerHTML = '<div class="at-done">✓ ' + esc(fin) + '</div>';
         later(type, 650);
@@ -1055,11 +1135,17 @@
         if (top > sc.scrollTop + sc.clientHeight * 0.55 || top < sc.scrollTop) sc.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
       }, 60);
     }
-    return {
-      abort: function () { if (!finished) { ctrl.abort(); clearTimers(); if (cfg.onBusy) cfg.onBusy(false); } },
+    handle = {
+      abort: function (showUi) { if (finished) return; if (!ctrl.signal.aborted) stop(showUi !== false); else { ctrl.abort(); clearTimers(); } },
       get finished() { return finished; }
     };
+    ACTIVE_RUNS.add(handle);
+    return handle;
   }
+  var ACTIVE_RUNS = new Set();
+  /** Ҳамаи амалҳои ҷориро қатъ мекунад (баромадан аз саҳифа, иваз кардани ҷадвал) */
+  function abortAll() { Array.from(ACTIVE_RUNS).forEach(function (h) { try { h.abort(false); } catch (e) {} }); ACTIVE_RUNS.clear(); }
+  window.addEventListener('pagehide', abortAll);
   /** Ҷумлаҳои «пур кардан»-ро аз аввал/охир тоза мекунад */
   function cleanOutput(s) {
     s = String(s || '').replace(/\r/g, '').trim();
@@ -1100,6 +1186,69 @@
       follow();
     }, 24);
   }
+  /* v161: муайян кардани ҷавоби нопурра ---------------------------------- */
+  function looksTruncated(task, out) {
+    var s = String(out || '').replace(/\s+$/, '');
+    if (!s) return false;
+    if (/@@?\s*(?:МАВЗӮЪ|МАВЗУЪ|ТЕМА|TOPIC)\s*[:：]/i.test(s)) return false;     // сатри охирин ҳаст — ҷавоб пурра
+    var lastLine = s.split('\n').pop().trim();
+    var openQ = (s.match(/«/g) || []).length > (s.match(/»/g) || []).length;
+    var endsOk = /[.!?…»)\]:;✔✓*"]$/.test(lastLine) || /^\s*(Калид|Ключ|Answer key)\s*:/i.test(lastLine);
+    // қисми охирини қолаб: «### VIII. Вазифаи хонагӣ» / «Домашнее задание» (на «Санҷиши вазифаи хонагӣ»)
+    if (task === 'lesson') return !/(?:^|\n)[#*\s-]*(?:[IVXЛ]+\.\s*)?\**\s*(?:Вазифаи хонагӣ|Вазифаи хонагi|Домашнее задание)/i.test(s) || (!endsOk && s.length > 1500);
+    if (task === 'words' || task === 'notes') return false;
+    return s.length > 1500 && (!endsOk || openQ);
+  }
+  function joinContinuation(a, b) {
+    var lastLine = a.replace(/\s+$/, '').split('\n').pop();
+    // агар модел сатри охиринро такрор карда бошад — такрорро мепартоем
+    var bt = b.replace(/^\s+/, '');
+    if (lastLine.trim().length > 12 && bt.indexOf(lastLine.trim()) === 0) bt = bt.slice(lastLine.trim().length);
+    var midSentence = !/[.!?…»:;]\s*$/.test(a) && /^[a-zа-яёӣӯҳҷқғ,;:»)]/.test(bt);
+    return a.replace(/\s+$/, '') + (midSentence ? (/^[,;:»)]/.test(bt) ? '' : ' ') : '\n') + bt;
+  }
+
+  /* v161: мавзӯъ барои номи файл ------------------------------------------ */
+  var TOPIC_RE = /^[ \t>*_#-]*@@?\s*(?:МАВЗӮЪ|МАВЗУЪ|МАВЗӮ|ТЕМА|TOPIC|موضوع)\s*[:：]\s*(.*)$/gim;
+  function cleanTopic(t) {
+    return String(t || '').replace(/\*\*|\[\[|\]\]|[«»"“”„`]/g, '').replace(/^\s*[-–—:]+|[\s.,;:!?…]+$/g, '').replace(/\s+/g, ' ').trim().slice(0, 70);
+  }
+  function extractTopicMarker(s) {
+    var topic = '';
+    s = String(s || '').replace(TOPIC_RE, function (_, t) { if (!topic) topic = cleanTopic(t); return ''; });
+    return { text: s.replace(/\n{3,}/g, '\n\n'), topic: topic };
+  }
+  var GENERIC_HEAD = /^(мавзӯи асосӣ|фикрҳои (асосӣ|калидӣ)|хулоса|иқтибосҳо|мафҳумҳо|калимаҳо|нақшаи дарс|нақшаи дарси яксоата|поурочный план-конспект|сарлавҳа|тест|санҷиш|основная тема|ключевые мысли|вывод|цитаты|понятия|summary|key points|conclusion)$/i;
+  function guessTopic(task, text) {
+    var m = String(text || '').match(/\*\*\s*(?:Мавзӯи дарс|Мавзӯъ|Тема урока|Тема)\s*:?\s*\*\*\s*:?\s*([^\n]+)/i) ||
+            String(text || '').match(/^\s*(?:Мавзӯи дарс|Мавзӯъ|Тема урока|Тема)\s*:\s*([^\n]+)/im);
+    if (m && cleanTopic(m[1]).length > 1) return cleanTopic(m[1]);
+    var hs = String(text || '').match(/^\s*#{1,3}\s+(.+)$/gm) || [];
+    for (var i = 0; i < hs.length; i++) { var h = cleanTopic(hs[i].replace(/^\s*#+\s+/, '')); if (h && !GENERIC_HEAD.test(h)) return h; }
+    return '';
+  }
+  /** «Забони тоҷикӣ - 5 (2017)» → «Забони тоҷикӣ синфи 5» (ё «Русский язык 10 класс») */
+  function prettyBookName(name, url, lang) {
+    var n = String(name || '').replace(/\.pdf$/i, '').replace(/_/g, ' ').replace(/\s*\((?:19|20)\d{2}\)\s*/g, ' ').replace(/\s+/g, ' ').trim();
+    var g = null, m = n.match(/^(.*?)\s*[-–—]\s*(\d{1,2})\s*$/);
+    if (m && +m[2] >= 1 && +m[2] <= 11) { n = m[1].trim(); g = +m[2]; }
+    else if (/kitobhoi[ _%20]*darsi|китобҳои дарсӣ/i.test(safeDecode(url || '')) && !/синф|класс/i.test(n)) g = detectGrade(url);
+    if (g) n += lang === 'ru' ? ' ' + g + ' класс' : (lang === 'en' ? ' grade ' + g : ' синфи ' + g);
+    return n || 'Китоб';
+  }
+  function fileSafe(s) {
+    return String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/[·•]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '');
+  }
+  /** Номи файл: «Мавзӯъ Навъи ҳуҷҷат Китоб», масалан «Исм Нақшаи дарси яксоата Забони тоҷикӣ синфи 5» */
+  function docFileName(meta, ext) {
+    var topic = fileSafe(meta.topic), type = fileSafe(meta.docType), book = fileSafe(meta.book);
+    if (topic && type && topic.toLowerCase() === type.toLowerCase()) topic = '';
+    if (!topic && meta.pages) topic = (meta.lang === 'ru' ? 'стр. ' : 'саҳ. ') + meta.pages;
+    var name = [topic, type, book].filter(Boolean).join(' ');
+    if (name.length > 150) name = name.slice(0, 150).replace(/\s+\S*$/, '');
+    return (name || 'Алия') + '.' + ext;
+  }
+
   function addTools(card, text, title, o, cfg) {
     var bar = document.createElement('div');
     var canSave = cfg.saveNotes !== false;
@@ -1109,8 +1258,16 @@
       '<button type="button" class="at-tool" data-a="pdf">⬇ PDF</button>' +
       (canSave ? '<button type="button" class="at-tool save" data-a="save" title="Ба ёддоштҳо" aria-label="Ба ёддоштҳо">🔖</button>' : '');
     card.appendChild(bar);
-    var docTitle = title + ' — ' + (cfg.bookName || 'Китоб') + ' (саҳ. ' + rangeLabel(o.from, o.to) + ')';
-    var base = TASKS[cfg.task].short + '_' + (cfg.bookName || '') + '_с' + rangeLabel(o.from, o.to);
+    var lang = o.docLang || 'tg', pagesTxt = rangeLabel(o.from, o.to);
+    var book = prettyBookName(cfg.bookName, cfg.bookUrl, lang);
+    var docType = title.replace(/\s*·\s*/g, ' ');
+    var pagesWord = lang === 'ru' ? 'стр.' : (lang === 'en' ? 'pp.' : 'саҳ.');
+    var meta = {
+      lang: lang, docType: docType, book: book, topic: o.topic || '', pages: pagesTxt,
+      title: (o.topic ? o.topic + ' — ' : '') + title,
+      subtitle: '«' + (cfg.bookName || 'Китоб') + '» · ' + pagesWord + ' ' + pagesTxt
+    };
+    var docTitle = meta.title + ' — ' + (cfg.bookName || 'Китоб') + ' (' + pagesWord + ' ' + pagesTxt + ')';
     bar.addEventListener('click', function (e) {
       var b = e.target.closest('button'); if (!b || b.disabled) return;
       var a = b.getAttribute('data-a');
@@ -1118,8 +1275,8 @@
         copyText(text).then(function () { toast('✓ Матн нусхабардорӣ шуд'); }, function () { toast('Нусхабардорӣ нашуд. Матнро дастӣ интихоб кунед.'); });
       } else if (a === 'docx' || a === 'pdf') {
         var idle = b.innerHTML; b.disabled = true; b.textContent = '⏳';
-        exportDoc(a, docTitle, text, base).then(function () {
-          toast(a === 'pdf' ? '✓ PDF сабт шуд' : '✓ Word сабт шуд');
+        exportDoc(a, docTitle, text, meta).then(function (fn) {
+          toast((a === 'pdf' ? '✓ PDF сабт шуд: ' : '✓ Word сабт шуд: ') + fn, 3200);
         }, function (err) {
           toast('Ҳуҷҷат сабт нашуд: ' + friendlyError(err), 3200);
         }).then(function () { b.disabled = false; b.innerHTML = idle; });
@@ -1235,7 +1392,7 @@
     loadPdf: loadPdf, ensurePdfJs: ensurePdfJs, createPageReader: createPageReader,
     chat: chat, buildPrompt: buildPrompt, cleanOutput: cleanOutput,
     newState: newState, fieldsHTML: fieldsHTML, bindFields: bindFields, validate: validate,
-    run: run, exportDoc: exportDoc, saveBlob: saveBlob, copyText: copyText, friendlyError: friendlyError
+    run: run, abortAll: abortAll, exportDoc: exportDoc, docFileName: docFileName, prettyBookName: prettyBookName, guessTopic: guessTopic, extractTopicMarker: extractTopicMarker, saveBlob: saveBlob, copyText: copyText, friendlyError: friendlyError
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectStyles); else injectStyles();
 })(window, document);

@@ -47,8 +47,8 @@
 </div>
 
 <script src="aliya-bridge.js?v=159"></script>
-<script src="aliya-doc-templates.js?v=159"></script>
-<script src="aliya-tasks.js?v=160"></script>
+<script src="aliya-doc-templates.js?v=161"></script>
+<script src="aliya-tasks.js?v=161"></script>
 <script>
 (function () {
   'use strict';
@@ -61,6 +61,17 @@
   var curPage = Math.max(1, parseInt(qs.get('page'), 10) || 1);
   var grade = AT.detectGrade(safeDecode(bookUrl), bookName);
   var pdfDoc = null, reader = null, loading = null, totalPages = 0, busy = false, current = null;
+  // v159: дар дохили Reader (iframe) кушода шудааст — китоби аллакай кушодаи Reader истифода мешавад
+  var host = null;
+  try { if (qs.get('embed') === '1' && window.parent !== window && window.parent.__kkCloseAliya) host = window.parent; } catch (e) { host = null; }
+  if (host) document.documentElement.classList.add('ra-embed');
+  function hostDoc() {
+    try {
+      var d = host && host.__kkReaderDoc;
+      if (d && d.doc && d.doc.numPages && AT.bookKey(d.url) === bookUrl) return d.doc;
+    } catch (e) {}
+    return null;
+  }
   var states = {};
 
   $('raEmb').innerHTML = AT.emblem(false, 'navy');
@@ -69,6 +80,8 @@
   }
   if (bookUrl) $('raBack').href = readerHref(curPage);
   $('raBack').addEventListener('click', function (e) {
+    if (current) current.abort(false);               // v159: баромадан — кори Алия қатъ мешавад
+    if (host) { e.preventDefault(); host.__kkCloseAliya(); return; }
     // агар аз Reader омада бошем — бозгашти таърих (ҳолати Reader нигоҳ дошта мешавад)
     if (document.referrer && /reader\.html/.test(document.referrer) && history.length > 1) { e.preventDefault(); history.back(); }
   });
@@ -88,11 +101,20 @@
   function ensureBook() {
     if (pdfDoc) return Promise.resolve(pdfDoc);
     if (!bookUrl) return Promise.reject(new Error('Китоб интихоб нашудааст. Китобро аз Китобхона кушоед.'));
+    var shared = hostDoc();
+    if (shared && !loading) {
+      loading = Promise.resolve(shared).then(function (doc) {
+        pdfDoc = doc; totalPages = doc.numPages; curPage = Math.min(curPage, totalPages);
+        reader = AT.createPageReader(doc, { bookUrl: bookUrl, bookName: bookName });
+        setLabel();
+        return doc;
+      });
+    }
     if (!loading) {
       var timer = setTimeout(function () { $('raLoad').hidden = false; }, 400);
       loading = AT.loadPdf(bookUrl, function (loaded, total) {
         if (total) $('raLoadBar').style.setProperty('--p', Math.round(loaded / total * 100) + '%');
-        $('raLoadTxt').textContent = 'Китоб боргузорӣ мешавад' + (total ? ' · ' + Math.round(loaded / total * 100) + '%' : '');
+        $('raLoadTxt').textContent = (loaded === 1 && total === 1) ? 'Китоб аз хотираи дастгоҳ кушода мешавад…' : 'Китоб боргузорӣ мешавад' + (total ? ' · ' + Math.round(loaded / total * 100) + '%' : '');
       }).then(function (doc) {
         clearTimeout(timer); $('raLoad').hidden = true;
         pdfDoc = doc; totalPages = doc.numPages; curPage = Math.min(curPage, totalPages);
@@ -153,10 +175,12 @@
     var sh = AT.openSheet('<h3>🔖 Ёддоштҳо</h3><div id="raNotesList"></div>');
     AT.renderNotesList(sh.querySelector('#raNotesList'), {
       book: bookUrl, onChange: updateCount,
-      onGo: function (page) { location.href = readerHref(page); }
+      onGo: function (page) { if (host) { AT.closeSheet(); host.__kkReaderGoPage(page); } else location.href = readerHref(page); }
     });
   });
   window.addEventListener('pageshow', updateCount);
+  // v159: ҳангоми баромадан аз саҳифа (ё бастани қабати Алия) кор худкор қатъ мешавад
+  window.addEventListener('pagehide', function () { if (current) current.abort(false); });
 })();
 </script>
 </body>

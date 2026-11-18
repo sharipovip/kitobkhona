@@ -892,7 +892,13 @@ body.light-reading .page-slot canvas{filter:none!important}
 .light-reading .notes-panel.at-navy{--at-card:#FFFFFF;--at-card2:#F6F1E6;--at-line:rgba(0,0,0,.10);--at-gold:#8A6A15;--at-txt:#1A1F29;--at-mut:#5B6575;--at-nm:#9A6B00;--at-acc:#C9A84C;--at-accTxt:#fff}
 .light-reading .notes-panel .at-nt-card{box-shadow:0 2px 10px rgba(0,0,0,.05)}
 </style>
-<script src="./aliya/aliya-tasks.js?v=160" defer></script>
+<script src="./aliya/aliya-tasks.js?v=161" defer></script>
+<style id="aliya-overlay-style">
+#aliyaOverlay{position:fixed;inset:0;z-index:2147482000;background:#0b1626;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .22s ease,transform .22s ease,visibility 0s linear .22s}
+#aliyaOverlay.open{opacity:1;visibility:visible;transform:none;transition:opacity .22s ease,transform .22s ease}
+#aliyaOverlay iframe{width:100%;height:100%;border:0;display:block;background:#0b1626}
+html.aliya-open,html.aliya-open body{overflow:hidden}
+</style>
 </head>
 <body class="light-reading">
 <div class="reader-wrapper">
@@ -1374,6 +1380,7 @@ body.light-reading .page-slot canvas{filter:none!important}
         if (!pdf) throw e1;
       }
       pages = pdf.numPages;
+      window.__kkReaderDoc = { doc: pdf, url: canonicalBookUrl(url) };   // v159: Алия ҳамин китоби кушодаро истифода мебарад
       const pr = getProgress();
       const qPage = parseInt(qs.get('page'), 10); // v159: «Ба саҳифа» аз ёддоштҳо ва бозгашт аз Алия
       page = qPage > 0 ? Math.min(qPage, pages) : (pr ? Math.min(pr.page, pages) : 1);
@@ -1911,18 +1918,18 @@ body.light-reading .page-slot canvas{filter:none!important}
     return [...new Set(out)];
   }
 
-  async function storeBookCache(cu, buf) {
+  function storeBookCache(cu, buf) {
+    // v159: нусха ФАВРАН (синхронӣ) гирифта мешавад. Пештар slice(0) пас аз await caches.open иҷро мешуд —
+    // то он вақт pdf.js буферро ба worker гузаронида буд (буфер холӣ) ва китоб дар кэш сабт намешуд,
+    // бинобар ин Алия китобро аз нав зеркашӣ мекард.
     try {
-      if ('caches' in window && buf) {
-        const key = canonicalBookUrl(cu);
-        const cache = await caches.open(KITOB_PDF_CACHE);
-        // slice(0) — нусха: pdf.js метавонад асосии буферро «бегирад»
-        await cache.put(key, new Response(buf.slice(0), {
-          status: 200,
-          headers: { 'Content-Type': 'application/octet-stream', 'Content-Length': String(buf.byteLength), 'X-Kitob-Canonical': encodeURIComponent(key), 'X-Kitob-Cached-At': String(Date.now()) }
-        }));
-      }
-    } catch (e) {}
+      if (!('caches' in window) || !buf || !buf.byteLength) return Promise.resolve();
+      const key = canonicalBookUrl(cu), copy = buf.slice(0), size = copy.byteLength;
+      return caches.open(KITOB_PDF_CACHE).then(cache => cache.put(key, new Response(copy, {
+        status: 200,
+        headers: { 'Content-Type': 'application/pdf', 'Content-Length': String(size), 'X-Kitob-Canonical': encodeURIComponent(key), 'X-Kitob-Cached-At': String(Date.now()) }
+      }))).catch(() => {});
+    } catch (e) { return Promise.resolve(); }
   }
 
   async function fetchBookAnyCandidate() {
@@ -1960,7 +1967,7 @@ body.light-reading .page-slot canvas{filter:none!important}
       // победитель оборвался на середине — повтор того же источника (без гонки)
       const recover = (s) => {
         fetchBookArrayBuffer(s.cu).then(
-          b => { if (!done) { done = true; cleanup(); abortOthers(-1); resolve(b); } },
+          b => { if (!done) { done = true; cleanup(); abortOthers(-1); storeBookCache(s.cu, b); resolve(b); } },
           () => giveUp()
         );
       };
@@ -2496,10 +2503,45 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
     btnOpen.addEventListener('click', function (e) {
       e.stopPropagation();
       if (!url) { if (typeof toast === 'function') toast('Аввал китобро кушоед'); return; }
-      location.href = 'aliya/reader-aliya.html?url=' + encodeURIComponent(url) +
-        '&name=' + encodeURIComponent(typeof name !== 'undefined' ? name : 'Китоб') + '&page=' + (typeof page !== 'undefined' ? page : 1);
+      openAliyaOverlay();
     });
   }
+  // v159: Алия дар болои Reader (iframe) кушода мешавад: китоби аллакай боркардашуда истифода мешавад,
+  // ҳеҷ чиз аз нав зеркашӣ намешавад. Бастани қабат саҳифаи Алияро холӣ мекунад — кори ҷорӣ худкор қатъ мешавад.
+  function aliyaSrc() {
+    return 'aliya/reader-aliya.html?embed=1&url=' + encodeURIComponent(url) +
+      '&name=' + encodeURIComponent(typeof name !== 'undefined' ? name : 'Китоб') + '&page=' + (typeof page !== 'undefined' ? page : 1);
+  }
+  function openAliyaOverlay() {
+    var ov = document.getElementById('aliyaOverlay');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'aliyaOverlay'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Алия');
+      ov.innerHTML = '<iframe title="Алия" allow="clipboard-write"></iframe>';
+      document.body.appendChild(ov);
+    }
+    ov.querySelector('iframe').src = aliyaSrc();
+    ov.classList.add('open');
+    document.documentElement.classList.add('aliya-open');
+    try { history.pushState({ kkAliya: 1 }, ''); } catch (e) {}
+  }
+  function closeAliyaOverlay(fromPop) {
+    var ov = document.getElementById('aliyaOverlay');
+    if (!ov || !ov.classList.contains('open')) return false;
+    ov.classList.remove('open');
+    document.documentElement.classList.remove('aliya-open');
+    var fr = ov.querySelector('iframe');
+    setTimeout(function () { if (!ov.classList.contains('open')) fr.src = 'about:blank'; }, 260);   // қатъи кори Алия
+    if (!fromPop && history.state && history.state.kkAliya) { try { history.back(); } catch (e) {} }
+    if (typeof updateNotesBadge === 'function') updateNotesBadge();
+    return true;
+  }
+  window.__kkCloseAliya = function () { closeAliyaOverlay(false); };
+  window.__kkReaderGoPage = function (n) {
+    closeAliyaOverlay(false);
+    n = parseInt(n, 10);
+    if (n > 0 && pdf && typeof renderPage === 'function') setTimeout(function () { renderPage(Math.min(n, pages), 0); }, 120);
+  };
+  window.addEventListener('popstate', function () { closeAliyaOverlay(true); });
 });
 
 // v159: Ёддоштҳо — матнҳое, ки дар Алия бо 🔖 сабт шудаанд (танҳо дар ҳамин дастгоҳ, localStorage «kk_aliya_notes»)

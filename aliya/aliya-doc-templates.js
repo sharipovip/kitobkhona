@@ -150,24 +150,84 @@
       .replace(/'/g, '&apos;');
   }
 
-  function createDocxDocument(bodyXml) {
+  /* v161: колонтитулҳо дар ҳар саҳифа — «Алия · Китобхона» + Google Play + рақами саҳифа */
+  var HF_L10N = {
+    tg: { tag: 'Ёвари зеҳни сунъии китобхон', made: 'Ин ҳуҷҷатро «Алия» — ёвари зеҳни сунъии барномаи «Китобхона» омода кардааст.', play: 'Китобхона дар Google Play: ', page: 'саҳ. ', of: ' аз ' },
+    ru: { tag: 'ИИ-помощник читателя', made: 'Документ подготовлен «Алией» — ИИ-помощником приложения «Китобхона».', play: 'Китобхона в Google Play: ', page: 'стр. ', of: ' из ' },
+    en: { tag: 'AI reading assistant', made: 'Prepared by Aliya, the AI assistant of the Kitobkhona app.', play: 'Kitobkhona on Google Play: ', page: 'p. ', of: ' of ' }
+  };
+  var PLAY_URL = 'https://play.google.com/store/apps/details?id=com.kitobkhona.app';
+  var W_NS = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  function hfRun(t, o) {
+    o = o || {};
+    return '<w:r><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/>' + (o.b ? '<w:b/>' : '') + (o.u ? '<w:u w:val="single"/>' : '') +
+      '<w:color w:val="' + (o.c || '4A5D73') + '"/><w:sz w:val="' + (o.sz || 16) + '"/></w:rPr><w:t xml:space="preserve">' + xmlEscape(t) + '</w:t></w:r>';
+  }
+  function hfField(code, o) {
+    var rpr = '<w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:b/><w:color w:val="' + (o.c || '0D1B2A') + '"/><w:sz w:val="' + (o.sz || 16) + '"/></w:rPr>';
+    return '<w:r>' + rpr + '<w:fldChar w:fldCharType="begin"/></w:r><w:r>' + rpr + '<w:instrText xml:space="preserve"> ' + code + ' </w:instrText></w:r>' +
+      '<w:r>' + rpr + '<w:fldChar w:fldCharType="separate"/></w:r><w:r>' + rpr + '<w:t>1</w:t></w:r><w:r>' + rpr + '<w:fldChar w:fldCharType="end"/></w:r>';
+  }
+  function headerXml(meta) {
+    var L = HF_L10N[meta.lang] || HF_L10N.tg;
+    var right = [meta.docType, meta.book].filter(Boolean).join(' · ');
+    if (right.length > 70) right = right.slice(0, 68).replace(/\s+\S*$/, '') + '…';
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:hdr ' + W_NS + '>' +
+      '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="8" w:space="4" w:color="C9A84C"/></w:pBdr>' +
+      '<w:tabs><w:tab w:val="right" w:pos="9355"/></w:tabs><w:spacing w:before="0" w:after="0"/></w:pPr>' +
+      hfRun('✦ ', { c: 'C9A84C', sz: 20, b: true }) + hfRun(meta.lang === 'en' ? 'Aliya' : 'Алия', { c: '0D1B2A', sz: 20, b: true }) + hfRun('  ·  ', { c: 'C9A84C', sz: 20 }) +
+      hfRun(meta.lang === 'en' ? 'Kitobkhona' : 'Китобхона', { c: '1A3A5C', sz: 20, b: true }) + hfRun('   ' + L.tag, { c: '93A0AE', sz: 15 }) +
+      '<w:r><w:tab/></w:r>' + hfRun(right, { c: '4A5D73', sz: 15 }) + '</w:p></w:hdr>';
+  }
+  function footerXml(meta) {
+    var L = HF_L10N[meta.lang] || HF_L10N.tg;
+    return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n<w:ftr ' + W_NS + '>' +
+      '<w:p><w:pPr><w:pBdr><w:top w:val="single" w:sz="6" w:space="4" w:color="D9DEE5"/></w:pBdr>' +
+      '<w:tabs><w:tab w:val="right" w:pos="9355"/></w:tabs><w:spacing w:before="0" w:after="20"/></w:pPr>' +
+      hfRun(L.made, { c: '5F6B7A', sz: 15 }) + '<w:r><w:tab/></w:r>' +
+      hfRun(L.page, { c: '0D1B2A', sz: 16, b: true }) + hfField('PAGE', {}) + hfRun(L.of, { c: '0D1B2A', sz: 16, b: true }) + hfField('NUMPAGES', {}) + '</w:p>' +
+      '<w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>' + hfRun(L.play, { c: '0D1B2A', sz: 15, b: true }) +
+      '<w:hyperlink r:id="rIdPlay" w:history="1">' + hfRun(PLAY_URL.replace(/^https:\/\//, ''), { c: 'B8862B', sz: 15, u: true }) + '</w:hyperlink></w:p></w:ftr>';
+  }
+
+  function createDocxDocument(bodyXml, meta) {
+    meta = meta || {};
+    var docMeta = { lang: meta.lang || 'tg', docType: meta.docType || meta.title || '', book: meta.book || meta.bookName || '' };
     var contentTypes = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
       '<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">\n' +
       '  <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>\n' +
       '  <Default Extension="xml" ContentType="application/xml"/>\n' +
       '  <Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>\n' +
       '  <Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>\n' +
+      '  <Override PartName="/word/header1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.header+xml"/>\n' +
+      '  <Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/>\n' +
+      '  <Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/>\n' +
       '</Types>';
 
     var rels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
       '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
       '  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>\n' +
+      '  <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/>\n' +
       '</Relationships>';
 
     var docRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
       '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">\n' +
       '  <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>\n' +
+      '  <Relationship Id="rIdH1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/header" Target="header1.xml"/>\n' +
+      '  <Relationship Id="rIdF1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/>\n' +
       '</Relationships>';
+    var footerRels = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      '<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' +
+      '<Relationship Id="rIdPlay" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/hyperlink" Target="' + PLAY_URL + '" TargetMode="External"/>' +
+      '</Relationships>';
+    var now = new Date().toISOString().replace(/\.\d+Z$/, 'Z');
+    var coreXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
+      '<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">' +
+      '<dc:title>' + xmlEscape(meta.fileTitle || docMeta.docType || 'Алия') + '</dc:title><dc:creator>Алия · Китобхона</dc:creator>' +
+      '<dc:description>' + xmlEscape((HF_L10N[docMeta.lang] || HF_L10N.tg).made + ' Google Play: ' + PLAY_URL) + '</dc:description>' +
+      '<cp:keywords>Алия, Китобхона, Kitobkhona</cp:keywords>' +
+      '<dcterms:created xsi:type="dcterms:W3CDTF">' + now + '</dcterms:created><dcterms:modified xsi:type="dcterms:W3CDTF">' + now + '</dcterms:modified>' +
+      '</cp:coreProperties>';
 
     var stylesXml = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\n' +
       '<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">\n' +
@@ -181,8 +241,10 @@
       '  <w:body>\n' +
       bodyXml +
       '    <w:sectPr>\n' +
+      '      <w:headerReference w:type="default" r:id="rIdH1"/>\n' +
+      '      <w:footerReference w:type="default" r:id="rIdF1"/>\n' +
       '      <w:pgSz w:w="11906" w:h="16838"/>\n' + // A4 size in twips (210 x 297 mm)
-      '      <w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1417"/>\n' + // Margins: Top/Right/Bottom 2cm, Left 2.5cm
+      '      <w:pgMar w:top="1247" w:right="1134" w:bottom="1247" w:left="1417" w:header="567" w:footer="510" w:gutter="0"/>\n' + // Margins: Top/Right/Bottom 2cm, Left 2.5cm
       '    </w:sectPr>\n' +
       '  </w:body>\n' +
       '</w:document>';
@@ -192,7 +254,11 @@
       '_rels/.rels': rels,
       'word/_rels/document.xml.rels': docRels,
       'word/styles.xml': stylesXml,
-      'word/document.xml': documentXml
+      'word/document.xml': documentXml,
+      'word/header1.xml': headerXml(docMeta),
+      'word/footer1.xml': footerXml(docMeta),
+      'word/_rels/footer1.xml.rels': footerRels,
+      'docProps/core.xml': coreXml
     };
 
     var zipBytes = MiniZip.buildZip(files);
@@ -218,6 +284,9 @@
   }
 
   function adFooterXml() {
+    return '';   // v161: реклама акнун дар колонтитули ҳар саҳифа аст
+  }
+  function adFooterXmlLegacy() {
     var border = '<w:pBdr><w:top w:val="single" w:sz="6" w:space="4" w:color="C9A84C"/></w:pBdr>';
     return '<w:p><w:pPr>' + border + '<w:spacing w:before="240" w:after="40"/><w:jc w:val="center"/></w:pPr>' +
       '<w:r><w:rPr><w:b/><w:sz w:val="18"/><w:color w:val="142236"/></w:rPr><w:t xml:space="preserve">' + xmlEscape(AD_BRANDING.line1) + '</w:t></w:r></w:p>' +
@@ -257,13 +326,37 @@
     /** v159: ҷавоби Алия (Markdown) → Word бо формат */
     generateMarkdownDocx: function (data) {
       var d = data || {};
-      var xml = p(String(d.title || 'Ҷавоби Алия'), { bold: true, align: 'center', size: '30', color: '0D1B2A', after: 200 });
+      var xml = p(String(d.title || 'Ҷавоби Алия'), { bold: true, align: 'center', size: '30', color: '0D1B2A', after: d.subtitle ? 40 : 200 });
+      if (d.subtitle) xml += '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="6" w:color="C9A84C"/></w:pBdr><w:jc w:val="center"/><w:spacing w:before="0" w:after="240"/></w:pPr>' +
+        '<w:r><w:rPr><w:color w:val="5F6B7A"/><w:sz w:val="20"/></w:rPr><w:t xml:space="preserve">' + xmlEscape(d.subtitle) + '</w:t></w:r></w:p>\n';
+      var tbl = [];
+      function flushTable() {   // v161: ҷадвали воқеии Word
+        if (!tbl.length) return;
+        var n = Math.max.apply(null, tbl.map(function (r) { return r.length; }));
+        var bd = '<w:tblBorders>' + ['top', 'left', 'bottom', 'right', 'insideH', 'insideV'].map(function (k) { return '<w:' + k + ' w:val="single" w:sz="4" w:space="0" w:color="D9DEE5"/>'; }).join('') + '</w:tblBorders>';
+        xml += '<w:tbl><w:tblPr><w:tblW w:w="5000" w:type="pct"/>' + bd + '<w:tblCellMar><w:left w:w="90" w:type="dxa"/><w:right w:w="90" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>';
+        for (var c = 0; c < n; c++) xml += '<w:gridCol w:w="' + Math.floor(9355 / n) + '"/>';
+        xml += '</w:tblGrid>';
+        tbl.forEach(function (r, ri) {
+          xml += '<w:tr>';
+          for (var c = 0; c < n; c++) {
+            xml += '<w:tc><w:tcPr><w:tcW w:w="' + Math.floor(9355 / n) + '" w:type="dxa"/>' + (ri === 0 ? '<w:shd w:val="clear" w:color="auto" w:fill="EEF2F6"/>' : '') + '</w:tcPr>' +
+              '<w:p><w:pPr><w:spacing w:before="40" w:after="40"/></w:pPr>' + mdRunsXml(r[c] || '', ri === 0 ? { bold: true, size: '21', color: '0D1B2A' } : { size: '21' }) + '</w:p></w:tc>';
+          }
+          xml += '</w:tr>';
+        });
+        xml += '</w:tbl>' + p(' ', { size: '8', before: 0, after: 60 });
+        tbl = [];
+      }
       String(d.markdown || d.content || '').replace(/\r/g, '').split('\n').forEach(function (raw) {
         var line = raw.replace(/\s+$/, ''), m;
         if (!line.trim()) return;
-        if (/^\s*\|[\s:|-]+\|\s*$/.test(line) || /^\s*(-{3,}|\*{3,})\s*$/.test(line)) return;
+        if (/^\s*\|[\s:|-]+\|\s*$/.test(line)) return;
+        if (!/^\s*\|.*\|\s*$/.test(line)) flushTable();
+        if (/^\s*(-{3,}|\*{3,})\s*$/.test(line)) return;
         if ((m = line.match(/^\s*#{1,6}\s+(.*)$/))) { xml += mdPara(m[1], { bold: true, size: '26', color: '1A3A5C', before: 200, after: 80 }); return; }
-        if (/^\s*\|.*\|\s*$/.test(line)) { xml += mdPara(line.trim().replace(/^\||\|$/g, '').split('|').map(function (c) { return c.trim(); }).join('  ·  '), {}); return; }
+        if (/^\s*\|.*\|\s*$/.test(line)) { tbl.push(line.trim().replace(/^\||\|$/g, '').split('|').map(function (c) { return c.trim(); })); return; }
+        flushTable();
         if ((m = line.match(/^\s*(?:🔑\s*)?((?:Калид|Ключ|Answer key|Key)\s*[:：].*)$/i))) { xml += mdPara('🔑 ' + m[1], { bold: true, before: 200 }); return; }
         if ((m = line.match(/^\s*((?:Савол|Вопрос|Question)\s*\d+\s*[.):].*)$/i))) { xml += mdPara(m[1], { bold: true, before: 160 }); return; }
         if ((m = line.match(/^\s*([АБВГДабвгдABCDabcd])\s*[).]\s+(.*)$/))) {
@@ -276,8 +369,9 @@
         if ((m = line.match(/^\s*>\s?(.*)$/))) { xml += mdPara('«' + m[1].replace(/^«|»$/g, '') + '»', { italic: true, color: '4A5D73' }, '<w:ind w:left="480"/>'); return; }
         xml += mdPara(line, {}, '<w:jc w:val="both"/>');
       });
+      flushTable();
       xml += adFooterXml();
-      return createDocxDocument(xml);
+      return createDocxDocument(xml, d);
     },
 
     generateResponseDocx: function (data) {
@@ -287,7 +381,7 @@
         xml += p(line || ' ', { size: '23', lineSpacing: '280', after: 40 });
       });
       xml += adFooterXml();
-      return createDocxDocument(xml);
+      return createDocxDocument(xml, d);
     },
 
     /**
@@ -347,7 +441,7 @@
       xml += p(d.conclusion || 'Ҷамъбасти дарс, эълони баҳоҳои хонандагони фаъол ва додани тавсияҳо.', { size: '24', after: 180 });
 
       xml += adFooterXml();
-      return createDocxDocument(xml);
+      return createDocxDocument(xml, d);
     },
 
     /**
@@ -394,7 +488,7 @@
       }
 
       xml += adFooterXml();
-      return createDocxDocument(xml);
+      return createDocxDocument(xml, d);
     },
 
     /**
@@ -451,7 +545,7 @@
       }
 
       xml += adFooterXml();
-      return createDocxDocument(xml);
+      return createDocxDocument(xml, d);
     },
 
     /**
@@ -485,7 +579,7 @@
       }
 
       xml += adFooterXml();
-      return createDocxDocument(xml);
+      return createDocxDocument(xml, d);
     }
   };
 

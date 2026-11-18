@@ -258,9 +258,9 @@
   </div>
 
   <script src="aliya-bridge.js?v=159"></script>
-  <script src="aliya-doc-templates.js?v=159"></script>
+  <script src="aliya-doc-templates.js?v=161"></script>
   <script src="aliya-core.js?v=159"></script>
-  <script src="aliya-tasks.js?v=160"></script>
+  <script src="aliya-tasks.js?v=161"></script>
   <script>
     (function () {
       'use strict';
@@ -878,6 +878,15 @@
         return bubble;
       }
 
+      // v161: номи файли ҷавоб — «Мавзӯъ Ҷавоби Алия сана»
+      function answerMeta(text) {
+        var ru = AT.detectLang(AT.plain(text)) === 'ru';
+        var topic = AT.guessTopic('', text);
+        if (!topic) topic = AT.plain(text).replace(/\s+/g, ' ').trim().split(' ').slice(0, 6).join(' ').replace(/[.,;:!?…]+$/, '');
+        var date = new Date().toLocaleDateString('ru-RU');
+        return { topic: topic, docType: ru ? 'Ответ Алии' : 'Ҷавоби Алия', book: date, lang: ru ? 'ru' : 'tg',
+          title: topic || (ru ? 'Ответ Алии' : 'Ҷавоби Алия'), subtitle: (ru ? 'Ответ Алии · ' : 'Ҷавоби Алия · ') + date };
+      }
       function addMessageActions(bubble, content) {
         var body = bubble && bubble.parentElement;
         if (!body || body.querySelector('.msg-actions')) return;
@@ -899,12 +908,12 @@
           toast('Ҷавоб нусхабардорӣ шуд.');
         });
         action('📄 Word', 'Сабт ҳамчун Word', async function () {
-          await AT.exportDoc('docx', 'Ҷавоби Алия', text, 'Ҷавоб_' + new Date().toISOString().slice(0, 10));
-          toast('Word сабт шуд.');
+          var fn = await AT.exportDoc('docx', 'Ҷавоби Алия', text, answerMeta(text));
+          toast('Word сабт шуд: ' + fn);
         });
         action('⬇ PDF', 'Сабт ҳамчун PDF', async function () {
-          await AT.exportDoc('pdf', 'Ҷавоби Алия', text, 'Ҷавоб_' + new Date().toISOString().slice(0, 10));
-          toast('PDF сабт шуд.');
+          var fn = await AT.exportDoc('pdf', 'Ҷавоби Алия', text, answerMeta(text));
+          toast('PDF сабт шуд: ' + fn);
         });
         action('🔖', 'Ба ёддоштҳо', async function () {
           await window.AliyaCore.saveNote(AT.plain(text).slice(0,90).replace(/\s+/g,' ') || 'Ҷавоби Алия', AT.plain(text), ['aliya-answer']);

@@ -1675,6 +1675,32 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     return c.id === 'kitobhoi_darsi' ? 'Китобҳои дарсӣ' : (c.name || c.folder_raw || '');
   }
 
+  // v161: тартиби категорияҳо — 1) Китобҳои Президент (Пешвои Миллат), 2) Китобҳои дарсӣ, баъд — бо алифбои тоҷикӣ
+  const TG_ALPHABET = 'абвгғдеёжзиӣйкқлмнопрстуӯфхҳчҷшъэюя';
+  function tgSortKey(str) {
+    return String(str || '').toLowerCase().replace(/ў/g, 'ӯ').replace(/ё/g, 'ё').split('').map(ch => {
+      const i = TG_ALPHABET.indexOf(ch);
+      if (i >= 0) return String.fromCharCode(0x4E00 + i);       // ҳарфҳои тоҷикӣ бо тартиби алифбо
+      if (/[0-9]/.test(ch)) return String.fromCharCode(0x3000 + ch.charCodeAt(0));
+      if (/[a-z]/.test(ch)) return String.fromCharCode(0x5000 + ch.charCodeAt(0)); // лотинӣ — баъд аз кириллӣ
+      return /[\s.,\-–—«»"']/.test(ch) ? ' ' : String.fromCharCode(0x6000 + ch.charCodeAt(0));
+    }).join('');
+  }
+  const CATEGORY_PINNED = ['peshvoi_millat', 'kitobhoi_darsi'];
+  function sortCategories(list) {
+    const seen = new Set();
+    const uniq = (list || []).filter(c => {
+      const k = (c.id || '') + '|' + (c.name || '');
+      if (seen.has(k)) return false; seen.add(k); return true;
+    });
+    return uniq.map((c, i) => ({ c, i })).sort((a, b) => {
+      const pa = CATEGORY_PINNED.indexOf(a.c.id), pb = CATEGORY_PINNED.indexOf(b.c.id);
+      if (pa !== pb) return (pa < 0 ? 99 : pa) - (pb < 0 ? 99 : pb);
+      const ka = tgSortKey(displayCategoryName(a.c)), kb = tgSortKey(displayCategoryName(b.c));
+      return ka < kb ? -1 : ka > kb ? 1 : a.i - b.i;
+    }).map(x => x.c);
+  }
+
   function displaySubcategoryName(s) {
     const m = String(s.id || s.folder_raw || '').match(/(?:^|_)sinfi_(\d+)$/i);
     return m ? `Синфи ${m[1]}` : (s.name || s.folder || '');
@@ -1938,7 +1964,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   (async function init() {
     try {
       await loadBooksJson();
-      CATS = DATA.categories || [];
+      CATS = sortCategories(DATA.categories || []);
       if (!CATS.length) throw new Error('Категория нест');
       renderCategories(CATS);
     } catch(e) {
