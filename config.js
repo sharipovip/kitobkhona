@@ -2917,19 +2917,33 @@ async function acknowledgeCacheControl(cfg){
   const token=localStorage.getItem('kk_token');if(!token)return;
   fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control/ack',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({app_version:Number(cfg.app_version)||0,pdf_version:Number(cfg.pdf_version)||0})}).catch(()=>{});
 }
+// v159: ҳар қадам бо маҳдудияти вақт — пештар reg.update()/caches дар WebView метавонист абадӣ интизор шавад
+// ва равзанаи «Навсозӣ» дар 92% меистод; ҳангоми хатогӣ равзана ҳеҷ гоҳ пӯшида намешуд.
+function kkWithTimeout(promise,ms){return Promise.race([Promise.resolve(promise).catch(()=>{}),new Promise(r=>setTimeout(r,ms))])}
 async function checkRemoteCacheControl(){
   if(cacheControlBusy)return;const last=Number(sessionStorage.getItem('kk_cache_control_checked_at')||0);if(Date.now()-last<30*60*1000)return;sessionStorage.setItem('kk_cache_control_checked_at',String(Date.now()));cacheControlBusy=true;
+  let progress=null,finished=false,refreshApp=false;
+  const hardStop=setTimeout(()=>{if(progress&&!finished){finished=true;progress.done('Барнома нав шуд');if(refreshApp)setTimeout(()=>location.reload(),500)}},20000);
   try{
-    const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store'});if(!r.ok)return;const cfg=await r.json();
+    const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),10000);
+    const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store',signal:ctrl.signal}).finally(()=>clearTimeout(t));if(!r.ok)return;const cfg=await r.json();
     const app=Number(cfg.app_version)||1,pdf=Number(cfg.pdf_version)||1,oldApp=Number(localStorage.getItem('kk_remote_app_cache_version')||1),oldPdf=Number(localStorage.getItem('kk_remote_pdf_cache_version')||1);
-    const refreshApp=app>oldApp,clearPdf=pdf>oldPdf;if(!refreshApp&&!clearPdf)return
-    const progress=typeof beginActionProgress==='function'?beginActionProgress(cfg.message||'Навсозии барнома...'):null;
+    refreshApp=app>oldApp;const clearPdf=pdf>oldPdf;if(!refreshApp&&!clearPdf)return;
+    progress=typeof beginActionProgress==='function'?beginActionProgress(cfg.message||'Навсозии барнома...'):null;
+    // версияҳо пеш аз ҳама сабт мешаванд — пас аз reload такрор намешавад
     localStorage.setItem('kk_remote_app_cache_version',String(app));localStorage.setItem('kk_remote_pdf_cache_version',String(pdf));
-    await clearApplicationCaches({clearApp:refreshApp,clearPdfs:clearPdf});
-    if(navigator.serviceWorker?.getRegistration){const reg=await navigator.serviceWorker.getRegistration();if(reg)await reg.update().catch(()=>{})}
-    await acknowledgeCacheControl(cfg);progress?.done(clearPdf?'Кэш ва китобҳои захирашуда нав шуданд':'Барнома нав шуд');
-    if(refreshApp)setTimeout(()=>location.reload(),650);
-  }catch(e){console.warn('[CacheControl]',e.message)}finally{cacheControlBusy=false}
+    progress?.set(25,clearPdf?'Кэш ва китобҳои захирашуда тоза мешаванд...':'Кэши кӯҳна тоза мешавад...');
+    await kkWithTimeout(clearApplicationCaches({clearApp:refreshApp,clearPdfs:clearPdf}),8000);
+    progress?.set(65,'Версияи нав гирифта мешавад...');
+    if(navigator.serviceWorker?.getRegistration){await kkWithTimeout(navigator.serviceWorker.getRegistration().then(reg=>reg&&reg.update()),6000)}
+    progress?.set(90);
+    acknowledgeCacheControl(cfg);
+    if(!finished){finished=true;progress?.done(clearPdf?'Кэш ва китобҳои захирашуда нав шуданд':'Барнома нав шуд')}
+    if(refreshApp)setTimeout(()=>{try{sessionStorage.setItem('kk_splash_seen','1')}catch(e){}location.reload()},700);
+  }catch(e){
+    console.warn('[CacheControl]',e&&e.message);
+    if(progress&&!finished){finished=true;progress.done('Барнома нав шуд');if(refreshApp)setTimeout(()=>location.reload(),700)}
+  }finally{clearTimeout(hardStop);if(!refreshApp||!progress)cacheControlBusy=false}
 }
 window.checkRemoteCacheControl=checkRemoteCacheControl;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installContentProtection();setTimeout(checkRemoteCacheControl,1200)});else{installContentProtection();setTimeout(checkRemoteCacheControl,1200)}

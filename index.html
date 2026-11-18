@@ -2286,11 +2286,35 @@ function fitHeroQuote(preferredSize){
 let heroFitTimer=null;
 function scheduleHeroFit(size){clearTimeout(heroFitTimer);requestAnimationFrame(()=>fitHeroQuote(size));heroFitTimer=setTimeout(()=>fitHeroQuote(size),180)}
 window.addEventListener('resize',()=>scheduleHeroFit(hero[hi]?.fontSize));window.visualViewport?.addEventListener('resize',()=>scheduleHeroFit(hero[hi]?.fontSize));
-function setHero(i){
-  if(!hero.length)return;hi=i%hero.length;const h=hero[hi],inner=document.querySelector('.hero-v3-inner');
-  if(inner)inner.classList.add('hero-changing');
-  setTimeout(()=>{const imgEl=$('heroImg');if(imgEl){imgEl.onerror=function(){imgEl.onerror=null;imgEl.src='assets/hero/01-president-official.jpg'};imgEl.src=h.img;imgEl.alt='Пешвои миллат — '+h.topic;const right=imgEl.closest('.hero-v3-right');if(right)right.style.setProperty('--hero-image',`url("${String(h.img).replace(/"/g,'')}")`)}const kicker=$('heroKicker');if(kicker)kicker.innerHTML='Суханҳои Пешвои муаззами миллат дар бораи <b>'+h.topic+'</b>';const quoteEl=$('heroQuote');if(quoteEl){quoteEl.style.color=h.color||'#fff';quoteEl.style.fontFamily=h.fontFamily||"Georgia,'Times New Roman',serif";quoteEl.title='Манбаъ: '+(h.sourceTitle||'president.tj');quoteEl.textContent=h.quote;scheduleHeroFit(h.fontSize)}if($('heroDots'))$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot-v3 ${j===hi?'active':''}"></div>`).join('');requestAnimationFrame(()=>inner?.classList.remove('hero-changing'))},220);
-  clearTimeout(heroAuto);heroAuto=setTimeout(()=>setHero(hi+1),(h.displayDuration||12)*1000)
+// v159: фото ва ситат ҳамзамон иваз мешаванд — аввал фото пурра бор ва декод мешавад, баъд ҳарду дар як кадр.
+// Пештар матн пас аз 220 мс иваз мешуд, фото бошад баъдтар аз шабака меомад → фото ва ситат мувофиқ набуданд.
+const heroImgReady={},heroImgEls={};
+function preloadHeroImg(src){
+  if(!src)return Promise.resolve(false);
+  if(heroImgReady[src])return heroImgReady[src];
+  const p=new Promise(resolve=>{const im=new Image();let done=false;const fin=ok=>{if(done)return;done=true;resolve(ok)};
+    heroImgEls[src]=im;const keys=Object.keys(heroImgEls);if(keys.length>4)delete heroImgEls[keys[0]];
+    im.onload=()=>{(im.decode?im.decode().catch(()=>{}):Promise.resolve()).then(()=>fin(true))};im.onerror=()=>fin(false);
+    im.decoding='async';im.src=src;setTimeout(()=>fin(im.complete&&im.naturalWidth>0),6000)});
+  heroImgReady[src]=p;p.then(ok=>{if(!ok)delete heroImgReady[src]});return p;
+}
+let heroSeq=0;
+function setHero(i,skipped){
+  if(!hero.length)return;
+  const idx=((i%hero.length)+hero.length)%hero.length,h=hero[idx],seq=++heroSeq;
+  clearTimeout(heroAuto);
+  preloadHeroImg(h.img).then(ok=>{
+    if(seq!==heroSeq)return;                       // дар ин миён корбар/таймер ситати дигарро интихоб кард
+    if(!ok&&(skipped||0)<hero.length-1){setHero(idx+1,(skipped||0)+1);return}   // фото бор нашуд — ситати навбатӣ, на фотои бегона
+    hi=idx;const inner=document.querySelector('.hero-v3-inner');
+    if(inner)inner.classList.add('hero-changing');
+    setTimeout(()=>{if(seq!==heroSeq)return;let imgEl=$('heroImg');
+      // худи элементи пешакӣ боршуда ба ҷои кӯҳна гузошта мешавад — фото дар ҳамон кадр бо матн пайдо мешавад
+      const pre=heroImgEls[h.img];if(imgEl&&pre&&pre!==imgEl&&pre.complete&&pre.naturalWidth>0){pre.id='heroImg';pre.loading='eager';pre.className=imgEl.className;pre.setAttribute('style',imgEl.getAttribute('style')||'');pre.draggable=false;imgEl.replaceWith(pre);imgEl=pre}
+      if(imgEl){if(imgEl.getAttribute('src')!==h.img)imgEl.src=h.img;imgEl.alt='Пешвои миллат — '+h.topic;const right=imgEl.closest('.hero-v3-right');if(right)right.style.setProperty('--hero-image',`url("${String(h.img).replace(/"/g,'')}")`)}const kicker=$('heroKicker');if(kicker)kicker.innerHTML='Суханҳои Пешвои муаззами миллат дар бораи <b>'+h.topic+'</b>';const quoteEl=$('heroQuote');if(quoteEl){quoteEl.style.color=h.color||'#fff';quoteEl.style.fontFamily=h.fontFamily||"Georgia,'Times New Roman',serif";quoteEl.title='Манбаъ: '+(h.sourceTitle||'president.tj');quoteEl.textContent=h.quote;scheduleHeroFit(h.fontSize)}if($('heroDots'))$('heroDots').innerHTML=hero.map((_,j)=>`<div class="hero-dot-v3 ${j===hi?'active':''}"></div>`).join('');requestAnimationFrame(()=>inner?.classList.remove('hero-changing'))},220);
+    heroAuto=setTimeout(()=>setHero(hi+1),(h.displayDuration||12)*1000+220);
+    const nx=hero[(idx+1)%hero.length];if(nx)setTimeout(()=>preloadHeroImg(nx.img),1500);   // навбатиро пешакӣ
+  });
 }
 setHero(0);
 document.fonts?.ready?.then(()=>scheduleHeroFit(hero[hi]?.fontSize)).catch(()=>{});
