@@ -93,14 +93,27 @@
   }
 
   /** Забони матн: 'tg' | 'ru' | 'other' */
-  function detectLang(text) {
-    var s = String(text || '').slice(0, 6000);
+  // v159: OCR-и китобҳои сканшуда ҳарфҳои ӣ ӯ ҳ ҷ қ ғ-ро аксар вақт гум мекунад (→ и у х ч к г),
+  // бинобар ин забон ҳам аз рӯи ҳарфҳо, ҳам аз рӯи калимаҳои хоси тоҷикӣ/русӣ муайян мешавад.
+  var TG_WORDS = /^(ва|ки|дар|аз|ба|бо|барои|то|ин|он|ҳам|хам|низ|аст|буд|шуд|мебошад|мебошанд|мешавад|мекунад|карда|кард|шуда|намуд|гардид|гуфт|ӯ|у|онҳо|онхо|мо|шумо|ман|ту|чун|агар|вале|аммо|бояд|худ|худи|ҳар|хар|ҳеҷ|хеч|чӣ|чи|кадом|якчанд|зеро|баъд|пеш|пас|бар|сар|роҳ|рох|аст\.|дорад|буданд|мекарданд|гуфтанд|ҳамчун|хамчун|миёни|байни|бисёр|хеле)$/;
+  var RU_WORDS = /^(и|в|во|не|на|что|он|она|оно|они|с|со|как|это|по|но|к|у|из|за|от|же|для|бы|был|была|были|было|так|его|её|ее|их|мы|вы|я|ты|который|которая|которые|только|уже|или|если|когда|чтобы|при|о|об|все|всё|этот|эта|эти|также|может|очень|между|после|через|над|под|где|там|тоже|себя|свой|своей|есть|нет|быть)$/;
+  function safeDecode(u) { try { return decodeURIComponent(u); } catch (e) { return String(u || ''); } }
+  function detectLang(text, hint) {
+    var s = String(text || '').slice(0, 8000);
     var tj = (s.match(/[ӣӯҳҷқғӢӮҲҶҚҒ]/g) || []).length;
     var cyr = (s.match(/[А-Яа-яЁё]/g) || []).length;
     var ruOnly = (s.match(/[ыщъэЫЩЪЭ]/g) || []).length;
     if (cyr < 20) return 'other';
-    if (tj >= 5 && tj * 3 >= ruOnly) return 'tg';
-    return 'ru';
+    var words = s.toLowerCase().replace(/ё/g, 'е').match(/[а-яӣӯҳҷқғ]+/g) || [];
+    var tw = 0, rw = 0;
+    words.forEach(function (w) { if (TG_WORDS.test(w)) tw++; else if (RU_WORDS.test(w)) rw++; });
+    var tgScore = tj * 2 + tw * 3 - ruOnly * 1.5;
+    var ruScore = ruOnly * 2 + rw * 3;
+    // Ишораи номи китоб/папка (масалан «Забони тоҷикӣ», «Адабиёти тоҷик», «Русский язык»)
+    var h = String(hint || '').toLowerCase();
+    var hRu = /русск|рус[ӣи](?![а-яӣӯҳҷқғ])|russian|литература/.test(h);
+    if (hRu) ruScore += 8; else if (/[ӣӯҳҷқғ]|тоҷик|точик|адабиёт/.test(h)) tgScore += 8;
+    return tgScore >= ruScore ? 'tg' : 'ru';
   }
 
   /** Матн барои нусхабардорӣ ва Word: аломатҳои форматро тоза мекунад */
@@ -476,19 +489,27 @@
   /** Чат бо такрори худкор ҳангоми хатои муваққатӣ */
   async function chat(system, user, opt) {
     opt = opt || {};
+    // v159: матни китоб ҳамчун паёми алоҳидаи «мавод» фиристода мешавад, на дар дохили дархости корбар —
+    // филтри 18+-и шлюз танҳо дархости корбарро месанҷад ва калимаҳои оддии китоб («худи», «понздаҳ»…) дигар рад намешаванд.
+    var msgs = [{ role: 'system', content: system }];
+    if (opt.material) msgs.push({ role: 'user', content: opt.material }, { role: 'assistant', content: opt.materialAck || 'Матн қабул шуд.' });
+    msgs.push({ role: 'user', content: user });
     var payload = {
-      messages: [{ role: 'system', content: system }, { role: 'user', content: user }],
+      messages: msgs,
       reasoning_mode: opt.reasoning || 'medium', temperature: opt.temperature == null ? 0.4 : opt.temperature, max_tokens: opt.maxTokens || 2200
     };
+    if (opt.targetLang) payload.target_language = opt.targetLang;
     var last;
     for (var attempt = 0; attempt < 3; attempt++) {
       try {
         var d = await postJson('/v1/chat', payload, opt.timeoutMs || 150000, opt.signal);
         var reply = String(d.reply || (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || '').trim();
+        if (d.blocked) { var be = new Error(reply || 'Дархост рад шуд.'); be.blocked = true; throw be; }
         if (reply) return reply;
         last = new Error('Сервер ҷавоби холӣ баргардонд.');
       } catch (e) {
         if (e && e.name === 'AbortError') throw e;
+        if (e && e.blocked) throw e;
         last = e;
         var transient = e.network || e.timeout || (e.status >= 500) || /chat_providers_unavailable|no_chat_provider_configured|rate|429/i.test(String(e.code || e.message || ''));
         if (!transient) break;
@@ -692,29 +713,34 @@
 
   function gradeText(g) { return g ? 'синфи ' + g : 'сатҳи мувофиқ ба мураккабии матн (синфро худатон аз рӯи матн муайян кунед)'; }
 
+  // v159: ду қолаб — китоби тоҷикӣ → «Нақшаи дарси яксоата», китоби русӣ → «Поурочный план-конспект»
   var LESSON_TG =
-    'Қолаби нақшаи дарс (ТОҶИКӢ, ҳамин сарлавҳаҳоро нигоҳ доред):\n' +
-    '## Нақшаи дарс\n**Мавзӯъ:** …\n**Синф:** … · **Вақт:** 45 дақиқа · **Намуди дарс:** …\n' +
-    '## Мақсадҳо\n- **Таълимӣ:** …\n- **Инкишофдиҳӣ:** …\n- **Тарбиявӣ:** …\n' +
-    '## Натиҷаҳои интизорӣ\n- …\n## Усул ва шаклҳои кор\n- …\n## Таҷҳизот\n- …\n' +
-    '## Рафти дарс\n1. **Лаҳзаи ташкилӣ (2 дақ.)** — …\n2. **Санҷиши вазифаи хонагӣ / Даъват (5–7 дақ.)** — саволҳо: …\n' +
-    '3. **Дарки маъно — мавзӯи нав (15–20 дақ.)** — нуктаҳои асосӣ: …\n4. **Мустаҳкамкунӣ (8–10 дақ.)** — саволу супоришҳо: …\n' +
-    '5. **Мулоҳиза / Инъикос (3–5 дақ.)** — …\n6. **Вазифаи хонагӣ (2 дақ.)** — …\n## Баҳодиҳӣ\n- …';
+    'Қолаби «НАҚШАИ ДАРСИ ЯКСОАТА» (ТОҶИКӢ). Ҳамин сарлавҳаҳо ва тартибро айнан нигоҳ доред:\n' +
+    '## Нақшаи дарси яксоата\n**Фан:** … · **Синф:** … · **Вақт:** 45 дақиқа\n**Мавзӯи дарс:** …\n**Навъи дарс:** … (омӯзиши мавзӯи нав / омехта / мустаҳкамкунӣ)\n' +
+    '## Мақсадҳои дарс\n- **Таълимӣ:** …\n- **Инкишофдиҳанда:** …\n- **Тарбиявӣ:** …\n' +
+    '## Натиҷаҳои интизоршаванда\nДар охири дарс хонандагон:\n- медонанд: …\n- метавонанд: …\n' +
+    '## Усул ва шаклҳои кор\n- …\n## Таҷҳизоти дарс\n- …\n' +
+    '## Рафти дарс\n### I. Лаҳзаи ташкилӣ (2 дақ.)\n- …\n### II. Санҷиши вазифаи хонагӣ (5–7 дақ.)\n- Саволҳо: …\n' +
+    '### III. Омодагӣ ба дарки мавзӯи нав — даъват (3–5 дақ.)\n- …\n### IV. Баёни мавзӯи нав (15–18 дақ.)\n- Нуктаҳои асосӣ аз матн: …\n' +
+    '### V. Мустаҳкамкунии мавзӯъ (8–10 дақ.)\n- Саволу супоришҳо: …\n### VI. Хулосабарорӣ ва инъикос (3 дақ.)\n- …\n' +
+    '### VII. Баҳогузорӣ (2 дақ.)\n- …\n### VIII. Вазифаи хонагӣ (1–2 дақ.)\n- …';
   var LESSON_RU =
-    'Шаблон конспекта урока (РУССКИЙ, сохраните эти заголовки):\n' +
-    '## Конспект урока\n**Тема:** …\n**Класс:** … · **Время:** 45 минут · **Тип урока:** …\n' +
-    '## Цели\n- **Образовательная:** …\n- **Развивающая:** …\n- **Воспитательная:** …\n' +
-    '## Планируемые результаты\n- …\n## Методы и формы работы\n- …\n## Оборудование\n- …\n' +
-    '## Ход урока\n1. **Организационный момент (2 мин)** — …\n2. **Актуализация знаний (5–7 мин)** — вопросы: …\n' +
-    '3. **Изучение нового материала (15–20 мин)** — ключевые положения: …\n4. **Закрепление (8–10 мин)** — вопросы и задания: …\n' +
-    '5. **Рефлексия (3–5 мин)** — …\n6. **Домашнее задание (2 мин)** — …\n## Оценивание\n- …';
+    'Шаблон «ПОУРОЧНЫЙ ПЛАН-КОНСПЕКТ» (РУССКИЙ). Сохраните эти заголовки и порядок:\n' +
+    '## Поурочный план-конспект\n**Предмет:** … · **Класс:** … · **Время:** 45 минут\n**Тема урока:** …\n**Тип урока:** … (изучение нового материала / комбинированный / закрепление)\n' +
+    '## Цели урока\n- **Образовательная:** …\n- **Развивающая:** …\n- **Воспитательная:** …\n' +
+    '## Планируемые результаты\nК концу урока учащиеся:\n- знают: …\n- умеют: …\n' +
+    '## Методы и формы работы\n- …\n## Оборудование\n- …\n' +
+    '## Ход урока\n### I. Организационный момент (2 мин)\n- …\n### II. Проверка домашнего задания (5–7 мин)\n- Вопросы: …\n' +
+    '### III. Актуализация знаний и мотивация (3–5 мин)\n- …\n### IV. Изучение нового материала (15–18 мин)\n- Ключевые положения из текста: …\n' +
+    '### V. Закрепление (8–10 мин)\n- Вопросы и задания: …\n### VI. Подведение итогов, рефлексия (3 мин)\n- …\n' +
+    '### VII. Оценивание (2 мин)\n- …\n### VIII. Домашнее задание (1–2 мин)\n- …';
 
   /** o: {from,to,page,lang,material,fmt,count,grade,docLang} */
   function buildPrompt(task, o, bookName) {
     var f = o.from, t = o.to, rng = f === t ? 'саҳифаи ' + f : 'саҳифаҳои ' + f + '–' + t;
     var sameLang = 'Ҷавобро бо ҳамон забоне нависед, ки матни саҳифаҳо бо он навишта шудааст (забонро худатон муайян кунед).';
     var sys = 'Шумо Алия — ёвари таълимии «Китобхона» ҳастед. Китоб: «' + (bookName || 'Китоб') + '», ' + rng + '.\n' +
-      'Танҳо бо такя ба МАТНИ САҲИФАҲО, ки корбар медиҳад, кор кунед.\n' + FORMAT_RULES;
+      'Танҳо бо такя ба матни саҳифаҳо (паёми «МАВОД / МАТЕРИАЛ»-и корбар) кор кунед; маълумоти берунӣ илова накунед.\n' + FORMAT_RULES;
     var u = '';
     switch (task) {
       case 'summary':
@@ -746,8 +772,11 @@
         }
         break;
       case 'lesson':
-        u = 'Аз рӯи мазмуни ' + rng + ' барои ' + gradeText(o.grade) + ' нақшаи дарси 45-дақиқаина тартиб диҳед. Ҳамаи қисмҳоро бо мазмуни воқеии ҳамин саҳифаҳо пур кунед.\n' +
-          (o.docLang === 'ru' ? LESSON_RU + '\nПишите на русском языке.' : LESSON_TG + '\nБо забони тоҷикӣ нависед.');
+        u = o.docLang === 'ru'
+          ? 'Составьте поурочный план-конспект на 45 минут по содержанию ' + (f === t ? 'страницы ' + f : 'страниц ' + f + '–' + t) + ' для ' + (o.grade ? o.grade + ' класса' : 'подходящего класса (определите по сложности текста)') +
+            '. Заполните все разделы реальным содержанием этих страниц.\n' + LESSON_RU + '\nВесь ответ — только на русском языке.'
+          : 'Аз рӯи мазмуни ' + rng + ' барои ' + gradeText(o.grade) + ' нақшаи дарси яксоата (45 дақиқа) тартиб диҳед. Ҳамаи қисмҳоро бо мазмуни воқеии ҳамин саҳифаҳо пур кунед.\n' +
+            LESSON_TG + '\nТамоми ҷавоб танҳо бо забони тоҷикӣ (алифбои кириллӣ) бошад.';
         break;
       case 'notes':
         u = 'Аз ' + rng + ' ёддошти кӯтоҳ барои хотиррасонӣ тартиб диҳед: «## Фикрҳои асосӣ» (5–8 банд, ҳар банд як ҷумла); агар бошад «## Иқтибосҳо» (1–3 иқтибоси айнан аз матн, ҳар кадом бо «> »); «## Мафҳумҳо» (то 5 банд: «- **мафҳум** — шарҳ»). Сарлавҳаҳоро бо забони матн нависед. ' + sameLang;
@@ -757,6 +786,7 @@
   }
   function taskTitle(task, o) {
     var d = TASKS[task];
+    if (task === 'lesson' && o.docLang) return o.docLang === 'ru' ? 'Поурочный план-конспект' : 'Нақшаи дарси яксоата';
     if (task === 'translate') return d.label + ' · ' + o.lang;
     if (task === 'test') {
       if (o.material === 'test') return 'Тест · ' + (o.fmt === 'key' ? 'бо калид' : 'бо ҷавоб');
@@ -976,11 +1006,21 @@
         var text = await cfg.getText(o, { signal: ctrl.signal, onPage: function (i, n) { if (n > 1) small.textContent = meta + ' · ' + i + '/' + n; } });
         small.textContent = meta;
         if (!text || text.replace(/\[САҲИФАИ \d+\]/g, '').trim().length < 15) throw new Error('Матни ин саҳифаҳо хонда нашуд. Саҳифаи дигарро интихоб кунед ё баъдтар кӯшиш кунед.');
-        if (task === 'lesson') o.docLang = detectLang(text) === 'ru' ? 'ru' : 'tg';
+        var bookLang = detectLang(text, (cfg.bookName || '') + ' ' + safeDecode(cfg.bookUrl || ''));
+        if (task === 'lesson') {
+          o.docLang = bookLang === 'ru' ? 'ru' : 'tg';
+          title = taskTitle(task, o);
+          var hb = card.querySelector('.at-head b'); if (hb) hb.textContent = d.ic + ' ' + title;
+        }
         genPhase();
         var pr = buildPrompt(task, o, cfg.bookName);
-        var user = pr.user + (cfg.extraContext ? '\n\n' + cfg.extraContext : '') + '\n\nМАТНИ САҲИФАҲО:\n' + text;
-        output = await chat(pr.system, user, { signal: ctrl.signal, maxTokens: maxTokens(task, o), temperature: task === 'translate' ? 0.2 : 0.45, reasoning: task === 'lesson' || task === 'test' ? 'high' : 'medium' });
+        var user = pr.user + (cfg.extraContext ? '\n\n' + cfg.extraContext : '');
+        var material = (bookLang === 'ru' ? 'МАТЕРИАЛ — текст страниц книги «' : 'МАВОД — матни саҳифаҳои китоби «') + (cfg.bookName || 'Китоб') + '» (' + rangeLabel(o.from, o.to) + '):\n\n' + text;
+        var target = task === 'translate' ? ({ 'Русский': 'ru', 'English': 'en', 'Тоҷикӣ': 'tg', 'فارسی': 'fa' })[o.lang] || ''
+          : (task === 'lesson' ? o.docLang : (bookLang === 'tg' || bookLang === 'ru' ? bookLang : ''));
+        // 'medium': дар шлюз 'high' ҷустуҷӯи интернетро фаъол мекард — барои кор бо матни китоб лозим нест
+        output = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
+          maxTokens: maxTokens(task, o), temperature: task === 'translate' ? 0.2 : 0.45, reasoning: 'medium' });
         output = cleanOutput(output);
       } catch (err) {
         clearTimers();
@@ -1186,7 +1226,7 @@
   }
 
   window.AliyaTasks = {
-    version: '159',
+    version: '160',
     GATEWAY: GATEWAY, TASKS: TASKS, ORDER: ORDER, LANGS: LANGS, MATERIALS: MATERIALS, MAX_PAGES: MAX_PAGES,
     esc: esc, md: md, plain: plain, emblem: emblem, injectStyles: injectStyles,
     toast: toast, openSheet: openSheet, closeSheet: closeSheet, confirm: confirmDialog, prompt: promptDialog,

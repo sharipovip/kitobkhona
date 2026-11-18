@@ -1,0 +1,98 @@
+--- app.py.orig	2026-11-18 17:04:23.996083588 +0000
++++ app.py	2026-11-18 17:04:24.016083588 +0000
+@@ -644,7 +644,7 @@
+     return False
+ 
+ 
+-def check_nsfw_safety(
++def _check_nsfw_safety_strict(
+     raw_text: str,
+     prior_messages: Optional[List[Dict[str, str]]] = None,
+     is_image_context: bool = False,
+@@ -700,6 +700,86 @@
+     return None
+ 
+ 
++# ==============================================================================
++# v159: ТОЧНЫЙ ФИЛЬТР 18+ ДЛЯ ТЕКСТА (чат и задачи по книгам).
++# Для генерации/плана фото (is_image_context=True) по-прежнему работает СТРОГИЙ фильтр
++# _check_nsfw_safety_strict — без единого изменения.
++# Причина: нечёткие шаблоны строгого фильтра (`х[у].{0,1}[йеяюи]`, `п.{0,2}зд`, `аврат`, «дети + гол/сис/бель/лич»)
++# блокировали обычные слова: «худи», «худе», «понздаҳ», «поздравляю», «праздник», «поезд», «глагол», «система»,
++# «мебель», «личность» — и Алия отвечала отказом 18+ на учебные тексты.
++# Здесь — только точные слова с границами + та же защита от маскировки (`се**с`, `п*зд@`, `с.е.к.с`).
++# ==============================================================================
++_NSFW_TEXT_CYR_PATTERNS = [
++    # Русский
++    r"\bсекс\w*", r"\bпорн\w*", r"\bэроти\w*", r"\bпизд\w*",
++    r"\bху[йяю]\w*", r"\bхуе[вмсл]\w*", r"\bхуё\w*",
++    r"\b[её]б(?:ать|ал\w*|ан\w*|ля\w*|ут\w*|ёт\w*|ет\b|ись|ну\w*|ош\w*)",
++    r"\bбля[дт]\w*", r"\bминет\w*", r"\bоргазм\w*",
++    r"\bсиськ\w*", r"\bсисек\b", r"\bтитьк\w*",
++    r"\bгол(?:ая|ые|ую|енькая|енькие|ышом)\b", r"\bголый\s+(?:мужчин\w*|парен\w*|человек\w*|тел\w*)",
++    r"\bобнаж[её]нн(?:ая|ые|ую|ой)\b", r"\bраздет(?:ая|ые|ую)\b",
++    r"\bбез\s+(?:одежды|белья|лифчика|трусов|купальника)\b",
++    r"\bтоплес\w*", r"\bинтимн\w*\s+(?:фото\w*|картин\w*|видео\w*|част\w*)",
++    r"\bвагин\w*", r"\bпенис\w*", r"\bгенитал\w*", r"\bпроститут\w*", r"\bшлюх\w*",
++    # Таджикский
++    r"\bбе\s*либос\w*", r"\bбара[ҳх]на\w*", r"\bур[ёе]н\b", r"\bша[ҳх]вон[ӣи]\w*",
++    r"\bфо[ҳх]иша\w*", r"\bҷимоъ\w*|\bчимоъ\w*",
++    r"\b(?:духтар|зан|ҷисм|чисм|тан|бадан|сина)\w*\s+(?:луч|лич)\b", r"\b(?:луч|лич)\s+(?:духтар|зан|бадан|ҷисм|чисм)\w*",
++    r"\bсина(?:ҳо|хо|аш|ҳояш|хояш)?\s+(?:луч|лич|кушода|намоён)\b",
++    # Узбекский
++    r"\bялан[ғг]оч\w*",
++]
++_NSFW_TEXT_LAT_PATTERNS = [
++    r"\bsex(?:y|ual|ually)?\b", r"\bporn\w*", r"\bnudes?\b|\bnudity\b", r"\bnaked\b",
++    r"\bboobs?\b|\btits\b|\btitties\b|\btopless\b|\bnipples?\b",
++    r"\bpussy\b|\bvagina\b|\bpenis\b|\bdick\b|\bcock\b|\bfuck\w*|\bhentai\b|\bnsfw\b|\berotic\w*|\bxxx\b",
++    r"\bbe\s*libos\b|\bbarahna\b|\bduxtari\s+l[ui]ch\b|\bsinaho\w*\s+l[ui]ch\b|\byalang['`ʻ]?och\b",
++]
++_MINOR_TEXT_EXPLICIT_RE = re.compile(
++    r"(?iu)\b(?:гол(?:ый|ая|ые|ую|енький|енькая|ышом)|обнаж\w*|раздет\w*|сиськ\w*|трусик\w*|нижн\w+\s+бель\w*|бикини|купальник\w*|"
++    r"интим\w*|секс\w*|эроти\w*|порн\w*|бе\s*либос|бара[ҳх]на\w*|ша[ҳх]вон\w*|луч|лич|"
++    r"nude|naked|topless|sexy|bikini|lingerie|underwear|boobs?|erotic|nsfw|porn\w*)\b"
++)
++
++
++def _check_nsfw_safety_text(raw_text: str, prior_messages: Optional[List[Dict[str, str]]] = None) -> Optional[Dict[str, str]]:
++    text = (raw_text or "").strip()
++    if not text:
++        return None
++    own_lang = _detect_utterance_own_language(text, prior_messages)
++    collapsed = _collapse_spaced_letters(text.lower())
++    # Маскировка `се**с`, `п*зд@`, `г*лая` — как и раньше (токены без символов маскировки сюда не попадают)
++    if _matches_wildcard_masked_banned_word(collapsed):
++        return {"blocked": "nsfw_masked", "lang": own_lang, "message": safety_refusal_message(own_lang)}
++    wildcard_norm = _MASK_CHARS_RE.sub("х", collapsed)
++    views = (collapsed, wildcard_norm.translate(_LEET_CYR_MAP))
++    lat_views = (collapsed, wildcard_norm.translate(_LEET_LAT_MAP))
++    # 1. CSAM — нулевая терпимость: возраст < 18 + явная нагота/секс
++    if _MINOR_AGE_RE.search(collapsed) and any(_MINOR_TEXT_EXPLICIT_RE.search(v) for v in views + lat_views):
++        return {"blocked": "minor_safety", "lang": own_lang, "message": safety_refusal_message(own_lang)}
++    for pat in _NSFW_PERSIAN_PATTERNS:
++        if re.search(pat, collapsed):
++            return {"blocked": "nsfw", "lang": own_lang, "message": safety_refusal_message(own_lang)}
++    for pat in _NSFW_TEXT_CYR_PATTERNS:
++        if any(re.search(pat, v, flags=re.IGNORECASE) for v in views):
++            return {"blocked": "nsfw", "lang": own_lang, "message": safety_refusal_message(own_lang)}
++    for pat in _NSFW_TEXT_LAT_PATTERNS:
++        if any(re.search(pat, v, flags=re.IGNORECASE) for v in lat_views):
++            return {"blocked": "nsfw", "lang": own_lang, "message": safety_refusal_message(own_lang)}
++    return None
++
++
++def check_nsfw_safety(
++    raw_text: str,
++    prior_messages: Optional[List[Dict[str, str]]] = None,
++    is_image_context: bool = False,
++) -> Optional[Dict[str, str]]:
++    """Фото — строгий фильтр (без изменений); текст — точный фильтр без ложных срабатываний."""
++    if is_image_context:
++        return _check_nsfw_safety_strict(raw_text, prior_messages, is_image_context=True)
++    return _check_nsfw_safety_text(raw_text, prior_messages)
++
++
+ _SIMPLE_LATEX_FRAC_RE = re.compile(r"\\d?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}")
+ _LATEX_TEXT_CMD_RE = re.compile(r"\\(?:text|mathrm|mathbf|mathit|operatorname)\s*\{([^{}]*)\}")
+ _LATEX_SQRT_CMD_RE = re.compile(r"\\sqrt\s*\{([^{}]*)\}")
