@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="./assets/libs/pdf.min.js"></script>
-<script src="config.js?v=20261121-r2"></script>
+<script src="config.js?v=76"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -32,874 +32,39 @@
 })();
 </script>
 <script src="cache.js?v=45"></script>
-<style>
-  
-  :root {
-    --bg: #0d1b2a;
-    --panel: rgba(13, 27, 42, 0.92);
-    --page-bg: #f5f0e8;
-    --gold: #c9a84c;
-    --gold2: #e8c96d;
-    --text: #f0ead6;
-    --muted: #a8b8cc;
-    --border: rgba(201, 168, 76, 0.2);
-    --shadow: 0 12px 40px rgba(0, 0, 0, 0.55);
-    --safe-top: env(safe-area-inset-top, 0px);
-    --safe-bottom: env(safe-area-inset-bottom, 0px);
-  }
 
-  .light-reading {
-    --bg: #e8e2d5;
-    --panel: rgba(245, 240, 232, 0.96);
-    --page-bg: #fffef7;
-    --text: #1a2d44;
-    --muted: #4a5d73;
-    --border: rgba(201, 168, 76, 0.25);
-    --shadow: 0 12px 40px rgba(0, 0, 0, 0.15);
-  }
 
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-    -webkit-tap-highlight-color: transparent;
-  }
 
-  html, body {
-    width: 100%;
-    height: 100%;
-    overflow: hidden;
-    background: #05070a;
-    color: var(--text);
-    font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, sans-serif;
-    position: fixed;
-    inset: 0;
-  }
 
-  .reader-wrapper {
-    width: 100%;
-    max-width: 430px;
-    margin: 0 auto;
-    height: 100dvh;
-    display: flex;
-    flex-direction: column;
-    position: relative;
-    overflow: hidden;
-    background: var(--bg);
-    box-shadow: 0 0 0 1px rgba(255, 255, 255, 0.04), 0 0 60px rgba(0, 0, 0, 0.55);
-  }
 
-  
-  .reader-top-bar {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    background: var(--panel);
-    backdrop-filter: blur(18px);
-    border-bottom: 1px solid var(--border);
-    padding: calc(8px + var(--safe-top)) 12px 9px;
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    transition: transform 0.3s ease;
-  }
-  .reader-top-bar.hidden { transform: translateY(-110%); }
 
-  .btn-back, .top-btn {
-    width: 38px;
-    height: 38px;
-    border: 1px solid var(--border);
-    border-radius: 50%;
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text);
-    display: grid;
-    place-items: center;
-    font-size: 18px;
-    cursor: pointer;
-    transition: background 0.2s, transform 0.15s;
-    flex-shrink: 0;
-  }
-  .btn-back:hover, .top-btn:hover { background: rgba(201, 168, 76, 0.15); }
-  .btn-back:active, .top-btn:active { transform: scale(0.92); }
 
-  .book-title-block {
-    flex: 1;
-    min-width: 0;
-  }
-  .reading-book-title {
-    font-size: 14px;
-    font-weight: 900;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-  }
-  .reading-book-author {
-    font-size: 11px;
-    color: var(--muted);
-    margin-top: 2px;
-  }
 
-  .top-actions { display: flex; gap: 6px; }
 
-  
-  .reader-main {
-    flex: 1;
-    position: relative;
-    display: grid;
-    place-items: center;
-    overflow: hidden;
-    background: radial-gradient(circle at 50% 40%, rgba(201, 168, 76, 0.08), transparent 40%), var(--bg);
-  }
 
-  .page-stage {
-    position: absolute;
-    inset: 0;
-    display: grid;
-    place-items: center;
-    padding: calc(58px + var(--safe-top)) 5px calc(100px + var(--safe-bottom));
-    touch-action: pan-y;
-    overflow: hidden;
-  }
 
-  .page-container {
-    position: relative;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    perspective: 1000px;
-  }
 
-  .page-slot {
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    will-change: transform, opacity;
-    transition: transform 0.35s cubic-bezier(0.22, 0.61, 0.36, 1), opacity 0.35s ease;
-    backface-visibility: hidden;
-    border-radius: 6px;
-    background: var(--page-bg);
-    box-shadow: var(--shadow);
-  }
 
-  .page-slot canvas {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    border-radius: 6px;
-    display: block;
-  }
 
-  .page-slot.current {
-    z-index: 2;
-    opacity: 1;
-    transform: translateX(0) scale(1);
-  }
 
-  .page-slot.prev {
-    z-index: 1;
-    opacity: 0.5;
-    transform: translateX(-25%) scale(0.95);
-  }
 
-  .page-slot.next {
-    z-index: 1;
-    opacity: 0.5;
-    transform: translateX(25%) scale(0.95);
-  }
 
-  .page-slot.hidden {
-    opacity: 0;
-    transform: translateX(0) scale(0.9);
-    pointer-events: none;
-  }
 
-  
-  .page-nav-area {
-    position: absolute;
-    top: 0;
-    bottom: 0;
-    width: 28%;
-    z-index: 20;
-    cursor: pointer;
-  }
-  .page-nav-left { left: 0; }
-  .page-nav-right { right: 0; }
 
-  
-  .reader-bottom-bar {
-    position: absolute;
-    bottom: 0;
-    left: 0;
-    right: 0;
-    z-index: 100;
-    background: var(--panel);
-    backdrop-filter: blur(18px);
-    border-top: 1px solid var(--border);
-    padding: 8px 14px calc(10px + var(--safe-bottom));
-    transition: transform 0.3s ease;
-  }
-  .reader-bottom-bar.hidden { transform: translateY(110%); }
 
-  .reading-progress {
-    height: 3px;
-    background: rgba(255, 255, 255, 0.13);
-    border-radius: 99px;
-    overflow: hidden;
-    margin-bottom: 8px;
-  }
-  .reading-progress-fill {
-    height: 100%;
-    background: linear-gradient(90deg, var(--gold), var(--gold2));
-    width: 0;
-    transition: width 0.3s ease;
-  }
 
-  .reaction-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 6px;
-    padding-top: 2px;
-  }
-  .reaction-group {
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-  .reaction-btn {
-    background: transparent;
-    border: none;
-    font-size: 18px;
-    cursor: pointer;
-    transition: transform 0.15s, color 0.2s;
-    color: var(--muted);
-    padding: 2px 4px;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-  .reaction-btn:hover { transform: scale(1.15); }
-  .reaction-btn.active { color: var(--gold); }
-  .reaction-btn .cnt {
-    font-size: 11px;
-    font-weight: 700;
-    color: var(--muted);
-  }
-  .reaction-btn.active .cnt { color: var(--gold); }
 
-  .rating-stars {
-    display: flex;
-    gap: 2px;
-    align-items: center;
-  }
-  .rating-stars .star {
-    font-size: 15px;
-    color: var(--muted);
-    cursor: pointer;
-    transition: transform 0.15s, color 0.2s;
-  }
-  .rating-stars .star.on { color: var(--gold); }
-  .rating-stars .star:hover { transform: scale(1.2); }
-  .rating-label {
-    font-size: 11px;
-    color: var(--muted);
-    font-weight: 600;
-    margin-right: 4px;
-  }
 
-  .page-info {
-    text-align: center;
-    font-size: 12px;
-    color: var(--muted);
-    font-weight: 800;
-    letter-spacing: 0.3px;
-    min-width: 60px;
-    margin: 0 8px;
-  }
-
-  
-  .panel {
-    position: absolute;
-    z-index: 160;
-    background: var(--panel);
-    border: 1px solid var(--border);
-    box-shadow: 0 16px 42px rgba(0, 0, 0, 0.5);
-    display: none;
-    border-radius: 20px;
-    padding: 14px;
-    overflow: auto;
-    backdrop-filter: blur(18px);
-  }
-  .panel.open { display: block; }
-
-  .settings-panel {
-    top: calc(60px + var(--safe-top));
-    right: 10px;
-    bottom: calc(80px + var(--safe-bottom));
-    width: min(320px, calc(100% - 20px));
-  }
-  .search-panel {
-    left: 10px;
-    right: 10px;
-    top: calc(64px + var(--safe-top));
-    bottom: calc(80px + var(--safe-bottom));
-  }
-
-  .settings-header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 12px;
-  }
-  .panel-title { font-weight: 900; color: var(--gold2); }
-  .close-panel {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    border: 1px solid var(--border);
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text);
-    display: grid;
-    place-items: center;
-    cursor: pointer;
-  }
-
-  .settings-group {
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-    padding: 8px 0;
-  }
-  .settings-group-title {
-    font-size: 11px;
-    color: var(--gold2);
-    font-weight: 900;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    margin-bottom: 8px;
-  }
-  .setting-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.045);
-    border: 1px solid rgba(255, 255, 255, 0.06);
-    border-radius: 13px;
-    padding: 8px;
-    margin-bottom: 6px;
-  }
-  .setting-label {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-weight: 800;
-  }
-  .row { display: flex; gap: 8px; flex-wrap: wrap; }
-  .pill {
-    border: 1px solid var(--border);
-    border-radius: 99px;
-    background: rgba(255, 255, 255, 0.05);
-    color: var(--text);
-    padding: 6px 12px;
-    font-weight: 800;
-    cursor: pointer;
-    font-size: 12px;
-    transition: background 0.2s, color 0.2s;
-  }
-  .pill.active { background: var(--gold); color: #1b1202; }
-  .pill:hover { background: rgba(201, 168, 76, 0.15); }
-
-  .range { width: 100%; margin: 3px 0; }
-
-  .find-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    margin-top: 10px;
-  }
-  .find-count {
-    flex: 1;
-    text-align: center;
-    color: var(--gold2);
-    font-weight: 900;
-    font-size: 12px;
-  }
-  .find-results {
-    margin-top: 10px;
-    max-height: 48vh;
-    overflow: auto;
-    border-top: 1px solid rgba(255, 255, 255, 0.08);
-  }
-  .find-item {
-    padding: 9px 4px;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.07);
-    cursor: pointer;
-  }
-  .find-item.on { background: rgba(201, 168, 76, 0.12); border-radius: 10px; }
-  .find-page { font-weight: 900; color: var(--gold2); font-size: 12px; }
-  .find-snippet { font-size: 12px; color: var(--muted); margin-top: 3px; line-height: 1.35; }
-
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: calc(92px + var(--safe-bottom));
-    transform: translateX(-50%) translateY(20px);
-    z-index: 400;
-    /* v100: ВСЕГДА тёмная плашка + золотая рамка — видна на ЛЮБОМ цвете книги
-       (раньше брала var(--panel), в светлом режиме совпадала со страницей) */
-    background: #161616;
-    border: 1.5px solid rgba(201, 168, 76, 0.7);
-    border-radius: 99px;
-    padding: 11px 16px;
-    color: #FFE9B8;
-    font-size: 13px;
-    font-weight: 750;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.55);
-    opacity: 0;
-    transition: opacity 0.25s, transform 0.25s;
-    max-width: 90%;
-    text-align: center;
-    pointer-events: none;
-  }
-  .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
-  .error {
-    padding: 20px;
-    text-align: center;
-    color: #fca5a5;
-    max-width: 320px;
-  }
-
-  .loading {
-    position: absolute;
-    inset: 0;
-    z-index: 90;
-    display: none;
-    place-items: center;
-    background: rgba(0, 0, 0, 0.20);
-  }
-  .loading.on { display: grid; }
-  .progress-ring {
-    width: 64px;
-    height: 64px;
-    border-radius: 50%;
-    background: conic-gradient(var(--gold) calc(var(--p, 0) * 1%), rgba(201, 168, 76, 0.16) 0);
-    display: grid;
-    place-items: center;
-    box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
-    position: relative;
-  }
-  .progress-ring::before {
-    content: "";
-    position: absolute;
-    width: 50px;
-    height: 50px;
-    border-radius: 50%;
-    background: var(--panel);
-    border: 1px solid var(--border);
-  }
-  .progress-ring span {
-    position: relative;
-    z-index: 1;
-    font-size: 12px;
-    font-weight: 900;
-    color: var(--gold2);
-  }
-
-  @media (max-width: 430px) {
-    .reader-wrapper { max-width: 100%; }
-  }
-</style>
-
-<style id="app-scrollbar-policy">
-html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
-*::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
-</style>
-
-<style id="reader-design-v2">
-:root{--bg:#0C0C0C;--panel:rgba(12,12,12,.97);--page-bg:#F7F1E7;--gold:#C9A84C;--gold2:#E8C96D}
-html,body{background:#040A14!important}.reader-wrapper{background:#0C0C0C!important;box-shadow:0 0 45px rgba(0,0,0,.65)!important}
-.reader-top-bar{height:58px;padding:calc(7px + var(--safe-top)) 12px 7px!important;background:#0C0C0C!important;border-bottom:1px solid rgba(255,255,255,.055)!important;backdrop-filter:none!important}.btn-back,.top-btn{width:35px!important;height:35px!important;border:0!important;background:transparent!important;font-size:19px!important}.btn-back:active,.top-btn:active{background:rgba(255,255,255,.08)!important}.reading-book-title{font-size:14px!important;font-weight:650!important}.reading-book-author{color:#777!important;font-size:10px!important}.reader-favorite-btn.active,[data-reader-favorite].active{color:#E8C96D!important}
-.reader-progress-wrap{position:absolute;left:0;right:0;top:calc(58px + var(--safe-top));z-index:95;padding:9px 14px 7px;background:#0C0C0C;border-bottom:1px solid rgba(255,255,255,.035)}.reader-progress-track{height:4px;background:#242424;border-radius:99px;position:relative}.reader-progress-fill-top{height:100%;width:0;background:#C9A84C;border-radius:99px;transition:width .25s}.reader-progress-knob{position:absolute;left:0;top:50%;transform:translate(-50%,-50%);width:12px;height:12px;background:#C9A84C;border-radius:50%;box-shadow:0 0 0 3px rgba(201,168,76,.18);transition:left .25s}.reader-progress-numbers{display:flex;justify-content:space-between;margin-top:6px;color:#C9A84C;font-size:10.5px;font-weight:650}
-.reader-main{background:radial-gradient(110% 75% at 50% 0%,#181818,#0C0C0C 62%)!important}.page-stage{padding:calc(101px + var(--safe-top)) 7px calc(93px + var(--safe-bottom))!important}.page-slot{border-radius:2px!important;box-shadow:0 12px 36px rgba(0,0,0,.62)!important}
-.reader-bottom-bar{padding:0 8px calc(7px + var(--safe-bottom))!important;background:rgba(12,12,12,.98)!important;border-top:1px solid rgba(255,255,255,.07)!important}.reader-action-nav{height:66px;display:flex;align-items:center;justify-content:space-around}.reader-nav-item{flex:1;border:0;background:transparent;color:#777;display:flex;flex-direction:column;align-items:center;gap:3px;font:inherit;cursor:pointer;min-width:0}.reader-nav-item .ico{font-size:19px;height:25px;display:grid;place-items:center}.reader-nav-item small{font-size:9px;white-space:nowrap}.reader-nav-item:active,.reader-nav-item.active{color:#C9A84C}.reader-nav-item.center .ico{width:48px;height:48px;border-radius:50%;background:#C9A84C;color:#0C0C0C;font-size:27px;margin-top:-20px;box-shadow:0 6px 18px rgba(201,168,76,.25)}.reader-nav-item.center small{margin-top:-5px;color:#C9A84C}
-.reader-social-tray{border-top:1px solid rgba(255,255,255,.045)}.reader-social-tray summary{height:20px;display:flex;align-items:center;justify-content:space-between;color:#777;font-size:9.5px;padding:0 6px;cursor:pointer;list-style:none}.reader-social-tray summary::-webkit-details-marker{display:none}.reader-social-tray[open] summary{color:#C9A84C}.reader-social-tray .reaction-bar{padding:8px 5px 5px;justify-content:space-between}.reader-social-tray .reaction-btn{font-size:16px}.reader-social-tray .rating-stars{gap:1px}.reader-social-tray .rating-stars .star{font-size:13px}
-.panel{background:#151515!important;border-color:rgba(201,168,76,.16)!important}.settings-panel,.search-panel{top:calc(104px + var(--safe-top))!important;bottom:calc(88px + var(--safe-bottom))!important}.setting-item{background:#1E1E1E!important}.pill{border-color:rgba(201,168,76,.2)!important}.pill.active{background:#C9A84C!important}
-.light-reading{--bg:#E9E3D7;--panel:rgba(245,240,232,.98);--page-bg:#FFFDF6}.light-reading .reader-top-bar,.light-reading .reader-progress-wrap{background:#F5F0E8!important}.light-reading .reader-bottom-bar{background:rgba(245,240,232,.98)!important}.light-reading .reader-main{background:#DDD5C7!important}.light-reading .reader-social-tray summary{color:#657080}.light-reading .reader-nav-item{color:#657080}
-@media(max-width:355px){.reader-nav-item small{font-size:8px}.rating-stars .star{font-size:11px!important}.reaction-group{gap:5px!important}}
-</style>
-
-<style id="reader-final-requested-design">
-.reader-top-bar{gap:4px!important;height:52px!important;padding:calc(5px + var(--safe-top)) 7px 5px!important}.btn-back,.top-btn{width:31px!important;height:31px!important;flex:0 0 31px!important}.top-rating{flex:1;min-width:0;display:flex;align-items:center;justify-content:center;gap:0;overflow:hidden}.top-rating .rating-label{font-size:10px;margin-right:2px}.top-rating .star{font-size:12px;line-height:1;color:#727272;cursor:pointer;padding:1px}.top-rating .star.on{color:#C9A84C}.size-control{height:31px;flex:0 0 67px;border:1px solid rgba(201,168,76,.19);border-radius:99px;display:flex;align-items:center;justify-content:space-around;color:#C9A84C;background:#151515}.size-control button{width:23px;height:29px;border:0;background:transparent;color:#E8E4D9;font-size:16px;cursor:pointer}.size-control span{font-size:9px;color:#88743E}.reader-progress-wrap{top:calc(52px + var(--safe-top))!important;padding-top:7px!important}.page-stage{padding-top:calc(93px + var(--safe-top))!important}.brightness-dial .ico{font-size:10px!important;font-weight:850;letter-spacing:-.5px;touch-action:none;user-select:none}.brightness-dial.center .ico{background:radial-gradient(circle at 35% 30%,#F3DA88,#B3872E)!important}.reader-social-tray .reaction-bar{justify-content:center!important}.reader-social-tray summary span:first-child{font-size:0}.reader-social-tray summary span:first-child:after{content:'Вокунишҳо';font-size:9.5px}
-body:not(.light-reading) .page-slot canvas{filter:invert(.91) hue-rotate(180deg) contrast(.94)}body:not(.light-reading) .page-slot{background:#121212!important}.light-reading .size-control{background:#E8E0D4}.light-reading .size-control button{color:#28384B}
-@media(max-width:365px){.top-rating .star{font-size:10px}.size-control{flex-basis:61px}.reader-top-bar{gap:2px!important}}
-</style>
-
-<style id="reader-round9-polish">
-html,body,.reader-wrapper,.reader-main{background:#0B0B0B!important}.reader-top-bar,.reader-progress-wrap{background:#0B0B0B!important}.top-rating .rating-label{font-size:8.5px!important;color:#C9A84C!important;white-space:nowrap;margin-right:3px!important}.reader-favorite-btn svg{display:block}.reader-favorite-btn.active{color:#E8C96D!important}
-.page-slot{overflow:hidden!important;background:#0B0B0B!important;border:0!important;outline:0!important}.page-slot canvas{border:0!important;outline:2px solid #0B0B0B!important;outline-offset:-1px;clip-path:inset(1px);transform:translateZ(0);backface-visibility:hidden}.page-container{perspective:1300px!important}.page-slot:after{content:'';position:absolute;inset:0;pointer-events:none;box-shadow:inset 10px 0 18px rgba(0,0,0,.18),inset -3px 0 7px rgba(255,255,255,.025)}
-.reader-reactions{position:absolute;right:8px;top:50%;transform:translateY(-50%);z-index:45;display:flex;flex-direction:column;gap:9px;transition:opacity .25s ease,transform .25s ease,visibility .25s ease}.reader-reactions.hidden{opacity:0!important;transform:translateY(-50%) translateX(35px)!important;pointer-events:none!important;visibility:hidden!important}.reader-reactions .reaction-btn{width:38px;height:48px;border:1px solid rgba(255,255,255,.075);border-radius:18px;background:rgba(8,8,8,.42);backdrop-filter:blur(7px);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;color:rgba(240,234,214,.68);padding:0}.reader-reactions .reaction-symbol{width:23px;height:23px;line-height:1;opacity:.76;display:grid;place-items:center}.reader-reactions .reaction-symbol svg{width:22px;height:22px;display:block}.reader-reactions .heart-reaction svg{width:24px;height:24px}.reader-reactions .dislike-symbol svg{transform:rotate(180deg)}.reader-reactions .cnt{font-size:9px;color:rgba(240,234,214,.58)}.reader-reactions .reaction-btn.active{color:#E8C96D;background:rgba(201,168,76,.12);border-color:rgba(201,168,76,.25)}.reader-reactions .reaction-btn.active .cnt{color:#E8C96D}
-.page-entry{cursor:text!important}.page-entry input{width:34px;height:29px;border:1px solid rgba(201,168,76,.22);border-radius:9px;background:#171717;color:#E8C96D;text-align:center;font-size:11px;outline:0;-moz-appearance:textfield}.page-entry input::-webkit-inner-spin-button,.page-entry input::-webkit-outer-spin-button{-webkit-appearance:none;margin:0}.page-entry input:focus{border-color:#C9A84C;box-shadow:0 0 0 3px rgba(201,168,76,.09)}
-.reader-social-tray{display:none!important}.light-reading .reader-reactions .reaction-btn{background:rgba(245,240,232,.66);color:#536276}.light-reading .page-slot canvas{filter:none!important;outline-color:#E9E3D7!important}.light-reading .page-slot{background:#E9E3D7!important}.light-reading .page-entry input{background:#EEE7DB;color:#6F5417}
-/* v99: панель реакций — ВЫЕЗЖАЕТ СНИЗУ из нижней панели, не перекрывает текст книги */
-.reaction-sheet{position:absolute;left:10px;right:10px;bottom:calc(100% + 10px);z-index:130;background:#141414;border:1px solid rgba(201,168,76,.3);border-radius:16px;padding:11px 12px 12px;box-shadow:0 12px 34px rgba(0,0,0,.5);transform:translateY(10px);opacity:0;pointer-events:none;transition:transform .22s ease,opacity .22s ease;visibility:hidden}
-.reaction-sheet.open{transform:none;opacity:1;pointer-events:auto;visibility:visible}
-.reaction-sheet .reaction-bar{justify-content:space-around;padding-top:0;gap:8px}
-.reaction-sheet .reaction-btn{flex:1;max-width:118px;height:46px;flex-direction:row;justify-content:center;gap:8px;border:1px solid rgba(255,255,255,.09);border-radius:13px;background:rgba(255,255,255,.035);color:rgba(240,234,214,.82);font-size:15px}
-.reaction-sheet .reaction-btn.active{color:#E8C96D;border-color:rgba(201,168,76,.45);background:rgba(201,168,76,.12)}
-.reaction-sheet .reaction-symbol{width:21px;height:21px;display:grid;place-items:center;opacity:.85}
-.reaction-sheet .reaction-symbol svg{width:21px;height:21px;display:block}
-.reaction-sheet .reaction-btn .cnt{font-size:11px;color:rgba(240,234,214,.6)}
-.reaction-sheet .reaction-btn.active .cnt{color:#E8C96D}
-.reaction-sheet-title{font-size:11px;color:#A89865;font-weight:750;margin:0 2px 9px}
-.reaction-sheet-hint{font-size:9.5px;color:#777;margin-top:8px;text-align:center}
-.light-reading .reaction-sheet{background:#FBF7EF;border-color:rgba(122,88,18,.25)}
-.light-reading .reaction-sheet .reaction-btn{background:rgba(255,255,255,.65);color:#536276;border-color:rgba(83,98,118,.18)}
-.light-reading .reaction-sheet .reaction-btn.active{color:#8A6A15;border-color:rgba(138,106,21,.4);background:rgba(201,168,76,.14)}
-.light-reading .reaction-sheet-title{color:#8A6A15}
-.light-reading .reaction-sheet-hint{color:#98917F}
-@media(max-width:355px){.top-rating .rating-label{display:none}.reader-reactions{right:5px}.reader-reactions .reaction-btn{width:34px;height:44px}}
-</style>
-
-<style id="reader-round10-edge-fix">
-html,body,.reader-wrapper,.reader-main,.page-stage,.page-container{background:#0C0C0C!important}
-.page-stage{padding:calc(91px + var(--safe-top)) 0 0!important;inset:0!important}
-.page-container{width:100%!important;height:100%!important;margin:0!important;padding:0!important}
-.page-slot{inset:0!important;width:100%!important;height:100%!important;border-radius:0!important;box-shadow:none!important;background:#0C0C0C!important}
-.page-slot canvas{max-width:none!important;border-radius:0!important;box-shadow:none!important;outline:3px solid #0C0C0C!important;outline-offset:-2px!important;clip-path:inset(2px)!important}
-.reader-bottom-bar{background:linear-gradient(180deg,rgba(12,12,12,.86),#0C0C0C 22%)!important}
-</style>
-
-<style id="reader-round11-final-layout">
-.reader-top-bar{height:52px!important}.top-rating .rating-label{font-size:11.5px!important;font-weight:750!important;margin-right:4px!important}.top-rating .star{font-size:15px!important;padding:1px!important}.reader-progress-wrap{display:none!important}
-.page-stage{padding:calc(52px + var(--safe-top)) 0 calc(73px + var(--safe-bottom))!important;background:#0C0C0C!important}.page-container,.page-slot{background:#0C0C0C!important}.reader-bottom-bar{z-index:110!important}
-.page-entry-box{width:50px;height:38px;border:1px solid rgba(201,168,76,.22);border-radius:11px;background:#171717;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0}.page-entry input{width:46px!important;height:20px!important;border:0!important;border-radius:0!important;background:transparent!important;color:#E8C96D!important;font-size:10.5px!important}.page-entry input:focus{box-shadow:none!important}.page-entry-box #quickPagePct{font-size:8px;color:#8A794A;line-height:1}.page-entry small{margin-top:1px}
-@media(max-width:380px){.top-rating .rating-label{font-size:10px!important}.top-rating .star{font-size:13px!important}.page-entry-box{width:45px}.page-entry input{width:42px!important}}
-@media(max-width:345px){.top-rating .rating-label{display:none}.top-rating .star{font-size:12px!important}}
-</style>
-<style id="reader-paper-colors">
-:root{--reader-paper-bg:#0C0C0C;--reader-paper-tint:transparent;--reader-paper-tint-opacity:0}
-.reader-main,.page-stage,.page-container,.page-slot{background:var(--reader-paper-bg)!important;transition:background-color .28s ease}
-.page-slot::before{content:'';position:absolute;inset:0;z-index:4;pointer-events:none;background:var(--reader-paper-tint);opacity:var(--reader-paper-tint-opacity);mix-blend-mode:color;transition:background-color .28s ease,opacity .28s ease}
-.brightness-dial.center .ico{display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:1px!important;font-size:9px!important;line-height:1!important}
-.paper-color-dot{display:block;width:13px;height:13px;border-radius:50%;border:1.5px solid rgba(255,255,255,.75);box-shadow:0 1px 4px rgba(0,0,0,.38),0 0 0 1px rgba(0,0,0,.18);cursor:pointer;transition:transform .18s,background-color .28s}
-.paper-color-dot:active{transform:scale(.8)}
-.light-reading .page-slot::before{mix-blend-mode:multiply;opacity:calc(var(--reader-paper-tint-opacity) * .42)}
-</style>
-
-<style id="reader-responsive-swipe-fix">
-.page-nav-area{pointer-events:none!important;display:none!important}
-.page-stage{touch-action:pan-y!important;overscroll-behavior:contain!important}
-.page-slot{display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important}
-.page-slot canvas{max-width:100%!important;max-height:100%!important;width:auto;height:auto;object-fit:contain!important;outline:0!important;clip-path:none!important}
-.page-container.zoomed .page-slot canvas{max-width:none!important;max-height:none!important}
-@media(max-width:430px){.reader-wrapper{width:100%!important;max-width:100%!important}.page-stage{width:100%!important;max-width:100%!important}}
-</style>
-
-<style id="reader-light-contrast-fix">
-body.light-reading, html.light-reading, .light-reading .reader-wrapper, .light-reading .reader-main, .light-reading .page-stage, .light-reading .page-container {
-  background: #EFECE6 !important;
-}
-.light-reading .reader-top-bar {
-  background: #FAF7F0 !important;
-  border-bottom: 1px solid rgba(180, 140, 40, 0.3) !important;
-}
-.light-reading .reader-bottom-bar {
-  background: #FAF7F0 !important;
-  border-top: 1px solid rgba(180, 140, 40, 0.3) !important;
-}
-.light-reading .btn-back, .light-reading .top-btn, .light-reading .reader-nav-item {
-  color: #1E293B !important;
-}
-.light-reading .btn-back svg, .light-reading .top-btn svg, .light-reading .reader-nav-item svg {
-  stroke: #1E293B !important;
-}
-.light-reading .top-rating .rating-label {
-  color: #8C6D1F !important;
-}
-.light-reading .top-rating .star {
-  color: #94A3B8 !important;
-}
-.light-reading .top-rating .star.on {
-  color: #C9A84C !important;
-}
-.light-reading .size-control {
-  background: #E8E2D4 !important;
-  border: 1.5px solid rgba(180, 140, 40, 0.4) !important;
-  color: #8C6D1F !important;
-}
-.light-reading .size-control button {
-  color: #1E293B !important;
-  font-weight: bold !important;
-}
-.light-reading .page-entry-box {
-  background: #E8E2D4 !important;
-  border: 1.5px solid rgba(180, 140, 40, 0.4) !important;
-}
-.light-reading .page-entry input {
-  color: #1E293B !important;
-  font-weight: bold !important;
-}
-.light-reading .page-entry-box #quickPagePct {
-  color: #64748B !important;
-}
-.light-reading .reader-reactions .reaction-btn {
-  background: #FFFFFF !important;
-  border: 1.5px solid rgba(180, 140, 40, 0.45) !important;
-  box-shadow: 0 4px 14px rgba(0,0,0,0.18) !important;
-  color: #1E293B !important;
-}
-.light-reading .reader-reactions .reaction-symbol svg {
-  stroke: #1E293B !important;
-}
-.light-reading .reader-reactions .reaction-btn .cnt {
-  color: #334155 !important;
-  font-weight: 750 !important;
-}
-.light-reading .reader-reactions .reaction-btn.active {
-  background: #FFF9E6 !important;
-  border-color: #B48820 !important;
-  color: #B48820 !important;
-}
-.light-reading .reader-reactions .reaction-btn.active .cnt {
-  color: #B48820 !important;
-}
-.light-reading .reader-reactions .reaction-btn.active .reaction-symbol svg {
-  stroke: #B48820 !important;
-}
-.light-reading .page-slot {
-  background: #FAF7F0 !important;
-}
-.light-reading .page-slot canvas {
-  filter: none !important;
-  outline-color: #EFECE6 !important;
-}
-</style>
-
-<style id="bookFormatsCss">
-.load-status{margin-top:10px;font-size:11px;color:#C9A84C;letter-spacing:.3px;max-width:220px;text-align:center;line-height:1.4;min-height:14px}
-.book-scroll{position:absolute;inset:0;overflow-y:auto;-webkit-overflow-scrolling:touch;z-index:2;padding:20px 16px 110px;color:#E8E2D0;background:transparent;font-size:17px;line-height:1.78}
-.light-reading .book-scroll{color:#2A2416}
-.book-scroll .bhead0{margin:8px 2px 20px;padding-bottom:14px;border-bottom:1px solid rgba(201,168,76,.35)}
-.book-scroll .bhead0t{font-size:20px;font-weight:800;line-height:1.35}
-.book-scroll .bhead0s{font-size:11.5px;opacity:.62;margin-top:5px;letter-spacing:.4px}
-.book-scroll p{margin:0 0 13px;text-align:justify;hyphens:auto}
-.book-scroll h2,.book-scroll h3,.book-scroll h4,.book-scroll h5{line-height:1.35;margin:22px 0 10px;color:#C9A84C}
-.light-reading .book-scroll h2,.light-reading .book-scroll h3,.light-reading .book-scroll h4,.light-reading .book-scroll h5{color:#7A5E1C}
-.book-scroll h2{font-size:19px}.book-scroll h3{font-size:17.5px}.book-scroll h4{font-size:16.5px}.book-scroll h5{font-size:15px;font-style:italic}
-.book-scroll .bsec{margin:0}
-.book-scroll .bspacer{height:14px}
-.book-scroll .bimg{max-width:100%;height:auto;border-radius:8px;margin:12px auto;display:block}
-.book-scroll .bpoem{margin:16px 8px}
-.book-scroll .bstanza{margin:10px 0}
-.book-scroll .bv{white-space:pre-wrap}
-.book-scroll .bta{text-align:right;opacity:.75;font-style:italic;margin-top:4px}
-.book-scroll .bcite{margin:14px 10px;padding-left:10px;border-left:3px solid rgba(201,168,76,.5);opacity:.95}
-.book-scroll .bepi{margin:14px 12px;padding:10px 12px;border-left:3px solid rgba(201,168,76,.35);opacity:.85;font-style:italic}
-.book-scroll .bhr{border:0;border-top:1px solid rgba(201,168,76,.35);margin:26px 0}
-.book-scroll .btxt{white-space:pre-wrap;font:inherit;margin:0}
-.book-scroll .bdocx p{margin:0 0 13px}
-.book-scroll .bdocx img{max-width:100%;height:auto;border-radius:8px;margin:10px auto;display:block}
-.book-scroll .bdocx table{border-collapse:collapse;max-width:100%;display:block;overflow-x:auto}
-.book-scroll .bdocx td,.book-scroll .bdocx th{border:1px solid rgba(150,150,150,.4);padding:5px 8px;font-size:15px}
-.epub-host{padding:0;background:#fff}
-.epub-host iframe{border:0;width:100%;height:100%}
-.video-host{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:34px}
-.bvideo{width:100%;max-height:64vh;border-radius:14px;background:#000}
-.doc-hero{max-width:340px;margin:8vh auto 0;text-align:center;display:flex;flex-direction:column;gap:12px;padding:26px 22px;border:1px solid rgba(201,168,76,.3);border-radius:18px;background:rgba(20,20,20,.5)}
-.light-reading .doc-hero{background:rgba(255,252,246,.75)}
-.doc-ico{font-size:44px}
-.doc-title{font-size:18px;font-weight:800;line-height:1.35}
-.doc-sub{font-size:12px;opacity:.65}
-.doc-note{font-size:13.5px;line-height:1.6;opacity:.85}
-.doc-btn{border:0;border-radius:12px;padding:13px 18px;font-size:14.5px;font-weight:700;background:linear-gradient(160deg,#C9A84C,#A8862E);color:#1C1608;cursor:pointer}
-.doc-btn.alt{background:transparent;border:1px solid rgba(201,168,76,.55);color:#C9A84C}
-.doc-hint{font-size:11px;opacity:.55}
-</style>
-<style id="reader-white-flip-zoom">
-/* ===== v131: БЕЛАЯ ТЕМА ПО УМОЛЧАНИЮ — фон, панели и все элементы управления ===== */
-:root{--page-bg:#FFFFFF}
-.light-reading{--bg:#FFFFFF;--panel:#FFFFFF;--page-bg:#FFFFFF;--text:#1A1F29;--muted:#5B6472;--border:rgba(0,0,0,.12);--shadow:0 6px 22px rgba(0,0,0,.14)}
-html.light-reading,html.light-reading body,body.light-reading,
-body.light-reading .reader-wrapper,body.light-reading .reader-main,
-body.light-reading .page-stage,body.light-reading .page-container,
-body.light-reading .page-slot{background:#FFFFFF!important}
-body.light-reading .reader-wrapper{box-shadow:0 0 0 1px rgba(0,0,0,.06),0 0 40px rgba(0,0,0,.10)!important}
-body.light-reading .reader-top-bar,body.light-reading .reader-bottom-bar,body.light-reading .reader-progress-wrap{background:#FFFFFF!important;border-color:rgba(0,0,0,.09)!important;backdrop-filter:none!important}
-body.light-reading .size-control,body.light-reading .page-entry-box{background:#FFFFFF!important;border:1px solid #E1E4E8!important;box-shadow:none!important}
-body.light-reading .reader-reactions .reaction-btn{background:#FFFFFF!important;border:1px solid #E1E4E8!important;box-shadow:0 2px 10px rgba(0,0,0,.10)!important}
-body.light-reading .reader-reactions .reaction-btn.active{background:#FFFFFF!important;border-color:#C9A84C!important}
-body.light-reading .reaction-sheet{background:#FFFFFF!important;border-color:#E1E4E8!important;box-shadow:0 10px 30px rgba(0,0,0,.14)!important}
-body.light-reading .reaction-sheet .reaction-btn{background:#FFFFFF!important;border-color:#E1E4E8!important}
-body.light-reading .panel{background:#FFFFFF!important;color:#1A1F29!important;border-color:rgba(0,0,0,.10)!important;box-shadow:0 10px 30px rgba(0,0,0,.14)!important}
-body.light-reading .setting-item{background:#FFFFFF!important;border:1px solid #E6E8EC!important}
-body.light-reading .pill{background:#FFFFFF!important;border:1px solid #D9DCE1!important;color:#1A1F29!important}
-body.light-reading .pill.active{background:#C9A84C!important;border-color:#C9A84C!important;color:#1B1202!important}
-body.light-reading #findInput{background:#FFFFFF!important;border:1px solid #D9DCE1!important;color:#1A1F29!important}
-body.light-reading .page-entry input{background:transparent!important;color:#1A1F29!important}
-body.light-reading .loading{background:#FFFFFF}
-body.light-reading .book-scroll{color:#1A1F29}
-body.light-reading .page-slot canvas{filter:none!important}
-
-/* ===== v131: СТАБИЛЬНЫЙ МАСШТАБ — холст всегда точного размера, без max-width/object-fit-искажений ===== */
-.page-slot canvas{max-width:none!important;max-height:none!important;width:auto;height:auto;flex:none!important;object-fit:fill!important;margin:0}
-.page-container{perspective:1600px!important}
-.page-stage.is-zoomed{touch-action:none!important}
-/* v132: подпись «Баҳо диҳед» всегда видна целиком (раньше скрывалась/обрезалась на узких экранах) */
-.top-rating .rating-label{display:inline-block!important;flex:0 0 auto!important;white-space:nowrap!important}
-.top-rating .star{flex:0 0 auto!important}
-
-/* ===== v131: ПЕРЕЛИСТЫВАНИЕ КАК В НАСТОЯЩЕЙ КНИГЕ ===== */
-.page-slot.flip-flap{z-index:6!important;box-shadow:none!important;pointer-events:none;transform-origin:left center;backface-visibility:hidden;-webkit-backface-visibility:hidden;will-change:transform,filter,opacity}
-.flip-shade{position:absolute;inset:0;z-index:4;pointer-events:none;opacity:0;background:linear-gradient(to right,rgba(0,0,0,.34) 0%,rgba(0,0,0,.12) 38%,rgba(0,0,0,0) 72%)}
-</style>
-
-<style id="aliya-reader-styles">
-/* Кнопка Алия дар дохили хонанда (Reader) */
-.reader-aliya-btn {
-  position: fixed;
-  bottom: calc(152px + env(safe-area-inset-bottom, 0px)); /* v159: выше нижней панели, чтобы она не перекрывала кнопку */
-  right: 16px;
-  width: 46px;
-  height: 46px;
-  border-radius: 50%;
-  background: linear-gradient(135deg, #1E3350, #0D1B2A);
-  border: 2px solid #E8C96D;
-  box-shadow: 0 0 16px rgba(232, 201, 109, 0.4), 0 6px 20px rgba(0,0,0,0.6);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #E8C96D;
-  font-size: 20px;
-  cursor: pointer;
-  z-index: 100;
-  transition: transform 0.2s, box-shadow 0.2s;
-}
-.reader-aliya-btn:hover { transform: scale(1.1); box-shadow: 0 0 24px rgba(232, 201, 109, 0.7); }
-.reader-aliya-btn:active { transform: scale(0.92); }
-
-/* Боковые стрелки для перелистывания на ПК */
-.pc-page-arrow {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  width: 48px;
-  height: 64px;
-  background: rgba(13, 27, 42, 0.55);
-  border: 1px solid rgba(201, 168, 76, 0.25);
-  color: #E8C96D;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 28px;
-  cursor: pointer;
-  border-radius: 12px;
-  z-index: 30;
-  opacity: 0;
-  transition: opacity 0.2s ease, background 0.2s ease;
-  user-select: none;
-}
-.reader-wrapper:hover .pc-page-arrow { opacity: 0.85; }
-.pc-page-arrow:hover { opacity: 1 !important; background: rgba(20, 38, 62, 0.9); border-color: #E8C96D; }
-.pc-page-arrow.left { left: 12px; }
-.pc-page-arrow.right { right: 12px; }
-
-/* Модали ёвари Алия */
-.aliya-reader-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(4, 10, 20, 0.85);
-  backdrop-filter: blur(8px);
-  z-index: 2000;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 16px;
-}
-.aliya-reader-modal.on { display: flex; }
-.aliya-reader-panel {
-  width: 100%;
-  max-width: 580px;
-  max-height: 85vh;
-  background: linear-gradient(180deg, #142236, #0D1B2A);
-  border: 1px solid rgba(201, 168, 76, 0.35);
-  border-radius: 20px;
-  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-  display: flex;
-  flex-direction: column;
-  overflow: hidden;
-  color: #F0EAD6;
-}
-.aliya-rp-head {
-  padding: 14px 18px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  border-bottom: 1px solid rgba(201, 168, 76, 0.18);
-  background: rgba(13, 27, 42, 0.6);
-}
-.aliya-rp-title { font-weight: 800; font-size: 15px; color: #E8C96D; display: flex; align-items: center; gap: 8px; }
-.aliya-rp-close { background: transparent; border: 0; color: #A8B8CC; font-size: 22px; cursor: pointer; }
-.aliya-rp-body { padding: 16px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; flex: 1; }
-.aliya-rp-actions-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.aliya-rp-btn {
-  background: #1A2D44;
-  border: 1px solid rgba(201, 168, 76, 0.22);
-  border-radius: 12px;
-  padding: 10px;
-  color: #F0EAD6;
-  font-size: 12px;
-  font-weight: 700;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  transition: all 0.18s ease;
-}
-.aliya-rp-btn:hover { background: rgba(201, 168, 76, 0.15); border-color: #E8C96D; }
-.aliya-rp-result {
-  background: #0B1726;
-  border: 1px solid rgba(201, 168, 76, 0.18);
-  border-radius: 12px;
-  padding: 12px;
-  font-size: 13px;
-  line-height: 1.6;
-  min-height: 120px;
-  max-height: 280px;
-  overflow-y: auto;
-  white-space: pre-wrap;
-  color: #D1D9E6;
-}
-</style>
 
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
 
-<style id="reader-notes-v159">
-.notes-btn{position:relative}
-.notes-badge{position:absolute;top:-4px;right:-4px;min-width:16px;height:16px;border-radius:8px;background:#C9A84C;color:#fff;font-size:9.5px;font-weight:800;display:grid;place-items:center;padding:0 4px;line-height:1;pointer-events:none}
-.notes-badge[hidden]{display:none}
-.notes-panel{width:auto}
-.notes-panel #notesList{padding-top:2px}
-.light-reading .notes-panel.at-navy{--at-card:#FFFFFF;--at-card2:#F6F1E6;--at-line:rgba(0,0,0,.10);--at-gold:#8A6A15;--at-txt:#1A1F29;--at-mut:#5B6575;--at-nm:#9A6B00;--at-acc:#C9A84C;--at-accTxt:#fff}
-.light-reading .notes-panel .at-nt-card{box-shadow:0 2px 10px rgba(0,0,0,.05)}
-</style>
+
 <script src="./aliya/aliya-tasks.js?v=161" defer></script>
-<style id="aliya-overlay-style">
-#aliyaOverlay{position:fixed;inset:0;z-index:2147482000;background:#0b1626;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .22s ease,transform .22s ease,visibility 0s linear .22s}
-#aliyaOverlay.open{opacity:1;visibility:visible;transform:none;transition:opacity .22s ease,transform .22s ease}
-#aliyaOverlay iframe{width:100%;height:100%;border:0;display:block;background:#0b1626}
-html.aliya-open,html.aliya-open body{overflow:hidden}
-</style>
-<script src="reader-curl.js?v=20261121-r2"></script></head>
+
+<link rel="stylesheet" href="assets/css/reader.css?v=clean-1">
+<script src="reader-curl.js?v=clean-1"></script>
+<script src="reader-gestures.js?v=clean-1"></script>
+</head>
 <body class="light-reading">
 <div class="reader-wrapper">
   
@@ -1368,7 +533,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
       $('loading').classList.remove('on');
       return;
     }
-    window.__kkTextMode = 'pdf';
+    window.__kkTextMode = 'pdf'; $('stage').classList.add('pdf-gesture-mode');
     window.__kkScrollWrap = null;
     try {
       try {
@@ -1524,7 +689,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
 
   function turnPage(d) {
     if (window.__altPager) { try { window.__altPager(d); } catch (e) {} return; }
-    if (rendering || approvedCurlSettling) return;
+    if (rendering || readerCurlBusy) return;
     const n = page + d;
     if (n < 1 || n > pages) return;
     renderPage(n, d);
@@ -1532,27 +697,13 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
 
   // v100: ОДИН тап по книге = чистый экран (спрятать/показать панели И лайки) — как в PDF.
   // EPUB вызывает это изнутри iframe: window.parent.__kkToggleBars()
-  window.__kkToggleBars = function () {
-    bars = !bars;
-    if ($('topBar')) $('topBar').classList.toggle('hidden', !bars);
-    if ($('bottomBar')) $('bottomBar').classList.toggle('hidden', !bars);
-    // лайки у правого края тоже прячутся — не мешают читать
-    document.querySelectorAll('.reader-reactions').forEach(el => el.classList.toggle('hidden', !bars));
-  };
-
-  let approvedIdleTimer = null, approvedSuppressClickUntil=0;
-  function approvedIdleReset(){clearTimeout(approvedIdleTimer);if(document.hidden||!bars)return;approvedIdleTimer=setTimeout(()=>{if(bars&&!document.hidden&&!document.querySelector('.settings-panel.open,#aliyaOverlay.open,.reaction-sheet.open'))window.__kkToggleBars();},15000)}
-  const approvedToggleBars=window.__kkToggleBars;
-  window.__kkToggleBars=function(){approvedToggleBars();approvedIdleReset()};
-  document.addEventListener('pointerdown',approvedIdleReset,{passive:true});
-  document.addEventListener('keydown',approvedIdleReset);
-  document.addEventListener('visibilitychange',approvedIdleReset);
-  window.addEventListener('pagehide',()=>clearTimeout(approvedIdleTimer));approvedIdleReset();
   $('readerMain').addEventListener('click', e => {
-    if(Date.now()<approvedSuppressClickUntil)return;
-    if(e.target.closest('button,a,input,textarea,select,.page-nav-area,.reader-reactions,.reader-top-bar,.reader-bottom-bar'))return;
-    const r=$('readerMain').getBoundingClientRect(),x=(e.clientX-r.left)/r.width;
-    if(x<.18){turnPage(-1);return}if(x>.82){turnPage(1);return}
+    if (e.target.closest('.reader-reactions,.reader-top-bar,.reader-bottom-bar,.panel,.aliya-reader-launch')) return;
+    if (window.__kkTextMode === 'pdf') {
+      const r=$('readerMain').getBoundingClientRect(),x=(e.clientX-r.left)/r.width;
+      if (x<.15) { turnPage(-1); armReaderIdle(); return; }
+      if (x>.85) { turnPage(1); armReaderIdle(); return; }
+    }
     window.__kkToggleBars();
   });
 
@@ -1581,51 +732,8 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     setTimeout(() => { el.style.transition = ''; el.style.transformOrigin = ''; }, 280);
   }
 
-  // Actual PDF mesh curl. Commit goes through original renderPage/saveProgress.
-  // Slow PDF decode or unavailable WebGL falls back to original renderer.
-  let approvedCurlState=null,approvedCurlPending=false,approvedCurlGen=0,approvedCurlX=0,approvedCurlSettling=false;
-  function approvedCurlCleanup(){approvedCurlGen++;approvedCurlPending=false;const st=approvedCurlState;approvedCurlState=null;if(st){st.old.style.visibility=st.oldVisibility;st.scene.remove();st.renderer.destroy()} }
-  function approvedCurlDraw(st,p){st.progress=Math.max(0,Math.min(1,p));st.renderer.draw(st.dir>0?st.progress:1-st.progress)}
-  function approvedCurlMove(dx,dy){
-    approvedCurlX=dx;
-    if(approvedCurlSettling||(window.__kkTextMode&&window.__kkTextMode!=='pdf')||window.__altPager||zoom>1.001||reducedMotion()||!window.KKCreatePDFCurl||!pdf||rendering||Math.abs(dx)<11||Math.abs(dx)<Math.abs(dy)*1.15)return false;
-    if(approvedCurlState){const st=approvedCurlState;if((dx<0?1:-1)!==st.dir){approvedCurlDraw(st,0);return true}approvedCurlDraw(st,Math.abs(dx)/st.width*1.25);return true}
-    if(approvedCurlPending)return false;
-    const dir=dx<0?1:-1,target=page+dir,old=cvEl();if(!old||target<1||target>pages)return false;
-    const gen=++approvedCurlGen;approvedCurlPending=true;
-    (async()=>{let task;try{
-      const p=await pdf.getPage(target);if(gen!==approvedCurlGen)return;
-      const box=pageBox(),nat=p.getViewport({scale:1}),fit=Math.min(box.w/nat.width,box.h/nat.height)*zoom,dpr=Math.min(devicePixelRatio||1,2),vp=p.getViewport({scale:fit*dpr}),next=document.createElement('canvas');next.width=Math.max(1,Math.round(vp.width));next.height=Math.max(1,Math.round(vp.height));const ctx=next.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,next.width,next.height);task=p.render({canvasContext:ctx,viewport:vp});await task.promise;
-      if(gen!==approvedCurlGen||cvEl()!==old)return;
-      const rect=old.getBoundingClientRect();if(rect.width<1||rect.height<1)return;
-      const scene=document.createElement('div');scene.setAttribute('aria-hidden','true');scene.style.cssText='position:fixed;pointer-events:none;z-index:35;overflow:visible;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;height:'+rect.height+'px;';
-      const under=document.createElement('canvas');under.width=dir>0?next.width:old.width;under.height=dir>0?next.height:old.height;under.getContext('2d').drawImage(dir>0?next:old,0,0,under.width,under.height);under.style.cssText='position:absolute;inset:0;width:100%;height:100%';
-      const mesh=document.createElement('canvas');mesh.width=Math.round(rect.width*dpr);mesh.height=Math.round(rect.height*dpr);mesh.style.cssText='position:absolute;inset:0;width:100%;height:100%';scene.append(under,mesh);
-      let renderer;try{renderer=window.KKCreatePDFCurl(mesh,dir>0?old:next,rect.width,rect.height,dir)}catch(e){return}
-      if(gen!==approvedCurlGen){renderer.destroy();return}
-      const st={scene,renderer,old,oldVisibility:old.style.visibility,dir,target,width:rect.width,progress:0};approvedCurlState=st;document.body.append(scene);old.style.visibility='hidden';resetSlotInstant($('currentSlot'));approvedCurlDraw(st,Math.abs(approvedCurlX)/rect.width*1.25);
-    }catch(e){/* original gesture is still available */}finally{if(gen===approvedCurlGen)approvedCurlPending=false}})();return false;
-  }
-  function approvedCurlEnd(commit){
-    if(!approvedCurlState){approvedCurlGen++;approvedCurlPending=false;return false}
-    const st=approvedCurlState;commit=commit&&((approvedCurlX<0?1:-1)===st.dir);approvedCurlSettling=true;approvedSuppressClickUntil=Date.now()+650;
-    const from=st.progress,to=commit?1:0,start=performance.now();
-    function frame(now){if(st!==approvedCurlState){approvedCurlSettling=false;return}const t=Math.min(1,(now-start)/240),p=from+(to-from)*(1-Math.pow(1-t,3));approvedCurlDraw(st,p);if(t<1){requestAnimationFrame(frame);return}if(commit){renderPage(st.target,0).finally(()=>{approvedCurlCleanup();approvedCurlSettling=false})}else{approvedCurlCleanup();approvedCurlSettling=false}}
-    requestAnimationFrame(frame);return true;
-  }
-  stageEl.addEventListener('touchcancel',()=>{approvedCurlEnd(false);drag=false;isPinching=false},{passive:true});
-  window.addEventListener('resize',()=>{approvedCurlCleanup();approvedCurlSettling=false});
-  window.addEventListener('pagehide',approvedCurlCleanup);
-  window.addEventListener('blur',()=>{approvedCurlCleanup();approvedCurlSettling=false;approvedMouse=null;});
-  let approvedMouse=null;
-  stageEl.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0||!e.target.closest('canvas')||zoom>1.001)return;approvedMouse={x:e.clientX,y:e.clientY,t:performance.now(),moved:false};stageEl.setPointerCapture?.(e.pointerId)});
-  stageEl.addEventListener('pointermove',e=>{if(!approvedMouse)return;const dx=e.clientX-approvedMouse.x,dy=e.clientY-approvedMouse.y;if(Math.abs(dx)>11){approvedMouse.moved=true;approvedCurlMove(dx,dy)}});
-  stageEl.addEventListener('pointerup',e=>{if(!approvedMouse)return;const m=approvedMouse;approvedMouse=null;const dx=e.clientX-m.x,dy=e.clientY-m.y,commit=Math.abs(dx)>Math.abs(dy)*1.2&&(Math.abs(dx)>50||(Math.abs(dx)>25&&performance.now()-m.t<250));if(!approvedCurlEnd(commit)&&commit){approvedSuppressClickUntil=Date.now()+450;turnPage(dx<0?1:-1)}else if(m.moved)approvedSuppressClickUntil=Date.now()+450});
-  stageEl.addEventListener('pointercancel',()=>{approvedMouse=null;approvedCurlEnd(false)});
-
   stageEl.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
-      approvedCurlCleanup();
       drag = false;
       isPinching = true;
       clearTimeout(zoomCommitTimer);
@@ -1636,6 +744,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
       return;
     }
     if (e.touches.length !== 1 || isPinching) return;
+    if (window.KKReaderCurlController && window.__kkTextMode === 'pdf') return;
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     startTime = Date.now();
@@ -1652,7 +761,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
           setScrollZoom(Math.max(70, Math.min(220, Math.round(pinchStartZoom * factor * 100))), false);
           return;
         }
-        if (window.__kkTextMode&&window.__kkTextMode!=='pdf') return;
+        if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
         // два пальца: масштаб вокруг точки между пальцами + сдвиг страницы вслед за пальцами
         const z1 = clampZoom(pinchStartZoom * factor);
         const m = getMid(e);
@@ -1667,10 +776,9 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
       return;
     }
     if (!drag || e.touches.length !== 1 || isPinching) return;
-    if (window.__kkTextMode&&window.__kkTextMode!=='pdf') return;
+    if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
     const dx = e.touches[0].clientX - sx;
     const dy = e.touches[0].clientY - sy;
-    if(approvedCurlMove(dx,dy)){dragged=true;return;}
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
       const currentSlot = $('currentSlot');
       const pct = Math.min(1, Math.abs(dx) / 220);
@@ -1687,7 +795,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
       if (!e.touches || e.touches.length < 2) {
         isPinching = false;
         pinchStartDist = 0;
-        if ((!window.__kkTextMode||window.__kkTextMode==='pdf') && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
+        if ((!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
           clearTimeout(zoomCommitTimer);
           renderPage(page, 0);   // чёткая перерисовка; сдвиг и масштаб подменяются в одном кадре — без скачка
         }
@@ -1702,15 +810,53 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     const currentSlot = $('currentSlot');
     // один палец — только листание (страница при этом остаётся на месте, даже при увеличении)
     const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
-    if(approvedCurlEnd(wantTurn)){return;}
     if (wantTurn) {
-      approvedSuppressClickUntil=Date.now()+450;
       turnPage(dx < 0 ? 1 : -1);
       if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);   // край книги — вернуть на место
       return;
     }
     if (dragged) restoreSlot(currentSlot);
   }, { passive: true });
+
+  // A single visibility state for panels, reactions and the 15-second idle timer.
+  let readerIdleTimer = null;
+  function setReaderBars(visible) {
+    bars = !!visible;
+    [$('topBar'), $('bottomBar'), $('readerAliyaBtn'), ...document.querySelectorAll('.reader-reactions')].filter(Boolean).forEach(node => node.classList.toggle('hidden', !bars));
+    armReaderIdle();
+  }
+  function armReaderIdle() {
+    clearTimeout(readerIdleTimer);
+    if (!bars || document.hidden) return;
+    readerIdleTimer = setTimeout(() => {
+      if (document.querySelector('.panel.open,.at-sheet.on,.at-dlg-bg.on,#aliyaOverlay.open') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) { armReaderIdle(); return; }
+      setReaderBars(false);
+    }, 15000);
+  }
+  window.__kkToggleBars = function () { setReaderBars(!bars); };
+  ['pointerdown','keydown','input','wheel'].forEach(type => document.addEventListener(type, armReaderIdle, { passive:true }));
+  document.addEventListener('visibilitychange',armReaderIdle);
+  window.addEventListener('pagehide',()=>clearTimeout(readerIdleTimer));
+  armReaderIdle();
+  let readerCurlBusy = false;
+  async function renderCurlPreview(n) {
+    const p = await pdf.getPage(n), box = pageBox(), nat = p.getViewport({scale:1});
+    const fit = Math.min(box.w/nat.width,box.h/nat.height)*zoom;
+    let dpr = Math.min(devicePixelRatio || 1,2);
+    while (dpr>1 && nat.width*nat.height*fit*fit*dpr*dpr>14e6) dpr=Math.max(1,dpr-.25);
+    const vp=p.getViewport({scale:fit*dpr}), cv=document.createElement('canvas');
+    cv.width=Math.max(1,Math.round(vp.width));cv.height=Math.max(1,Math.round(vp.height));
+    cv.style.width=nat.width*fit+'px';cv.style.height=nat.height*fit+'px';
+    const ctx=cv.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+    await p.render({canvasContext:ctx,viewport:vp}).promise;return cv;
+  }
+  window.KKReaderCurlController = window.KKAttachReaderGestures({
+    stage:$('stage'),container:$('pageContainer'),
+    state:()=>({ready:!!pdf && !rendering && !readerCurlBusy && window.__kkTextMode==='pdf',page,pages,zoom}),
+    current:()=>cvEl(), preview:renderCurlPreview,
+    busy:value=>{readerCurlBusy=value;},
+    commit:async n=>{await renderPage(n,0);},activity:armReaderIdle
+  });
 
   function setTheme(t) {
     const light = t === 'light';
@@ -1748,7 +894,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
   }
   // v132: «Баҳо диҳед» + звёзды всегда помещаются целиком — при нехватке места слегка уменьшаются
-  function fitRatingLabel() {const box=document.querySelector('.top-rating');if(box)box.style.zoom='';}
+  function fitRatingLabel() { const box=document.querySelector('.top-rating'); if(box)box.style.zoom=''; }
   window.addEventListener('resize', fitRatingLabel);
   window.addEventListener('orientationchange', fitRatingLabel);
   fitRatingLabel();
@@ -2098,6 +1244,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
   }
   function setLoadText(t) { const el = $('loadStatus'); if (el) el.textContent = t || ''; }
   function hidePdfChrome() {
+    $('stage').classList.remove('pdf-gesture-mode');
     document.querySelectorAll('.page-nav-area').forEach(n => n.style.display = 'none');
     const inp = document.querySelector('.page-entry-box');
     if (inp) inp.style.visibility = 'hidden';

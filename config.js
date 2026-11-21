@@ -87,14 +87,14 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '3.2.1';
+const APP_VERSION = '3.1.4';
 
 const KKH_THEMES = {
- dark:{label:'Шаб',icon:'🌙',bg:'#101c2b',bg2:'#142236',card:'#19283b',card2:'#22354a',text:'#f2ead9',cream:'#f2ead9',muted:'#aabbd0',gold:'#e6bd70',gold2:'#f0cf91',line:'#304054',red:'#e4827b',green:'#80cba0'},
- light:{label:'Рӯз',icon:'☀️',bg:'#f5f6f0',bg2:'#e6eddd',card:'#ffffff',card2:'#eef2e9',text:'#203b34',cream:'#203b34',muted:'#64756b',gold:'#25634e',gold2:'#36775f',line:'#dce4da',red:'#b94a43',green:'#2f8f5b'},
- minimal:{label:'Минимализм',icon:'◌',bg:'#f4f7fb',bg2:'#e9effb',card:'#ffffff',card2:'#edf2fa',text:'#1e304c',cream:'#1e304c',muted:'#61718a',gold:'#315dcc',gold2:'#4770db',line:'#dce4ef',red:'#b94a43',green:'#2f8f5b'}
+  dark: { label: 'Шаб', icon: '🌙', bg: '#101C2B', bg2: '#22354A', card: '#19283B', card2: '#22354A', text: '#F2EAD9', cream: '#F2EAD9', muted: '#B5C1D1', gold: '#E6BD70', gold2: '#E6BD70', line: '#304054', red: '#E48A85', green: '#7AC79D' },
+  light: { label: 'Рӯз', icon: '☀️', bg: '#F5F6F0', bg2: '#E6EDDD', card: '#FFFFFF', card2: '#E6EDDD', text: '#203B34', cream: '#203B34', muted: '#53685F', gold: '#25634E', gold2: '#25634E', line: '#DCE4DA', red: '#B94A43', green: '#2F7855' },
+  minimal: { label: 'Минимализм', icon: '◻', bg: '#F4F7FB', bg2: '#E9EFFB', card: '#FFFFFF', card2: '#E9EFFB', text: '#1E304C', cream: '#1E304C', muted: '#52647B', gold: '#315DCC', gold2: '#315DCC', line: '#DCE4EF', red: '#B94A43', green: '#2F7855' }
 };
-const KKH_THEME_ORDER = ['dark','light','minimal'];
+const KKH_THEME_ORDER = ['dark', 'light', 'minimal'];
 window.KKH_THEMES = KKH_THEMES;
 const KKH_LANGUAGES = { tg: 'Тоҷикӣ', ru: 'Русский', en: 'English' };
 const KKH_TRANSLATIONS = {
@@ -1391,7 +1391,9 @@ function installThemeStyles() {
       --bg:${t.bg}; --bg2:${t.bg2}; --card:${t.card}; --card-2:${t.card2}; --card2:${t.card2};
       --text:${t.text}; --cream:${t.cream}; --muted:${t.muted}; --gold:${t.gold}; --gold2:${t.gold2};
       --line:${t.line}; --border:${t.line}; --red:${t.red}; --green:${t.green};
-      --gold-soft:${t.line}; --card-soft:${t.bg2};
+      --gold-soft:${t.line}; --card-soft:${t.bg2}; --cream-dim:${t.muted}; --dim:${t.muted}; --bg-2:${t.bg2}; --toggle-knob:${name === 'light' ? '#ffffff' : t.gold};
+      --home-bg:${t.bg}; --home-card:${t.card}; --home-text:${t.text}; --home-muted:${t.muted};
+      --home-accent:${t.gold}; --home-line:${t.line}; --home-soft:${t.bg2};
     }
   `).join('');
   document.head.appendChild(style);
@@ -1402,7 +1404,7 @@ function setAppTheme(themeName, persist = true) {
   installThemeStyles();
   document.documentElement.dataset.appTheme = name;
   if (document.body) document.body.dataset.appTheme = name;
-  document.body?.classList.toggle('light-theme', name !== 'dark');
+  document.body?.classList.toggle('light-theme', name === 'light');
   if (persist) localStorage.setItem('kk_theme', name);
   const t = KKH_THEMES[name];
   const themeBtn = document.getElementById('themeBtn');
@@ -1412,7 +1414,7 @@ function setAppTheme(themeName, persist = true) {
   return name;
 }
 
-function getAppTheme() { const t=localStorage.getItem('kk_theme')||'dark'; return KKH_THEMES[t]?t:'dark'; }
+function getAppTheme() { const saved = localStorage.getItem('kk_theme'); return KKH_THEMES[saved] ? saved : 'dark'; }
 
 
 function normalizeBookUrl(url) {
@@ -2649,7 +2651,7 @@ async function registerFcmToken(recoveryAttempt = false) {
     const messagingDbReady = await inspectFirebaseMessagingDatabase();
     if (!messagingDbReady) return null;
     await loadFirebaseMessagingSdk();
-    const registration = await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
+    const registration = await navigator.serviceWorker.register('./sw.js');
     const messaging = firebase.messaging();
     const currentToken = await messaging.getToken({
       serviceWorkerRegistration: registration,
@@ -2838,7 +2840,7 @@ function getCoverUrl(url) { return getCoverUrlCandidates(url)[0] || String(url |
   function choose(s,now){const personal=[],anonymous=[],keys=[];for(const [key,r] of Object.entries(s.records||{})){const dur=Number(r.duration)||0;if(dur>=600&&Number(r.readyAt||0)<=now){personal.push(r);keys.push(key)}else if(dur>0&&dur<600&&Number(r.anonymousDueAt||0)<=now){anonymous.push(r);keys.push(key)}}return{personal,anonymous,keys}}
   function makeInflight(s){const picked=choose(s,Date.now());if(!picked.keys.length)return null;const batch={batch_id:'read_'+id(),personal:picked.personal,anonymous:picked.anonymous,keys:picked.keys,retryAt:Date.now()};for(const k of picked.keys)delete s.records[k];s.inflight=batch;write(s);return batch}
   async function flush(){if(running)return;if(isActive()){if(timer)clearTimeout(timer);timer=setTimeout(flush,60*1000);return}if(!navigator.onLine||!localStorage.getItem('kk_token')){if(timer)clearTimeout(timer);timer=setTimeout(flush,5*60*1000);return}const lastOk=Number(localStorage.getItem(LAST_OK)||0);if(lastOk&&Date.now()-lastOk<MIN_SYNC_MS){if(timer)clearTimeout(timer);timer=setTimeout(flush,Math.max(1000,lastOk+MIN_SYNC_MS-Date.now()));return}running=true;try{const s=read(),batch=s.inflight||makeInflight(s);if(!batch||Number(batch.retryAt||0)>Date.now())return;const r=await fetchWithTimeout(KITOB_CONFIG.EDGE_API_BASE+'/api/reading-sync',{method:'POST',headers:{Authorization:'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},cache:'no-store',body:JSON.stringify({batch_id:batch.batch_id,personal:batch.personal,anonymous:batch.anonymous})},20000);if(!r.ok)throw Error('HTTP '+r.status);const current=read();if(current.inflight?.batch_id===batch.batch_id)current.inflight=null;write(current);try{localStorage.setItem(LAST_OK,String(Date.now()))}catch(e){}const uid=localStorage.getItem('kk_user_id');if(uid){localStorage.removeItem('kk_avatar_eligibility_'+uid);if(typeof CacheManager!=='undefined'){CacheManager.invalidateKey('kk_cache_sessions');CacheManager.invalidateKey('kk_cache_sessions_'+encodeURIComponent(uid))}}}catch(e){const s=read();if(s.inflight)s.inflight.retryAt=Date.now()+30*60*1000;/* v104: 30 мин вместо 60 с — не будим сервер при сбое */write(s)}finally{running=false;schedule()}}
-  function nextDue(){const s=read();if(s.inflight)return Number(s.inflight.retryAt||Date.now());let n=Infinity;for(const r of Object.values(s.records||{})){const d=Number(r.duration)||0;n=Math.min(n,d>=600?Number(r.readyAt||Infinity):Number(r.anonymousDueAt||Infinity))}const lo=Number(localStorage.getItem(LAST_OK)||0);if(lo&&lo+MIN_SYNC_MS<n)n=lo+MIN_SYNC_MS;return n}
+  function nextDue(){const s=read();if(s.inflight)return Number(s.inflight.retryAt||Date.now());let n=Infinity;for(const r of Object.values(s.records||{})){const d=Number(r.duration)||0;n=Math.min(n,d>=600?Number(r.readyAt||Infinity):Number(r.anonymousDueAt||Infinity))}const lo=Number(localStorage.getItem(LAST_OK)||0);if(Number.isFinite(n)&&lo)n=Math.max(n,lo+MIN_SYNC_MS);return n}
   function schedule(){if(timer)clearTimeout(timer);const due=nextDue();if(Number.isFinite(due))timer=setTimeout(flush,Math.max(1000,Math.min(24*60*60*1000,due-Date.now())))}
   function migrate(){try{const old=JSON.parse(localStorage.getItem(LEGACY)||'[]');if(Array.isArray(old))old.forEach(add);localStorage.removeItem(LEGACY)}catch(e){}}
   window.KKReadingSyncV2={add,active,closed,flush,state:read};migrate();window.addEventListener('online',flush);if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{schedule();setTimeout(flush,1500)},{once:true});else{schedule();setTimeout(flush,1500)}
@@ -2919,29 +2921,23 @@ async function acknowledgeCacheControl(cfg){
 // ва равзанаи «Навсозӣ» дар 92% меистод; ҳангоми хатогӣ равзана ҳеҷ гоҳ пӯшида намешуд.
 function kkWithTimeout(promise,ms){return Promise.race([Promise.resolve(promise).catch(()=>{}),new Promise(r=>setTimeout(r,ms))])}
 async function checkRemoteCacheControl(){
-  if(cacheControlBusy||document.hidden||navigator.onLine===false)return;
-  // Shared browser TTL avoids one cache-control wakeup per tab. No recurring timer.
-  const cacheCheckKey='kk_cache_control_checked_at_v2';let last=0;
-  try{last=Number(localStorage.getItem(cacheCheckKey)||0)}catch(e){}
-  if(last&&Date.now()-last<30*60*1000)return;
-  try{localStorage.setItem(cacheCheckKey,String(Date.now()))}catch(e){}
-  cacheControlBusy=true;
+  if(cacheControlBusy||document.hidden||navigator.onLine===false)return;const last=Number(sessionStorage.getItem('kk_cache_control_checked_at')||0);if(Date.now()-last<30*60*1000)return;sessionStorage.setItem('kk_cache_control_checked_at',String(Date.now()));cacheControlBusy=true;
   let progress=null,finished=false,refreshApp=false;
   const hardStop=setTimeout(()=>{if(progress&&!finished){finished=true;progress.done('Барнома нав шуд');if(refreshApp)setTimeout(()=>location.reload(),500)}},20000);
   try{
     const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),10000);
     const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store',signal:ctrl.signal}).finally(()=>clearTimeout(t));if(!r.ok)return;const cfg=await r.json();
     const app=Number(cfg.app_version)||1,pdf=Number(cfg.pdf_version)||1,oldApp=Number(localStorage.getItem('kk_remote_app_cache_version')||1),oldPdf=Number(localStorage.getItem('kk_remote_pdf_cache_version')||1);
-    refreshApp=app>oldApp;const clearPdf=pdf>oldPdf;if(!refreshApp&&!clearPdf)return;
+    refreshApp=app>oldApp;const clearPdf=false;/* Downloaded books are user data: remote versions never erase them. */if(!refreshApp)return;
     progress=typeof beginActionProgress==='function'?beginActionProgress(cfg.message||'Навсозии барнома...'):null;
     // версияҳо пеш аз ҳама сабт мешаванд — пас аз reload такрор намешавад
-    localStorage.setItem('kk_remote_app_cache_version',String(app));localStorage.setItem('kk_remote_pdf_cache_version',String(pdf));
+    localStorage.setItem('kk_remote_app_cache_version',String(app));/* Keep the acknowledged PDF version unchanged: files were NOT erased. */
     progress?.set(25,clearPdf?'Кэш ва китобҳои захирашуда тоза мешаванд...':'Кэши кӯҳна тоза мешавад...');
     await kkWithTimeout(clearApplicationCaches({clearApp:refreshApp,clearPdfs:clearPdf}),8000);
     progress?.set(65,'Версияи нав гирифта мешавад...');
     if(navigator.serviceWorker?.getRegistration){await kkWithTimeout(navigator.serviceWorker.getRegistration().then(reg=>reg&&reg.update()),6000)}
     progress?.set(90);
-    acknowledgeCacheControl(cfg);
+    acknowledgeCacheControl({...cfg,pdf_version:oldPdf});
     if(!finished){finished=true;progress?.done(clearPdf?'Кэш ва китобҳои захирашуда нав шуданд':'Барнома нав шуд')}
     if(refreshApp)setTimeout(()=>{try{sessionStorage.setItem('kk_splash_seen','1')}catch(e){}location.reload()},700);
   }catch(e){
@@ -3040,13 +3036,10 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
           t.querySelector('.kk-update-now').onclick=()=>{try{sessionStorage.setItem('kk_splash_seen','1')}catch(e){}location.reload()};
           t.querySelector('.kk-update-later').onclick=()=>t.remove();
           document.body.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));
-          // Keep the update action visible until the user chooses; never reload mid-edit/reading.
+          setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},25000);
         }catch(e){}};
         if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show();
       });
     }
   }catch(e){}
 })();
-
-/* Approved UI: local only, no startup health checks or request timers. */
-(function(){var src=document.currentScript?.src||'';var base=src.replace(/config\.js.*$/,'');function attach(){if(!document.getElementById('kk-approved-css')){var l=document.createElement('link');l.id='kk-approved-css';l.rel='stylesheet';l.href=base+'assets/css/approved-ui.css?v=20261121-r2';document.head.appendChild(l)}if(!document.getElementById('kk-approved-js')){var j=document.createElement('script');j.id='kk-approved-js';j.src=base+'approved-ui.js?v=20261121-r2';document.head.appendChild(j)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});else attach()})();

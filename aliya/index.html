@@ -8,7 +8,9 @@
   <link rel="icon" type="image/x-icon" href="../favicon.ico">
   <link rel="stylesheet" href="aliya-ui.css?v=159">
   <link rel="stylesheet" href="aliya-desktop.css?v=159">
-<style>.history-search-wrap{flex:0 0 auto!important;min-height:38px!important;height:38px!important;max-height:38px!important;align-items:center!important}#historySearch{height:36px!important;min-height:0!important;flex:1 1 auto!important;padding:8px!important;line-height:20px!important}</style><style>#aliyaHistoryTrigger{width:37px;height:37px;min-width:37px;background:var(--aliya-card,#19283b);border-radius:11px;box-shadow:none;transform:none}#aliyaHistoryTrigger svg{width:22px;height:22px;position:static;transform:none}.aliya-header-left{gap:8px}.history-search-wrap{overflow:hidden;box-sizing:border-box}.history-panel{min-height:0}.history-list{min-height:0;overflow-y:auto}.aliya-wait-emblem svg{animation:kkAliaSpin 8s infinite}@keyframes kkAliaSpin{0%{transform:rotate(0)}40%{transform:rotate(45deg)}70%{transform:rotate(325deg)}100%{transform:rotate(360deg)}}@media(prefers-reduced-motion:reduce){.aliya-wait-emblem svg{animation:none}}</style></head>
+  <link rel="stylesheet" href="aliya-theme.css?v=clean-1">
+  <script src="aliya-theme.js?v=clean-1"></script>
+</head>
 <body class="at-aliya">
   <div class="aliya-app">
     <!-- Header -->
@@ -16,7 +18,7 @@
       <div class="aliya-header-left">
         <a href="../index.html" class="aliya-back-btn" title="Бозгашт ба Китобхона" aria-label="Бозгашт">‹</a>
         <div class="aliya-brand">
-          <button type="button" class="aliya-avatar-3d" id="aliyaHistoryTrigger" title="Чатҳо ва таърих" aria-label="Кушодани чатҳо ва таърих" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"><path d="M4 6h16M4 12h12M4 18h16"/></svg></button>
+          <button type="button" class="aliya-avatar-3d" id="aliyaHistoryTrigger" title="Чатҳо ва таърих" aria-label="Кушодани чатҳо ва таърих" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 6h16M4 12h16M4 18h16"/></svg></button>
           <div class="aliya-title-wrap">
             <h1>АЛИЯ</h1>
             <span id="currentChatTitle">Чати нав</span>
@@ -333,7 +335,7 @@
       try{var savedProfile=JSON.parse(localStorage.getItem(PROFILE_KEY)||'{}');personalProfile={name:String(savedProfile.name||'').slice(0,80),city:String(savedProfile.city||'').slice(0,100),about:String(savedProfile.about||'').slice(0,1200),facts:Array.isArray(savedProfile.facts)?savedProfile.facts.map(String).map(function(x){return x.slice(0,300);}).slice(0,30):[]};}catch(e){}
       function buildProfileContext(){var parts=[];if(personalProfile.name)parts.push('Ном: '+personalProfile.name);if(personalProfile.city)parts.push('Шаҳр: '+personalProfile.city);if(personalProfile.about)parts.push('Дар бораи корбар: '+personalProfile.about);if(personalProfile.facts.length)parts.push('Далелҳои интихобшуда: '+personalProfile.facts.join(' | '));return parts.join('\n').slice(0,5000);}
       if(window.AliyaCore&&window.AliyaCore.state)window.AliyaCore.state.profileContext=settingsPrefs.includeProfileContext?buildProfileContext():'';
-      function applyTheme(){document.documentElement.classList.toggle('aliya-light',!settingsPrefs.darkTheme);document.documentElement.style.colorScheme=settingsPrefs.darkTheme?'dark':'light';var meta=document.querySelector('meta[name="theme-color"]');if(meta)meta.content=settingsPrefs.darkTheme?'#0E0F12':'#F7F6F4';}
+      function applyTheme(persist){var t=window.KitobkhonaAliyaTheme;if(!t)return;var chosen=persist?(settingsPrefs.darkTheme?'dark':'light'):t.read();t.apply(chosen,!!persist);settingsPrefs.darkTheme=chosen==='dark';}
       applyTheme();
       var historyStorageWarningShown = false;
 
@@ -966,7 +968,7 @@
       profileNameInput.value=personalProfile.name; profileCityInput.value=personalProfile.city;
       profileAboutInput.value=personalProfile.about; profileFactsInput.value=personalProfile.facts.join('\n');
       includeProfileToggle.checked=settingsPrefs.includeProfileContext;
-      darkThemeToggle.addEventListener('change',function(){settingsPrefs.darkTheme=darkThemeToggle.checked;applyTheme();saveSettingsPrefs();});
+      darkThemeToggle.addEventListener('change',function(){settingsPrefs.darkTheme=darkThemeToggle.checked;applyTheme(true);saveSettingsPrefs();});
       saveHistoryToggle.addEventListener('change',function(){
         settingsPrefs.saveHistory=saveHistoryToggle.checked; saveSettingsPrefs();
         if(!settingsPrefs.saveHistory){
@@ -1347,5 +1349,5 @@
     })();
   </script>
 <script src="aliya-brand-animation.js?v=1" defer></script>
-<link rel="stylesheet" href="approved-aliya.css?v=20261121-r2"><script src="approved-aliya.js?v=20261121-r2"></script></body>
+</body>
 </html>

@@ -1,0 +1,5 @@
+html[data-app-theme="dark"]{--bg:#101c2b;--bg2:#22354a;--card:#19283b;--card2:#22354a;--gold:#e6bd70;--gold2:#e6bd70;--text:#f2ead9;--text-dim:#c6ced8;--muted:#b5c1d1;--dim:#91a3ba;--border:#304054;--border-strong:#50647b;--soft:#22354a}
+html[data-app-theme="light"]{--bg:#f5f6f0;--bg2:#e6eddd;--card:#fff;--card2:#e6eddd;--gold:#25634e;--gold2:#25634e;--text:#203b34;--text-dim:#53685f;--muted:#53685f;--dim:#6c8176;--border:#dce4da;--border-strong:#9bb2a3;--soft:#e6eddd}
+html[data-app-theme="minimal"]{--bg:#f4f7fb;--bg2:#e9effb;--card:#fff;--card2:#e9effb;--gold:#315dcc;--gold2:#315dcc;--text:#1e304c;--text-dim:#52647b;--muted:#52647b;--dim:#6b7a90;--border:#dce4ef;--border-strong:#a0b2d4;--soft:#e9effb}
+html[data-app-theme]{--gold-glow:transparent;--shadow:0 8px 26px #00000012;--danger:#c35e57;--success:#4c9b72}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}

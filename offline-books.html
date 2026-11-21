@@ -8,33 +8,10 @@
   <title>Китобҳои захирашуда · Китобхона</title>
   <link rel="icon" href="./favicon.ico">
   <link rel="manifest" href="./manifest.json">
-  <script src="./config.js?v=20261121-r2"></script>
-  <style>
-    :root{color-scheme:dark;--bg:#0D1B2A;--panel:#142236;--card:#1A2D44;--card2:#1E3350;--gold:#C9A84C;--gold2:#E8C96D;--text:#F0EAD6;--muted:#A8B8CC;--line:rgba(201,168,76,.22);--safe-top:env(safe-area-inset-top,0px);--safe-bottom:env(safe-area-inset-bottom,0px)}
-    *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-    html,body{min-height:100%;margin:0;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,"Segoe UI",Arial,sans-serif}
-    body{padding-bottom:calc(22px + var(--safe-bottom))}
-    button,input,select{font:inherit}
-    .topbar{position:sticky;top:0;z-index:20;min-height:calc(58px + var(--safe-top));padding:calc(7px + var(--safe-top)) 12px 8px;display:flex;align-items:center;gap:10px;background:rgba(13,27,42,.96);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-    .back,.icon-btn{width:40px;height:40px;flex:0 0 40px;border:1px solid var(--line);border-radius:13px;background:rgba(255,255,255,.045);color:var(--gold2);font-size:20px;cursor:pointer}
-    .head-copy{min-width:0;flex:1}.head-copy b{display:block;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.head-copy span{display:block;color:var(--muted);font-size:10px;margin-top:2px}
-    main{width:min(100%,500px);margin:0 auto;padding:15px 13px 24px}
-    .summary{position:relative;overflow:hidden;border:1px solid rgba(201,168,76,.32);border-radius:20px;padding:16px;background:linear-gradient(135deg,#173250,#13263d 65%,#172537);box-shadow:0 12px 32px rgba(0,0,0,.2)}
-    .summary:after{content:"📚";position:absolute;right:16px;top:12px;font-size:43px;opacity:.14;pointer-events:none}
-    .summary-label{font-size:11px;color:var(--muted);font-weight:750}.summary-main{display:flex;align-items:baseline;gap:8px;margin:5px 0}.summary-count{color:var(--gold2);font-size:27px;font-weight:900}.summary-size{font-size:14px;font-weight:800}.summary-hint{font-size:11px;line-height:1.5;color:#bcc9d7;max-width:85%}
-    .status{display:inline-flex;align-items:center;gap:6px;margin-top:10px;padding:5px 9px;border:1px solid rgba(201,168,76,.22);border-radius:99px;background:rgba(201,168,76,.08);font-size:10px;font-weight:800;color:var(--gold2)}.status-dot{width:7px;height:7px;border-radius:50%;background:#2ecc71;box-shadow:0 0 8px #2ecc71}.status.offline .status-dot{background:#f1a54c;box-shadow:0 0 8px #f1a54c}
-    .toolbar{display:flex;gap:8px;margin:13px 0 10px}.search{min-width:0;flex:1;height:42px;border:1px solid var(--line);border-radius:13px;background:var(--panel);color:var(--text);padding:0 12px;outline:none}.search:focus,.filter:focus{border-color:rgba(232,201,109,.68);box-shadow:0 0 0 3px rgba(201,168,76,.09)}
-    .filter{width:100%;min-height:41px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);padding:0 10px;outline:none;margin-bottom:12px}.filter option,.filter optgroup{background:var(--panel);color:var(--text)}
-    .section-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:13px 2px 9px}.section-row h2{font-size:13px;margin:0}.section-row span{font-size:10px;color:var(--muted)}
-    .book-list{display:grid;gap:9px}.book-card{display:grid;grid-template-columns:58px minmax(0,1fr);gap:10px;border:1px solid rgba(255,255,255,.06);border-radius:16px;background:var(--card);padding:9px;box-shadow:0 6px 18px rgba(0,0,0,.12)}
-    .cover{width:58px;height:76px;border-radius:10px;background:linear-gradient(145deg,#203d5e,#172940);display:flex;align-items:center;justify-content:center;overflow:hidden;color:var(--gold2);font-size:26px}.cover img{width:100%;height:100%;object-fit:cover}.cover-text{display:none;padding:4px;text-align:center;font-size:9px;line-height:1.2;color:#fff;word-break:break-word}
-    .book-main{min-width:0}.book-name{font-size:12.5px;font-weight:800;line-height:1.35;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}.book-meta{margin-top:5px;color:var(--muted);font-size:10px;line-height:1.4;overflow-wrap:anywhere}.book-size{color:var(--gold2);font-weight:800}.book-actions{display:flex;gap:6px;margin-top:8px;flex-wrap:wrap}.action{min-height:31px;padding:6px 9px;border:1px solid var(--line);border-radius:9px;background:rgba(255,255,255,.045);color:var(--text);font-size:10px;font-weight:800;cursor:pointer}.action.primary{background:linear-gradient(135deg,var(--gold2),var(--gold));border-color:transparent;color:#1a1a14}.action.remove{color:#ffb3a9;border-color:rgba(217,107,99,.34)}.action:active,.back:active,.icon-btn:active{transform:scale(.97)}
-    .empty{border:1px dashed rgba(201,168,76,.3);border-radius:17px;padding:24px 18px;text-align:center;background:rgba(20,34,54,.55);color:var(--muted);font-size:12px;line-height:1.6}.empty-icon{font-size:32px;margin-bottom:8px}.empty b{display:block;color:var(--gold2);font-size:14px;margin-bottom:4px}.empty .action{margin-top:12px}
-    .footnote{margin:12px 3px 0;color:#8497ad;font-size:9px;line-height:1.5}
-    .modal{position:fixed;inset:0;z-index:1000;display:none;align-items:flex-end;justify-content:center;padding:12px;background:rgba(0,0,0,.72);backdrop-filter:blur(5px)}.modal.open{display:flex}.dialog{width:min(100%,450px);max-height:86dvh;overflow:auto;border:1px solid rgba(201,168,76,.34);border-radius:21px;padding:16px;background:linear-gradient(160deg,#172940,#0D1B2A);box-shadow:0 20px 60px rgba(0,0,0,.45)}.dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:8px;color:var(--gold2);font-size:15px}.dialog-close{width:34px;height:34px;border:1px solid var(--line);border-radius:50%;background:rgba(255,255,255,.05);color:var(--text);font-size:17px;cursor:pointer}.dialog p{margin:5px 0 12px;color:var(--muted);font-size:11px;line-height:1.55}.dialog label{display:block;font-size:11px;font-weight:800;margin:13px 0 6px}.dialog select{width:100%;height:43px;border:1px solid var(--line);border-radius:12px;background:var(--panel);color:var(--text);padding:0 10px}.dialog-actions{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:14px}.dialog-actions .action{min-height:40px}.toast{position:fixed;left:50%;bottom:calc(22px + var(--safe-bottom));z-index:2000;transform:translate(-50%,12px);opacity:0;pointer-events:none;max-width:90vw;border:1px solid var(--line);border-radius:12px;background:#172940;color:var(--text);padding:10px 14px;font-size:11px;transition:.2s}.toast.show{transform:translate(-50%,0);opacity:1}
-    @media(min-width:520px){body{padding-top:10px}.topbar{border:1px solid var(--line);border-radius:16px;margin:0 auto;width:min(100% - 20px,500px)}}
-  </style>
-<link rel="stylesheet" href="assets/css/approved-ui.css?v=20261121-r2"><script src="approved-ui.js?v=20261121-r2" defer></script><script src="approved-offline-theme.js?v=20261121-r2" defer></script></head>
+  <script src="./config.js?v=75"></script>
+  
+<link rel="stylesheet" href="assets/css/offline-books.css?v=clean-1">
+</head>
 <body>
   <header class="topbar">
     <button class="back" type="button" onclick="location.href='index.html'" aria-label="Бозгашт">←</button>

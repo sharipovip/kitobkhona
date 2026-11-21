@@ -188,12 +188,12 @@
   /*  Услубҳо (як маротиба ворид мешаванд)                                */
   /* ------------------------------------------------------------------ */
   var CSS = [
-    '.at-navy{--at-bg:#06101d;--at-bg2:#0b1729;--at-card:#0D1B2A;--at-card2:#122338;--at-line:rgba(201,168,76,.24);--at-gold:#E8C96D;--at-txt:#F0EAD6;--at-mut:#9fb0c6;--at-acc:#E8C96D;--at-accTxt:#0D1B2A;--at-nm:#F2C55C;--at-glow:rgba(232,201,109,.35)}',
-    '.at-aliya{--at-bg:#0E0F12;--at-bg2:#141519;--at-card:#1A1B20;--at-card2:#222329;--at-line:rgba(242,242,240,.10);--at-gold:#FF8B68;--at-txt:#F2F2F0;--at-mut:#9a9ca4;--at-acc:#FF6A3D;--at-accTxt:#fff;--at-nm:#FFB27A;--at-glow:rgba(255,106,61,.35)}',
+    '.at-navy{--at-bg:var(--bg,#101c2b);--at-bg2:var(--bg2,#22354a);--at-card:var(--card,#19283b);--at-card2:var(--card2,#22354a);--at-line:var(--border,#304054);--at-gold:var(--gold,#e6bd70);--at-txt:var(--text,#f2ead9);--at-mut:var(--muted,#b5c1d1);--at-acc:var(--gold,#e6bd70);--at-accTxt:var(--bg,#101c2b);--at-nm:var(--gold,#e6bd70);--at-glow:transparent}',
+    '.at-aliya{--at-bg:var(--bg,#101c2b);--at-bg2:var(--bg2,#22354a);--at-card:var(--card,#19283b);--at-card2:var(--card2,#22354a);--at-line:var(--border,#304054);--at-gold:var(--gold,#e6bd70);--at-txt:var(--text,#f2ead9);--at-mut:var(--muted,#b5c1d1);--at-acc:var(--gold,#e6bd70);--at-accTxt:var(--bg,#101c2b);--at-nm:var(--gold,#e6bd70);--at-glow:transparent}',
     '.at-tasks{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}',
     '.at-task{min-height:64px;border-radius:14px;border:1px solid var(--at-line);background:var(--at-card);color:var(--at-txt);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;padding:7px 4px;font:inherit;cursor:pointer;transition:border-color .15s,transform .1s,background .15s;-webkit-tap-highlight-color:transparent}',
-    '.at-task .at-ti{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;background:rgba(232,201,109,.13)}',
-    '.at-aliya .at-task .at-ti{background:rgba(255,106,61,.14)}',
+    '.at-task .at-ti{width:28px;height:28px;border-radius:9px;display:grid;place-items:center;font-size:15px;background:var(--at-card2)}',
+    '.at-aliya .at-task .at-ti{background:var(--at-card2)}',
     '.at-task .at-tl{font-size:12px;font-weight:650;line-height:1.2;text-align:center}',
     '.at-task:hover{border-color:var(--at-gold)}.at-task:active{transform:scale(.97)}.at-task.on{border-color:var(--at-gold);background:var(--at-card2)}.at-task:disabled{opacity:.45;cursor:default}',
     '@media(min-width:760px){.at-tasks.at-wide{grid-template-columns:repeat(6,minmax(0,1fr))}}',
@@ -228,7 +228,7 @@
     '@keyframes atDot{0%,80%,100%{opacity:.25;transform:translateY(0)}40%{opacity:1;transform:translateY(-3px)}}',
     '.at-done{display:flex;align-items:center;gap:8px;font-size:14px;color:#7fe0a5;font-weight:700;animation:atIn .3s}',
     '.at-emb{width:18px;height:18px;flex:0 0 18px;position:relative;display:inline-block}.at-emb svg{width:100%;height:100%;display:block}',
-    '.at-emb.spin svg{animation:atSpin 2.4s linear infinite}',
+    '.at-emb.spin svg{animation:atSpin 3.2s cubic-bezier(.65,.02,.35,.98) infinite}@media(prefers-reduced-motion:reduce){.at-emb.spin svg,.at-emb.spin::after{animation:none}}',
     '.at-emb.spin::after{content:"";position:absolute;inset:-4px;border-radius:50%;background:radial-gradient(circle,var(--at-glow),transparent 65%);animation:atPulse 1.4s ease-in-out infinite}',
     '@keyframes atSpin{to{transform:rotate(360deg)}}@keyframes atPulse{50%{transform:scale(1.35);opacity:.4}}',
     '.at-tools{display:grid;grid-template-columns:repeat(3,minmax(0,1fr)) 46px;gap:6px;margin-top:12px;padding-top:10px;border-top:1px solid var(--at-line);animation:atIn .3s}',
@@ -310,7 +310,7 @@
   var embSeq = 0;
   function emblem(spin, theme) {
     var id = 'atg' + (++embSeq);
-    var c1 = theme === 'aliya' ? '#FF8B68' : '#E8C96D', c2 = theme === 'aliya' ? '#FF6A3D' : '#C9A84C';
+    var c1 = 'var(--at-gold,#E8C96D)', c2 = 'var(--at-acc,#C9A84C)';
     return '<span class="at-emb' + (spin ? ' spin' : '') + '" aria-hidden="true"><svg viewBox="0 0 24 24"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE29A"/><stop offset=".5" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient></defs><path d="M12 1.5l2.5 7.9 7.9 2.6-7.9 2.5-2.5 7.9-2.6-7.9L1.5 12l7.9-2.6z" fill="url(#' + id + ')"/></svg></span>';
   }
   function themeClass() {

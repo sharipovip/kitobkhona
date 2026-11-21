@@ -1,0 +1,158 @@
+{
+  "Lenta.html": {
+    "sha256": "7aeccdaef09e1189767ba01aa91330d95fd693ce0d3558ca9ac17084d840e2f3",
+    "bytes": 64996
+  },
+  "aliya/aliya-tasks.js": {
+    "sha256": "c36f6b89856ed4ece5ffffc1f73627e8a9e6588fb029feddc3db6d9864dcdc32",
+    "bytes": 100934
+  },
+  "aliya/aliya-theme.css": {
+    "sha256": "7ba93bdf1fdb87859774c1140e75df0963fd0ab7df249b82755905e0cfbb155f",
+    "bytes": 964
+  },
+  "aliya/aliya-theme.js": {
+    "sha256": "1d4a9ce1d0821b9e7d7a91e84b80e5d2a884362e1be45a4556700ea0e0b86bf3",
+    "bytes": 917
+  },
+  "aliya/aliya-ui.css": {
+    "sha256": "302e9989569af758ab8152e9a7781b49f28040eb4d37d2f3027077ba6419f64a",
+    "bytes": 50156
+  },
+  "aliya/index.html": {
+    "sha256": "e200b942d35d4a8c7d7607d69618d7e148a559bc57c200b28dc82166ae5f9be7",
+    "bytes": 103676
+  },
+  "aliya/reader-aliya.css": {
+    "sha256": "ba28b3f109f166c90f08dc722a0b7f01f24ba161bedde53774127bc0d39c812f",
+    "bytes": 2156
+  },
+  "aliya/reader-aliya.html": {
+    "sha256": "7317aafe5b2ab4dcab5867c7b1c1b1a187fa001f92203e32a6c644d06a9c1b40",
+    "bytes": 8806
+  },
+  "assets/css/catalog.css": {
+    "sha256": "872acf4eb217ea447506eb2d8faa35f2f1746564a35026c09efc01bf8d6dcd90",
+    "bytes": 17015
+  },
+  "assets/css/chat.css": {
+    "sha256": "3a790dd522e4352ef2e3719315f0c48eae59aa67a1f8b0e2e2a538b63c943fc4",
+    "bytes": 55636
+  },
+  "assets/css/chats.css": {
+    "sha256": "32a1459804bf82e0dce77fd660921576015d1444a3e88d4d72a2a1df493195c3",
+    "bytes": 16781
+  },
+  "assets/css/contests.css": {
+    "sha256": "0c4fd6d6b8469db799a84a59a59082ea2c2a03de05d3b0c1395e98eccd710cfc",
+    "bytes": 7078
+  },
+  "assets/css/documents.css": {
+    "sha256": "8d5a49082391e6a95a7e858d6fcc26f8b9b88ab94e779809e1f8e4430ba54d4a",
+    "bytes": 2000
+  },
+  "assets/css/feed.css": {
+    "sha256": "5046fc5680745b526ac4fc5b64bba429880a103588be649a7fc36a2e7f87a161",
+    "bytes": 26830
+  },
+  "assets/css/home.css": {
+    "sha256": "98acd2e7d646a7e09b9f03774d2d2c44ee8cc1938d0a44592e5641c36cb8ed59",
+    "bytes": 66024
+  },
+  "assets/css/offline-books.css": {
+    "sha256": "e3a70cdaa2e7ab8edf02f3583bce04fb630c8378aa3ea84f0f0bbee0b8f0a3f9",
+    "bytes": 6066
+  },
+  "assets/css/profile.css": {
+    "sha256": "1c55a0421308964d2e00067f531891565609fea556eb57b126c5b9c66a951856",
+    "bytes": 26379
+  },
+  "assets/css/reader.css": {
+    "sha256": "85a5c1b5159a3d9ae1af7156e01d1cbd8c25a20757a20c0a54d64d1f8e97ed8d",
+    "bytes": 28450
+  },
+  "assets/css/winners.css": {
+    "sha256": "b2f872214722e0971be1599ca378d4768a33b17809841549d6da7087dc2db290",
+    "bytes": 17708
+  },
+  "assets/js/document-theme.js": {
+    "sha256": "2569cb5c59f6305e296095c7a15e824abc8ff32367f828cd9deb650f0036da3a",
+    "bytes": 879
+  },
+  "chat.html": {
+    "sha256": "ddb9a13a118a65bc30b21e400743b2b30cf4cd9fd57580d6b9521f95163ab331",
+    "bytes": 40303
+  },
+  "chats.html": {
+    "sha256": "261462d0cd98f3cf1e1d038045b651ac07e822620ff998581319c6ef26c1ad0c",
+    "bytes": 30605
+  },
+  "config.js": {
+    "sha256": "64367885e629c1dd7004d72fbc0ea0c82a6cd4a97dad4df7fcfbf9ab9e0ea893",
+    "bytes": 222123
+  },
+  "contest-integration.js": {
+    "sha256": "c9284a7e04c9f3de1c5fb3670168d5716ec0686423c188bdc122ed4e97722b42",
+    "bytes": 1802
+  },
+  "contests.html": {
+    "sha256": "29b9178230095f1cdacce3fcf9094ed0e003eb1953df4bdd4f063c5af45ec26d",
+    "bytes": 709
+  },
+  "contests.js": {
+    "sha256": "8b53bbecb435dacb3d63f6ed8eeb0bf3de4744f338d58e008dfd8977477a3f3f",
+    "bytes": 6967
+  },
+  "delete-account.html": {
+    "sha256": "f3a31407c3d4f2ac1f4e286274d609c9d055ed5fb7cc0f9e32025fcfc8ddc7e2",
+    "bytes": 2357
+  },
+  "index.html": {
+    "sha256": "adbf7421d5a733ff8b4eb506aca7b1c34af8b6cb780f6f7c662a92be31bc27be",
+    "bytes": 169566
+  },
+  "kitobho.html": {
+    "sha256": "9676196b10ad9b760f845d1badf19b31334bac53415a2e9441550a24f3fe0118",
+    "bytes": 54209
+  },
+  "offline-books.html": {
+    "sha256": "340f5b824d8178462468f621608804e76f8823ca1ed0718fdc337d48bc998445",
+    "bytes": 17916
+  },
+  "privacy-policy.html": {
+    "sha256": "8a3c6588aa9e9a49bd3cea1187aa188cac51e8d2ce206f34f68915e7c5161665",
+    "bytes": 11443
+  },
+  "profile.html": {
+    "sha256": "479337f09c2e0079990b4ba99abbd2a237e13764eccd0cea65bb5f591c7601dc",
+    "bytes": 140214
+  },
+  "reader-curl.js": {
+    "sha256": "d37895dab2beaa173e8cc9f64c5e0b0534d996cec20ef1ce05302b76db2a966c",
+    "bytes": 3264
+  },
+  "reader-gestures.js": {
+    "sha256": "f1b37f9fbe807d5c3d57afc5d48a9157f202d709a8c2be66af609a7cbebfed9d",
+    "bytes": 4859
+  },
+  "reader.html": {
+    "sha256": "02e0daf8a86996b3194d6bd158555e9acab1dd0824f84ef81e3f0d49cf024394",
+    "bytes": 96868
+  },
+  "sw.js": {
+    "sha256": "6bc2ab7a979cdb7ae33e931544562c5b4795d0defc99259a0129d7aa7a6ed6f3",
+    "bytes": 23298
+  },
+  "terms.html": {
+    "sha256": "fb94eba31faf717423624347d6728d7fec4701d727262e961b1e0149c4dfc812",
+    "bytes": 7935
+  },
+  "winners.html": {
+    "sha256": "1bb3b4b6da0f7a04a2aed7a985bc6506fca08cd711fd106961ba761504de2147",
+    "bytes": 15967
+  },
+  "ИНСТРУКЦИЯ_И_ОТЧЁТ_RU.md": {
+    "sha256": "2dab707971a218cc99c3c51686d599ae5f84d175a369c849abfe6022bc7f9ee7",
+    "bytes": 21328
+  }
+}
