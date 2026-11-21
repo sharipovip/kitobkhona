@@ -87,7 +87,7 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '3.2.0';
+const APP_VERSION = '3.2.1';
 
 const KKH_THEMES = {
  dark:{label:'Шаб',icon:'🌙',bg:'#101c2b',bg2:'#142236',card:'#19283b',card2:'#22354a',text:'#f2ead9',cream:'#f2ead9',muted:'#aabbd0',gold:'#e6bd70',gold2:'#f0cf91',line:'#304054',red:'#e4827b',green:'#80cba0'},
@@ -2649,7 +2649,7 @@ async function registerFcmToken(recoveryAttempt = false) {
     const messagingDbReady = await inspectFirebaseMessagingDatabase();
     if (!messagingDbReady) return null;
     await loadFirebaseMessagingSdk();
-    const registration = await navigator.serviceWorker.register('./sw.js');
+    const registration = await navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'});
     const messaging = firebase.messaging();
     const currentToken = await messaging.getToken({
       serviceWorkerRegistration: registration,
@@ -3040,7 +3040,7 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
           t.querySelector('.kk-update-now').onclick=()=>{try{sessionStorage.setItem('kk_splash_seen','1')}catch(e){}location.reload()};
           t.querySelector('.kk-update-later').onclick=()=>t.remove();
           document.body.appendChild(t);requestAnimationFrame(()=>t.classList.add('show'));
-          setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},25000);
+          // Keep the update action visible until the user chooses; never reload mid-edit/reading.
         }catch(e){}};
         if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',show,{once:true});else show();
       });
@@ -3049,4 +3049,4 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
 })();
 
 /* Approved UI: local only, no startup health checks or request timers. */
-(function(){var src=document.currentScript?.src||'';var base=src.replace(/config\.js.*$/,'');function attach(){if(!document.getElementById('kk-approved-css')){var l=document.createElement('link');l.id='kk-approved-css';l.rel='stylesheet';l.href=base+'assets/css/approved-ui.css?v=20261121';document.head.appendChild(l)}if(!document.getElementById('kk-approved-js')){var j=document.createElement('script');j.id='kk-approved-js';j.src=base+'approved-ui.js?v=20261121';document.head.appendChild(j)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});else attach()})();
+(function(){var src=document.currentScript?.src||'';var base=src.replace(/config\.js.*$/,'');function attach(){if(!document.getElementById('kk-approved-css')){var l=document.createElement('link');l.id='kk-approved-css';l.rel='stylesheet';l.href=base+'assets/css/approved-ui.css?v=20261121-r2';document.head.appendChild(l)}if(!document.getElementById('kk-approved-js')){var j=document.createElement('script');j.id='kk-approved-js';j.src=base+'approved-ui.js?v=20261121-r2';document.head.appendChild(j)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});else attach()})();

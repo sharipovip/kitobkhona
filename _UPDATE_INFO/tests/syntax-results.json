@@ -12,6 +12,12 @@
     "error": ""
   },
   {
+    "file": "winners.html",
+    "script": 2,
+    "ok": true,
+    "error": ""
+  },
+  {
     "file": "reader.html",
     "script": 2,
     "ok": true,
@@ -42,6 +48,18 @@
     "error": ""
   },
   {
+    "file": "login.html",
+    "script": 2,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "repair-cache.html",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
     "file": "reader-curl.js",
     "script": 0,
     "ok": true,
@@ -50,6 +68,12 @@
   {
     "file": "approved-offline-theme.js",
     "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "chat.html",
+    "script": 2,
     "ok": true,
     "error": ""
   },
@@ -86,6 +110,12 @@
   {
     "file": "offline-books.html",
     "script": 3,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "chats.html",
+    "script": 2,
     "ok": true,
     "error": ""
   },

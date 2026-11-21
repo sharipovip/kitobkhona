@@ -1188,7 +1188,7 @@ html, body, .phone-wrapper, .main-content{ scrollbar-width:none; -ms-overflow-st
 }
 
 </style>
-<script src="config.js?v=76"></script>
+<script src="config.js?v=20261121-r2"></script>
 <script>
 /* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
    подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
@@ -2789,7 +2789,7 @@ function coverListFromPdfUrl(u){ try{ const x=new URL(u); if(!x.hostname.include
 function esc(str){ if(!str) return ''; return String(str).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#39;'); }
 loadContinue(); setTimeout(()=>getHomeSearchIndex().catch(()=>{}),350); loadHome().then(()=>{loadHomeFavorites();fetchAndUpdateRatings()});
 const isAndroidApp=(typeof AndroidBridge!=='undefined'||navigator.userAgent.includes('KitobkhonaApp'));
-if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{ if(!isAndroidApp){ setTimeout(()=>initFirebaseMessaging(),800); } }).catch(err=>{}); } else if(!isAndroidApp){ initFirebaseMessaging(); }
+if('serviceWorker' in navigator){ navigator.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(reg=>{ if(!isAndroidApp){ setTimeout(()=>initFirebaseMessaging(),800); } }).catch(err=>{}); } else if(!isAndroidApp){ initFirebaseMessaging(); }
 if(typeof AndroidBridge!=='undefined'){ const userId=localStorage.getItem('kk_user_id'); const authToken=localStorage.getItem('kk_token'); if(userId) AndroidBridge.saveUserId(userId); if(authToken) AndroidBridge.saveAuthToken(authToken); }
 function setActiveNav(el){ document.querySelectorAll('.nav-item').forEach(item=>item.classList.remove('active')); el.classList.add('active'); }
 </script>

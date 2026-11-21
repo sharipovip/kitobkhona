@@ -1,4 +1,28 @@
-const CACHE_NAME = 'kitobkhona-v162-approved-ui-integration';
+const CACHE_NAME = 'kitobkhona-v163-atomic-shell-r2';
+const SHELL_BUILD='20261121-r2';
+const CRITICAL_SHELL={
+  "./index.html": "3eb7c061de8f84d0b6168dc71d8813e67ae9ecb6b883afe33fd4bc9fd9b16735",
+  "./config.js": "26849e87f0bcee125ac78e8e100a5c28fdda145c14c8d0e4f9439e6a4bdef266",
+  "./approved-ui.js": "c624572f761cdd5d9e519141cab6f7ab489200074996b7130f763a3286640ef8",
+  "./approved-offline-theme.js": "764cea0b18cad95d31c4a6fb91784b08b89cc29917d6d3018423431009239f11",
+  "./reader-curl.js": "51beb0be1372711b25807c9ca7a091e7df391549c35eca48762b270ea82f5609",
+  "./assets/css/approved-ui.css": "547e0c2327a144a1710e16deaf45210676878808c1624f88fd2b1f25032d4f18",
+  "./kitobho.html": "9e0ec1bff1ad6f61b3969d06640b43a6da665d7fad5bce49f24adb5f2cfe7c8d",
+  "./reader.html": "b35e49021165da97842be9aeba775cc4d9c5676af55829bbf1e1e87b5b90cf25",
+  "./profile.html": "2e335335edcaca34e231b227b4e36f2ab1cf3bf7e25dba095b90588d84a0bf6d",
+  "./offline-books.html": "a38d27772ee1bfa4be904c56115c77a37306509be9431d50b6d01ed785e61fb4",
+  "./Lenta.html": "03136c313b5980d49bf3168c86b359fce75c5484ec2067fa20ff4de5e306bbab",
+  "./chats.html": "09e3a9e84478c561e84719e88f383928c6e9d826498654481bab4ae2db293fdd",
+  "./chat.html": "fab1b68ac92cae7d9fd3038d8638a0731d34643743aafea019ab395cdc875792",
+  "./winners.html": "74c3dd64935c28d5e37292e8a616ed49754948301184c75f1235ef1c0df13286",
+  "./login.html": "c2fba766cd6db3906c9559a29b0d53814c911fec452d81add00af1b14c24fac7",
+  "./ozmunho.html": "794a6b8c973f7e464f91e24c83c2344108cc278af014a676a25e36a14af52001",
+  "./aliya/index.html": "cafc8aa422c9b15583e3c86d084f16d40b8a9f5cc0fcf5dbc6247bf070f094ec",
+  "./aliya/reader-aliya.html": "f568dfd92df24aef5c2c5b074223d3f4d7dea5ab8459290b564b3ff3708cd0a1",
+  "./aliya/reader-approved.css": "87bbbd7c089b5e140f19c71ff4ba6eae1ed703121c31e127ce1d04b873464821",
+  "./aliya/approved-aliya.css": "b15eefd70af04a8b384baa32c999eb8439db777c63a3a1c29b94258cb7cbb213",
+  "./aliya/approved-aliya.js": "67342bbbc044eee8f6edeebbbee93c183cbc8ea1b0c2e78fd3c52b0bce29b391"
+};
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -194,20 +218,26 @@ const API_FRESH_MS = 1800;  // v129: ҳамин барои JSON/API-и ҷамъ�
 const BOOKS_JSON_URL = 'books.json';
 const SYNC_INTERVAL = 60 * 60 * 1000; // 1 час
 
-self.addEventListener('install', (event) => {
-  event.waitUntil((async () => {
-    const cache = await caches.open(CACHE_NAME);
-    // Cache each asset independently: one missing/offline file must not cancel the
-    // entire atomic addAll() operation and leave the app with an empty offline cache.
-    const results = await Promise.allSettled(LOCAL_FILES.map((url) => cache.add(url)));
-    const failed = results.filter((result) => result.status === 'rejected').length;
-    if (failed) console.warn(`[SW] ${failed} precache item(s) could not be saved; the rest remain available.`);
-    // Keep the local artwork used as a fallback by the cached homepage news cards.
-    try {
-      const news = await cache.match('./news.json', { ignoreSearch: true });
-      if (news) await cacheNewsFallbackImages(cache, news.clone());
-    } catch (e) {}
-    await self.skipWaiting();
+self.addEventListener('install', event => {
+  event.waitUntil((async()=>{
+    const cache=await caches.open(CACHE_NAME);
+    try{
+      // Verify all mandatory updated files before activating. Old worker stays if deployment is incomplete.
+      for(const [path,expected] of Object.entries(CRITICAL_SHELL)){
+        const request=new Request(new URL(path,self.registration.scope).href,{cache:'reload'});
+        const controller=new AbortController(),timeout=setTimeout(()=>controller.abort(),15000);
+        let response;try{response=await fetch(new Request(request,{signal:controller.signal}))}finally{clearTimeout(timeout)}
+        if(!response.ok)throw new Error('Incomplete shell: '+path+' HTTP '+response.status);
+        const data=await response.clone().arrayBuffer();
+        const digest=Array.from(new Uint8Array(await crypto.subtle.digest('SHA-256',data)),b=>b.toString(16).padStart(2,'0')).join('');
+        if(digest!==expected)throw new Error('Wrong release file: '+path);
+        await cache.put(request,response);
+      }
+      // Optional old artwork/pages must not delay activation or overwrite verified critical files.
+      const optional=LOCAL_FILES.filter(p=>!Object.prototype.hasOwnProperty.call(CRITICAL_SHELL,p));
+      await Promise.allSettled(optional.map(async path=>{const c=new AbortController(),t=setTimeout(()=>c.abort(),8000);try{await cache.add(new Request(path,{cache:'reload',signal:c.signal}))}finally{clearTimeout(t)}}));
+      await self.skipWaiting();
+    }catch(error){await caches.delete(CACHE_NAME);throw error}
   })());
 });
 
@@ -215,10 +245,11 @@ self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
     const keys = await caches.keys();
     await Promise.all(keys
-      .filter((key) => key !== CACHE_NAME && key !== RUNTIME_CACHE && key !== 'kitobkhona-pdf-cache-v1' && !key.startsWith('dovtalab-'))
+      .filter(key => /^kitobkhona-v\d/.test(key) && key !== CACHE_NAME)
       .map((key) => caches.delete(key)));
     await self.clients.claim();
-    scheduleBooksJsonUpdate();
+    // No Service Worker polling. Static catalog updates on normal page access.
+    const tabs=await self.clients.matchAll({type:'window'});tabs.forEach(c=>c.postMessage({type:'KK_SHELL_READY',build:SHELL_BUILD}));
   })());
 });
 
@@ -320,6 +351,16 @@ self.addEventListener('fetch', (event) => {
     if (kind) event.respondWith(runtimeStaleWhileRevalidate(event.request, kind));
     return;
   }
+  if(url.pathname.endsWith('/repair-cache.html')){event.respondWith(fetch(new Request(event.request,{cache:'reload'})));return;}
+  const rel='./'+(url.pathname.slice(new URL(self.registration.scope).pathname.length)||'index.html');
+  if(event.request.method==='GET'&&Object.prototype.hasOwnProperty.call(CRITICAL_SHELL,rel)){
+    event.respondWith((async()=>{
+      const cache=await caches.open(CACHE_NAME),snapshot=await cache.match(new URL(rel,self.registration.scope).href,{ignoreSearch:true});
+      if(snapshot)return snapshot;
+      // Never substitute a different build into a verified critical shell.
+      return new Response('Update incomplete. Open repair-cache.html online.',{status:503,headers:{'Content-Type':'text/plain; charset=utf-8'}});
+    })());return;
+  }
   if (event.request.mode === 'navigate') {
     // v129: гузариши фаврӣ байни саҳифаҳо. Агар шабака то NAV_FRESH_MS (600 мс) ҷавоб диҳад — саҳифаи нав аз
     // шабака (баъди нашр корбар бо интернети хуб фавран версияи навро мебинад); вагарна — нусхаи кэшшуда ФАВРАН,
@@ -333,10 +374,10 @@ self.addEventListener('fetch', (event) => {
     }).catch(() => null);
     event.waitUntil(network.then(() => undefined)); // SW то анҷоми навсозии кэш дар замина зинда мемонад
     event.respondWith((async () => {
-      const cached = await caches.match(event.request, { ignoreSearch: true });
+      const cached = await (await caches.open(CACHE_NAME)).match(event.request, { ignoreSearch: true });
       if (!cached) {
         const net = await network;
-        return net || await caches.match('./offline.html');
+        return net || await (await caches.open(CACHE_NAME)).match('./offline.html');
       }
       const timer = new Promise(resolve => setTimeout(() => resolve('timeout'), NAV_FRESH_MS));
       const first = await Promise.race([network, timer]);
@@ -387,7 +428,7 @@ self.addEventListener('fetch', (event) => {
   }
   if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
     event.respondWith((async () => {
-      const cached = await caches.match(event.request, { ignoreSearch: true });
+      const cached = await (await caches.open(CACHE_NAME)).match(event.request, { ignoreSearch: true });
       const network = fetch(event.request).then(response => {
         if (response && response.status === 200) {
           safeCachePut(event.request, response);
@@ -399,7 +440,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   event.respondWith(
-    caches.match(event.request, { ignoreSearch: true }).then((cached) => {
+    caches.open(CACHE_NAME).then(cache=>cache.match(event.request,{ignoreSearch:true})).then((cached) => {
       const networkFetch = fetch(event.request).then((response) => {
         if (response && response.status === 200) {
           const clone = response.clone();
@@ -478,3 +519,5 @@ self.addEventListener('notificationclick', function(event) {
     if (clients.openWindow) return clients.openWindow(fullUrl);
   }));
 });
+
+self.addEventListener('message',event=>{if(event.data?.type==='KK_GET_BUILD'){event.ports[0]?.postMessage({build:SHELL_BUILD,cache:CACHE_NAME});}});

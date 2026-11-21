@@ -1,0 +1,13 @@
+{
+  "caches": [
+    "kitobkhona-pdf-cache-v1",
+    "unrelated-test-cache",
+    "kitobkhona-v163-atomic-shell-r2"
+  ],
+  "preservedPdf": true,
+  "progress": "42",
+  "config": true,
+  "root": true,
+  "status": "Версия r2 установлена. Данные чтения и авторизация сохранены. Теперь откройте программу кнопкой ниже.",
+  "page_errors": []
+}
