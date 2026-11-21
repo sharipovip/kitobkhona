@@ -1,0 +1,530 @@
+{
+  "mocked_backend": true,
+  "live_api_tested": false,
+  "checks": [
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "dark",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "light",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "minimal",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "minimal",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "minimal",
+      "width": 320,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "dark",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "dark",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "dark",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "light",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "light",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "light",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "minimal",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "minimal",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "minimal",
+      "width": 390,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "dark",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "light",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "index.html",
+      "theme": "minimal",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "kitobho.html",
+      "theme": "minimal",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "render",
+      "page": "login.html",
+      "theme": "minimal",
+      "width": 1280,
+      "overflow": false,
+      "theme_choices": [
+        "dark",
+        "light",
+        "minimal"
+      ]
+    },
+    {
+      "name": "catalog_books",
+      "count": 1
+    },
+    {
+      "name": "catalog_modal_center",
+      "bounds": {
+        "x": -92.66249084472656,
+        "y": 81.86885833740234,
+        "width": 326.12660217285156,
+        "height": 364.13697052001953
+      },
+      "centered": false
+    },
+    {
+      "name": "catalog_escape",
+      "closed": true
+    },
+    {
+      "name": "profile_authenticated_fixture",
+      "url": "http://127.0.0.1:8090/profile.html",
+      "themes": 3
+    },
+    {
+      "name": "settings_open",
+      "open": true
+    },
+    {
+      "name": "help_search",
+      "result": "Ёфт шуд: 2"
+    },
+    {
+      "name": "reader_aliya_task",
+      "sheet": true,
+      "inputs": 2
+    },
+    {
+      "name": "pdf_forward",
+      "overlay": 1,
+      "page": "3/5"
+    },
+    {
+      "name": "pdf_cancel_reverse",
+      "overlay": 1,
+      "page": "3/5"
+    },
+    {
+      "name": "pdf_backward",
+      "overlay": 1,
+      "page": "2/5"
+    },
+    {
+      "name": "rating_equal",
+      "width": 320,
+      "stars": [
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        }
+      ]
+    },
+    {
+      "name": "rating_equal",
+      "width": 390,
+      "stars": [
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        }
+      ]
+    },
+    {
+      "name": "rating_equal",
+      "width": 1280,
+      "stars": [
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        },
+        {
+          "w": 20,
+          "h": 21
+        }
+      ]
+    },
+    {
+      "name": "reader_idle_15s",
+      "hidden": true
+    },
+    {
+      "name": "friend_idle_35_seconds",
+      "before": 1,
+      "after": 1,
+      "no_repoll": true
+    }
+  ],
+  "errors": []
+}

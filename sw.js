@@ -1,7 +1,15 @@
-const CACHE_NAME = 'kitobkhona-v161-aliya-export-stop';
+const CACHE_NAME = 'kitobkhona-v162-approved-ui-integration';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
+  './approved-ui.js',
+  './approved-offline-theme.js',
+  './reader-curl.js',
+  './assets/css/approved-ui.css',
+  './aliya/approved-aliya.css',
+  './aliya/approved-aliya.js',
+  './aliya/reader-approved.css',
+  './ozmunho.html',
   './',
   './aliya/index.html',
   './aliya/aliya-ui.css',

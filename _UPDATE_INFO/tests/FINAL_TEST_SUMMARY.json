@@ -1,0 +1,42 @@
+{
+  "application_files": 18,
+  "backend_deployed": false,
+  "live_api_tested": false,
+  "syntax_pass": true,
+  "original_aliya_smoke_pass": true,
+  "original_ui_regression": "FAIL on unchanged baseline too; stale home-desktop CSS assertion",
+  "browser_page_errors": [],
+  "theme_viewport_renders": 27,
+  "themes": [
+    "dark",
+    "light",
+    "minimal"
+  ],
+  "viewport_widths": [
+    320,
+    390,
+    1280
+  ],
+  "real_pdf_local_tests": {
+    "forward": "2/5 -> 3/5",
+    "reverse_cancel": "3/5 -> 3/5",
+    "backward": "3/5 -> 2/5",
+    "webgl_overlay_created": true,
+    "idle_15s": true
+  },
+  "catalog_modal_latest": {
+    "centered": true,
+    "bounds": {
+      "x": 36,
+      "y": 243.5,
+      "width": 318,
+      "height": 357
+    },
+    "escape_closes": true,
+    "original_actions_restored": true,
+    "reopen": true,
+    "page_errors": []
+  },
+  "neon_guaranteed_asleep": false,
+  "note": "Read INSTALL_RU.txt before production deployment. All browser backend data were local test fixtures; no real account was modified."
+}

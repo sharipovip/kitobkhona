@@ -1759,6 +1759,7 @@ function buildSlide(post, idx) {
     </div>` : ''}
 
     <div class="slide-bottom-grad"></div>
+    ${bookTitle ? `<div class="feed-book-watermark" aria-hidden="true"><svg viewBox="0 0 64 72"><path d="M14 6h39v59H16a7 7 0 0 1-7-7V13a7 7 0 0 1 5-7ZM17 6v52M17 58h36M25 21h19M25 29h16M25 43h19"/></svg>${escHtml(bookTitle)}</div>` : ''}
 
     
     <div class="slide-sidebar">
@@ -1829,7 +1830,7 @@ function buildSlide(post, idx) {
     });
   });
 
-  const userLine = slide.querySelector('.slide-bottom-info .info-line[data-userid]');
+  const userLine = slide.querySelector('.slide-bottom-info .user-meta-block[data-userid]');
   if (userLine) {
     userLine.addEventListener('click', () => {
       const uid = userLine.dataset.userid;

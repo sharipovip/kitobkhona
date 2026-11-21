@@ -1343,10 +1343,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
           <div style="font-size:12px;color:var(--muted);margin-bottom:8px">Интихоби мавзӯъ</div>
           <div id="themeChoices" style="display:flex;gap:7px;overflow-x:auto;padding-bottom:2px">
             <button type="button" class="theme-choice" data-theme-choice="dark">🌙 Шаб</button>
-            <button type="button" class="theme-choice" data-theme-choice="light">☀️ Рӯз</button>
-            <button type="button" class="theme-choice" data-theme-choice="gold">✨ Тиллоӣ</button>
-            <button type="button" class="theme-choice" data-theme-choice="flag">🇹🇯 Парчам</button>
-            <button type="button" class="theme-choice" data-theme-choice="book">📖 Китоб</button>
+            <button type="button" class="theme-choice" data-theme-choice="light">☀️ Рӯз</button><button type="button" class="theme-choice" data-theme-choice="minimal">◌ Минимализм</button>
           </div>
         </div>
         <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--line)">
@@ -1579,14 +1576,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
     loadProfile();
     initSettings();
-    // v128: 30 с ба ҷои 10 с (танҳо дар профили каси дигар ва вақте ки саҳифа намоён аст) — камтар дархост ба Render/Neon
-    friendStatusTimer = setInterval(() => {
-      if (!document.hidden && navigator.onLine !== false && currentProfileUserId && !isOwnProfile) {
-        checkFriendStatus(currentUserId, currentProfileUserId)
-          .then(() => updateFriendButtonUI())
-          .catch(() => {});
-      }
-    }, 30000);
+    // 2026-11: no periodic friendship polling. Initial load, explicit actions,
+    // profile-updated events and visibility return retain original refresh paths.
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden && currentProfileUserId) {
         const seq = profileLoadSequence;

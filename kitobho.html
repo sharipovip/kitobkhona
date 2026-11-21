@@ -918,7 +918,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 *::-webkit-scrollbar{display:none!important;width:0!important;height:0!important;background:transparent!important}
 </style>
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
-</head>
+<style>body.kk-book-modal-open .bk{transform:none!important;filter:none!important;perspective:none!important;overflow:visible!important}body.kk-book-modal-open .bk:has(.bk-actions.open){z-index:10011!important}body.kk-book-modal-open .bk-actions.open{position:fixed!important;inset:50% auto auto 50%!important;transform:translate(-50%,-50%)!important;width:min(320px,calc(100vw - 36px))!important;max-height:82dvh!important;overflow-y:auto!important;height:auto!important;min-height:0!important;padding:42px 18px 18px!important;z-index:10012!important;backdrop-filter:blur(12px);box-shadow:0 0 0 100vmax #0009!important;display:flex!important;flex-direction:column!important;gap:9px!important}.bk-actions.open .btn{min-height:42px!important}.bk-actions.open .btn-close-actions{position:absolute!important;top:8px!important;right:10px!important;width:28px!important;min-height:28px!important;height:28px!important}body.kk-book-modal-open #contentWrapper{transform:none!important;filter:none!important;perspective:none!important}</style><style>body.kk-book-modal-open .kk-catalog-action-dialog{position:fixed!important;inset:0!important;margin:auto!important;padding:0!important;border:1px solid var(--line)!important;border-radius:16px!important;width:min(320px,calc(100vw - 36px))!important;max-width:calc(100vw - 36px)!important;max-height:82dvh!important;background:var(--card)!important;color:var(--cream)!important;overflow-y:auto!important;box-shadow:0 20px 70px #0005!important}body.kk-book-modal-open .kk-catalog-action-dialog .bk-actions.open{position:relative!important;inset:auto!important;transform:none!important;width:100%!important;min-width:0!important;height:auto!important;max-height:none!important;margin:0!important;box-shadow:none!important;border:0!important;backdrop-filter:none!important;background:var(--card)!important}.kk-catalog-action-dialog::backdrop{background:#0008;backdrop-filter:blur(3px)}.kk-catalog-action-dialog .btn{display:block;width:100%;font:12px inherit}</style></head>
 <body>
 
 <div class="app-container">
@@ -1647,26 +1647,28 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     return colors[Math.floor(Math.random() * colors.length)];
   }
 
-  function closeActiveActions() {
-    if (activeBookElement) {
-      const actions = activeBookElement.querySelector('.bk-actions');
-      if (actions) actions.classList.remove('open');
-      activeBookElement = null;
-    }
+  let approvedActionPortal=null;
+  function closeActiveActions(){
+    const portal=approvedActionPortal;approvedActionPortal=null;
+    if(portal){portal.actions.classList.remove('open');portal.marker.replaceWith(portal.actions);portal.dialog.close();portal.dialog.remove();portal.book.focus?.();}
+    else if(activeBookElement){activeBookElement.querySelector('.bk-actions')?.classList.remove('open');}
+    activeBookElement=null;document.body.classList.remove('kk-book-modal-open');
   }
-  function toggleBookActions(bk) {
-    if (!bk) return;
-    const actions = bk.querySelector('.bk-actions');
-    if (!actions) return;
-    if (activeBookElement === bk) {
-      closeActiveActions();
-      return;
-    }
-    closeActiveActions();
-    actions.classList.add('open');
-    activeBookElement = bk;
+  function toggleBookActions(bk){
+    if(!bk)return;if(activeBookElement===bk){closeActiveActions();return}
+    const actions=bk.querySelector('.bk-actions');if(!actions)return;
+    closeActiveActions();const marker=document.createComment('original-book-actions');actions.replaceWith(marker);
+    const dialog=document.createElement('dialog');dialog.className='kk-catalog-action-dialog';
+    let name='Китоб';try{name=decodeURIComponent(actions.dataset.name||'Китоб')}catch(e){}
+    dialog.setAttribute('aria-label',name);dialog.append(actions);document.body.append(dialog);
+    approvedActionPortal={actions,marker,dialog,book:bk};activeBookElement=bk;
+    actions.classList.add('open');document.body.classList.add('kk-book-modal-open');
+    dialog.addEventListener('cancel',e=>{e.preventDefault();closeActiveActions()});
+    dialog.addEventListener('click',e=>{e.stopPropagation();if(e.target===dialog){const r=dialog.getBoundingClientRect();if(e.clientX<r.left||e.clientX>r.right||e.clientY<r.top||e.clientY>r.bottom)closeActiveActions()}});
+    dialog.showModal();
   }
   document.getElementById('contentWrapper').addEventListener('scroll', closeActiveActions);
+  document.addEventListener('keydown',e=>{if(e.key==='Escape')closeActiveActions()});
   document.addEventListener('click', function(e) {
     if (!e.target.closest('.bk')) closeActiveActions();
   });
@@ -1719,7 +1721,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       const subsCount = (c.subs || []).length;
       const label = esc(displayCategoryName(c));
       return `<button class="spine ${active}" data-cat-id="${c.id}" style="background:linear-gradient(180deg, ${c.color1 || '#1E3350'}, ${c.color2 || '#142236'});">
-        <div class="label-wrap"><span class="label">${label}</span></div>
+        <span class="kk-category-icon" aria-hidden="true">${categoryIcons[c.id] || '▤'}</span><div class="label-wrap"><span class="label">${label}</span></div>
         <div class="count">${subsCount}</div>
       </button>`;
     }).join('');

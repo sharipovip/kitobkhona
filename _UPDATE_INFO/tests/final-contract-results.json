@@ -1,0 +1,27 @@
+{
+  "config.js": {
+    "syntax_pass": true
+  },
+  "approved-ui.js": {
+    "syntax_pass": true
+  },
+  "approved-offline-theme.js": {
+    "syntax_pass": true
+  },
+  "reader-curl.js": {
+    "syntax_pass": true
+  },
+  "aliya/approved-aliya.js": {
+    "syntax_pass": true
+  },
+  "sw.js": {
+    "syntax_pass": true
+  },
+  "contracts": {
+    "new_shared_ui_has_no_network": true,
+    "original_auth_delete_export_preserved": true,
+    "api_hosts_unchanged": true,
+    "no_periodic_friend_or_notification_polling": true,
+    "unmodified_auth_chat_ranking_business_code": true
+  }
+}

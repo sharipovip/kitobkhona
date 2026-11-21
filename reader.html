@@ -899,7 +899,7 @@ body.light-reading .page-slot canvas{filter:none!important}
 #aliyaOverlay iframe{width:100%;height:100%;border:0;display:block;background:#0b1626}
 html.aliya-open,html.aliya-open body{overflow:hidden}
 </style>
-</head>
+<script src="reader-curl.js?v=20261121"></script></head>
 <body class="light-reading">
 <div class="reader-wrapper">
   
@@ -1524,7 +1524,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
 
   function turnPage(d) {
     if (window.__altPager) { try { window.__altPager(d); } catch (e) {} return; }
-    if (rendering) return;
+    if (rendering || approvedCurlSettling) return;
     const n = page + d;
     if (n < 1 || n > pages) return;
     renderPage(n, d);
@@ -1540,8 +1540,19 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     document.querySelectorAll('.reader-reactions').forEach(el => el.classList.toggle('hidden', !bars));
   };
 
+  let approvedIdleTimer = null, approvedSuppressClickUntil=0;
+  function approvedIdleReset(){clearTimeout(approvedIdleTimer);if(document.hidden||!bars)return;approvedIdleTimer=setTimeout(()=>{if(bars&&!document.hidden&&!document.querySelector('.settings-panel.open,#aliyaOverlay.open,.reaction-sheet.open'))window.__kkToggleBars();},15000)}
+  const approvedToggleBars=window.__kkToggleBars;
+  window.__kkToggleBars=function(){approvedToggleBars();approvedIdleReset()};
+  document.addEventListener('pointerdown',approvedIdleReset,{passive:true});
+  document.addEventListener('keydown',approvedIdleReset);
+  document.addEventListener('visibilitychange',approvedIdleReset);
+  window.addEventListener('pagehide',()=>clearTimeout(approvedIdleTimer));approvedIdleReset();
   $('readerMain').addEventListener('click', e => {
-    if (e.target.closest('.page-nav-area') || e.target.closest('.reader-reactions') || e.target.closest('.reader-top-bar') || e.target.closest('.reader-bottom-bar')) return;
+    if(Date.now()<approvedSuppressClickUntil)return;
+    if(e.target.closest('button,a,input,textarea,select,.page-nav-area,.reader-reactions,.reader-top-bar,.reader-bottom-bar'))return;
+    const r=$('readerMain').getBoundingClientRect(),x=(e.clientX-r.left)/r.width;
+    if(x<.18){turnPage(-1);return}if(x>.82){turnPage(1);return}
     window.__kkToggleBars();
   });
 
@@ -1570,8 +1581,51 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     setTimeout(() => { el.style.transition = ''; el.style.transformOrigin = ''; }, 280);
   }
 
+  // Actual PDF mesh curl. Commit goes through original renderPage/saveProgress.
+  // Slow PDF decode or unavailable WebGL falls back to original renderer.
+  let approvedCurlState=null,approvedCurlPending=false,approvedCurlGen=0,approvedCurlX=0,approvedCurlSettling=false;
+  function approvedCurlCleanup(){approvedCurlGen++;approvedCurlPending=false;const st=approvedCurlState;approvedCurlState=null;if(st){st.old.style.visibility=st.oldVisibility;st.scene.remove();st.renderer.destroy()} }
+  function approvedCurlDraw(st,p){st.progress=Math.max(0,Math.min(1,p));st.renderer.draw(st.dir>0?st.progress:1-st.progress)}
+  function approvedCurlMove(dx,dy){
+    approvedCurlX=dx;
+    if(approvedCurlSettling||(window.__kkTextMode&&window.__kkTextMode!=='pdf')||window.__altPager||zoom>1.001||reducedMotion()||!window.KKCreatePDFCurl||!pdf||rendering||Math.abs(dx)<11||Math.abs(dx)<Math.abs(dy)*1.15)return false;
+    if(approvedCurlState){const st=approvedCurlState;if((dx<0?1:-1)!==st.dir){approvedCurlDraw(st,0);return true}approvedCurlDraw(st,Math.abs(dx)/st.width*1.25);return true}
+    if(approvedCurlPending)return false;
+    const dir=dx<0?1:-1,target=page+dir,old=cvEl();if(!old||target<1||target>pages)return false;
+    const gen=++approvedCurlGen;approvedCurlPending=true;
+    (async()=>{let task;try{
+      const p=await pdf.getPage(target);if(gen!==approvedCurlGen)return;
+      const box=pageBox(),nat=p.getViewport({scale:1}),fit=Math.min(box.w/nat.width,box.h/nat.height)*zoom,dpr=Math.min(devicePixelRatio||1,2),vp=p.getViewport({scale:fit*dpr}),next=document.createElement('canvas');next.width=Math.max(1,Math.round(vp.width));next.height=Math.max(1,Math.round(vp.height));const ctx=next.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,next.width,next.height);task=p.render({canvasContext:ctx,viewport:vp});await task.promise;
+      if(gen!==approvedCurlGen||cvEl()!==old)return;
+      const rect=old.getBoundingClientRect();if(rect.width<1||rect.height<1)return;
+      const scene=document.createElement('div');scene.setAttribute('aria-hidden','true');scene.style.cssText='position:fixed;pointer-events:none;z-index:35;overflow:visible;left:'+rect.left+'px;top:'+rect.top+'px;width:'+rect.width+'px;height:'+rect.height+'px;';
+      const under=document.createElement('canvas');under.width=dir>0?next.width:old.width;under.height=dir>0?next.height:old.height;under.getContext('2d').drawImage(dir>0?next:old,0,0,under.width,under.height);under.style.cssText='position:absolute;inset:0;width:100%;height:100%';
+      const mesh=document.createElement('canvas');mesh.width=Math.round(rect.width*dpr);mesh.height=Math.round(rect.height*dpr);mesh.style.cssText='position:absolute;inset:0;width:100%;height:100%';scene.append(under,mesh);
+      let renderer;try{renderer=window.KKCreatePDFCurl(mesh,dir>0?old:next,rect.width,rect.height,dir)}catch(e){return}
+      if(gen!==approvedCurlGen){renderer.destroy();return}
+      const st={scene,renderer,old,oldVisibility:old.style.visibility,dir,target,width:rect.width,progress:0};approvedCurlState=st;document.body.append(scene);old.style.visibility='hidden';resetSlotInstant($('currentSlot'));approvedCurlDraw(st,Math.abs(approvedCurlX)/rect.width*1.25);
+    }catch(e){/* original gesture is still available */}finally{if(gen===approvedCurlGen)approvedCurlPending=false}})();return false;
+  }
+  function approvedCurlEnd(commit){
+    if(!approvedCurlState){approvedCurlGen++;approvedCurlPending=false;return false}
+    const st=approvedCurlState;commit=commit&&((approvedCurlX<0?1:-1)===st.dir);approvedCurlSettling=true;approvedSuppressClickUntil=Date.now()+650;
+    const from=st.progress,to=commit?1:0,start=performance.now();
+    function frame(now){if(st!==approvedCurlState){approvedCurlSettling=false;return}const t=Math.min(1,(now-start)/240),p=from+(to-from)*(1-Math.pow(1-t,3));approvedCurlDraw(st,p);if(t<1){requestAnimationFrame(frame);return}if(commit){renderPage(st.target,0).finally(()=>{approvedCurlCleanup();approvedCurlSettling=false})}else{approvedCurlCleanup();approvedCurlSettling=false}}
+    requestAnimationFrame(frame);return true;
+  }
+  stageEl.addEventListener('touchcancel',()=>{approvedCurlEnd(false);drag=false;isPinching=false},{passive:true});
+  window.addEventListener('resize',()=>{approvedCurlCleanup();approvedCurlSettling=false});
+  window.addEventListener('pagehide',approvedCurlCleanup);
+  window.addEventListener('blur',()=>{approvedCurlCleanup();approvedCurlSettling=false;approvedMouse=null;});
+  let approvedMouse=null;
+  stageEl.addEventListener('pointerdown',e=>{if(e.pointerType!=='mouse'||e.button!==0||!e.target.closest('canvas')||zoom>1.001)return;approvedMouse={x:e.clientX,y:e.clientY,t:performance.now(),moved:false};stageEl.setPointerCapture?.(e.pointerId)});
+  stageEl.addEventListener('pointermove',e=>{if(!approvedMouse)return;const dx=e.clientX-approvedMouse.x,dy=e.clientY-approvedMouse.y;if(Math.abs(dx)>11){approvedMouse.moved=true;approvedCurlMove(dx,dy)}});
+  stageEl.addEventListener('pointerup',e=>{if(!approvedMouse)return;const m=approvedMouse;approvedMouse=null;const dx=e.clientX-m.x,dy=e.clientY-m.y,commit=Math.abs(dx)>Math.abs(dy)*1.2&&(Math.abs(dx)>50||(Math.abs(dx)>25&&performance.now()-m.t<250));if(!approvedCurlEnd(commit)&&commit){approvedSuppressClickUntil=Date.now()+450;turnPage(dx<0?1:-1)}else if(m.moved)approvedSuppressClickUntil=Date.now()+450});
+  stageEl.addEventListener('pointercancel',()=>{approvedMouse=null;approvedCurlEnd(false)});
+
   stageEl.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
+      approvedCurlCleanup();
       drag = false;
       isPinching = true;
       clearTimeout(zoomCommitTimer);
@@ -1598,7 +1652,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
           setScrollZoom(Math.max(70, Math.min(220, Math.round(pinchStartZoom * factor * 100))), false);
           return;
         }
-        if (window.__kkTextMode) return;
+        if (window.__kkTextMode&&window.__kkTextMode!=='pdf') return;
         // два пальца: масштаб вокруг точки между пальцами + сдвиг страницы вслед за пальцами
         const z1 = clampZoom(pinchStartZoom * factor);
         const m = getMid(e);
@@ -1613,9 +1667,10 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
       return;
     }
     if (!drag || e.touches.length !== 1 || isPinching) return;
-    if (window.__kkTextMode) return;
+    if (window.__kkTextMode&&window.__kkTextMode!=='pdf') return;
     const dx = e.touches[0].clientX - sx;
     const dy = e.touches[0].clientY - sy;
+    if(approvedCurlMove(dx,dy)){dragged=true;return;}
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
       const currentSlot = $('currentSlot');
       const pct = Math.min(1, Math.abs(dx) / 220);
@@ -1632,7 +1687,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
       if (!e.touches || e.touches.length < 2) {
         isPinching = false;
         pinchStartDist = 0;
-        if (!window.__kkTextMode && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
+        if ((!window.__kkTextMode||window.__kkTextMode==='pdf') && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
           clearTimeout(zoomCommitTimer);
           renderPage(page, 0);   // чёткая перерисовка; сдвиг и масштаб подменяются в одном кадре — без скачка
         }
@@ -1647,7 +1702,9 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     const currentSlot = $('currentSlot');
     // один палец — только листание (страница при этом остаётся на месте, даже при увеличении)
     const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
+    if(approvedCurlEnd(wantTurn)){return;}
     if (wantTurn) {
+      approvedSuppressClickUntil=Date.now()+450;
       turnPage(dx < 0 ? 1 : -1);
       if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);   // край книги — вернуть на место
       return;
@@ -1691,14 +1748,7 @@ html.aliya-open,html.aliya-open body{overflow:hidden}
     zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
   }
   // v132: «Баҳо диҳед» + звёзды всегда помещаются целиком — при нехватке места слегка уменьшаются
-  function fitRatingLabel() {
-    const box = document.querySelector('.top-rating'); if (!box) return;
-    box.style.zoom = '';
-    let w = 8;
-    Array.prototype.forEach.call(box.children, c => { w += c.getBoundingClientRect().width; });
-    const avail = box.clientWidth;
-    if (avail > 0 && w > avail) box.style.zoom = Math.max(0.55, avail / w).toFixed(3);
-  }
+  function fitRatingLabel() {const box=document.querySelector('.top-rating');if(box)box.style.zoom='';}
   window.addEventListener('resize', fitRatingLabel);
   window.addEventListener('orientationchange', fitRatingLabel);
   fitRatingLabel();

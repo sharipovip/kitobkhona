@@ -1,0 +1,140 @@
+[
+  {
+    "file": "sw.js",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "Lenta.html",
+    "script": 2,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "reader.html",
+    "script": 2,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "reader.html",
+    "script": 6,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "reader.html",
+    "script": 7,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "kitobho.html",
+    "script": 1,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "kitobho.html",
+    "script": 3,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "reader-curl.js",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "approved-offline-theme.js",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "config.js",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "approved-ui.js",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "ozmunho.html",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "ozmunho.html",
+    "script": 1,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "profile.html",
+    "script": 3,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "offline-books.html",
+    "script": 3,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "index.html",
+    "script": 1,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "index.html",
+    "script": 5,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "index.html",
+    "script": 6,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "index.html",
+    "script": 7,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "aliya/reader-aliya.html",
+    "script": 1,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "aliya/reader-aliya.html",
+    "script": 5,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "aliya/approved-aliya.js",
+    "script": 0,
+    "ok": true,
+    "error": ""
+  },
+  {
+    "file": "aliya/index.html",
+    "script": 4,
+    "ok": true,
+    "error": ""
+  }
+]

@@ -1,0 +1,100 @@
+[
+  {
+    "page": "index.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/index.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-home",
+    "drawer": 1,
+    "drawer_open": true
+  },
+  {
+    "page": "kitobho.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/kitobho.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-catalog"
+  },
+  {
+    "page": "offline-books.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/offline-books.html",
+    "overflow": false,
+    "screen": "kk-screen-offline light-theme"
+  },
+  {
+    "page": "profile.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/login.html?mode=login&next=profile",
+    "overflow": false,
+    "screen": "light-theme kk-screen-auth"
+  },
+  {
+    "page": "Lenta.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/Lenta.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-feed"
+  },
+  {
+    "page": "chats.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/chats.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-chats"
+  },
+  {
+    "page": "chat.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/chat.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-chat"
+  },
+  {
+    "page": "winners.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/winners.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-winners"
+  },
+  {
+    "page": "login.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/login.html",
+    "overflow": false,
+    "screen": "light-theme kk-screen-auth",
+    "form_function": "function"
+  },
+  {
+    "page": "ozmunho.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/ozmunho.html",
+    "overflow": false,
+    "screen": ""
+  },
+  {
+    "page": "aliya/index.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/aliya/index.html",
+    "overflow": false,
+    "screen": "at-aliya"
+  },
+  {
+    "page": "aliya/reader-aliya.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/aliya/reader-aliya.html",
+    "overflow": false,
+    "screen": "at-navy"
+  },
+  {
+    "page": "reader.html",
+    "errors": [],
+    "final_url": "http://127.0.0.1:8090/reader.html?url=http%3A%2F%2F127.0.0.1%3A8090%2Ftests%2Fintegration-fixture.pdf&name=Integration&page=2",
+    "overflow": false,
+    "screen": "light-reading light-theme kk-screen-reader",
+    "canvas": 1,
+    "before": "2/5",
+    "curl_overlay": 1,
+    "after": "3/5"
+  }
+]

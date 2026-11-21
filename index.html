@@ -2160,7 +2160,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
     <!-- 2 Озмунҳои ҷумҳуриявӣ — круглые красиво -->
     <section class="ozmun-v3">
-      <div class="sec-head-v3"><div class="sec-title-v3">🏆 Озмунҳои ҷумҳуриявӣ</div></div>
+      <div class="sec-head-v3"><div class="sec-title-v3">🏆 Озмунҳои ҷумҳуриявӣ</div><a href="ozmunho.html" style="font-size:11px;color:var(--gold);text-decoration:none">Ҳамаашро дидан ›</a></div>
       <div class="ozmun-scroll-v3" id="ozmunList"></div>
     </section>
 
@@ -2175,7 +2175,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     </section>
 
     <!-- 3 v128: Рӯйхатҳои тавсияшуда + китобҳои захирашуда (тартиб: маориф → хонандагон → захирашуда) -->
-    <section class="cat-v3" id="tavsiyaSection">
+    <nav class="kk-shortcuts" aria-label="Дастрасии зуд"><a href="kitobho.html?cat=peshvoi_millat"><span>▤</span>Китобҳои Президент</a><a href="offline-books.html"><span>↓</span>Китобҳои ман</a><a href="winners.html"><span>♜</span>Ғолибон</a></nav><section class="cat-v3" id="tavsiyaSection">
       <!-- Китобҳои тавсияшуда барои кормандони соҳаи маориф — фармоиши №27 аз 09.02.2026 (Хатлон); хониш мисли дигар китобҳо ҳисоб мешавад -->
       <div class="tavsiya-row-v3 tavsiya-row-maorif tavsiya-row-first" id="maorifRow" role="button" tabindex="0" onclick="location.href='maorif-books.html'" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();location.href='maorif-books.html'}">
         <div class="tavsiya-ic-v3">📚</div>
@@ -2386,7 +2386,7 @@ const nb=$('notifBtn');
 // v126: зангӯла барои корбарони воридшуда нишон дода мешавад; v128: бадж ҳар 15 дақиқа ва танҳо вақте ки саҳифа кушода/намоён ва онлайн аст
 // (дар замина ҳеҷ дархост ба сервер фиристода намешавад — соатҳои ройгони Render/Neon сарф намешаванд); ҳангоми бозгашт ба барнома нав мешавад
 if(nb)nb.style.display=localStorage.getItem('kk_token')?'':'none';
-updateNotifBadge();setInterval(()=>{if(document.hidden||navigator.onLine===false)return;updateNotifBadge()},15*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){const c=readNotifCache();if(!c)updateNotifBadge()}});
+updateNotifBadge();/* No idle notification polling: push, open and visibility refresh remain. */document.addEventListener('visibilitychange',()=>{if(!document.hidden){const c=readNotifCache();if(!c)updateNotifBadge()}});
 if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
 
 const oz=[ ['ideai_man.html','ideai_man_banner.jpg','Идеяи ман калиди фардо'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'] ];

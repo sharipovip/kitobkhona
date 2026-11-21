@@ -87,16 +87,14 @@ const KITOB_CONFIG = {
 
 
 
-const APP_VERSION = '3.1.4';
+const APP_VERSION = '3.2.0';
 
 const KKH_THEMES = {
-  dark: { label: 'Шаб', icon: '🌙', bg: '#0D1B2A', bg2: '#142236', card: '#1A2D44', card2: '#1E3350', text: '#F0EAD6', cream: '#F0EAD6', muted: '#A8B8CC', gold: '#C9A84C', gold2: '#E8C96D', line: 'rgba(201,168,76,.22)', red: '#D96B63', green: '#63C58A' },
-  light: { label: 'Рӯз', icon: '☀️', bg: '#F5F0E8', bg2: '#EDE5D6', card: '#FFFDF7', card2: '#F4EBDD', text: '#243247', cream: '#243247', muted: '#667085', gold: '#A47718', gold2: '#C99D32', line: 'rgba(122,88,18,.2)', red: '#B94A43', green: '#2F8F5B' },
-  gold: { label: 'Тиллоӣ', icon: '✨', bg: '#21170D', bg2: '#302112', card: '#422B13', card2: '#573A17', text: '#FFF1C7', cream: '#FFF1C7', muted: '#D5B77A', gold: '#E2A93B', gold2: '#FFD979', line: 'rgba(226,169,59,.3)', red: '#E4775F', green: '#7ECF8B' },
-  flag: { label: 'Парчам', icon: '🇹🇯', bg: '#160F18', bg2: '#241725', card: '#30202A', card2: '#3A2630', text: '#FFF6EE', cream: '#FFF6EE', muted: '#D8B7B2', gold: '#E3B341', gold2: '#F4D27B', line: 'rgba(217,72,70,.3)', red: '#D94846', green: '#4DAA74' },
-  book: { label: 'Китоб', icon: '📖', bg: '#1B120D', bg2: '#2A1B13', card: '#3A2418', card2: '#4B3020', text: '#F7E6C5', cream: '#F7E6C5', muted: '#C9AD8C', gold: '#D8A64B', gold2: '#F0C878', line: 'rgba(216,166,75,.27)', red: '#C86A55', green: '#6CA878' }
+ dark:{label:'Шаб',icon:'🌙',bg:'#101c2b',bg2:'#142236',card:'#19283b',card2:'#22354a',text:'#f2ead9',cream:'#f2ead9',muted:'#aabbd0',gold:'#e6bd70',gold2:'#f0cf91',line:'#304054',red:'#e4827b',green:'#80cba0'},
+ light:{label:'Рӯз',icon:'☀️',bg:'#f5f6f0',bg2:'#e6eddd',card:'#ffffff',card2:'#eef2e9',text:'#203b34',cream:'#203b34',muted:'#64756b',gold:'#25634e',gold2:'#36775f',line:'#dce4da',red:'#b94a43',green:'#2f8f5b'},
+ minimal:{label:'Минимализм',icon:'◌',bg:'#f4f7fb',bg2:'#e9effb',card:'#ffffff',card2:'#edf2fa',text:'#1e304c',cream:'#1e304c',muted:'#61718a',gold:'#315dcc',gold2:'#4770db',line:'#dce4ef',red:'#b94a43',green:'#2f8f5b'}
 };
-const KKH_THEME_ORDER = ['dark', 'light', 'gold', 'flag', 'book'];
+const KKH_THEME_ORDER = ['dark','light','minimal'];
 window.KKH_THEMES = KKH_THEMES;
 const KKH_LANGUAGES = { tg: 'Тоҷикӣ', ru: 'Русский', en: 'English' };
 const KKH_TRANSLATIONS = {
@@ -1404,7 +1402,7 @@ function setAppTheme(themeName, persist = true) {
   installThemeStyles();
   document.documentElement.dataset.appTheme = name;
   if (document.body) document.body.dataset.appTheme = name;
-  document.body?.classList.toggle('light-theme', name === 'light');
+  document.body?.classList.toggle('light-theme', name !== 'dark');
   if (persist) localStorage.setItem('kk_theme', name);
   const t = KKH_THEMES[name];
   const themeBtn = document.getElementById('themeBtn');
@@ -1414,7 +1412,7 @@ function setAppTheme(themeName, persist = true) {
   return name;
 }
 
-function getAppTheme() { return localStorage.getItem('kk_theme') || 'dark'; }
+function getAppTheme() { const t=localStorage.getItem('kk_theme')||'dark'; return KKH_THEMES[t]?t:'dark'; }
 
 
 function normalizeBookUrl(url) {
@@ -2921,7 +2919,13 @@ async function acknowledgeCacheControl(cfg){
 // ва равзанаи «Навсозӣ» дар 92% меистод; ҳангоми хатогӣ равзана ҳеҷ гоҳ пӯшида намешуд.
 function kkWithTimeout(promise,ms){return Promise.race([Promise.resolve(promise).catch(()=>{}),new Promise(r=>setTimeout(r,ms))])}
 async function checkRemoteCacheControl(){
-  if(cacheControlBusy)return;const last=Number(sessionStorage.getItem('kk_cache_control_checked_at')||0);if(Date.now()-last<30*60*1000)return;sessionStorage.setItem('kk_cache_control_checked_at',String(Date.now()));cacheControlBusy=true;
+  if(cacheControlBusy||document.hidden||navigator.onLine===false)return;
+  // Shared browser TTL avoids one cache-control wakeup per tab. No recurring timer.
+  const cacheCheckKey='kk_cache_control_checked_at_v2';let last=0;
+  try{last=Number(localStorage.getItem(cacheCheckKey)||0)}catch(e){}
+  if(last&&Date.now()-last<30*60*1000)return;
+  try{localStorage.setItem(cacheCheckKey,String(Date.now()))}catch(e){}
+  cacheControlBusy=true;
   let progress=null,finished=false,refreshApp=false;
   const hardStop=setTimeout(()=>{if(progress&&!finished){finished=true;progress.done('Барнома нав шуд');if(refreshApp)setTimeout(()=>location.reload(),500)}},20000);
   try{
@@ -3043,3 +3047,6 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
     }
   }catch(e){}
 })();
+
+/* Approved UI: local only, no startup health checks or request timers. */
+(function(){var src=document.currentScript?.src||'';var base=src.replace(/config\.js.*$/,'');function attach(){if(!document.getElementById('kk-approved-css')){var l=document.createElement('link');l.id='kk-approved-css';l.rel='stylesheet';l.href=base+'assets/css/approved-ui.css?v=20261121';document.head.appendChild(l)}if(!document.getElementById('kk-approved-js')){var j=document.createElement('script');j.id='kk-approved-js';j.src=base+'approved-ui.js?v=20261121';document.head.appendChild(j)}}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',attach,{once:true});else attach()})();
