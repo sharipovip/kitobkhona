@@ -662,7 +662,7 @@
       function startThinking(bubble, steps) {
         var i = 0, timer = null;
         bubble.classList.add('is-waiting');
-        function show() { bubble.innerHTML = '<span class="at-think-txt swap">' + AT.esc(steps[i]) + '</span><span class="at-dots" aria-hidden="true"><i></i><i></i><i></i></span>'; }
+        function show() { bubble.innerHTML = AT.emblem(true, 'aliya') + '<span class="at-think-txt swap">' + AT.esc(steps[i]) + '</span><span class="at-dots" aria-hidden="true"><i></i><i></i><i></i></span>'; }
         show();
         timer = setInterval(function () { if (i < steps.length - 1) { i++; show(); } }, 1700);
         return function stop() {
@@ -1052,7 +1052,11 @@
 
         try {
           var resText = await window.AliyaCore.sendMessage(prompt);
-          var renderedDictation = formatMarkdown(resText);
+          // Dictation/bayon is a finished school document, not a Markdown editor:
+          // remove every asterisk delimiter (including escaped \* and *** runs)
+          // before rendering so no service-specific markers can leak to the screen.
+          var cleanDictationMarkdown = String(resText || '').replace(/\\?\*+/g, '');
+          var renderedDictation = formatMarkdown(cleanDictationMarkdown);
           var plainDictationBox = document.createElement('div');
           plainDictationBox.innerHTML = renderedDictation;
           var cleanDictationText = (plainDictationBox.innerText || plainDictationBox.textContent || '')

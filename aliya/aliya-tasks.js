@@ -311,7 +311,7 @@
   function emblem(spin, theme) {
     var id = 'atg' + (++embSeq);
     var c1 = 'var(--at-gold,#E8C96D)', c2 = 'var(--at-acc,#C9A84C)';
-    return '<span class="at-emb' + (spin ? ' spin' : '') + '" aria-hidden="true"><svg viewBox="0 0 24 24"><defs><linearGradient id="' + id + '" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#FFE29A"/><stop offset=".5" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></linearGradient></defs><path d="M12 1.5l2.5 7.9 7.9 2.6-7.9 2.5-2.5 7.9-2.6-7.9L1.5 12l7.9-2.6z" fill="url(#' + id + ')"/></svg></span>';
+    return '<span class="at-emb' + (spin ? ' spin' : '') + '" aria-hidden="true"><svg viewBox="0 0 32 32"><defs><radialGradient id="' + id + '" cx="42%" cy="35%" r="70%"><stop offset="0" stop-color="#FFF6D2"/><stop offset=".42" stop-color="' + c1 + '"/><stop offset="1" stop-color="' + c2 + '"/></radialGradient></defs><path class="at-ai-core" d="M16 4.2c1.1 5.9 3.9 8.7 9.8 9.8-5.9 1.1-8.7 3.9-9.8 9.8-1.1-5.9-3.9-8.7-9.8-9.8 5.9-1.1 8.7-3.9 9.8-9.8Z" fill="url(#' + id + ')"/><circle class="at-ai-particle at-ai-particle-a" cx="25.7" cy="7.3" r="1.55" fill="#FFE29A"/><circle class="at-ai-particle at-ai-particle-b" cx="7" cy="24.7" r="1.15" fill="' + c1 + '"/><path class="at-ai-spark" d="M24.3 21.8c.45 2.05 1.45 3.05 3.5 3.5-2.05.45-3.05 1.45-3.5 3.5-.45-2.05-1.45-3.05-3.5-3.5 2.05-.45 3.05-1.45 3.5-3.5Z" fill="#FFF0B5"/></svg></span>';
   }
   function themeClass() {
     return document.body && document.body.classList.contains('at-aliya') ? 'at-aliya' : 'at-navy';
