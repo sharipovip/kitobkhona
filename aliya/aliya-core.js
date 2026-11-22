@@ -21,7 +21,20 @@
   var DB_VERSION = 1;
   var PHOTO_QUOTA_KEY = 'aliya_photo_quota_v1';
   var MAX_PHOTOS_PER_DAY = 10;
-  var REQUEST_TIMEOUT_MS = 60000;
+  // v171: Тайм-аут пеш аз ин 60 с буд, вале шлюзи аз ҳама зиёд буд:
+  //   ҷустуҷӯи зиндагӣ (≈4 с) + Gemini дар ҳар як ҳол (20 с) + провайдерҳои иловагӣ (12 с) + HF Router (9 с × 6).
+  // Дар натиҷа ҳар дархост вақти истода мекард ва корбар " бесконечно думает "-ро дид.
+  // Ҳоло тайм-аут ба меъмории воқеии шлюзи ҳамоҳанг аст ва ҳеҷ гоҳ дар ҳолати "мушаххас" боз намешавад.
+  var REQUEST_TIMEOUT_MS = 150000;
+  // v171: Сарчашмаи ҷавоби шлюз (Gemini ва HF Router) дар ҳолати "high" метавонад дар «касри худ» ҳамаи провайдерҳоро
+  // пай гирнад ва ҷавоб дар натиҷа холӣ гардад. Аз ин сабаб ҳар дархости «deep» ба як даффа ҳамаи маршрутҳоро
+  // аз нав сар мекард. Танҳо як аз нав ҳуққи такроф дода мешад ва хатои шабака/5xx ҳам такроф мешавад.
+  var MAX_ATTEMPTS = 2;
+  // v171: Ҳар як супориши зеҳнӣ дар шлюзи тавассути Gemini-и «high» ба мӯҳлати назардидаш ёрии 768 токен
+  // (ва ёрии ҷоиваи зиндагӣ барои ҳар саволи ≥14 ҳарф) истифода мебарад. Ин супотро ба ҳар паём илова мекард.
+  // Акнун режими «deep» ба «medium» мутобиқ шуд — куллоби як харитаи мушатхабе мешавад, на як шудаҳои ҳарф ба ҳарф.
+  var DEEP_REASONING_MODE = 'medium';
+  var DEEP_MAX_TOKENS = 2200;
 
   function decodeBase64Blob(base64, mimeType) {
     var binary = atob(String(base64 || '').replace(/^data:[^,]+,/, ''));
@@ -319,7 +332,8 @@
         if (externalSignal.aborted) controller.abort();
         else externalSignal.addEventListener('abort', abortFromCaller, { once: true });
       }
-      var timer = setTimeout(function () { controller.abort(); }, timeoutMs || REQUEST_TIMEOUT_MS);
+      var timedOut = false;
+      var timer = setTimeout(function () { timedOut = true; controller.abort(); }, timeoutMs || REQUEST_TIMEOUT_MS);
       try {
         var response = await fetch(GATEWAY_BASE + path, {
           method: 'POST',
@@ -340,6 +354,13 @@
             providerError.code = code;
             throw providerError;
           }
+          if (code === 'chat_deadline_exceeded') {
+            // v171: шлюзи худ вақти худро ба низ дарёшт — ҷавобро дар вақти мувофиқ гирифта наметавонад.
+            var deadlineError = new Error('Сервери Алия ба ҳадди вақти ҷавоб расид. Саволро кӯтоҳтар нависед ё дубора кӯшиш кунед.');
+            deadlineError.code = code;
+            deadlineError.transient = true;
+            throw deadlineError;
+          }
           if (code === 'image_generation_unavailable' || code === 'Image generation unavailable') {
             throw new Error('Хизмати суратсозӣ муваққатан дастнорас аст. Баъдтар дубора кӯшиш кунед.');
           }
@@ -359,10 +380,20 @@
           throw cancelled;
         }
         if (err && err.name === 'AbortError') {
-          throw new Error('Сервери Алия дер ҷавоб дод. Пайвастро санҷед ва дубора кӯшиш кунед.');
+          // v171: хатои тайм-аут алоҳида ба нишон дода мешавад, то корбар дар «Фикр мекунам» нашода,
+          // хатои аниқ ва «Дубора фиристодан»-ро бибинад.
+          var timeoutError = new Error(timedOut
+            ? 'Сервери Алия дар вақти мувофиқ ҷавоб надод. Шумо метавоонед дубора кӯшиш кунед ё саволро кӯтоҳтар нависед.'
+            : 'Сервери Алия дер ҷавоб дод. Пайвастро санҷед ва дубора кӯшиш кунед.');
+          timeoutError.code = timedOut ? 'timeout' : 'slow_response';
+          timeoutError.transient = true;
+          throw timeoutError;
         }
         if (err instanceof TypeError) {
-          throw new Error('Бо сервери Алия пайваст нашуд. Интернет ё дастрасии серверро санҷед.');
+          var networkError = new Error('Бо сервери Алия пайваст нашуд. Интернет ё дастрасии серверро санҷед.');
+          networkError.code = 'network';
+          networkError.transient = true;
+          throw networkError;
         }
         throw err;
       } finally {
@@ -398,19 +429,30 @@
       messages.push({ role: 'user', content: question });
       var payload = {
         messages: messages,
-        reasoning_mode: this.state.depth === 'deep' ? 'high' : (this.state.depth === 'simple' ? 'normal' : 'medium'),
-        temperature: this.state.depth === 'simple' ? 0.35 : (this.state.depth === 'deep' ? 0.65 : 0.5),
-        max_tokens: this.state.depth === 'deep' ? 4096 : 1400
+        // v171: «deep» ҳеҷ гоҳ 'high' намефиристад — 'high' дар шлюзи фазлӣ зиндагӣ + супоти кӯтоҳи амиқро дар ҳар
+        // паём фаъол мекард ва шлюз метавонист якчо даффа зиёд аз 150 с кор карда, дар натиҷа корбар танҳо
+        // «Меҷӯям → Фикр мекунам → Омода мешавам»-ро бинӯд. Ҳоло 'medium' — ҷавоб хурд ва умуман хато надорад.
+        reasoning_mode: this.state.depth === 'deep' ? DEEP_REASONING_MODE : (this.state.depth === 'simple' ? 'normal' : 'medium'),
+        temperature: this.state.depth === 'simple' ? 0.35 : (this.state.depth === 'deep' ? 0.6 : 0.5),
+        max_tokens: this.state.depth === 'deep' ? DEEP_MAX_TOKENS : 1400
       };
       var result, lastError;
-      for (var attempt = 0; attempt < 3; attempt++) {
+      for (var attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
         try {
           result = await this.requestJson('/v1/chat', payload, options.timeoutMs || REQUEST_TIMEOUT_MS, options.signal);
           lastError = null;
           break;
         } catch (requestError) {
           lastError = requestError;
-          if (requestError.code === 'aborted' || !(requestError.code === 'chat_providers_unavailable' || /пайваст нашуд|HTTP 5\d\d/i.test(String(requestError.message || ''))) || attempt === 2) break;
+          // v171: Ҳамаи хатоҳое, ки метавонанд худи харои шабака дошта бошанд, такроф мешаванд
+          // (тайм-аут, пайваст нашуд, 5xx). Хатои «провайдер ҳаст, вале ҳамаашон хаст» (chat_providers_unavailable)
+          // бо назардошт 1 танҳо як бор такроф мешавад — шлюз аллакай ҳамаи маршрутҳояшро тафтиш кардааст.
+          var msg = String(requestError.message || '');
+          var transient = requestError.code === 'chat_providers_unavailable'
+            || requestError.code === 'chat_deadline_exceeded'
+            || requestError.transient === true
+            || /пайваст нашуд|дер ҷавоб дод|HTTP 5\d\d/i.test(msg);
+          if (requestError.code === 'aborted' || !transient || attempt === MAX_ATTEMPTS - 1) break;
           await new Promise(function (resolve) { setTimeout(resolve, 700 * (attempt + 1)); });
         }
       }

@@ -2060,7 +2060,42 @@ def _short_error(exc: Exception) -> str:
     return f"{name}(status={status})" if status else name
 
 
-def _hf_router_chat(messages: List[Dict[str, Any]], temperature: float, max_tokens: int) -> Dict[str, Any]:
+# ---------------------------------------------------------------------------
+# v171: Общий бюджет времени ответа шлюза.
+#
+# Проблема: /v1/chat обходил маршруты ПОСЛЕДОВАТЕЛЬНО — живой поиск (≈4 с),
+# Gemini в двух режимах (20 с каждый), дополнительные провайдеры (12 с каждый),
+# ZeroGPU и HF Router (6 моделей по 9 с). В худшем случае ответ занимал
+# несколько минут, и клиент успевал показать «Фикр мекунам» несколько раз.
+#
+# Теперь у каждого запроса есть общий дедлайн CHAT_DEADLINE_S. Когда он
+# исчерпан, шлюз перестаёт пробовать новые маршруты и честно отвечает, что
+# провайдеры не ответили. Пользователь получает ошибку за секунды, а не через
+# несколько минут ожидания.
+# ---------------------------------------------------------------------------
+CHAT_DEADLINE_S = float(os.getenv("ALIYA_CHAT_DEADLINE_S", "100"))
+# Сколько времени ещё можно потратить на один конкретный HTTP-вызов.
+_PROVIDER_CALL_CAP_S = 20.0
+
+
+def _deadline_remaining(deadline: Optional[float]) -> float:
+    """Сколько секунд осталось до общего дедлайна (0 — если он уже истёк)."""
+    if deadline is None:
+        return _PROVIDER_CALL_CAP_S
+    return max(0.0, deadline - time.monotonic())
+
+
+def _call_timeout(deadline: Optional[float], requested: float) -> float:
+    """Тайм-аут одного вызова: не больше остатка общего бюджета и не меньше 1 с."""
+    remaining = _deadline_remaining(deadline)
+    if remaining <= 0.5:
+        # Дедлайн истёк — вызов делать нельзя. Возвращаем минимальное валидное значение,
+        # чтобы httpx никогда не получил бы timeout=0.
+        return 1.0
+    return max(1.0, min(float(requested), remaining))
+
+
+def _hf_router_chat(messages: List[Dict[str, Any]], temperature: float, max_tokens: int, deadline: Optional[float] = None) -> Dict[str, Any]:
     """
     Прямой вызов HF Inference Providers через router.huggingface.co.
     В отличие от InferenceClient здесь мы видим HTTP-код КАЖДОЙ попытки и можем
@@ -2071,6 +2106,10 @@ def _hf_router_chat(messages: List[Dict[str, Any]], temperature: float, max_toke
         return {"reply": "", "error": "no_hf_token"}
     attempts: List[Dict[str, Any]] = []
     for model_id in CANDIDATE_CLOUD_MODELS:
+        # v171: общий дедлайн — если он истёк, оставшиеся модели не пробуем.
+        if _deadline_remaining(deadline) <= 0.5:
+            attempts.append({"model": model_id, "error": "deadline_exceeded"})
+            break
         try:
             r = httpx.post(
                 HF_ROUTER_URL,
@@ -2086,7 +2125,7 @@ def _hf_router_chat(messages: List[Dict[str, Any]], temperature: float, max_toke
                     "max_tokens": min(768, max_tokens),
                     "stream": False,
                 },
-                timeout=9.0,
+                timeout=_call_timeout(deadline, 9.0),
             )
             if r.status_code == 200:
                 data = r.json()
@@ -2120,9 +2159,14 @@ def _extra_provider_chat(
     temperature: float,
     max_tokens: int,
     target_lang: str = "",
+    deadline: Optional[float] = None,
 ) -> Dict[str, Any]:
     attempts: List[Dict[str, Any]] = []
     for prov in _select_healthy_providers(for_tajik=(target_lang == "tg")):
+        # v171: общий дедлайн — дальше провайдеры не пробуем.
+        if _deadline_remaining(deadline) <= 0.5:
+            attempts.append({"provider": prov["name"], "error": "deadline_exceeded"})
+            break
         try:
             m_low = prov["model"].lower()
             is_reasoning = ("gpt-oss" in m_low) or ("nemotron" in m_low) or ("reasoning" in m_low) or ("qwen3" in m_low)
@@ -2139,7 +2183,7 @@ def _extra_provider_chat(
                 prov["url"],
                 headers={"Authorization": f"Bearer {prov['key']}", "Content-Type": "application/json"},
                 json=body,
-                timeout=12.0,
+                timeout=_call_timeout(deadline, 12.0),
             )
             _mark_provider_http_status(prov["name"], prov["key"], r.status_code)
             if r.status_code == 200:
@@ -2598,6 +2642,7 @@ def _gemini_teacher_chat(
     max_tokens: int,
     enable_google_search: bool,
     reasoning_mode: str = "medium",
+    deadline: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
     Учитель Google AI Studio (`gemini-2.5-flash`) + встроенный Google AI Search Grounding (`google_search`).
@@ -2619,6 +2664,9 @@ def _gemini_teacher_chat(
     ]
     modes = [True, False] if enable_google_search else [False]
     for use_search_tool in modes:
+        # v171: общий дедлайн — второй режим (без поиска) пробуем, только если вақт ҳам қолд.
+        if _deadline_remaining(deadline) <= 0.5:
+            break
         think_budget = 768 if rmode == "high" else (128 if use_search_tool else 0)
         gen_cfg: Dict[str, Any] = {
             "temperature": max(0.05, min(1.0, float(temperature))),
@@ -2638,7 +2686,7 @@ def _gemini_teacher_chat(
                 "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent",
                 headers={"x-goog-api-key": gem_key},
                 json=payload,
-                timeout=20.0 if (use_search_tool or rmode == "high") else 12.0,
+                timeout=_call_timeout(deadline, 20.0 if (use_search_tool or rmode == "high") else 12.0),
             )
             if response.status_code != 200:
                 if response.status_code == 429 and not use_search_tool:
@@ -2697,6 +2745,8 @@ def chat(req: ChatRequest):
     want_live_search = _needs_live_search(last_user_q) or (
         rmode == "high" and len(last_user_q.strip()) >= 14 and not _GREETING_SKIP_RE.match(last_user_q)
     )
+    # v171: общий дедлайн ответа — весь цепочка fallback-маршрутов обязана уложиться в него.
+    deadline = time.monotonic() + CHAT_DEADLINE_S
     search_context = _gather_live_search_context(last_user_q, target_lang) if want_live_search else ""
     aligned_messages = _prepare_language_aligned_messages(
         req.messages,
@@ -2715,6 +2765,7 @@ def chat(req: ChatRequest):
             eff_max_tokens,
             enable_google_search=want_live_search,
             reasoning_mode=rmode,
+            deadline=deadline,
         )
         if gem_res.get("reply"):
             clean_reply = _sanitize_llm_reply(gem_res["reply"], target_lang)
@@ -2730,8 +2781,10 @@ def chat(req: ChatRequest):
 
     # 2. Совет Гигантских Внешних Учителей
     extra_result: Dict[str, Any] = {"attempts": []}
-    if _extra_openai_providers():
-        extra_result = _extra_provider_chat(aligned_messages, req.temperature, eff_max_tokens, target_lang=target_lang)
+    if _extra_openai_providers() and _deadline_remaining(deadline) > 0.5:
+        extra_result = _extra_provider_chat(
+            aligned_messages, req.temperature, eff_max_tokens, target_lang=target_lang, deadline=deadline
+        )
         if extra_result.get("reply"):
             clean_reply = _sanitize_llm_reply(extra_result["reply"], target_lang)
             _record_teacher_lesson_async(last_user_q, clean_reply, target_lang, grounded=bool(search_context))
@@ -2742,7 +2795,7 @@ def chat(req: ChatRequest):
             }
 
     # 3. Встроенный Совет Учителей на бесплатной GPU вашего Space (ZeroGPU: Gemma-3-27B + Qwen3-14B)
-    if _zerogpu_chat_fn is not None:
+    if _zerogpu_chat_fn is not None and _deadline_remaining(deadline) > 0.5:
         try:
             zg_msgs = aligned_messages if search_context else req.messages
             zg = _zerogpu_chat_fn(zg_msgs, req.temperature, eff_max_tokens)
@@ -2758,7 +2811,7 @@ def chat(req: ChatRequest):
             logging.warning("ZeroGPU Teacher Council fallback (%s)", type(exc).__name__)
 
     # 4. HF Inference Providers через router.huggingface.co (резервный канал)
-    hf_result = _hf_router_chat(aligned_messages, req.temperature, eff_max_tokens)
+    hf_result = _hf_router_chat(aligned_messages, req.temperature, eff_max_tokens, deadline=deadline)
     if hf_result.get("reply"):
         clean_reply = _sanitize_llm_reply(hf_result["reply"], target_lang)
         _record_teacher_lesson_async(last_user_q, clean_reply, target_lang, grounded=bool(search_context))
@@ -2776,10 +2829,13 @@ def chat(req: ChatRequest):
             "diagnostics": {"attempts": attempts},
         }
     logging.warning("All chat providers unavailable: %s", attempts[:6])
+    # v171: если дедлайн исчерпан, честно сообщаем об этом — клиент покажет понятную ошибку,
+    # а не будет бесконечно ждать.
+    expired = _deadline_remaining(deadline) <= 0.5
     return {
         "reply": "",
-        "error": "chat_providers_unavailable",
-        "diagnostics": {"attempts": attempts[:8]},
+        "error": "chat_deadline_exceeded" if expired else "chat_providers_unavailable",
+        "diagnostics": {"attempts": attempts[:8], "deadline_s": CHAT_DEADLINE_S},
     }
 
 
@@ -2820,6 +2876,8 @@ def chat_stream(req: ChatRequest):
         want_live_search = _needs_live_search(last_user_q) or (
             rmode == "high" and len(last_user_q.strip()) >= 14 and not _GREETING_SKIP_RE.match(last_user_q)
         )
+        # v171: общий дедлайн и для потокового канала.
+        deadline = time.monotonic() + CHAT_DEADLINE_S
         search_context = _gather_live_search_context(last_user_q, target_lang) if want_live_search else ""
         aligned_messages = _prepare_language_aligned_messages(
             req.messages,
@@ -2846,6 +2904,9 @@ def chat_stream(req: ChatRequest):
             think_budget = 512 if rmode == "high" else (128 if want_live_search else 0)
             search_modes = [True, False] if want_live_search else [False]
             for use_search_tool in search_modes:
+                # v171: если общий дедлайн исчерпан — второй режим уже не пробуем.
+                if _deadline_remaining(deadline) <= 0.5:
+                    break
                 payload: Dict[str, Any] = {
                     "contents": contents,
                     "generationConfig": {
@@ -2866,7 +2927,7 @@ def chat_stream(req: ChatRequest):
                         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:streamGenerateContent?alt=sse",
                         headers={"x-goog-api-key": gem_key},
                         json=payload,
-                        timeout=22.0,
+                        timeout=_call_timeout(deadline, 22.0),
                     ) as sr:
                         if sr.status_code != 200:
                             if sr.status_code == 429 and not use_search_tool:
@@ -2904,6 +2965,9 @@ def chat_stream(req: ChatRequest):
         # Попытка 2: Потоковый Совет Внешних Учителей (автоматически пропускает мёртвые 404/402 модели!)
         yield f"data: {json.dumps({'type': 'stage', 'stage': 'council'}, ensure_ascii=False)}\n\n"
         for prov in _select_healthy_providers(for_tajik=(target_lang == "tg")):
+            # v171: общий дедлайн — оставшихся провайдеров не пробуем.
+            if _deadline_remaining(deadline) <= 0.5:
+                break
             try:
                 m_low = prov["model"].lower()
                 is_reasoning = ("gpt-oss" in m_low) or ("nemotron" in m_low) or ("reasoning" in m_low) or ("qwen3" in m_low)
@@ -2927,7 +2991,7 @@ def chat_stream(req: ChatRequest):
                     prov["url"],
                     headers={"Authorization": f"Bearer {prov['key']}", "Content-Type": "application/json"},
                     json=body,
-                    timeout=16.0,
+                    timeout=_call_timeout(deadline, 16.0),
                 ) as sr:
                     _mark_provider_http_status(prov["name"], prov["key"], sr.status_code)
                     if sr.status_code != 200:

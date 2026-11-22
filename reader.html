@@ -59,7 +59,7 @@
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
 
 
-<script src="./aliya/aliya-tasks.js?v=161" defer></script>
+<script src="./aliya/aliya-tasks.js?v=175" defer></script>
 
 <link rel="stylesheet" href="assets/css/reader.css?v=clean-1">
 <script src="reader-curl.js?v=clean-1"></script>
@@ -193,6 +193,8 @@
   let name = qs.get('name') || 'Китоб';
   let cover = qs.get('cover') || '';
   let pdf = null, page = 1, pages = 0, rendering = false, bars = true, zoom = 1;
+  // v171: ин туғ мебошад — пеш аз он turnPage() истифода мекард ва бо ReferenceError ҳамаи варақгардониро мешикст.
+  let readerCurlBusy = false;
 
   url = canonicalBookUrl(safeDecode(url));
   name = safeDecode(name);
@@ -708,6 +710,7 @@
 
   function turnPage(d) {
     if (window.__altPager) { try { window.__altPager(d); } catch (e) {} return; }
+    // readerCurlBusy: свайп-варақгардон (reader-gestures.js) дар ҳолати кор боз ҳаст — ин барои пойгоҳ кардани пайгирии навбатӣ.
     if (rendering || readerCurlBusy) return;
     const n = page + d;
     if (n < 1 || n > pages) return;
@@ -728,15 +731,21 @@
 
   let sx = 0, sy = 0, drag = false, startTime = 0, swipePointer = null;
   const stageEl = $('stage');
+  // v171: агар контроллери curl-вайрақ фаъол аст, ӯ ҳуққи свайрро ишғол мекунад (то як саҳифа як бор нагузарад).
+  function curlOwnsSwipe() {
+    return !!(window.KKReaderCurlController && window.__kkTextMode === 'pdf' && zoom <= 1.01);
+  }
   stageEl.addEventListener('pointerdown', function (e) {
     if (e.pointerType === 'mouse' && e.button !== 0) return;
     if (swipePointer !== null) return;
+    if (curlOwnsSwipe()) return;
     swipePointer = e.pointerId; sx = e.clientX; sy = e.clientY;
     startTime = Date.now(); drag = true;
     try { stageEl.setPointerCapture(e.pointerId); } catch (_) {}
   });
   stageEl.addEventListener('pointermove', function (e) {
     if (!drag || e.pointerId !== swipePointer) return;
+    if (curlOwnsSwipe()) { drag = false; swipePointer = null; return; }
     const dx=e.clientX-sx,dy=e.clientY-sy;
     if (Math.abs(dx)<=Math.abs(dy)||Math.abs(dx)<=8) return;
     const slot=$('currentSlot'),pct=Math.min(1,Math.abs(dx)/200),offset=dx<0?-pct*40:pct*40;
@@ -753,6 +762,54 @@
   }
   stageEl.addEventListener('pointerup',e=>finishReaderSwipe(e,false));
   stageEl.addEventListener('pointercancel',e=>finishReaderSwipe(e,true));
+
+  // v171: свайп-варақгардон (curl) барои PDF — reader-gestures.js пеш аз ин сарчашма бор, валеле пайваст нашуда буд.
+  // Ҳамин шуд, ки ӯро метавонист. Ҳеҷ гуна свайп барои ин контроллер кор мекунад.
+  async function renderCurlPreview(n) {
+    const p = await pdf.getPage(n), box = pageBox(), nat = p.getViewport({scale:1});
+    const fit = Math.min(box.w/nat.width, box.h/nat.height)*zoom;
+    let dpr = Math.min(devicePixelRatio || 1,2);
+    while (dpr>1 && nat.width*nat.height*fit*fit*dpr*dpr>14e6) dpr=Math.max(1,dpr-.25);
+    const vp=p.getViewport({scale:fit*dpr}), cv=document.createElement('canvas');
+    cv.width=Math.max(1,Math.round(vp.width));cv.height=Math.max(1,Math.round(vp.height));
+    cv.style.width=nat.width*fit+'px';cv.style.height=nat.height*fit+'px';
+    const ctx=cv.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+    await p.render({canvasContext:ctx,viewport:vp}).promise;return cv;
+  }
+  if (window.KKAttachReaderGestures) {
+    window.KKReaderCurlController = window.KKAttachReaderGestures({
+      stage: $('stage'), container: $('pageContainer'),
+      state: function(){ return {ready: !!pdf && !rendering && !readerCurlBusy && window.__kkTextMode === 'pdf', page: page, pages: pages, zoom: zoom}; },
+      current: function(){ return cvEl(); },
+      preview: renderCurlPreview,
+      busy: function(v){ readerCurlBusy = !!v; },
+      commit: async function(n){ await renderPage(n, 0); },
+      activity: function(){ if (typeof armReaderIdle === 'function') armReaderIdle(); }
+    });
+  }
+
+  // v171: як ҳолати ягонаи намоиши панелҳо, реаксияҳо ва таймер-бино (15 сония).
+  // Пеш аз ин блок дар файли асосӣ мавҷуд набуд — аз ин сабаб window.__kkToggleBars() undefined буд
+  // ва « як тап = экран пӯшон » кор намекард (ReferenceError).
+  let readerIdleTimer = null;
+  function setReaderBars(visible) {
+    bars = !!visible;
+    [$('topBar'), $('bottomBar'), $('readerAliyaBtn'), ...document.querySelectorAll('.reader-reactions')].filter(Boolean).forEach(node => node.classList.toggle('hidden', !bars));
+    armReaderIdle();
+  }
+  function armReaderIdle() {
+    clearTimeout(readerIdleTimer);
+    if (!bars || document.hidden) return;
+    readerIdleTimer = setTimeout(() => {
+      if (document.querySelector('.panel.open,.at-sheet.on,.at-dlg-bg.on,#aliyaOverlay.open') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement && document.activeElement.tagName || '')) { armReaderIdle(); return; }
+      setReaderBars(false);
+    }, 15000);
+  }
+  window.__kkToggleBars = function () { setReaderBars(!bars); };
+  ['pointerdown','keydown','input','wheel'].forEach(type => document.addEventListener(type, armReaderIdle, { passive:true }));
+  document.addEventListener('visibilitychange',armReaderIdle);
+  window.addEventListener('pagehide',()=>clearTimeout(readerIdleTimer));
+  armReaderIdle();
 
   function syncReaderTheme(t) {
     const light = t !== 'dark';

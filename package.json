@@ -8,7 +8,12 @@
     "start": "electron .",
     "dist:win": "electron-builder --win nsis --x64",
     "test:aliya": "node tests/aliya-smoke.js",
-    "test:ui": "node tests/ui-regression.js"
+    "test:ui": "node tests/ui-regression.js",
+    "test:reader": "node tests/reader-paging.js",
+    "test:latency": "node tests/aliya-latency.js",
+    "test:gateway": "python3 tests/gateway_deadline.py",
+    "test:html": "python3 tests/check_aliya_html.py",
+    "test:fixes": "npm run test:aliya && npm run test:reader && npm run test:latency && npm run test:gateway && npm run test:html && npm run test:ui"
   },
   "devDependencies": {
     "electron": "^35.0.0",

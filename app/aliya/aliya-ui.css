@@ -1087,3 +1087,5 @@ html.aliya-light .bk-it{ border-color:var(--border); background:var(--card); }
 
 /* Correction: the main Aliya/chat identity stays still; orbit is reader-only. */
 .aliya-avatar-3d::before,.aliya-avatar-3d::after,.at-emblem::before,.at-emblem::after{content:none!important;animation:none!important}
+/* v171: вақти саргузашта дар ҳолати «Фикр мекунам» — корбар мебинад, ки Алия кор мекунад. */
+.msg-bubble.is-waiting .at-think-secs{margin-left:2px;color:var(--muted);font-size:11px;font-variant-numeric:tabular-nums;opacity:.75;min-width:34px;text-align:left}
