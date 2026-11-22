@@ -1,0 +1,1894 @@
+<!DOCTYPE html>
+<html lang="tg" class="light-reading">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="theme-color" content="#FFFFFF">
+<title>Китобхона — Хондан</title>
+<link rel="icon" type="image/x-icon" href="./favicon.ico">
+
+<script src="./assets/libs/pdf.min.js"></script>
+<script src="config.js?v=76"></script>
+<script>
+/* Запасной мост: если в приложении AndroidBridge не создался (ошибка в JS-шиме старой сборки),
+   подключаемся к нативному каналу KitobkhonaNative напрямую — те же методы, тот же формат. */
+(function () {
+  try {
+    if (!window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+    var bridge = window.AndroidBridge || {};
+    var map = { saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile', shareFile: 'shareFile',
+      shareText: 'shareText', shareTextWithWhatsAppChooser: 'shareTextWithWhatsAppChooser', shareImageWithText: 'shareImageWithText',
+      shareRemoteImage: 'shareRemoteImage', shareRemoteImages: 'shareRemoteImages', saveUserId: 'saveUserId', saveAuthToken: 'saveAuthToken',
+      openExternalUrl: 'openExternalUrl', openOfficialSite: 'openOfficialSite' };
+    Object.keys(map).forEach(function (name) {
+      if (typeof bridge[name] === 'function') return;
+      bridge[name] = function () {
+        try { window.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) })); }
+        catch (e) { console.warn('Native feature is unavailable', e); }
+      };
+    });
+    window.AndroidBridge = bridge;
+  } catch (e) {}
+})();
+</script>
+<script src="cache.js?v=45"></script>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  <link rel="stylesheet" href="assets/css/desktop-layout.css">
+
+
+<script src="./aliya/aliya-tasks.js?v=161" defer></script>
+
+<link rel="stylesheet" href="assets/css/reader.css?v=clean-1">
+<script src="reader-curl.js?v=clean-1"></script>
+<script src="reader-gestures.js?v=clean-1"></script>
+</head>
+<body class="light-reading">
+<div class="reader-wrapper">
+  
+  <div class="reader-top-bar" id="topBar">
+    <button class="btn-back" onclick="goBack()" aria-label="Бозгашт">←</button>
+    <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
+    <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
+    <button class="top-btn notes-btn" id="notesBtn" onclick="toggleNotes()" aria-label="Ёддоштҳо" title="Ёддоштҳо">🔖<span class="notes-badge" id="notesBadge" hidden>0</span></button>
+    <button class="top-btn pc-fullscreen-btn" id="readerFullscreenBtn" onclick="toggleReaderFullscreen()" title="Экрани пурра (F)" aria-label="Экрани пурра">⛶</button>
+    <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
+    <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)" aria-label="Кам кардани андоза">−</button><button class="zoom-exact" id="zoomExactBtn" onclick="promptExactZoom()" aria-label="Фоизи дақиқи андоза">100%</button><button onclick="adjustZoom(10)" aria-label="Зиёд кардани андоза">＋</button></div>
+  </div>
+
+
+  <main class="reader-main" id="readerMain">
+    <div class="page-stage" id="stage">
+      <div class="page-container" id="pageContainer">
+        <div class="page-slot current" id="currentSlot"></div>
+        <div class="page-slot hidden" id="nextSlot"></div>
+      </div>
+    </div>
+    <div class="loading on" id="loading">
+      <div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div>
+      <div class="load-status" id="loadStatus"></div>
+    </div>
+    <!-- v100: лайки ВОЗВРАЩЕНЫ на правый край (по просьбе) — при «чистом экране»
+         (одно касание) они прячутся вместе с панелями и не мешают читать -->
+    <aside class="reader-reactions" id="readerReactions" aria-label="Вокунишҳо">
+      <button class="reaction-btn" data-reaction="like" title="Лайк"><span class="reaction-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="likeCount">0</span></button>
+      <button class="reaction-btn" data-reaction="love" title="Дӯст доштан"><span class="reaction-symbol heart-reaction"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6Z"/></svg></span><span class="cnt" id="loveCount">0</span></button>
+      <button class="reaction-btn" data-reaction="dislike" title="Нописанд"><span class="reaction-symbol dislike-symbol"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M7 10v10H3V10h4Zm0 9h9.2a2 2 0 0 0 1.9-1.4l2-6A2 2 0 0 0 18.2 9H14l.8-3.2A2.3 2.3 0 0 0 12.6 3L7 10"/></svg></span><span class="cnt" id="dislikeCount">0</span></button>
+    </aside>
+  </main>
+
+  
+  <div class="reader-bottom-bar" id="bottomBar">
+    <div class="reader-action-nav">
+      <label class="reader-nav-item page-entry"><span class="page-entry-box"><input id="quickPageInput" type="number" inputmode="numeric" min="1" placeholder="1/1" onfocus="prepareQuickPage()" onkeydown="if(event.key==='Enter'){event.preventDefault();quickGoPage();this.blur()}" onblur="quickGoPage()"><span id="quickPagePct">0%</span></span><small>Саҳифа</small></label>
+      <button class="reader-nav-item" type="button" onclick="toggleReaderTheme()"><span class="ico" id="readerThemeIcon">☀</span><small>Мавзӯъ</small></button>
+      <button class="reader-nav-item center brightness-dial" id="brightnessDial" type="button" aria-label="Дурахшонӣ"><span class="ico"><span id="brightnessDialValue">100%</span><span class="paper-color-dot" id="paperColorDot" onpointerdown="event.stopPropagation()" onclick="event.stopPropagation();cyclePaperColor()" title="Ранги саҳифа"></span></span><small>Дурахшонӣ</small></button>
+      <button class="reader-nav-item" type="button" onclick="shareCurrent()"><span class="ico">↗</span><small>Мубодила</small></button>
+      <button class="reader-nav-item" type="button" onclick="downloadCurrent()"><span class="ico">⇩</span><small>Зеркашӣ</small></button>
+    </div>
+  </div>
+
+  <div class="panel settings-panel" id="settingsPanel">
+    <div class="settings-header">
+      <div class="panel-title">⚙️ Танзимот</div>
+      <button class="close-panel" onclick="toggleSettings(false)">✕</button>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">Намуди хондан</div>
+      <div class="setting-item">
+        <div class="setting-label">🌓 Мавзӯъ</div>
+        <div class="row">
+          <button class="pill" onclick="setTheme('light')">☀️ Рӯз</button>
+          <button class="pill active" onclick="setTheme('dark')">🌙 Шаб</button>
+          <button class="pill" onclick="setTheme('minimal')">◇ Минимализм</button>
+        </div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">Дурахшонӣ</div>
+      <div class="setting-item" style="display:block">
+        <div class="setting-label">💡 Танзими дурахшонӣ</div>
+        <input class="range" id="brightnessRange" type="range" min="45" max="120" value="100" oninput="setBrightness(this.value)">
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">Андоза</div>
+      <div class="setting-item" style="display:block">
+        <div class="setting-label">🔍 Калонсозӣ</div>
+        <input class="range" type="range" min="70" max="220" value="100" oninput="setZoom(this.value)">
+        <div id="zoomText" style="text-align:center;color:var(--gold2);font-weight:900">100%</div>
+      </div>
+    </div>
+    <div class="settings-group">
+      <div class="settings-group-title">Имконот</div>
+      <div class="setting-item" onclick="downloadCurrent()">
+        <div class="setting-label">⬇ Зеркашӣ кардан</div>
+        <div>📥</div>
+      </div>
+    </div>
+  </div>
+
+  
+  <div class="panel search-panel" id="searchPanel">
+    <div class="settings-header">
+      <div class="panel-title">🔍 Ҷустуҷӯ</div>
+      <button class="close-panel" onclick="toggleSearch(false)">✕</button>
+    </div>
+    <form onsubmit="event.preventDefault();findText()" class="row">
+      <input id="findInput" style="flex:1;min-width:170px;border:1px solid var(--border);background:rgba(255,255,255,.06);color:var(--text);border-radius:12px;padding:10px;outline:none" placeholder="Калима...">
+      <button class="pill">Ёфтан</button>
+    </form>
+    <div class="find-nav">
+      <button class="pill" onclick="prevFind()">↑ Пешина</button>
+      <div class="find-count" id="findCount">0 / 0</div>
+      <button class="pill" onclick="nextFind()">↓ Баъдӣ</button>
+    </div>
+    <div id="findResult" class="find-results"></div>
+  </div>
+
+
+  <!-- v159: Ёддоштҳо -->
+  <div class="panel search-panel notes-panel at-navy" id="notesPanel" role="dialog" aria-label="Ёддоштҳо">
+    <div class="settings-header">
+      <div class="panel-title">🔖 Ёддоштҳо</div>
+      <button class="close-panel" onclick="toggleNotes(false)" aria-label="Пӯшидан">✕</button>
+    </div>
+    <div id="notesList"></div>
+  </div>
+
+  
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+  pdfjsLib.GlobalWorkerOptions.workerSrc = './assets/libs/pdf.worker.min.js';
+
+  const $ = id => document.getElementById(id);
+  const qs = new URL(location.href).searchParams;
+  const safeDecode = s => { try { return decodeURIComponent(s) } catch(e) { return s } };
+
+  let url = qs.get('url') || qs.get('open') || '';
+  let name = qs.get('name') || 'Китоб';
+  let cover = qs.get('cover') || '';
+  let pdf = null, page = 1, pages = 0, rendering = false, bars = true, zoom = 1;
+
+  url = canonicalBookUrl(safeDecode(url));
+  name = safeDecode(name);
+  cover = safeDecode(cover);
+  if (/^data:/i.test(String(cover).trim())) cover = '';
+  const titleEl=$('bookTitle');if(titleEl)titleEl.textContent=name;
+
+  function getBookId() {
+    try {
+      const u = new URL(url, location.href);
+      const path = u.pathname.split('/').filter(Boolean);
+      // v127: файлҳои худи барнома (tavsiya/pdf/*.pdf ва ғ.) — ID = роҳи нисбӣ аз решаи барнома,
+      // то ки хониши онҳо мисли китобҳои каталог (рейтинг, омор, 50 соат) ҳисоб шавад.
+      if (u.origin === location.origin) {
+        const base = location.pathname.replace(/[^/]*$/, '');
+        let rel = u.pathname.startsWith(base) ? u.pathname.slice(base.length) : u.pathname.replace(/^\/+/, '');
+        try { rel = decodeURIComponent(rel); } catch (e2) {}
+        return (rel.replace(/^books\//, '') || name || 'Китоб').slice(0, 300);
+      }
+      const contentPath = path.slice(3).join('/');
+      let clean = contentPath.replace(/^books\//, '');
+      if (!clean) {
+        const fileName = path.slice(3).pop() || path.pop() || '';
+        return fileName || name;
+      }
+      return clean;
+    } catch(e) {
+      return name;
+    }
+  }
+
+  let sessionInterval=null,sessionStarted=false,segmentStartedAt=0;
+  const LOCAL_CHECKPOINT_MS=10*60*1000;
+
+  function readingPayload(duration){
+    return {book_id:getBookId(),book_title:name,duration:Math.max(0,Math.round(duration||0)),pages_read:Math.max(0,Number(page)||0),total_pages:Math.max(0,Number(pages)||0),status:(pages>0&&page/pages>=.95)?'completed':'paused'};
+  }
+  function checkpointReading(force=false){
+    if(!sessionStarted||!segmentStartedAt)return;
+    const now=Date.now(),duration=Math.floor((now-segmentStartedAt)/1000);
+    if(duration<=0||(!force&&now-segmentStartedAt<LOCAL_CHECKPOINT_MS))return;
+    if(window.KKReadingSyncV2)KKReadingSyncV2.add(readingPayload(duration));
+    segmentStartedAt=now;
+  }
+  function startReadingSession(){
+    if(sessionStarted)return;sessionStarted=true;segmentStartedAt=Date.now();
+    if(window.KKReadingSyncV2)KKReadingSyncV2.active();
+    sessionInterval=setInterval(()=>{if(document.hidden)return;if(window.KKReadingSyncV2)KKReadingSyncV2.active();checkpointReading(false)},30*1000);
+  }
+  function stopReadingSession(){
+    if(!sessionStarted)return;checkpointReading(true);sessionStarted=false;segmentStartedAt=0;
+    if(sessionInterval)clearInterval(sessionInterval);sessionInterval=null;
+    if(window.KKReadingSyncV2)KKReadingSyncV2.closed();
+  }
+  window.addEventListener('load',()=>{setTimeout(startReadingSession,1000)});
+  window.addEventListener('online',()=>window.KKReadingSyncV2?.flush());
+  window.addEventListener('beforeunload',stopReadingSession);
+  window.addEventListener('pagehide',stopReadingSession);
+  document.addEventListener('visibilitychange',()=>{if(document.hidden)stopReadingSession();else startReadingSession()});
+  window.goBack=function(){stopReadingSession();if(history.length>1)history.back();else location.href='kitobho.html'};
+
+  let currentReaction = null;
+  let currentRating = 0;
+
+  async function loadReactions() {
+    const bookId = getBookId();
+    if (!bookId) return;
+
+    // 1. Мгновенный показ из локального кэша (0 мс, 0 запросов к серверу)
+    try {
+      const cached = JSON.parse(localStorage.getItem('kk_stats_' + bookId) || 'null');
+      if (cached) {
+        if ($('likeCount')) $('likeCount').textContent = cached.likes || 0;
+        if ($('loveCount')) $('loveCount').textContent = cached.loves || 0;
+        if ($('dislikeCount')) $('dislikeCount').textContent = cached.dislikes || 0;
+        if (cached.myReaction) {
+          currentReaction = cached.myReaction;
+          document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.reaction === cached.myReaction);
+          });
+        }
+        if (cached.myRating) {
+          currentRating = cached.myRating;
+          updateStarsUI(cached.myRating);
+        }
+      }
+    } catch(e) {}
+
+    // 2. Фоновый запрос к Edge KV (кэшируется на границе Cloudflare, не нагружает базу Neon)
+    try {
+      const token = localStorage.getItem('kk_token');
+      const reqs = [
+        fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-stats/' + encodeURIComponent(bookId))
+      ];
+      if (token) {
+        reqs.push(
+          fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions/' + encodeURIComponent(bookId), {
+            headers: { 'Authorization': 'Bearer ' + token }
+          })
+        );
+      }
+
+      const results = await Promise.allSettled(reqs);
+      const statsRes = results[0];
+      const userRes = results[1];
+
+      let likes = parseInt($('likeCount')?.textContent) || 0;
+      let loves = parseInt($('loveCount')?.textContent) || 0;
+      let dislikes = parseInt($('dislikeCount')?.textContent) || 0;
+
+      if (statsRes && statsRes.status === 'fulfilled' && statsRes.value.ok) {
+        const stats = await statsRes.value.json();
+        likes = stats.likes || 0;
+        loves = stats.loves || 0;
+        dislikes = stats.dislikes || 0;
+        if ($('likeCount')) $('likeCount').textContent = likes;
+        if ($('loveCount')) $('loveCount').textContent = loves;
+        if ($('dislikeCount')) $('dislikeCount').textContent = dislikes;
+      }
+
+      if (userRes && userRes.status === 'fulfilled' && userRes.value.ok) {
+        const data = await userRes.value.json();
+        if (data.reaction) {
+          currentReaction = data.reaction;
+          document.querySelectorAll('.reaction-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.reaction === data.reaction);
+          });
+        }
+        if (data.rating) {
+          currentRating = data.rating;
+          updateStarsUI(data.rating);
+        }
+      }
+
+      // Сохраняем актуальные данные в локальный кэш
+      try {
+        localStorage.setItem('kk_stats_' + bookId, JSON.stringify({
+          likes, loves, dislikes,
+          myReaction: currentReaction,
+          myRating: currentRating,
+          ts: Date.now()
+        }));
+      } catch(e) {}
+
+    } catch(e) {
+      console.warn('Failed to load reactions:', e);
+    }
+  }
+
+  async function saveReaction(reaction) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) { toast('👤 Аввал ба профил ворид шавед', 3200); return; }
+    const bookId = getBookId();
+    if (!bookId) return;
+    try {
+      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ book_id: bookId, reaction })
+      });
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      const stats = await resp.json();
+      $('likeCount').textContent = stats.likes || 0;
+      $('loveCount').textContent = stats.loves || 0;
+      $('dislikeCount').textContent = stats.dislikes || 0;
+      document.querySelectorAll('.reaction-btn').forEach(btn => {
+        btn.classList.toggle('active', btn.dataset.reaction === reaction);
+      });
+      currentReaction = reaction;
+      try {
+        localStorage.setItem('kk_stats_' + bookId, JSON.stringify({
+          likes: parseInt($('likeCount')?.textContent) || 0,
+          loves: parseInt($('loveCount')?.textContent) || 0,
+          dislikes: parseInt($('dislikeCount')?.textContent) || 0,
+          myReaction: currentReaction,
+          myRating: currentRating,
+          ts: Date.now()
+        }));
+      } catch(e) {}
+      try { window.invalidateBookStats && window.invalidateBookStats(getBookId()); } catch(e) {}
+      toast('Реакция сабт шуд');
+    } catch(e) {
+      console.error('Save reaction error:', e);
+      toast('Хатогӣ: ' + e.message);
+    }
+  }
+
+  async function saveRating(rating) {
+    const token = localStorage.getItem('kk_token');
+    if (!token) { toast('👤 Аввал ба профил ворид шавед', 3200); return; }
+    const bookId = getBookId();
+    if (!bookId) return;
+    try {
+      const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/book-reactions', {
+        method: 'POST',
+        headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ book_id: bookId, rating })
+      });
+      if (!resp.ok) throw new Error('HTTP '+resp.status);
+      currentRating = rating;
+      updateStarsUI(rating);
+      try {
+        localStorage.setItem('kk_stats_' + bookId, JSON.stringify({
+          likes: parseInt($('likeCount')?.textContent) || 0,
+          loves: parseInt($('loveCount')?.textContent) || 0,
+          dislikes: parseInt($('dislikeCount')?.textContent) || 0,
+          myReaction: currentReaction,
+          myRating: currentRating,
+          ts: Date.now()
+        }));
+      } catch(e) {}
+      try { window.invalidateBookStats && window.invalidateBookStats(getBookId()); } catch(e) {}
+      toast('Баҳо сабт шуд (⭐ ' + rating + '/10)');
+    } catch(e) {
+      console.error('Save rating error:', e);
+      toast('Хатогӣ: ' + e.message);
+    }
+  }
+
+  function updateStarsUI(rating) {
+    document.querySelectorAll('.rating-stars .star').forEach(el => {
+      const val = parseInt(el.dataset.rating);
+      el.classList.toggle('on', val <= rating);
+      el.textContent = val <= rating ? '★' : '☆';
+    });
+  }
+
+  document.querySelectorAll('.reaction-btn').forEach(btn => {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const reaction = this.dataset.reaction;
+      if (this.classList.contains('active')) {
+        saveReaction(null);
+        this.classList.remove('active');
+        currentReaction = null;
+      } else {
+        saveReaction(reaction);
+      }
+    });
+  });
+
+  document.querySelectorAll('.rating-stars .star').forEach(el => {
+    el.addEventListener('click', function(e) {
+      e.stopPropagation();
+      const rating = parseInt(this.dataset.rating);
+      if (currentRating === rating) {
+        saveRating(0);
+      } else {
+        saveRating(rating);
+      }
+    });
+  });
+
+  function toast(msg, d = 2200) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._timer);
+    t._timer = setTimeout(() => t.classList.remove('show'), d);
+  }
+
+  function setLoadProgress(p) {
+    p = Math.max(0, Math.min(100, Math.round(p || 0)));
+    $('progressRing')?.style.setProperty('--p', p);
+    if ($('loadPct')) $('loadPct').textContent = p + '%';
+  }
+
+  function cdnPdfUrl(u) {
+    try {
+      const x = new URL(u);
+      if (x.hostname === 'raw.githubusercontent.com') {
+        const parts = x.pathname.split('/').filter(Boolean);
+        if (parts.length >= 4) {
+          const owner = parts[0], repo = parts[1], branch = parts[2];
+          const pathParts = parts.slice(3).map(p => encodeURIComponent(decodeURIComponent(p)));
+          const path = pathParts.join('/');
+          return `https://cdn.jsdelivr.net/gh/${owner}/${repo}@${branch}/${path}`;
+        }
+      }
+      return u;
+    } catch(e) { return u; }
+  }
+
+  function cachedMap() {
+    try { return JSON.parse(localStorage.getItem('kk_cached_books') || '{}') } catch(e) { return {} }
+  }
+  function saveCachedMeta(pdfUrl, bytes = 0) {
+    try {
+      const m = cachedMap();
+      const canonical = canonicalBookUrl(pdfUrl || url);
+      const oldKey = Object.keys(m).find(k => canonicalBookUrl(m[k]?.url || k) === canonical);
+      const previous = oldKey ? m[oldKey] : {};
+      const meta = { ...previous, url: canonical, name, cover, ts: Date.now(), size: bytes || previous.size || 0 };
+      m[canonical] = meta;
+      localStorage.setItem('kk_cached_books', JSON.stringify(m));
+    } catch(e) {}
+  }
+  async function openPdfDocumentWithTimeout(data) {
+    const task = pdfjsLib.getDocument({ data: data });
+    let timer = 0;
+    try {
+      return await Promise.race([
+        task.promise,
+        new Promise((_, reject) => { timer = setTimeout(() => reject(new Error('PDF дар вақти муайян кушода нашуд')), 30000); })
+      ]);
+    } catch (error) {
+      try { await task.destroy(); } catch (_) {}
+      throw error;
+    } finally {
+      clearTimeout(timer);
+    }
+  }
+
+  async function loadPdfFrom(pdfUrl) {
+    setLoadProgress(0);
+    const response=await getOrFetchBookResponse(pdfUrl,{onProgress:(loaded,total)=>setLoadProgress(total?loaded/total*100:35)});
+    const data=await response.arrayBuffer();saveCachedMeta(pdfUrl,data.byteLength);setLoadProgress(92);
+    const doc = await openPdfDocumentWithTimeout(data);
+    setLoadProgress(100);
+    return doc;
+  }
+
+  async function findFallbackBookUrl(bookName, origUrl) {
+    try {
+      const res = await fetch('search-index.json');
+      if (!res.ok) return null;
+      const data = await res.json();
+      const items = data.items || [];
+      const clean = (bookName || '').replace(/\.pdf$/i, '').toLowerCase().trim();
+      const found = items.find(it => {
+        const n = (it.name || '').replace(/\.pdf$/i, '').toLowerCase().trim();
+        const f = (it.file || '').replace(/\.pdf$/i, '').toLowerCase().trim();
+        return n === clean || f === clean || (clean && (n.includes(clean) || clean.includes(n)));
+      });
+      if (found) {
+        const encP = p => String(p||'').split('/').map(encodeURIComponent).join('/');
+        return `https://raw.githubusercontent.com/sharipovip/books/main/${encP(found.folder)}/${encodeURIComponent(found.file)}`;
+      }
+    } catch(e) {}
+    return null;
+  }
+
+  async function loadPdfFast() {
+    setLoadProgress(0);
+    // v99: гонка ВСЕХ зеркал (jsdelivr×3 + raw) с мгновенным старом —
+    // победил тот, кто первым отдал первый кусок файла.
+    const buf = await fetchBookAnyCandidate();
+    setLoadProgress(92);
+    const doc = await openPdfDocumentWithTimeout(buf);
+    setLoadProgress(100);
+    return doc;
+  }
+
+  async function openPdf() {
+    if (!url) {
+      $('currentSlot').innerHTML = '<div class="error">URL-и китоб нест</div>';
+      $('loading').classList.remove('on');
+      return;
+    }
+    window.__kkTextMode = 'pdf'; $('stage').classList.add('pdf-gesture-mode');
+    window.__kkScrollWrap = null;
+    try {
+      try {
+        pdf = await loadPdfFast();
+      } catch (e1) {
+        // ғайриимкон: китоб 404 (робот номро иваз кард) → ҷустуҷӯ аз рӯи ном
+        const fallbackUrl = await findFallbackBookUrl(name, url);
+        if (fallbackUrl) pdf = await loadPdfFrom(canonicalBookUrl(fallbackUrl));
+        if (!pdf) throw e1;
+      }
+      pages = pdf.numPages;
+      window.__kkReaderDoc = { doc: pdf, url: canonicalBookUrl(url) };   // v159: Алия ҳамин китоби кушодаро истифода мебарад
+      const pr = getProgress();
+      const qPage = parseInt(qs.get('page'), 10); // v159: «Ба саҳифа» аз ёддоштҳо ва бозгашт аз Алия
+      page = qPage > 0 ? Math.min(qPage, pages) : (pr ? Math.min(pr.page, pages) : 1);
+      await renderPage(page);
+    } catch(e) {
+      console.error('[Reader] Error:', e);
+      $('currentSlot').innerHTML = '<div class="error">Хатогӣ ҳангоми кушодани PDF<br>' + String(e.message || e) + '</div>';
+    } finally {
+      $('loading').classList.remove('on');
+    }
+  }
+
+  function getProgress() {
+    try { return JSON.parse(localStorage.getItem('kk_reader_progress') || '{}')[url] } catch(e) { return null }
+  }
+  function saveProgress() {
+    try {
+      const o = JSON.parse(localStorage.getItem('kk_reader_progress') || '{}');
+      o[url] = { name, page, pages, cover, ts: Date.now() };
+      localStorage.setItem('kk_reader_progress', JSON.stringify(o));
+    } catch(e) {}
+  }
+
+  // ===== v131: стабильный рендер (масштаб / перелистывание / ресайз) =====
+  const Z_MIN = 0.7, Z_MAX = 2.2, FLIP_MS = 640;
+  let renderedZoom = 1, renderedBoxW = 0, renderedBoxH = 0;
+  let pendingRender = null, flipFinalize = null, dragAngle = 0, zoomCommitTimer = null;
+
+  function pageBox() { const c = $('pageContainer'); return { w: Math.max(1, c.clientWidth), h: Math.max(1, c.clientHeight) }; }
+  function reducedMotion() { try { return !!(window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches); } catch (e) { return false; } }
+  function resetSlotInstant(el) {
+    el.style.transition = 'none'; el.style.transform = ''; el.style.transformOrigin = ''; el.style.opacity = ''; el.style.filter = '';
+    void el.offsetWidth; el.style.transition = '';
+  }
+  // v132: вид страницы = масштаб (zoom/renderedZoom) + сдвиг panX/panY от центра. Нативного скролла нет:
+  // увеличенная страница стоит неподвижно, двигается и масштабируется только двумя пальцами (как в галерее).
+  let panX = 0, panY = 0;
+  function cvEl() { return $('currentSlot').querySelector('canvas'); }
+  function applyViewTo(cv, smooth) {
+    if (!cv) return;
+    const k = zoom / renderedZoom, box = pageBox();
+    const w = parseFloat(cv.style.width) * k, h = parseFloat(cv.style.height) * k;
+    const mx = Math.max(0, (w - box.w) / 2), my = Math.max(0, (h - box.h) / 2);
+    panX = Math.max(-mx, Math.min(mx, panX));
+    panY = Math.max(-my, Math.min(my, panY));
+    cv.style.transformOrigin = '50% 50%';
+    cv.style.transition = smooth ? 'transform .14s ease-out' : 'none';
+    cv.style.transform = (Math.abs(k - 1) < 0.001 && !panX && !panY) ? '' : 'translate3d(' + panX + 'px,' + panY + 'px,0) scale(' + k + ')';
+  }
+
+  function flipTo(newCv, oldCv, dir) {
+    const container = $('pageContainer'), cur = $('currentSlot'), flap = $('nextSlot');
+    const shade = document.createElement('div'); shade.className = 'flip-shade'; container.appendChild(shade);
+    const startAngle = dragAngle; dragAngle = 0;
+    const anims = []; let done = false;
+    const finalize = () => {
+      if (done) return; done = true;
+      anims.forEach(a => { try { a.cancel(); } catch (e) {} });
+      if (dir < 0) cur.replaceChildren(newCv);
+      flap.className = 'page-slot hidden'; flap.replaceChildren(); flap.removeAttribute('style');
+      shade.remove();
+      if (flipFinalize === finalize) flipFinalize = null;
+    };
+    flipFinalize = finalize;
+    flap.removeAttribute('style');
+    flap.className = 'page-slot flip-flap';
+    if (dir > 0) { cur.replaceChildren(newCv); flap.replaceChildren(oldCv); }   // новая страница лежит снизу, старая переворачивается
+    else { flap.replaceChildren(newCv); }                                       // предыдущая страница возвращается поверх текущей
+    const R = a => 'rotateY(' + a + 'deg)', B = b => 'brightness(' + b + ')';
+    const kf = dir > 0 ? [
+      { transform: R(startAngle), filter: B(1),   opacity: 1, offset: 0 },
+      { transform: R(-52),        filter: B(.88), opacity: 1, offset: .45 },
+      { transform: R(-92),        filter: B(.74), opacity: 1, offset: .8 },
+      { transform: R(-105),       filter: B(.7),  opacity: 0, offset: 1 }
+    ] : [
+      { transform: R(-105),       filter: B(.7),  opacity: 0, offset: 0 },
+      { transform: R(-92),        filter: B(.74), opacity: 1, offset: .2 },
+      { transform: R(-52),        filter: B(.88), opacity: 1, offset: .55 },
+      { transform: R(0),          filter: B(1),   opacity: 1, offset: 1 }
+    ];
+    const opts = { duration: FLIP_MS, easing: 'cubic-bezier(.45,.05,.2,1)', fill: 'forwards' };
+    const af = flap.animate(kf, opts);
+    const as = shade.animate([{ opacity: 0 }, { opacity: .95, offset: dir > 0 ? .35 : .65 }, { opacity: 0 }], opts);
+    anims.push(af, as);
+    af.onfinish = finalize;
+  }
+
+  async function renderPage(n, direction) {
+    direction = direction || 0;
+    if (!pdf) return;
+    if (rendering) { pendingRender = [n, direction]; return; }   // не теряем запрос (зум, ресайз) — выполним после текущего
+    rendering = true;
+    try {
+      if (flipFinalize) flipFinalize();                            // быстро листаем — предыдущая анимация мгновенно завершается
+      const p = await pdf.getPage(n);
+      const box = pageBox();
+      const z = zoom;
+      const nat = p.getViewport({ scale: 1 });
+      const fit = Math.min(box.w / nat.width, box.h / nat.height) * z;   // размер считаем по контейнеру страницы, а не по stage с отступами
+      let dpr = Math.min(window.devicePixelRatio || 1, 2);
+      while (dpr > 1 && (nat.width * fit * dpr) * (nat.height * fit * dpr) > 14e6) dpr = Math.max(1, dpr - 0.25);
+      const vp = p.getViewport({ scale: fit * dpr });
+
+      const cv = document.createElement('canvas');
+      cv.width = Math.max(1, Math.round(vp.width));
+      cv.height = Math.max(1, Math.round(vp.height));
+      cv.style.width = (nat.width * fit) + 'px';                    // CSS-размер из fit — пропорции всегда точные
+      cv.style.height = (nat.height * fit) + 'px';
+      const ctx = cv.getContext('2d', { alpha: false });
+      ctx.fillStyle = '#FFFFFF';                                     // белая страница (раньше брался кремовый --page-bg)
+      ctx.fillRect(0, 0, cv.width, cv.height);
+      await p.render({ canvasContext: ctx, viewport: vp }).promise;
+
+      const currentSlot = $('currentSlot'), stage = $('stage');
+      const oldCanvas = currentSlot.querySelector('canvas');
+      const animate = direction !== 0 && oldCanvas && !reducedMotion();
+      resetSlotInstant(currentSlot);
+      renderedZoom = z; renderedBoxW = box.w; renderedBoxH = box.h;
+      if (direction !== 0) {   // новая страница: тот же масштаб и то же положение по горизонтали, по вертикали — с верха
+        const k = zoom / z;
+        panY = Math.max(0, (nat.height * fit * k - box.h) / 2);
+      }
+      applyViewTo(cv, false);  // сдвиг/масштаб ставится на холст ДО показа — без скачка
+      stage.classList.toggle('is-zoomed', zoom > 1.001);
+      if (animate) flipTo(cv, oldCanvas, direction); else currentSlot.replaceChildren(cv);
+
+      page = n;
+      const pct=pages?Math.round(page/pages*100):0;
+      if($('pageInfo'))$('pageInfo').textContent=page+' / '+pages;
+      if($('quickPageInput')){$('quickPageInput').max=pages;$('quickPageInput').placeholder=page+'/'+pages}
+      if($('quickPagePct'))$('quickPagePct').textContent=pct+'%';
+      if($('bookSub'))$('bookSub').textContent='PDF · '+pages+' саҳифа';
+      saveProgress();
+    } catch(e) {
+      toast('Хатогӣ: ' + (e.message || e), 3000);
+    } finally {
+      rendering = false;
+      if (pendingRender) { const pr = pendingRender; pendingRender = null; renderPage(pr[0], pr[1]); }
+    }
+  }
+
+  function turnPage(d) {
+    if (window.__altPager) { try { window.__altPager(d); } catch (e) {} return; }
+    if (rendering || readerCurlBusy) return;
+    const n = page + d;
+    if (n < 1 || n > pages) return;
+    renderPage(n, d);
+  }
+
+  // v100: ОДИН тап по книге = чистый экран (спрятать/показать панели И лайки) — как в PDF.
+  // EPUB вызывает это изнутри iframe: window.parent.__kkToggleBars()
+  $('readerMain').addEventListener('click', e => {
+    if (e.target.closest('.reader-reactions,.reader-top-bar,.reader-bottom-bar,.panel,.aliya-reader-launch')) return;
+    if (window.__kkTextMode === 'pdf' && zoom <= 1.01) {
+      const r=$('readerMain').getBoundingClientRect(),x=(e.clientX-r.left)/r.width;
+      if (x<.15) { turnPage(-1); armReaderIdle(); return; }
+      if (x>.85) { turnPage(1); armReaderIdle(); return; }
+    }
+    window.__kkToggleBars();
+  });
+
+      let sx = 0, sy = 0, drag = false, startTime = 0, dragged = false;
+  let zoomPanMode=false, zoomPanStart={x:0,y:0};
+  let isPinching = false, pinchStartDist = 0, pinchStartZoom = 1, pinchR = 1, pinchMid0 = { x: 0, y: 0 }, pinchPan0 = { x: 0, y: 0 };
+  const stageEl = $('stage');
+
+  function getTouchDist(e) {
+    if (!e.touches || e.touches.length < 2) return 0;
+    return Math.hypot(
+      e.touches[0].clientX - e.touches[1].clientX,
+      e.touches[0].clientY - e.touches[1].clientY
+    );
+  }
+  function getMid(e) {   // середина двух пальцев относительно центра области страницы
+    const r = $('pageContainer').getBoundingClientRect();
+    return {
+      x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - (r.left + r.width / 2),
+      y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - (r.top + r.height / 2)
+    };
+  }
+  function restoreSlot(el) {
+    dragAngle = 0;
+    el.style.transition = 'transform .25s ease';
+    el.style.transform = '';
+    setTimeout(() => { el.style.transition = ''; el.style.transformOrigin = ''; }, 280);
+  }
+
+  stageEl.addEventListener('touchstart', e => {
+    if (e.touches.length === 2) {
+      drag = false;
+      isPinching = true;
+      clearTimeout(zoomCommitTimer);
+      pinchStartDist = getTouchDist(e);
+      // v99: для скролл-книг (FB2/TXT/DOCX) пинч меняет РАЗМЕР ШРИФТА, как в PDF
+      pinchStartZoom = window.__kkTextMode === 'scroll' ? (window.__kkScrollZoomPct || 100) / 100 : zoom;
+      pinchR = renderedZoom; pinchMid0 = getMid(e); pinchPan0 = { x: panX, y: panY };
+      return;
+    }
+    if (e.touches.length !== 1 || isPinching) return;
+    // Curl owns one-finger gestures only at the fitted scale. Enlarged pages must
+    // remain draggable like a gallery image.
+    if (window.KKReaderCurlController && window.__kkTextMode === 'pdf' && zoom <= 1.01) return;
+    sx = e.touches[0].clientX;
+    sy = e.touches[0].clientY;
+    startTime = Date.now();
+    zoomPanMode=window.__kkTextMode==='pdf'&&zoom>1.01;
+    zoomPanStart={x:panX,y:panY};
+    drag = true; dragged = false;
+  }, { passive: true });
+
+  stageEl.addEventListener('touchmove', e => {
+    if (isPinching && e.touches.length === 2) {
+      const dist = getTouchDist(e);
+      if (pinchStartDist > 0 && dist > 0) {
+        const factor = dist / pinchStartDist;
+        // v99: FB2/TXT/DOCX — зум шрифта (матн перетекает), НЕ transform-scale
+        if (window.__kkTextMode === 'scroll') {
+          setScrollZoom(Math.max(70, Math.min(220, Math.round(pinchStartZoom * factor * 100))), false);
+          return;
+        }
+        if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
+        // два пальца: масштаб вокруг точки между пальцами + сдвиг страницы вслед за пальцами
+        const z1 = clampZoom(pinchStartZoom * factor);
+        const m = getMid(e);
+        const k0 = pinchStartZoom / pinchR, k1 = z1 / pinchR;
+        panX = m.x - k1 * ((pinchMid0.x - pinchPan0.x) / k0);
+        panY = m.y - k1 * ((pinchMid0.y - pinchPan0.y) / k0);
+        zoom = z1;
+        applyViewTo(cvEl(), false);
+        syncZoomUI();
+        $('stage').classList.toggle('is-zoomed', zoom > 1.001);
+      }
+      return;
+    }
+    if (!drag || e.touches.length !== 1 || isPinching) return;
+    if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
+    const dx = e.touches[0].clientX - sx;
+    const dy = e.touches[0].clientY - sy;
+    if(zoomPanMode){
+      panX=zoomPanStart.x+dx;panY=zoomPanStart.y+dy;
+      applyViewTo(cvEl(),false);dragged=Math.abs(dx)>3||Math.abs(dy)>3;
+      e.preventDefault();return;
+    }
+    if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
+      const currentSlot = $('currentSlot');
+      const pct = Math.min(1, Math.abs(dx) / 220);
+      currentSlot.style.transition = 'none';
+      currentSlot.style.transformOrigin = 'left center';
+      if (dx < 0) { dragAngle = -pct * 28; currentSlot.style.transform = 'rotateY(' + dragAngle + 'deg)'; }   // страница приподнимается за правый край
+      else { dragAngle = 0; currentSlot.style.transform = 'translateX(' + (pct * 28) + 'px)'; }
+      dragged = true;
+    }
+  }, { passive: false });
+
+  stageEl.addEventListener('touchend', e => {
+    if (isPinching) {
+      if (!e.touches || e.touches.length < 2) {
+        isPinching = false;
+        pinchStartDist = 0;
+        if ((!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
+          clearTimeout(zoomCommitTimer);
+          renderPage(page, 0);   // чёткая перерисовка; сдвиг и масштаб подменяются в одном кадре — без скачка
+        }
+      }
+      return;
+    }
+    if (!drag) return;
+    drag = false;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - sx, dy = t.clientY - sy;
+    const dt = Date.now() - startTime;
+    const currentSlot = $('currentSlot');
+    if(zoomPanMode){
+      zoomPanMode=false;
+      const cv=cvEl(),box=pageBox(),k=zoom/renderedZoom;
+      const w=(parseFloat(cv?.style.width)||box.w)*k,mx=Math.max(0,(w-box.w)/2);
+      const horizontal=Math.abs(dx)>Math.abs(dy)*1.25&&Math.abs(dx)>58;
+      const atEdge=(dx<0&&panX<=-mx+2)||(dx>0&&panX>=mx-2);
+      if(horizontal&&atEdge)turnPage(dx<0?1:-1);
+      return;
+    }
+    // один палец — листание при обычном масштабе.
+    const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
+    if (wantTurn) {
+      turnPage(dx < 0 ? 1 : -1);
+      if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);   // край книги — вернуть на место
+      return;
+    }
+    if (dragged) restoreSlot(currentSlot);
+  }, { passive: true });
+
+  // System interruptions do not guarantee touchend (rotation, app switch, OS gesture).
+  stageEl.addEventListener('touchcancel', () => {
+    const hadPinch = isPinching;
+    isPinching = false;
+    pinchStartDist = 0;
+    drag = false;
+    zoomPanMode=false;
+    if (dragged) restoreSlot($('currentSlot'));
+    dragged = false;
+    if (hadPinch && (!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom-renderedZoom)>.002) {
+      clearTimeout(zoomCommitTimer);
+      renderPage(page,0);
+    }
+  }, {passive:true});
+
+  // A single visibility state for panels, reactions and the 15-second idle timer.
+  let readerIdleTimer = null;
+  function setReaderBars(visible) {
+    bars = !!visible;
+    [$('topBar'), $('bottomBar'), $('readerAliyaBtn'), ...document.querySelectorAll('.reader-reactions')].filter(Boolean).forEach(node => node.classList.toggle('hidden', !bars));
+    armReaderIdle();
+  }
+  function armReaderIdle() {
+    clearTimeout(readerIdleTimer);
+    if (!bars || document.hidden) return;
+    readerIdleTimer = setTimeout(() => {
+      if (document.querySelector('.panel.open,.at-sheet.on,.at-dlg-bg.on,#aliyaOverlay.open') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) { armReaderIdle(); return; }
+      setReaderBars(false);
+    }, 15000);
+  }
+  window.__kkToggleBars = function () { setReaderBars(!bars); };
+  ['pointerdown','keydown','input','wheel'].forEach(type => document.addEventListener(type, armReaderIdle, { passive:true }));
+  document.addEventListener('visibilitychange',armReaderIdle);
+  window.addEventListener('pagehide',()=>clearTimeout(readerIdleTimer));
+  armReaderIdle();
+  let readerCurlBusy = false;
+  async function renderCurlPreview(n) {
+    const p = await pdf.getPage(n), box = pageBox(), nat = p.getViewport({scale:1});
+    const fit = Math.min(box.w/nat.width,box.h/nat.height)*zoom;
+    let dpr = Math.min(devicePixelRatio || 1,2);
+    while (dpr>1 && nat.width*nat.height*fit*fit*dpr*dpr>14e6) dpr=Math.max(1,dpr-.25);
+    const vp=p.getViewport({scale:fit*dpr}), cv=document.createElement('canvas');
+    cv.width=Math.max(1,Math.round(vp.width));cv.height=Math.max(1,Math.round(vp.height));
+    cv.style.width=nat.width*fit+'px';cv.style.height=nat.height*fit+'px';
+    const ctx=cv.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
+    await p.render({canvasContext:ctx,viewport:vp}).promise;return cv;
+  }
+  window.KKReaderCurlController = window.KKAttachReaderGestures({
+    stage:$('stage'),container:$('pageContainer'),
+    state:()=>({ready:!!pdf && !rendering && !readerCurlBusy && window.__kkTextMode==='pdf',page,pages,zoom}),
+    current:()=>cvEl(), preview:renderCurlPreview,
+    busy:value=>{readerCurlBusy=value;},
+    commit:async n=>{await renderPage(n,0);},activity:armReaderIdle
+  });
+
+  function syncReaderTheme(t) {
+    const light = t !== 'dark';
+    document.body.classList.toggle('light-reading', light);
+    document.documentElement.classList.toggle('light-reading', light);
+    localStorage.setItem('kk_reader_theme', t);
+    document.querySelectorAll('.settings-panel .pill[onclick^="setTheme"]').forEach(b => {
+      b.classList.toggle('active', (b.getAttribute('onclick') || '').indexOf("'" + t + "'") > -1);
+    });
+    const mt = document.querySelector('meta[name="theme-color"]');
+    if (mt) mt.setAttribute('content', window.KKH_THEMES?.[t]?.bg || (light ? '#FFFFFF' : '#0C0C0C'));
+    if ($('readerThemeIcon')) $('readerThemeIcon').textContent=t==='light'?'☀':t==='minimal'?'◇':'🌙';
+    // холст теперь всегда белый, тема меняется CSS-фильтром — перерисовка не нужна (нет мерцания)
+  }
+  function setTheme(t) {
+    // Reader appearance is intentionally independent from the application theme.
+    t=['light','dark','minimal'].includes(t)?t:'light';
+    syncReaderTheme(t);
+  }
+  const initialReaderTheme=localStorage.getItem('kk_reader_theme')||'light';
+  setTheme(initialReaderTheme);
+
+  function clampZoom(z) { return Math.max(Z_MIN, Math.min(Z_MAX, Math.round(z * 100) / 100)); }
+  function syncZoomUI() {
+    const pct = Math.round(zoom * 100);
+    if ($('zoomText')) $('zoomText').textContent = pct + '%';
+    if ($('zoomExactBtn')) $('zoomExactBtn').textContent = pct + '%';
+    const sl = document.querySelector('input[type="range"][oninput*="setZoom"]');
+    if (sl) sl.value = pct;
+  }
+  function setLiveZoom(z, smooth) {   // кнопки A± и ползунок: масштаб вокруг центра
+    const nz = clampZoom(z), k0 = zoom / renderedZoom, k1 = nz / renderedZoom;
+    if (k0 > 0) { panX *= k1 / k0; panY *= k1 / k0; }
+    zoom = nz;
+    applyViewTo(cvEl(), !!smooth); syncZoomUI();
+    $('stage').classList.toggle('is-zoomed', zoom > 1.001);
+  }
+  function setZoom(v, smooth) {
+    setLiveZoom(Number(v) / 100, smooth);
+    clearTimeout(zoomCommitTimer);
+    zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
+  }
+  function currentExactZoom(){
+    if(window.__kkTextMode==='epub')return window.__kkEpubFontPct||100;
+    if(window.__kkTextMode==='scroll')return window.__kkScrollZoomPct||100;
+    return Math.round(zoom*100);
+  }
+  function promptExactZoom(){
+    const raw=window.prompt('Фоизи андозаро ворид кунед (70–220)',String(currentExactZoom()));
+    if(raw===null)return;
+    const value=Math.max(70,Math.min(220,parseInt(String(raw).replace(/[^0-9]/g,''),10)||currentExactZoom()));
+    if(window.__kkTextMode==='epub'){window.__kkEpubFont(value);window.__kkEpubFontSave();}
+    else if(window.__kkTextMode==='scroll')setScrollZoom(value);
+    else setZoom(value,true);
+    syncZoomUI();
+  }
+  window.promptExactZoom=promptExactZoom;
+  async function toggleReaderFullscreen(){
+    const root=document.documentElement,active=document.fullscreenElement||document.webkitFullscreenElement;
+    try{
+      if(!active){const enter=root.requestFullscreen||root.webkitRequestFullscreen;if(!enter)throw new Error('unsupported');await enter.call(root);}
+      else{const exit=document.exitFullscreen||document.webkitExitFullscreen;if(exit)await exit.call(document);}
+    }catch(e){
+      document.body.classList.toggle('reader-immersive');
+      toast(document.body.classList.contains('reader-immersive')?'Экрани пурра фаъол шуд':'Экрани пурра баста шуд');
+    }
+  }
+  window.toggleReaderFullscreen=toggleReaderFullscreen;
+  document.addEventListener('fullscreenchange',()=>document.body.classList.toggle('reader-native-fullscreen',!!document.fullscreenElement));
+  // v132: «Баҳо диҳед» + звёзды всегда помещаются целиком — при нехватке места слегка уменьшаются
+  function fitRatingLabel() { const box=document.querySelector('.top-rating'); if(box)box.style.zoom=''; }
+  window.addEventListener('resize', fitRatingLabel);
+  window.addEventListener('orientationchange', fitRatingLabel);
+  fitRatingLabel();
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitRatingLabel);
+  setTimeout(fitRatingLabel, 400);
+
+  // смена размера окна / поворот экрана — перерисовать страницу под новый размер
+  if (window.ResizeObserver) {
+    let resizeTimer = null;
+    new ResizeObserver(() => {
+      const b = pageBox();
+      if (Math.abs(b.w - renderedBoxW) < 2 && Math.abs(b.h - renderedBoxH) < 2) return;
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => { if (pdf) renderPage(page, 0); }, 160);
+    }).observe($('pageContainer'));
+  }
+
+  // ================== v99: АНДОЗАИ ҲАРФ барои EPUB / FB2 / TXT / DOCX ==================
+  // PDF пешакӣ зум дошт (пинч + A±). Акнун ҳама форматҳо ҳамон тавр кор мекунанд:
+  // EPUB → андозаи ҳарф тавассути rendition.themes.fontSize (матн аз нав ҷой мегирад),
+  // FB2/TXT/DOCX (скролл-р андоза) → CSS zoom (дар Android WebView = Chromium, кор мекунад).
+  function clampTxt(v) { return Math.max(70, Math.min(220, Math.round(v))); }
+
+  window.__kkEpubFontPct = clampTxt(parseInt(localStorage.getItem('kk_epub_font_pct') || '100', 10) || 100);
+  window.__kkEpubFont = function (pct, notify) {
+    window.__kkEpubFontPct = clampTxt(pct);
+    try { if (window.__kkEpubRendition) window.__kkEpubRendition.themes.fontSize(window.__kkEpubFontPct + '%'); } catch (e) {}
+    if (notify !== false) toast('Андозаи ҳарф: ' + window.__kkEpubFontPct + '%');
+  };
+  window.__kkEpubFontSave = function () {
+    try { localStorage.setItem('kk_epub_font_pct', String(window.__kkEpubFontPct)); } catch (e) {}
+  };
+
+  function setScrollZoom(pct, notify) {
+    window.__kkScrollZoomPct = clampTxt(pct);
+    const wrap = window.__kkScrollWrap;
+    if (wrap) {
+      wrap.style.zoom = window.__kkScrollZoomPct / 100;
+      if (!wrap.style.zoom) { try { wrap.style.fontSize = (16 * window.__kkScrollZoomPct / 100) + 'px'; } catch (e) {} }
+    }
+    try { localStorage.setItem('kk_scroll_zoom_pct', String(window.__kkScrollZoomPct)); } catch (e) {}
+    if (notify !== false) toast('Андозаи ҳарф: ' + window.__kkScrollZoomPct + '%');
+  }
+  window.__kkScrollZoom = setScrollZoom;
+
+  function adjustZoom(delta) {
+    if (window.__kkTextMode === 'epub') { window.__kkEpubFont(window.__kkEpubFontPct + delta); window.__kkEpubFontSave(); return; }
+    if (window.__kkTextMode === 'scroll') { setScrollZoom((window.__kkScrollZoomPct || 100) + delta); return; }
+    if (!window.__kkTextMode) { toast('Барои ин намуд андоза истифода намешавад'); return; }
+    const next = Math.max(70, Math.min(220, Math.round(zoom * 100) + delta));
+    setZoom(next, true);
+    toast('Андоза: ' + next + '%');
+  }
+  window.adjustZoom = adjustZoom;
+
+  function setBrightness(v) {
+    $('pageContainer').style.filter = 'brightness(' + (Number(v) / 100) + ')';
+    localStorage.setItem('kk_reader_brightness', v);
+    if ($('brightnessRange')) $('brightnessRange').value = v;
+    if ($('brightnessDialValue')) $('brightnessDialValue').textContent = Math.round(Number(v)) + '%';
+  }
+  setBrightness(localStorage.getItem('kk_reader_brightness') || 100);
+
+  function toggleSettings(force) {
+    $('settingsPanel').classList.toggle('open', force === undefined ? !$('settingsPanel').classList.contains('open') : !!force);
+    $('searchPanel').classList.remove('open');
+    if ($('notesPanel')) $('notesPanel').classList.remove('open');
+  }
+
+  function toggleSearch(force) {
+    $('searchPanel').classList.toggle('open', force === undefined ? !$('searchPanel').classList.contains('open') : !!force);
+    $('settingsPanel').classList.remove('open');
+    if ($('notesPanel')) $('notesPanel').classList.remove('open');
+    setTimeout(() => { if ($('searchPanel').classList.contains('open')) $('findInput').focus(); }, 80);
+  }
+
+  // (v99: старый adjustZoom только для PDF заменён на универсальный выше)
+  const READER_PAPER_COLORS=[
+    {name:'Сиёҳи классикӣ',bg:'#0C0C0C',tint:'transparent',opacity:0},
+    {name:'Ангиштӣ',bg:'#111318',tint:'#253047',opacity:.18},
+    {name:'Кабуди шаб',bg:'#071526',tint:'#17436A',opacity:.24},
+    {name:'Сабзи ҷангал',bg:'#0B1813',tint:'#245C43',opacity:.22},
+    {name:'Қаҳваранг',bg:'#19110C',tint:'#754624',opacity:.25},
+    {name:'Сепия',bg:'#1B160E',tint:'#8A6A35',opacity:.24},
+    {name:'Олуболу',bg:'#1A0D14',tint:'#713751',opacity:.22},
+    {name:'Бунафш',bg:'#130E1C',tint:'#553B78',opacity:.22},
+    {name:'Хокистарӣ',bg:'#17191B',tint:'#66717A',opacity:.16},
+    {name:'Тиллоии нарм',bg:'#19160D',tint:'#8B742D',opacity:.21},
+    {name:'Фирӯзагӣ',bg:'#08191A',tint:'#237276',opacity:.20},
+    {name:'Гулобии шаб',bg:'#1A1014',tint:'#834C60',opacity:.18}
+  ];
+  let readerPaperColorIndex=Math.max(0,Math.min(READER_PAPER_COLORS.length-1,Number(localStorage.getItem('kk_reader_paper_color')||0)));
+  function applyPaperColor(index,announce=false){
+    readerPaperColorIndex=(Number(index)+READER_PAPER_COLORS.length)%READER_PAPER_COLORS.length;
+    const color=READER_PAPER_COLORS[readerPaperColorIndex];
+    document.documentElement.style.setProperty('--reader-paper-bg',color.bg);
+    document.documentElement.style.setProperty('--reader-paper-tint',color.tint);
+    document.documentElement.style.setProperty('--reader-paper-tint-opacity',String(color.opacity));
+    const dot=$('paperColorDot');if(dot){dot.style.background=color.tint==='transparent'?color.bg:color.tint;dot.title='Ранги саҳифа: '+color.name}
+    localStorage.setItem('kk_reader_paper_color',String(readerPaperColorIndex));
+    if(announce)toast('Ранги саҳифа: '+color.name);
+  }
+  function cyclePaperColor(){applyPaperColor(readerPaperColorIndex+1,true)}
+  function initPaperColor(){applyPaperColor(readerPaperColorIndex,false)}
+
+  let brightnessValue=Number(localStorage.getItem('kk_reader_brightness')||100),dialStartX=0,dialStartValue=100,dialDragging=false;
+  function applyDialBrightness(value){brightnessValue=Math.max(45,Math.min(120,Math.round(value)));setBrightness(brightnessValue);if($('brightnessDialValue'))$('brightnessDialValue').textContent=brightnessValue+'%'}
+  function initBrightnessDial(){const dial=$('brightnessDial');if(!dial)return;applyDialBrightness(brightnessValue);dial.addEventListener('pointerdown',e=>{dialDragging=true;dialStartX=e.clientX;dialStartValue=brightnessValue;dial.setPointerCapture?.(e.pointerId)});dial.addEventListener('pointermove',e=>{if(dialDragging)applyDialBrightness(dialStartValue+(e.clientX-dialStartX)/1.5)});const stop=()=>dialDragging=false;dial.addEventListener('pointerup',stop);dial.addEventListener('pointercancel',stop);dial.addEventListener('wheel',e=>{e.preventDefault();applyDialBrightness(brightnessValue+(e.deltaY<0?5:-5))},{passive:false});dial.addEventListener('dblclick',()=>applyDialBrightness(100))}
+  function prepareQuickPage(){const input=$('quickPageInput');if(!input||!pages)return;input.value=String(page);setTimeout(()=>input.select(),0)}
+  function quickGoPage(){const input=$('quickPageInput');if(!input||!pages)return;const raw=input.value.trim();input.value='';if(!raw)return;const n=Math.max(1,Math.min(pages,parseInt(raw,10)||page));renderPage(n,n>=page?1:-1)}
+  function jumpToPagePrompt(){document.getElementById('quickPageInput')?.focus()}
+  function toggleReaderTheme(){
+    const themes=['dark','light','minimal'],current=document.documentElement.dataset.appTheme||'dark';
+    setTheme(themes[(themes.indexOf(current)+1)%themes.length]);
+  }
+  let readerFavorite=false,readerFavoriteLoaded=false;
+  function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}
+  function paintReaderFavorite(){const outline='<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg>',filled=outline.replace('fill="none"','fill="currentColor"');document.querySelectorAll('[data-reader-favorite]').forEach(btn=>{btn.classList.toggle('active',readerFavorite);btn.innerHTML=readerFavorite?filled:outline;btn.setAttribute('aria-label',readerFavorite?'Аз дӯстдошта хориҷ кардан':'Ба дӯстдошта илова кардан')})}
+  async function loadReaderFavorite(){const token=localStorage.getItem('kk_token');if(!token)return;try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites?scope=reader',{headers:{Authorization:'Bearer '+token},cache:'no-store'});if(!r.ok)return;const id=canonicalFavoriteId();readerFavorite=(await r.json()).some(x=>String(x.book_id).replace(/^books\//i,'')===id);readerFavoriteLoaded=true;paintReaderFavorite()}catch(e){}}
+  async function toggleReaderFavorite(){if(!readerFavoriteLoaded)await loadReaderFavorite();const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
+
+  async function downloadCurrent() {
+    await downloadFile(url, name);
+  }
+  async function shareCurrent() {
+    await shareFile(url, name);
+  }
+
+  let findHits = [], findIndex = -1, readerFindSequence = 0;
+  async function findText() {
+    const request = ++readerFindSequence;
+    const q = $('findInput').value.trim();
+    if (!q || !pdf) { findHits=[];findIndex=-1;renderFindResults();return; }
+    const hits=[];
+    $('findCount').textContent = 'Ҷустуҷӯ...';
+    $('findResult').innerHTML = '<div class="find-item"><div class="find-page">Ҷустуҷӯ...</div><div class="find-snippet">Лутфан интизор шавед</div></div>';
+    findHits = []; findIndex = -1;
+    const lo = q.toLowerCase();
+    for (let i = 1; i <= pages; i++) {
+      try {
+        const pg = await pdf.getPage(i);
+        const tc = await pg.getTextContent();
+        if(request!==readerFindSequence)return;
+        const text = tc.items.map(x => x.str).join(' ');
+        const pos = text.toLowerCase().indexOf(lo);
+        if (pos >= 0) {
+          const snip = (pos > 35 ? '…' : '') + text.slice(Math.max(0, pos - 35), Math.min(text.length, pos + q.length + 55)) + (pos + q.length + 55 < text.length ? '…' : '');
+          hits.push({ page: i, snippet: snip });
+        }
+      } catch(e) {}
+      if (i % 8 === 0) await new Promise(r => setTimeout(r, 1));
+    }
+    if(request!==readerFindSequence)return;
+    findHits=hits;
+    renderFindResults();
+    if (findHits.length) { findIndex = 0; goFind(0); }
+  }
+  function renderFindResults() {
+    $('findCount').textContent = findHits.length ? `${Math.max(findIndex+1, 1)} / ${findHits.length}` : '0 / 0';
+    $('findResult').innerHTML = findHits.length ? findHits.map((h,i) =>
+      `<div class="find-item ${i===findIndex?'on':''}" onclick="goFind(${i})">
+        <div class="find-page">Саҳифаи ${h.page}</div>
+        <div class="find-snippet">${escapeHtml(h.snippet)}</div>
+      </div>`
+    ).join('') : '<div class="find-item"><div class="find-page">Ёфт нашуд</div><div class="find-snippet">Калимаи дигар нависед</div></div>';
+  }
+  function goFind(i) {
+    if (!findHits.length) return;
+    findIndex = (i + findHits.length) % findHits.length;
+    const hit = findHits[findIndex];
+    renderPage(hit.page);
+    renderFindResults();
+  }
+  function nextFind() { if (findHits.length) goFind(findIndex + 1); }
+  function prevFind() { if (findHits.length) goFind(findIndex - 1); }
+  function escapeHtml(s) { return String(s??'').replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c])); }
+
+  initPaperColor();
+  initBrightnessDial();
+
+  // ================== МУЛЬТИФОРМАТ: .epub / .fb2 / .docx / .doc / .txt / .mp4 ==================
+  function bookFormatOf(u) {
+    const m = String(u || '').split('?')[0].match(/\.(pdf|epub|fb2|docx|doc|txt|mp4|m4v|webm)$/i);
+    return m ? m[1].toLowerCase() : '';
+  }
+  function loadScriptOnce(src) {
+    return new Promise((res, rej) => {
+      const existing = document.querySelector('script[data-lib="' + src + '"]');
+      if (existing) return existing.dataset.loaded === '1' ? res() : (existing.addEventListener('load', () => res()), existing.addEventListener('error', () => rej(new Error('Боргирӣ нашуд'))));
+      const s = document.createElement('script');
+      s.src = src; s.dataset.lib = src; s.async = true;
+      s.onload = () => { s.dataset.loaded = '1'; res(); };
+      s.onerror = () => rej(new Error('Китобхонаи формат боргирӣ нашуд — интернетро санҷед'));
+      document.head.appendChild(s);
+    });
+  }
+  async function fetchBookArrayBuffer(bookUrl) {
+    setLoadProgress(0);
+    const response = await getOrFetchBookResponse(bookUrl, { onProgress: (loaded, total) => setLoadProgress(total ? loaded / total * 100 : 35) });
+    const buf = await response.arrayBuffer();
+    try { saveCachedMeta(bookUrl, buf.byteLength); } catch (e) {}
+    setLoadProgress(100);
+    return buf;
+  }
+  // v99: список зеркал книги. jsdelivr 403 на .doc → для doc только raw.
+  function mirrorBookUrls(u) {
+    const raw = canonicalBookUrl(u);
+    if (bookFormatOf(raw) === 'doc') return [raw];
+    const out = [];
+    try {
+      const x = new URL(raw);
+      if (x.hostname === 'raw.githubusercontent.com') {
+        const parts = x.pathname.split('/').filter(Boolean);
+        if (parts.length >= 4) {
+          const ghPath = parts.slice(3).map(p => { try { return encodeURIComponent(decodeURIComponent(p)); } catch (e) { return p; } }).join('/');
+          ['cdn.jsdelivr.net', 'fastly.jsdelivr.net', 'gcore.jsdelivr.net'].forEach(h => {
+            out.push('https://' + h + '/gh/' + parts[0] + '/' + parts[1] + '@' + parts[2] + '/' + ghPath);
+          });
+        }
+      }
+    } catch (e) {}
+    out.push(raw);
+    return [...new Set(out)];
+  }
+
+  function storeBookCache(cu, buf) {
+    // v159: нусха ФАВРАН (синхронӣ) гирифта мешавад. Пештар slice(0) пас аз await caches.open иҷро мешуд —
+    // то он вақт pdf.js буферро ба worker гузаронида буд (буфер холӣ) ва китоб дар кэш сабт намешуд,
+    // бинобар ин Алия китобро аз нав зеркашӣ мекард.
+    try {
+      if (!('caches' in window) || !buf || !buf.byteLength) return Promise.resolve();
+      const key = canonicalBookUrl(cu), copy = buf.slice(0), size = copy.byteLength;
+      return caches.open(KITOB_PDF_CACHE).then(cache => cache.put(key, new Response(copy, {
+        status: 200,
+        headers: { 'Content-Type': 'application/pdf', 'Content-Length': String(size), 'X-Kitob-Canonical': encodeURIComponent(key), 'X-Kitob-Cached-At': String(Date.now()) }
+      }))).catch(() => {});
+    } catch (e) { return Promise.resolve(); }
+  }
+
+  async function fetchBookAnyCandidate() {
+    const cands = mirrorBookUrls(url);
+    // 0) кэш — китоби аллакай боркардашуда фавран аз кэши браузер
+    for (const cu of cands) {
+      try {
+        const hit = await getCachedBookResponse(cu);
+        if (hit) { setLoadProgress(100); return await hit.clone().arrayBuffer(); }
+      } catch (e) {}
+    }
+    if (cands.length === 1) return fetchBookArrayBuffer(cands[0]);
+    // v104 ГОНКА ПО РЕАЛЬНОЙ СКОРОСТИ. Раньше побеждало зеркало, первым отдавшее
+    // первый кусок — но оно могло качать медленно, и вся книга шла через него
+    // (проблема вернулась). Теперь короткий ЗАМЕР: ~1.2с КАЖДОЕ зеркало реально
+    // качает (до 384КБ), затем продолжает только САМОЕ БЫСТРОЕ, остальные
+    // отключаются. Если победитель умрёт на середине — повтор того же источника.
+    return new Promise((resolve, reject) => {
+      let done = false, decided = false, winnerIdx = -1;
+      const CONTEST_MS = 1200, CONTEST_BYTES = 384 * 1024, CONNECT_GRACE_MS = 4000, STALL_MS = 20000;
+      const st = cands.map(cu => ({ cu, ctrl: new AbortController(), chunks: [], loaded: 0, t0: 0, speed: 0, total: 0, full: null, err: null, ended: false, rd: null }));
+      const startedAt = Date.now();
+      let decisionResolve = null;
+      const decisionMade = new Promise(r => { decisionResolve = r; });
+      let watchdog = null, wdLastLoaded = 0, wdLastMoveAt = Date.now();
+      const cleanup = () => { if (watchdog) { clearInterval(watchdog); watchdog = null; } };
+      const abortOthers = (keep) => { st.forEach((s, j) => { if (j !== keep) { try { s.ctrl.abort(); } catch (e) {} } }); };
+      const finish = (buf, i) => {
+        if (done) return; done = true; cleanup(); abortOthers(i);
+        try { saveCachedMeta(cands[i], buf.byteLength); } catch (e) {}
+        storeBookCache(cands[i], buf);
+        resolve(buf);
+      };
+      const giveUp = (e) => { if (done) return; done = true; cleanup(); abortOthers(-1); reject(e || new Error('Файл ёфт нашуд')); };
+      // победитель оборвался на середине — повтор того же источника (без гонки)
+      const recover = (s) => {
+        fetchBookArrayBuffer(s.cu).then(
+          b => { if (!done) { done = true; cleanup(); abortOthers(-1); storeBookCache(s.cu, b); resolve(b); } },
+          () => giveUp()
+        );
+      };
+      const decide = () => {
+        if (done || decided) return; decided = true;
+        const fullIdx = st.findIndex(s => s.full);
+        if (fullIdx >= 0) { finish(st[fullIdx].full, fullIdx); return; }
+        const endedIdx = st.findIndex(s => s.ended && s.loaded > 0);
+        if (endedIdx >= 0) {
+          const s = st[endedIdx];
+          new Blob(s.chunks).arrayBuffer().then(b => finish(b, endedIdx), () => giveUp());
+          return;
+        }
+        let best = -1, bestSpeed = 0;
+        st.forEach((s, i) => { if (!s.err && s.speed > bestSpeed) { bestSpeed = s.speed; best = i; } });
+        if (best < 0) { giveUp(st.map(s => s.err).filter(Boolean)[0]); return; }
+        winnerIdx = best;
+        abortOthers(best);
+        decisionResolve();
+      };
+      const runStream = async (s, i) => {
+        try {
+          const r = await fetch(s.cu, { cache: 'no-store', signal: s.ctrl.signal });
+          if (!r.ok) throw new Error('HTTP ' + r.status + ' · ' + new URL(s.cu).hostname);
+          s.t0 = Date.now();
+          s.total = Number(r.headers.get('content-length') || 0);
+          if (!r.body || !r.body.getReader) { s.full = await r.arrayBuffer(); return; }
+          s.rd = r.body.getReader();
+          while (true) {
+            if (done) return;
+            const res = await s.rd.read();
+            if (res.done) { s.ended = true; break; }
+            s.chunks.push(res.value); s.loaded += res.value.byteLength;
+            if (!decided) {
+              s.speed = s.loaded / Math.max(50, Date.now() - s.t0); // реальная скорость (байт/мс)
+              setLoadProgress(s.total ? Math.min(25, s.loaded / s.total * 100) : 4);
+              if (s.loaded >= CONTEST_BYTES) {
+                await decisionMade;            // замер окончен — ждём решение
+                if (done || winnerIdx !== i) return;
+              }
+            } else if (winnerIdx !== i) return;
+            setLoadProgress(s.total ? Math.min(99, s.loaded / s.total * 100) : Math.min(90, 8 + s.loaded / 50000));
+          }
+          if (done || (decided && winnerIdx !== i)) return;
+          const buf = await new Blob(s.chunks).arrayBuffer();
+          finish(buf, i);
+        } catch (e) {
+          s.err = e;
+          if (!done && decided && winnerIdx === i) recover(s);
+        }
+      };
+      st.forEach((s, i) => { runStream(s, i).catch(e => { s.err = s.err || e; }); });
+      // координатор замера: решаем, когда все набрали хват байт / время вышло
+      const tick = () => {
+        if (done || decided) return;
+        const now = Date.now();
+        const anyMeasured = st.some(s => s.loaded >= CONTEST_BYTES);
+        const t0s = st.filter(s => s.t0).map(s => s.t0);
+        const minT0 = t0s.length ? Math.min.apply(null, t0s) : 0;
+        const allSettled = st.every(s => s.err || s.full || s.ended || s.loaded >= CONTEST_BYTES || (now - startedAt > CONNECT_GRACE_MS));
+        if ((anyMeasured && minT0 && now - minT0 >= CONTEST_MS) || allSettled || now - startedAt > CONTEST_MS + CONNECT_GRACE_MS) { decide(); return; }
+        setTimeout(tick, 120);
+      };
+      setTimeout(tick, 120);
+      // вачдог: победитель замер (нет движения 20с) — перезапуск источника
+      watchdog = setInterval(() => {
+        if (done) { cleanup(); return; }
+        const w = winnerIdx >= 0 ? st[winnerIdx] : null;
+        if (w) {
+          if (w.loaded > wdLastLoaded) { wdLastLoaded = w.loaded; wdLastMoveAt = Date.now(); }
+          if (Date.now() - wdLastMoveAt > STALL_MS) {
+            cleanup();
+            try { w.ctrl.abort(); } catch (e) {} // → runStream catch → recover
+          }
+        } else if (Date.now() - startedAt > 120000) { giveUp(new Error('Боркунӣ дароз мекашид')); }
+      }, 2000);
+    });
+  }
+  function setLoadText(t) { const el = $('loadStatus'); if (el) el.textContent = t || ''; }
+  function hidePdfChrome() {
+    $('stage').classList.remove('pdf-gesture-mode');
+    document.querySelectorAll('.page-nav-area').forEach(n => n.style.display = 'none');
+    const inp = document.querySelector('.page-entry-box');
+    if (inp) inp.style.visibility = 'hidden';
+  }
+  function mountScrollReader(inner) {
+    hidePdfChrome();
+    const slot = $('currentSlot');
+    slot.innerHTML = '';
+    slot.style.transform = 'none';
+    const wrap = document.createElement('div');
+    wrap.className = 'book-scroll';
+    slot.appendChild(wrap);
+    // v99: скролл-режим (FB2/TXT/DOCX) — пинч и A± меняют размер шрифта
+    window.__kkTextMode = 'scroll';
+    window.__kkScrollWrap = wrap;
+    const savedScrollZoom = clampTxt(parseInt(localStorage.getItem('kk_scroll_zoom_pct') || '100', 10) || 100);
+    if (savedScrollZoom !== 100) setScrollZoom(savedScrollZoom, false);
+    const pct = $('quickPagePct');
+    if (pct) {
+      const upd = () => {
+        const max = wrap.scrollHeight - wrap.clientHeight;
+        pct.textContent = (max > 8 ? Math.min(100, Math.round(wrap.scrollTop / max * 100)) : 100) + '%';
+      };
+      wrap.addEventListener('scroll', upd, { passive: true });
+      setTimeout(upd, 500);
+    }
+    // Калон := порциями, то ҷалол амво браузер на ҳанг мекунад
+    const parts = Array.isArray(inner) ? inner : [String(inner || '')];
+    const total = parts.length;
+    let idx = 0;
+    const CHUNK = 220;
+    const firstN = Math.min(CHUNK, total);
+    for (let i = 0; i < firstN; i++) wrap.insertAdjacentHTML('beforeend', parts[i]);
+    idx = firstN;
+    if (idx >= total) { $('loading').classList.remove('on'); setLoadText(''); return wrap; }
+    // боқимонда — дар замина, бо нишондиҳандаи коркард
+    $('loading').classList.add('on');
+    setLoadProgress(Math.round(idx / total * 100));
+    setLoadText('Коркардри китоб...');
+    return new Promise(resolve => {
+      const step = () => {
+        if (!wrap.isConnected) { $('loading').classList.remove('on'); setLoadText(''); resolve(wrap); return; }
+        const till = Math.min(idx + CHUNK, total);
+        let html = '';
+        for (let i = idx; i < till; i++) html += parts[i];
+        wrap.insertAdjacentHTML('beforeend', html);
+        idx = till;
+        setLoadProgress(Math.round(idx / total * 100));
+        if (idx < total) requestAnimationFrame(step);
+        else { $('loading').classList.remove('on'); setLoadText(''); resolve(wrap); }
+      };
+      requestAnimationFrame(step);
+    });
+  }
+  function bookHeaderHtml(title, sub) {
+    return '<div class="bhead0"><div class="bhead0t">' + escapeHtml(title || name || 'Китоб') + '</div>' + (sub ? '<div class="bhead0s">' + escapeHtml(sub) + '</div>' : '') + '</div>';
+  }
+  function decodeBookText(buf) {
+    const probe = new TextDecoder('utf-8').decode(buf.slice(0, 300));
+    let text;
+    if (/encoding\s*=\s*["']windows-1251/i.test(probe)) {
+      try { text = new TextDecoder('windows-1251').decode(buf); } catch (e) { text = new TextDecoder('utf-8').decode(buf); }
+    } else {
+      text = new TextDecoder('utf-8').decode(buf);
+      if ((text.match(/\uFFFD/g) || []).length > 2) { try { text = new TextDecoder('windows-1251').decode(buf); } catch (e) {} }
+    }
+    if (text.charCodeAt(0) === 0xFEFF) text = text.slice(1);
+    return text;
+  }
+  // ---------- FB2 (XML) ----------
+  function renderFb2Content(text) {
+    const doc = new DOMParser().parseFromString(text, 'application/xml');
+    if (doc.querySelector('parsererror')) throw new Error('FB2-файл хатогии дорад');
+    const ti = doc.querySelector('description > title-info');
+    const bookTitle = (ti && ti.querySelector('book-title') ? ti.querySelector('book-title').textContent.trim() : '') || name;
+    const authors = Array.from(ti ? ti.querySelectorAll('author') : []).map(a =>
+      [a.querySelector('first-name') && a.querySelector('first-name').textContent,
+       a.querySelector('last-name') && a.querySelector('last-name').textContent].filter(Boolean).join(' ')).filter(Boolean).join(', ');
+    const binaries = {};
+    doc.querySelectorAll('binary').forEach(b => {
+      binaries['#' + (b.getAttribute('id') || '')] = 'data:' + (b.getAttribute('content-type') || 'image/jpeg') + ';base64,' + (b.textContent || '').replace(/\s+/g, '');
+    });
+    const inline = node => {
+      let s = '';
+      node.childNodes.forEach(ch => {
+        if (ch.nodeType === 3) s += escapeHtml(ch.nodeValue);
+        else if (ch.nodeType === 1) {
+          const t = ch.nodeName.replace(/^.*:/, '').toLowerCase();
+          if (t === 'emphasis' || t === 'i' || t === 'italic') s += '<em>' + inline(ch) + '</em>';
+          else if (t === 'strong' || t === 'b') s += '<strong>' + inline(ch) + '</strong>';
+          else if (t === 'strikethrough') s += '<s>' + inline(ch) + '</s>';
+          else if (t === 'sub') s += '<sub>' + inline(ch) + '</sub>';
+          else if (t === 'sup') s += '<sup>' + inline(ch) + '</sup>';
+          else if (t === 'code') s += '<code>' + inline(ch) + '</code>';
+          else s += inline(ch);
+        }
+      });
+      return s;
+    };
+    const blocks = (parent, out, depth) => {
+      Array.from(parent.childNodes).forEach(node => {
+        if (node.nodeType === 3) { const t = node.nodeValue.trim(); if (t) out.push('<p>' + escapeHtml(t) + '</p>'); return; }
+        if (node.nodeType !== 1) return;
+        const t = node.nodeName.replace(/^.*:/, '').toLowerCase();
+        if (t === 'section') { out.push('<section class="bsec">'); blocks(node, out, depth + 1); out.push('</section>'); }
+        else if (t === 'title') { const lv = Math.min(4, Math.max(2, depth + 1)); out.push('<h' + lv + ' class="bhead">' + inline(node) + '</h' + lv + '>'); }
+        else if (t === 'subtitle') out.push('<h5 class="bsub">' + inline(node) + '</h5>');
+        else if (t === 'p') out.push('<p>' + inline(node) + '</p>');
+        else if (t === 'empty-line') out.push('<div class="bspacer"></div>');
+        else if (t === 'image') {
+          const href = node.getAttribute('l:href') || node.getAttributeNS('http://www.w3.org/1999/xlink', 'href') || '';
+          const src = binaries[href];
+          if (src) out.push('<img class="bimg" loading="lazy" src="' + src + '" alt="">');
+        }
+        else if (t === 'poem') { out.push('<div class="bpoem">'); blocks(node, out, depth); out.push('</div>'); }
+        else if (t === 'stanza') { out.push('<div class="bstanza">'); blocks(node, out, depth); out.push('</div>'); }
+        else if (t === 'v') out.push('<div class="bv">' + inline(node) + '</div>');
+        else if (t === 'text-author') out.push('<div class="bta">— ' + inline(node) + '</div>');
+        else if (t === 'cite') { out.push('<blockquote class="bcite">'); blocks(node, out, depth); out.push('</blockquote>'); }
+        else if (t === 'epigraph') { out.push('<div class="bepi">'); blocks(node, out, depth); out.push('</div>'); }
+        else blocks(node, out, depth);
+      });
+    };
+    const out = [];
+    Array.from(doc.querySelectorAll('body')).forEach((b, i) => { if (i > 0) out.push('<hr class="bhr">'); blocks(b, out, 0); });
+    if (!out.length) throw new Error('FB2: матн ёфт нашуд');
+    return { title: bookTitle, parts: out };
+  }
+  // ---------- DOCX ----------
+  async function renderDocxContent(buf) {
+    await loadScriptOnce('assets/libs/mammoth.browser.min.js');
+    if (!window.mammoth) throw new Error('Китобхонаи DOCX бор нашуд');
+    const result = await window.mammoth.convertToHtml({ arrayBuffer: buf });
+    const html = (result && result.value) ? result.value : '<p>(матн нест)</p>';
+    // Порционный рендер: делим по открытии блочных тегов (теги не разрезаются)
+    const wrapped = '<div class="bdocx">' + html + '</div>';
+    return wrapped.split(/(?=<(?:p|h\d|table|img|ul|ol|blockquote)\b)/i);
+  }
+  // ---------- EPUB ----------
+  async function renderEpub(buf) {
+    setLoadText('Омодасозии хонандаи EPUB...');
+    await loadScriptOnce('assets/libs/jszip.min.js');
+    await loadScriptOnce('assets/libs/epub.min.js');
+    if (typeof JSZip === 'undefined') throw new Error('JSZip бор нашуд');
+    if (typeof ePub !== 'function') throw new Error('Китобхонаи EPUB бор нашуд');
+    $('loading').classList.remove('on');
+    setLoadText('');
+    // Тап-зонаҳо НЕ пинҳон: варақгардонии EPUB бо тап ва свайп (turnPage → __altPager)
+    const slot = $('currentSlot');
+    slot.innerHTML = '';
+    slot.style.transform = 'none';
+    const area = document.createElement('div');
+    area.className = 'book-scroll epub-host';
+    slot.appendChild(area);
+    const book = ePub(buf);
+    const rendition = book.renderTo(area, { width: '100%', height: '100%', spread: 'none' });
+    const epubProgressKey='kk_epub_progress_v1',epubBookKey=canonicalBookUrl(url);
+    let savedEpubCfi=null;
+    try { const entry=JSON.parse(localStorage.getItem(epubProgressKey)||'{}')[epubBookKey];if(typeof entry?.cfi==='string'&&entry.cfi.startsWith('epubcfi('))savedEpubCfi=entry.cfi; } catch(e) {}
+    // Listen before the first display; the initial relocation must update the UI too.
+    rendition.on('relocated', loc => {
+      const start=loc?.start,pctEl=$('quickPagePct');
+      if(pctEl&&start?.percentage!=null)pctEl.textContent=Math.round(start.percentage*100)+'%';
+      if(!start?.cfi)return;
+      try {
+        let all;try{all=JSON.parse(localStorage.getItem(epubProgressKey)||'{}')}catch(e){return}
+        if(!all||typeof all!=='object'||Array.isArray(all))return;
+        all[epubBookKey]={cfi:start.cfi,name,percentage:start.percentage??null,ts:Date.now()};
+        localStorage.setItem(epubProgressKey,JSON.stringify(all));
+      } catch(e) { /* Full/unavailable storage must not prevent reading. */ }
+    });
+    if(window.__kkEpubFontPct&&window.__kkEpubFontPct!==100)rendition.themes.fontSize(window.__kkEpubFontPct+'%');
+    try{await rendition.display(savedEpubCfi||undefined)}catch(e){if(!savedEpubCfi)throw e;await rendition.display()}
+    // v99: EPUB мисли PDF кор мекунад:
+    //   ТАП      → экрани тоза (пинҳон/намоиши панелҳо) — НА варақгардонӣ
+    //   СВАЙП    → варақгардонӣ
+    //   ПИНЧ     → андозаи ҳарф
+    window.__kkTextMode = 'epub';
+    window.__kkEpubRendition = rendition;
+    window.__kkPageTurns = 0;
+    window.__altPager = d => { if (d > 0) rendition.next(); else rendition.prev(); };
+    // андозаи ҳарфи нигоҳдошташуда (пеш аз намоиш)
+    if (window.__kkEpubFontPct && window.__kkEpubFontPct !== 100) {
+      try { rendition.themes.fontSize(window.__kkEpubFontPct + '%'); } catch (e) {}
+    }
+    // ГУШОГИРӢ-И АСЛӢ: iframe-и EPUB ҳодисаҳои ламсро «мехӯрад» — тапу свайп то
+    // зонаҳои берунӣ намерасанд. Обработчикро ДОХИЛИ ҳуҷҷати iframe мегузорем
+    // баъди ҳар рендери баб (ҳар баб — ҳуҷҷати нав).
+    let ifrLastX = 0, ifrLastY = 0, ifrLastT = 0, ifrPinchD0 = 0, ifrPinchF0 = 100, ifrPinchMoved = false;
+    rendition.on('rendered', () => {
+      const ifr = area.querySelector('iframe');
+      if (!ifr) return;
+      setTimeout(() => {
+        let doc = null;
+        try { doc = ifr.contentDocument; } catch (e) { return; }
+        if (!doc || doc.__kkPager) return;
+        doc.__kkPager = true;
+        // ТАП → экрани тоза (ҳамон ҳамчун PDF): панелҳо пинҳон/намо мешаванд
+        doc.addEventListener('click', ev => {
+          try { window.parent.__kkToggleBars(); } catch (e) {}
+        });
+        // СВАЙП: уфқӣ → варақгардонӣ (амудӣ → скролли матн дар дохили iframe)
+        doc.addEventListener('touchstart', ev => {
+          if (ev.touches && ev.touches.length === 2) {
+            ifrPinchMoved = true; ifrLastT = 0;
+            ifrPinchD0 = Math.hypot(
+              ev.touches[0].clientX - ev.touches[1].clientX,
+              ev.touches[0].clientY - ev.touches[1].clientY
+            );
+            try { ifrPinchF0 = window.__kkEpubFontPct || 100; } catch (e) { ifrPinchF0 = 100; }
+            return;
+          }
+          ifrPinchMoved = false;
+          if (ev.touches && ev.touches[0]) { ifrLastX = ev.touches[0].clientX; ifrLastY = ev.touches[0].clientY; ifrLastT = Date.now(); }
+        }, { passive: true });
+        // ПИНЧ (ду ангушт) → андозаи ҳарф
+        doc.addEventListener('touchmove', ev => {
+          if (ev.touches && ev.touches.length === 2 && ifrPinchD0 > 0) {
+            const d = Math.hypot(
+              ev.touches[0].clientX - ev.touches[1].clientX,
+              ev.touches[0].clientY - ev.touches[1].clientY
+            );
+            if (d > 0) {
+              const pct = Math.max(70, Math.min(220, Math.round(ifrPinchF0 * d / ifrPinchD0)));
+              try { window.parent.__kkEpubFont(pct, false); } catch (e) {}
+            }
+          }
+        }, { passive: true });
+        doc.addEventListener('touchend', ev => {
+          if (ifrPinchMoved && (!ev.touches || ev.touches.length === 0)) {
+            ifrPinchD0 = 0; ifrPinchMoved = false;
+            try { window.parent.__kkEpubFontSave(); } catch (e) {}
+            return;
+          }
+          if (!ev.changedTouches || !ev.changedTouches[0]) return;
+          const dx = ev.changedTouches[0].clientX - ifrLastX;
+          const dy = ev.changedTouches[0].clientY - ifrLastY;
+          const dt = ifrLastT ? Date.now() - ifrLastT : 9999;
+          if (Math.abs(dx) > 50 && Math.abs(dx) > Math.abs(dy) && dt < 800) {
+            window.__kkPageTurns = (window.__kkPageTurns || 0) + 1;
+            if (dx < 0) rendition.next(); else rendition.prev();
+          }
+        }, { passive: true });
+      }, 60);
+    });
+
+  }
+  // ---------- DOC (word 97-2003): намоиши дохилӣ (docx/txt нусха) ё пурсиш ----------
+  // Робот (build.py v99) дар repo барои ҳар .doc нусхаи .docx (ягон формат)
+  // ё .txt (матн) мегузорад. Ридер онро меҷӯяд → китоб ДОХИЛИ барнома намоиш
+  // мешавад. Агар нусха набошад — савол медиҳад пеш аз боркунӣ.
+  function docAltCandidates() {
+    const path = String(url).split('?')[0];
+    // папку держим ПЕРЕКОДИРОВАННОЙ (ASCII): URLSearchParams даёт раскодированную
+    // кириллицу, а заголовки Cache API принимают только ISO-8859-1.
+    // Кодируем ТОЛЬКО сегменты пути (не трогаем scheme/host).
+    let encFolder = '';
+    try {
+      const x = new URL(path);
+      const dir = x.pathname.slice(0, x.pathname.lastIndexOf('/') + 1);
+      const encDir = dir.split('/')
+        .map(seg => { try { return encodeURIComponent(decodeURIComponent(seg)); } catch (e) { return seg; } })
+        .join('/');
+      encFolder = x.origin + encDir;
+    } catch (e) {
+      encFolder = path.slice(0, path.lastIndexOf('/') + 1);
+    }
+    const stem = decodeURIComponent(path.slice(path.lastIndexOf('/') + 1).replace(/\.doc$/i, ''));
+    let pretty = stem.replace(/^\d+[_\-.\s]*/, '').replace(/_/g, ' ').replace(/\s+/g, ' ').trim();
+    const names = [stem];
+    if (pretty && pretty !== stem && pretty.length >= 2) names.push(pretty);
+    const alts = [];
+    names.forEach(n => { alts.push({ url: encFolder + encodeURIComponent(n + '.docx'), ext: 'docx' }); alts.push({ url: encFolder + encodeURIComponent(n + '.txt'), ext: 'txt' }); });
+    return alts;
+  }
+
+  function probeUrl(u, ms) {
+    return new Promise(res => {
+      const ctrl = new AbortController();
+      const t = setTimeout(() => { try { ctrl.abort(); } catch (e) {} res(null); }, ms || 8000);
+      fetch(u, { method: 'HEAD', cache: 'no-store', signal: ctrl.signal })
+        .then(r => { clearTimeout(t); res(r.ok ? u : null); })
+        .catch(() => { clearTimeout(t); res(null); });
+    });
+  }
+
+  async function tryFetchDocAlt() {
+    setLoadText('Ҷустуҷӯи намоиши дохилӣ...');
+    setLoadProgress(20);
+    // ҳама номҳои эҳтимолӣ ва ҳамаи зеркалҳо — параллельно (HEAD-проба)
+    const probes = [];
+    docAltCandidates().forEach(alt => {
+      mirrorBookUrls(alt.url).forEach(cu => probes.push(probeUrl(cu, 9000).then(hit => hit ? alt : null)));
+    });
+    const found = await Promise.all(probes);
+    const hit = found.filter(Boolean)[0];
+    if (!hit) return null;
+    setLoadText('Боркунии нусхаи намоишӣ...');
+    setLoadProgress(40);
+    try {
+      const buf = await fetchBookArrayBuffer(hit.url);
+      return { buf, ext: hit.ext };
+    } catch (e) { return null; }
+  }
+
+  async function openDocFormat() {
+    hidePdfChrome();
+    const alt = await tryFetchDocAlt();
+    if (alt && alt.ext === 'docx') {
+      setLoadText('Коркардри DOC...');
+      const parts = await renderDocxContent(alt.buf);
+      $('loading').classList.remove('on'); setLoadText('');
+      return mountScrollReader([bookHeaderHtml(name, 'DOC — намоиши дохилӣ')].concat(parts));
+    }
+    if (alt && alt.ext === 'txt') {
+      $('loading').classList.remove('on'); setLoadText('');
+      const t = escapeHtml(decodeBookText(alt.buf));
+      const lines = t.split('\n');
+      const parts = [bookHeaderHtml(name, 'DOC — намоиши дохилӣ (матн)') + '<pre class="btxt">'];
+      for (let li = 0; li < lines.length; li++) parts.push(lines[li] + (li < lines.length - 1 ? '\n' : ''));
+      parts.push('</pre>');
+      return mountScrollReader(parts);
+    }
+    renderDocAsk();
+  }
+
+  function renderDocAsk() {
+    $('loading').classList.remove('on');
+    setLoadText('');
+    hidePdfChrome();
+    window.__kkTextMode = null;
+    const slot = $('currentSlot');
+    slot.innerHTML = '';
+    slot.style.transform = 'none';
+    const canOpen = (typeof isAndroid === 'function' && isAndroid()) && typeof AndroidBridge !== 'undefined' && typeof AndroidBridge.openFile === 'function';
+    const fileName = (typeof bookFileName === 'function' ? bookFileName(name, url) : (name || 'kitob') + '.doc');
+    const box = document.createElement('div');
+    box.className = 'book-scroll';
+    box.innerHTML =
+      '<div class="doc-hero">' +
+      '<div class="doc-ico">📄</div>' +
+      '<div class="doc-title">' + escapeHtml(name || 'Китоб') + '</div>' +
+      '<div class="doc-sub">Формат: DOC (Microsoft Word 97–2003)</div>' +
+      '<div class="doc-note">Ин файл баъди боркунӣ дар барномаи мо <b>намоиш дода намешавад</b> — онро бояд бо барномаи дигари дар дастгоҳи шумо (Microsoft Word, WPS Office ё Google Docs) кушоед.</div>' +
+      '<div class="doc-note" style="margin-top:8px"><b>Файлро бор кунам?</b></div>' +
+      '<button class="doc-btn" id="docDlBtn">⇩ Ҳа, бор кунам</button>' +
+      '<button class="doc-btn alt" id="docNoBtn">Не, лозим нест</button>' +
+      (canOpen ? '<button class="doc-btn alt" id="docOpenBtn">↗ Кушодан дар барномаи дигар</button>' : '') +
+      '<div class="doc-hint">Маслиҳат: WPS Office, Microsoft Word, Google Docs</div>' +
+      '</div>';
+    slot.appendChild(box);
+    box.querySelector('#docDlBtn').addEventListener('click', () => { downloadFile(url, name); });
+    box.querySelector('#docNoBtn').addEventListener('click', () => { toast('Файл бор карда нашуд'); });
+    const openBtn = box.querySelector('#docOpenBtn');
+    if (openBtn) openBtn.addEventListener('click', async () => {
+      try {
+        openBtn.textContent = 'Боркунӣ...';
+        const buf = await fetchBookAnyCandidate();
+        const dataUrl = await blobToBase64(new Blob([buf]));
+        AndroidBridge.openFile(dataUrl, fileName, 'application/msword');
+        openBtn.textContent = '↗ Кушодан дар барномаи дигар';
+      } catch (e) {
+        openBtn.textContent = 'Хатогӣ — боргирӣ кунед';
+      }
+    });
+  }
+  // ---------- MP4 / видео ----------
+  function renderVideo(buf, ext) {
+    $('loading').classList.remove('on');
+    setLoadText('');
+    hidePdfChrome();
+    window.__kkTextMode = null;
+    const slot = $('currentSlot');
+    slot.innerHTML = '';
+    slot.style.transform = 'none';
+    const box = document.createElement('div');
+    box.className = 'book-scroll video-host';
+    const mime = ext === 'webm' ? 'video/webm' : 'video/mp4';
+    const v = document.createElement('video');
+    v.className = 'bvideo';
+    v.controls = true; v.playsInline = true; v.preload = 'metadata';
+    v.src = URL.createObjectURL(new Blob([buf], { type: mime }));
+    v.style.maxWidth = '100%';
+    box.appendChild(v);
+    const cap = document.createElement('div');
+    cap.className = 'bhead0';
+    cap.innerHTML = '<div class="bhead0t">' + escapeHtml(name || 'Видео') + '</div><div class="bhead0s">Формат: ' + ext.toUpperCase() + '</div>';
+    box.appendChild(cap);
+    slot.appendChild(box);
+  }
+  async function openBookFormat(fmt) {
+    try {
+      // DOC: пеш аз ҳама нусхаи намоишӣ (.docx/.txt аз робот) меҷӯем —
+      // худи .doc-ро ПЕШ аз ҷавоби корбар НАМЕКАШЕМ (v99).
+      if (fmt === 'doc') return await openDocFormat();
+      // Библиотекаҳои формат ҲАМЗАМОНА бо боркунии китоб сар мешаванд (тезтар)
+      let libsPromise = null;
+      if (fmt === 'epub') {
+        libsPromise = loadScriptOnce('assets/libs/jszip.min.js')
+          .then(() => loadScriptOnce('assets/libs/epub.min.js'));
+      } else if (fmt === 'docx') {
+        libsPromise = loadScriptOnce('assets/libs/mammoth.browser.min.js');
+      }
+      setLoadText('Боркунии китоб...');
+      const buf = await fetchBookAnyCandidate();
+      if (fmt === 'epub') { if (libsPromise) await libsPromise; return await renderEpub(buf); }
+      if (fmt === 'fb2') { setLoadText('Коркардри FB2...'); const r = renderFb2Content(decodeBookText(buf)); return mountScrollReader([bookHeaderHtml(r.title, 'FB2')].concat(r.parts)); }
+      if (fmt === 'docx') { if (libsPromise) await libsPromise; setLoadText('Коркардри DOCX...'); const parts = await renderDocxContent(buf); return mountScrollReader([bookHeaderHtml(name, 'DOCX')].concat(parts)); }
+      if (fmt === 'txt') { const t = escapeHtml(decodeBookText(buf)); const lines = t.split('\n'); const parts = [bookHeaderHtml(name, 'TXT') + '<pre class="btxt">']; for (let li = 0; li < lines.length; li++) parts.push(lines[li] + (li < lines.length - 1 ? '\n' : '')); parts.push('</pre>'); return mountScrollReader(parts); }
+      if (fmt === 'mp4' || fmt === 'm4v' || fmt === 'webm') return renderVideo(buf, fmt);
+      openPdf();
+    } catch (e) {
+      $('loading').classList.remove('on');
+      setLoadText('');
+      $('currentSlot').innerHTML = '<div class="error">Хатогӣ ҳангоми кушодани китоб<br>' + String(e.message || e) + '</div>';
+    }
+  }
+
+  const BOOK_FMT = bookFormatOf(url);
+  if (!BOOK_FMT || BOOK_FMT === 'pdf') openPdf();
+  else openBookFormat(BOOK_FMT);
+  void loadReactions();
+</script>
+
+<script>
+document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya() {
+  // 1. Keyboard Navigation (ПК)
+  window.addEventListener('keydown', function (e) {
+    if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
+    if (e.key === 'ArrowRight' || e.key === 'PageDown' || e.key === ' ') {
+      e.preventDefault();
+      turnPage(1);
+    } else if (e.key === 'ArrowLeft' || e.key === 'PageUp' || e.key === 'Backspace') {
+      e.preventDefault();
+      turnPage(-1);
+    } else if (e.key === 'Home') {
+      e.preventDefault();
+      if (typeof page !== 'undefined') renderPage(1, -1);
+    } else if (e.key === 'End') {
+      e.preventDefault();
+      if (typeof pages !== 'undefined' && pages) renderPage(pages, 1);
+    } else if (e.key === 'f' || e.key === 'F') {
+      if (typeof toggleReaderFullscreen === 'function') toggleReaderFullscreen();
+    } else if (e.key === 'Escape') {
+      document.querySelectorAll('.panel.open').forEach(function (el) { el.classList.remove('open'); });
+    }
+  });
+
+  // 2. Mouse Wheel Navigation (ПК)
+  var wheelTimer = null;
+  window.addEventListener('wheel', function (e) {
+    if (Math.abs(e.deltaY) < 30) return;
+    if (e.target && e.target.closest && e.target.closest('.panel, .at-sheet, .at-dlg-bg')) return; // v159: прокрутка панелей не листает книгу
+    if (wheelTimer) return;
+    wheelTimer = setTimeout(function () { wheelTimer = null; }, 320);
+    turnPage(e.deltaY > 0 ? 1 : -1);
+  }, { passive: true });
+
+  // 3. v159: Алия — саҳифаи алоҳида (aliya/reader-aliya.html); модали кӯҳна ва тугмаи болоии Алия хориҷ шуданд
+  var btnOpen = document.getElementById('readerAliyaBtn');
+  if (btnOpen) {
+    btnOpen.addEventListener('click', function (e) {
+      e.stopPropagation();
+      if (!url) { if (typeof toast === 'function') toast('Аввал китобро кушоед'); return; }
+      openAliyaOverlay();
+    });
+  }
+  // v159: Алия дар болои Reader (iframe) кушода мешавад: китоби аллакай боркардашуда истифода мешавад,
+  // ҳеҷ чиз аз нав зеркашӣ намешавад. Бастани қабат саҳифаи Алияро холӣ мекунад — кори ҷорӣ худкор қатъ мешавад.
+  function aliyaSrc() {
+    return 'aliya/reader-aliya.html?embed=1&url=' + encodeURIComponent(url) +
+      '&name=' + encodeURIComponent(typeof name !== 'undefined' ? name : 'Китоб') + '&page=' + (typeof page !== 'undefined' ? page : 1);
+  }
+  function openAliyaOverlay() {
+    var ov = document.getElementById('aliyaOverlay');
+    if (!ov) {
+      ov = document.createElement('div'); ov.id = 'aliyaOverlay'; ov.setAttribute('role', 'dialog'); ov.setAttribute('aria-label', 'Алия');
+      ov.innerHTML = '<iframe title="Алия" allow="clipboard-write"></iframe>';
+      document.body.appendChild(ov);
+    }
+    ov.querySelector('iframe').src = aliyaSrc();
+    ov.classList.add('open');
+    document.documentElement.classList.add('aliya-open');
+    try { history.pushState({ kkAliya: 1 }, ''); } catch (e) {}
+  }
+  function closeAliyaOverlay(fromPop) {
+    var ov = document.getElementById('aliyaOverlay');
+    if (!ov || !ov.classList.contains('open')) return false;
+    ov.classList.remove('open');
+    document.documentElement.classList.remove('aliya-open');
+    var fr = ov.querySelector('iframe');
+    setTimeout(function () { if (!ov.classList.contains('open')) fr.src = 'about:blank'; }, 260);   // қатъи кори Алия
+    if (!fromPop && history.state && history.state.kkAliya) { try { history.back(); } catch (e) {} }
+    if (typeof updateNotesBadge === 'function') updateNotesBadge();
+    return true;
+  }
+  window.__kkCloseAliya = function () { closeAliyaOverlay(false); };
+  window.__kkReaderGoPage = function (n) {
+    closeAliyaOverlay(false);
+    n = parseInt(n, 10);
+    if (n > 0 && pdf && typeof renderPage === 'function') setTimeout(function () { renderPage(Math.min(n, pages), 0); }, 120);
+  };
+  window.addEventListener('popstate', function () { closeAliyaOverlay(true); });
+});
+
+// v159: Ёддоштҳо — матнҳое, ки дар Алия бо 🔖 сабт шудаанд (танҳо дар ҳамин дастгоҳ, localStorage «kk_aliya_notes»)
+function readerNotesCount() {
+  try { return window.AliyaTasks ? window.AliyaTasks.notes.count(url) : 0; } catch (e) { return 0; }
+}
+function updateNotesBadge() {
+  var b = document.getElementById('notesBadge'); if (!b) return;
+  var n = readerNotesCount();
+  b.textContent = n > 99 ? '99+' : String(n);
+  b.hidden = !n;
+}
+function renderReaderNotes() {
+  var box = document.getElementById('notesList');
+  if (!box || !window.AliyaTasks) return;
+  window.AliyaTasks.renderNotesList(box, {
+    book: url,
+    onChange: updateNotesBadge,
+    onGo: function (p) {
+      toggleNotes(false);
+      var target = Math.max(1, Math.min(Number(p) || 1, pages || 1));
+      if (typeof renderPage === 'function') renderPage(target, target >= page ? 1 : -1);
+    }
+  });
+}
+function toggleNotes(force) {
+  var panel = document.getElementById('notesPanel'); if (!panel) return;
+  var open = force === undefined ? !panel.classList.contains('open') : !!force;
+  panel.classList.toggle('open', open);
+  if (open) {
+    document.getElementById('searchPanel').classList.remove('open');
+    document.getElementById('settingsPanel').classList.remove('open');
+    renderReaderNotes();
+  }
+}
+window.addEventListener('pageshow', updateNotesBadge);
+window.addEventListener('storage', function (e) { if (e.key === 'kk_aliya_notes') { updateNotesBadge(); if (document.getElementById('notesPanel').classList.contains('open')) renderReaderNotes(); } });
+window.addEventListener('load', function () {
+  updateNotesBadge();
+  try { if (new URL(location.href).searchParams.get('notes') === '1') toggleNotes(true); } catch (e) {}
+});
+</script>
+
+
+  <!-- Тугмаи шиновари Алия ва тирчаҳои канории ПК -->
+  <button class="reader-aliya-btn" id="readerAliyaBtn" title="Алия — Ёвари зеҳни сунъии китобхон">✨</button>
+  <div class="pc-page-arrow left" onclick="turnPage(-1)" title="Саҳифаи қаблӣ (← / PageUp)">‹</div>
+  <div class="pc-page-arrow right" onclick="turnPage(1)" title="Саҳифаи навбатӣ (→ / PageDown)">›</div>
+
+<script src="./aliya/aliya-brand-animation.js?v=1" defer></script>
+</body>
+</html>
