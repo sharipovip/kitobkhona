@@ -754,13 +754,7 @@
 
   stageEl.addEventListener('touchstart', e => {
     if (e.touches.length === 2) {
-      drag = false;
-      isPinching = true;
-      clearTimeout(zoomCommitTimer);
-      pinchStartDist = getTouchDist(e);
-      // v99: для скролл-книг (FB2/TXT/DOCX) пинч меняет РАЗМЕР ШРИФТА, как в PDF
-      pinchStartZoom = window.__kkTextMode === 'scroll' ? (window.__kkScrollZoomPct || 100) / 100 : zoom;
-      pinchR = renderedZoom; pinchMid0 = getMid(e); pinchPan0 = { x: panX, y: panY };
+      drag = false; isPinching = false;
       return;
     }
     if (e.touches.length !== 1 || isPinching) return;
@@ -770,12 +764,13 @@
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     startTime = Date.now();
-    zoomPanMode=window.__kkTextMode==='pdf'&&zoom>1.01;
+    zoomPanMode=false;
     zoomPanStart={x:panX,y:panY};
     drag = true; dragged = false;
   }, { passive: true });
 
   stageEl.addEventListener('touchmove', e => {
+    if (e.touches && e.touches.length > 1) { e.preventDefault(); return; }
     if (isPinching && e.touches.length === 2) {
       const dist = getTouchDist(e);
       if (pinchStartDist > 0 && dist > 0) {
@@ -940,22 +935,19 @@
     const sl = document.querySelector('input[type="range"][oninput*="setZoom"]');
     if (sl) sl.value = pct;
   }
-  function setLiveZoom(z, smooth) {   // кнопки A± и ползунок: масштаб вокруг центра
-    const nz = clampZoom(z), k0 = zoom / renderedZoom, k1 = nz / renderedZoom;
-    if (k0 > 0) { panX *= k1 / k0; panY *= k1 / k0; }
-    zoom = nz;
-    applyViewTo(cvEl(), !!smooth); syncZoomUI();
+  function setLiveZoom(z) {
+    zoom = clampZoom(z);
+    panX = 0; panY = 0;
+    syncZoomUI();
     $('stage').classList.toggle('is-zoomed', zoom > 1.001);
   }
-  function setZoom(v, smooth) {
-    setLiveZoom(Number(v) / 100, smooth);
+  function setZoom(v) {
+    setLiveZoom(Number(v) / 100);
     clearTimeout(zoomCommitTimer);
-    zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
-  }
-  function currentExactZoom(){
-    if(window.__kkTextMode==='epub')return window.__kkEpubFontPct||100;
-    if(window.__kkTextMode==='scroll')return window.__kkScrollZoomPct||100;
-    return Math.round(zoom*100);
+    if (pdf) {
+      if (rendering) pendingRender = [page, 0];
+      else renderPage(page, 0);
+    }
   }
   function promptExactZoom(){
     const raw=window.prompt('Фоизи андозаро ворид кунед (70–220)',String(currentExactZoom()));

@@ -30,7 +30,7 @@
     var path = location.pathname || '';
     var links = [
       ['index.html','⌂','Асосӣ'],['kitobho.html','▤','Китобҳо'],['winners.html','♛','Ғолибон'],
-      ['aliya/index.html','✦','Алия'],['dovtalab/index.html','🎓','Довталаб'],['Lenta.html','♡','Лента'],['chats.html','☏','Чатҳо']
+      ['aliya/index.html','✦','Алия'],['Lenta.html','♡','Лента'],['chats.html','☏','Чатҳо']
     ];
     var nav = document.createElement('aside'); nav.id='kkhDesktopNav'; nav.className='kkh-desktop-nav'; nav.setAttribute('aria-label','Навигатсияи асосӣ');
     nav.innerHTML = '<div class="kkh-dnav-title">КИТОБХОНА</div>' + links.map(function(x){var href=(basePath||'')+x[0];var active=path.endsWith('/'+x[0])||(x[0]==='index.html'&&(path.endsWith('/')||path.endsWith('/index.html')));return '<a class="kkh-dnav-link'+(active?' active':'')+'" href="'+href+'"><span class="kkh-dnav-icon">'+x[1]+'</span><span>'+x[2]+'</span></a>';}).join('');

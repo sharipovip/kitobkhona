@@ -16,7 +16,6 @@
     { href: 'index.html', label: 'Асосӣ', icon: '🏠' },
     { href: 'kitobho.html', label: 'Китобҳо', icon: '📚' },
     { href: 'winners.html', label: 'Ғолибон', icon: '🏆' },
-    { href: 'dovtalab/index.html', label: 'Довталаб', icon: '🎓' },
     { href: 'Lenta.html', label: 'Лента', icon: '📰' },
     { href: 'chats.html', label: 'Чат', icon: '💬' },
     { href: 'aliya/index.html', label: 'Алия', icon: '✨' }

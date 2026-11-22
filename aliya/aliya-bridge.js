@@ -44,6 +44,15 @@
 
       if ((content instanceof Blob && content.size === 0) || !base64) throw new Error('Файл холӣ аст');
 
+      // Prefer a real user-selected destination whenever this WebView/browser exposes it.
+      if (window.showSaveFilePicker && content instanceof Blob) {
+        var pickerExt = (String(fileName).match(/\.[^.]+$/) || [''])[0];
+        var pickerHandle = await window.showSaveFilePicker({ suggestedName: fileName, types: [{ description: pickerExt ? pickerExt.slice(1).toUpperCase() + ' file' : 'File', accept: { [mimeType]: pickerExt ? [pickerExt] : [] } }] });
+        var pickerWritable = await pickerHandle.createWritable();
+        await pickerWritable.write(content); await pickerWritable.close();
+        return { success: true, method: 'file_picker' };
+      }
+
       // 1. Android Native Bridge
       if (this.isAndroid()) {
         try {
