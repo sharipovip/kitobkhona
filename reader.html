@@ -1103,7 +1103,26 @@
   async function toggleReaderFavorite(){if(!readerFavoriteLoaded)await loadReaderFavorite();const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
 
   async function downloadCurrent() {
-    await downloadFile(url, name);
+    if (!url) { toast('Файли китоб ёфт нашуд'); return; }
+    try {
+      toast('Файл омода мешавад…');
+      const response = await getOrFetchBookResponse(url, {});
+      const blob = await response.blob();
+      const fromUrl = (() => { try { return decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); } catch (_) { return ''; } })();
+      const ext = (fromUrl.match(/\.[a-z0-9]{2,5}$/i) || [format === 'pdf' ? '.pdf' : ''])[0];
+      const fileName = /\.[a-z0-9]{2,5}$/i.test(name || '') ? name : ((name || 'Китоб') + ext);
+      if (window.showSaveFilePicker) {
+        const handle = await window.showSaveFilePicker({ suggestedName: fileName });
+        const writable = await handle.createWritable();
+        await writable.write(blob); await writable.close();
+      } else {
+        const a=document.createElement('a'),objectUrl=URL.createObjectURL(blob);a.href=objectUrl;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);
+      }
+      toast('Файл сабт шуд');
+    } catch (error) {
+      if (error && error.name === 'AbortError') return;
+      toast('Файл сабт нашуд: ' + (error.message || error), 3200);
+    }
   }
   async function shareCurrent() {
     await shareFile(url, name);

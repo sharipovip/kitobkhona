@@ -661,6 +661,8 @@
       var CHAT_STEPS = ['Меҷӯям', 'Фикр мекунам', 'Омода мешавам'];
       function startThinking(bubble, steps) {
         var i = 0, timer = null;
+        var top = bubble.parentElement && bubble.parentElement.querySelector('.msg-top');
+        if (top) top.hidden = true;
         bubble.classList.add('is-waiting');
         function show() { bubble.innerHTML = AT.emblem(true, 'aliya') + '<span class="at-think-txt swap">' + AT.esc(steps[i]) + '</span><span class="at-dots" aria-hidden="true"><i></i><i></i><i></i></span>'; }
         show();
@@ -669,6 +671,7 @@
           clearInterval(timer);
           if (bubble.classList.contains('is-waiting')) bubble.replaceChildren();
           bubble.classList.remove('is-waiting');
+          if (top) top.hidden = false;
         };
       }
 

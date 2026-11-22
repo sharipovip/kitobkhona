@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v167-aliya-reader-final';
+const CACHE_NAME = 'kitobkhona-v168-device-fixes';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
