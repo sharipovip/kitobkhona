@@ -726,185 +726,43 @@
     window.__kkToggleBars();
   });
 
-      let sx = 0, sy = 0, drag = false, startTime = 0, dragged = false;
-  let zoomPanMode=false, zoomPanStart={x:0,y:0};
-  let isPinching = false, pinchStartDist = 0, pinchStartZoom = 1, pinchR = 1, pinchMid0 = { x: 0, y: 0 }, pinchPan0 = { x: 0, y: 0 };
+  let sx = 0, sy = 0, drag = false, startTime = 0;
   const stageEl = $('stage');
-
-  function getTouchDist(e) {
-    if (!e.touches || e.touches.length < 2) return 0;
-    return Math.hypot(
-      e.touches[0].clientX - e.touches[1].clientX,
-      e.touches[0].clientY - e.touches[1].clientY
-    );
-  }
-  function getMid(e) {   // середина двух пальцев относительно центра области страницы
-    const r = $('pageContainer').getBoundingClientRect();
-    return {
-      x: (e.touches[0].clientX + e.touches[1].clientX) / 2 - (r.left + r.width / 2),
-      y: (e.touches[0].clientY + e.touches[1].clientY) / 2 - (r.top + r.height / 2)
-    };
-  }
-  function restoreSlot(el) {
-    dragAngle = 0;
-    el.style.transition = 'transform .25s ease';
-    el.style.transform = '';
-    setTimeout(() => { el.style.transition = ''; el.style.transformOrigin = ''; }, 280);
-  }
-
   stageEl.addEventListener('touchstart', e => {
-    if (e.touches.length === 2) {
-      drag = false; isPinching = false;
-      return;
-    }
-    if (e.touches.length !== 1 || isPinching) return;
-    // Curl owns one-finger gestures only at the fitted scale. Enlarged pages must
-    // remain draggable like a gallery image.
-    if (window.KKReaderCurlController && window.__kkTextMode === 'pdf' && zoom <= 1.01) return;
+    if (e.touches.length !== 1) return;
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     startTime = Date.now();
-    zoomPanMode=false;
-    zoomPanStart={x:panX,y:panY};
-    drag = true; dragged = false;
+    drag = true;
   }, { passive: true });
 
   stageEl.addEventListener('touchmove', e => {
-    if (e.touches && e.touches.length > 1) { e.preventDefault(); return; }
-    if (isPinching && e.touches.length === 2) {
-      const dist = getTouchDist(e);
-      if (pinchStartDist > 0 && dist > 0) {
-        const factor = dist / pinchStartDist;
-        // v99: FB2/TXT/DOCX — зум шрифта (матн перетекает), НЕ transform-scale
-        if (window.__kkTextMode === 'scroll') {
-          setScrollZoom(Math.max(70, Math.min(220, Math.round(pinchStartZoom * factor * 100))), false);
-          return;
-        }
-        if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
-        // два пальца: масштаб вокруг точки между пальцами + сдвиг страницы вслед за пальцами
-        const z1 = clampZoom(pinchStartZoom * factor);
-        const m = getMid(e);
-        const k0 = pinchStartZoom / pinchR, k1 = z1 / pinchR;
-        panX = m.x - k1 * ((pinchMid0.x - pinchPan0.x) / k0);
-        panY = m.y - k1 * ((pinchMid0.y - pinchPan0.y) / k0);
-        zoom = z1;
-        applyViewTo(cvEl(), false);
-        syncZoomUI();
-        $('stage').classList.toggle('is-zoomed', zoom > 1.001);
-      }
-      return;
-    }
-    if (!drag || e.touches.length !== 1 || isPinching) return;
-    if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
+    if (!drag || e.touches.length !== 1) return;
     const dx = e.touches[0].clientX - sx;
     const dy = e.touches[0].clientY - sy;
-    if(zoomPanMode){
-      panX=zoomPanStart.x+dx;panY=zoomPanStart.y+dy;
-      applyViewTo(cvEl(),false);dragged=Math.abs(dx)>3||Math.abs(dy)>3;
-      e.preventDefault();return;
-    }
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
       const currentSlot = $('currentSlot');
-      const pct = Math.min(1, Math.abs(dx) / 220);
+      const pct = Math.min(1, Math.abs(dx) / 200);
+      const offset = dx < 0 ? -pct * 40 : pct * 40;
       currentSlot.style.transition = 'none';
-      currentSlot.style.transformOrigin = 'left center';
-      if (dx < 0) { dragAngle = -pct * 28; currentSlot.style.transform = 'rotateY(' + dragAngle + 'deg)'; }   // страница приподнимается за правый край
-      else { dragAngle = 0; currentSlot.style.transform = 'translateX(' + (pct * 28) + 'px)'; }
-      dragged = true;
+      currentSlot.style.transformOrigin = dx < 0 ? 'left center' : 'right center';
+      currentSlot.style.transform = `translateX(${offset*.35}px) rotateY(${dx<0?-pct*16:pct*16}deg) scale(${1-pct*.025})`;
+      currentSlot.style.opacity = 1 - pct * 0.3;
     }
-  }, { passive: false });
-
-  stageEl.addEventListener('touchend', e => {
-    if (isPinching) {
-      if (!e.touches || e.touches.length < 2) {
-        isPinching = false;
-        pinchStartDist = 0;
-        if ((!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
-          clearTimeout(zoomCommitTimer);
-          renderPage(page, 0);   // чёткая перерисовка; сдвиг и масштаб подменяются в одном кадре — без скачка
-        }
-      }
-      return;
-    }
-    if (!drag) return;
-    drag = false;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - sx, dy = t.clientY - sy;
-    const dt = Date.now() - startTime;
-    const currentSlot = $('currentSlot');
-    if(zoomPanMode){
-      zoomPanMode=false;
-      const cv=cvEl(),box=pageBox(),k=zoom/renderedZoom;
-      const w=(parseFloat(cv?.style.width)||box.w)*k,mx=Math.max(0,(w-box.w)/2);
-      const horizontal=Math.abs(dx)>Math.abs(dy)*1.25&&Math.abs(dx)>58;
-      const atEdge=(dx<0&&panX<=-mx+2)||(dx>0&&panX>=mx-2);
-      if(horizontal&&atEdge)turnPage(dx<0?1:-1);
-      return;
-    }
-    // один палец — листание при обычном масштабе.
-    const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
-    if (wantTurn) {
-      turnPage(dx < 0 ? 1 : -1);
-      if (dragged && !window.__altPager && !rendering) restoreSlot(currentSlot);   // край книги — вернуть на место
-      return;
-    }
-    if (dragged) restoreSlot(currentSlot);
   }, { passive: true });
 
-  // System interruptions do not guarantee touchend (rotation, app switch, OS gesture).
-  stageEl.addEventListener('touchcancel', () => {
-    const hadPinch = isPinching;
-    isPinching = false;
-    pinchStartDist = 0;
+  stageEl.addEventListener('touchend', e => {
+    if (!drag) return;
     drag = false;
-    zoomPanMode=false;
-    if (dragged) restoreSlot($('currentSlot'));
-    dragged = false;
-    if (hadPinch && (!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom-renderedZoom)>.002) {
-      clearTimeout(zoomCommitTimer);
-      renderPage(page,0);
-    }
-  }, {passive:true});
-
-  // A single visibility state for panels, reactions and the 15-second idle timer.
-  let readerIdleTimer = null;
-  function setReaderBars(visible) {
-    bars = !!visible;
-    [$('topBar'), $('bottomBar'), $('readerAliyaBtn'), ...document.querySelectorAll('.reader-reactions')].filter(Boolean).forEach(node => node.classList.toggle('hidden', !bars));
-    armReaderIdle();
-  }
-  function armReaderIdle() {
-    clearTimeout(readerIdleTimer);
-    if (!bars || document.hidden) return;
-    readerIdleTimer = setTimeout(() => {
-      if (document.querySelector('.panel.open,.at-sheet.on,.at-dlg-bg.on,#aliyaOverlay.open') || /INPUT|TEXTAREA|SELECT/.test(document.activeElement?.tagName || '')) { armReaderIdle(); return; }
-      setReaderBars(false);
-    }, 15000);
-  }
-  window.__kkToggleBars = function () { setReaderBars(!bars); };
-  ['pointerdown','keydown','input','wheel'].forEach(type => document.addEventListener(type, armReaderIdle, { passive:true }));
-  document.addEventListener('visibilitychange',armReaderIdle);
-  window.addEventListener('pagehide',()=>clearTimeout(readerIdleTimer));
-  armReaderIdle();
-  let readerCurlBusy = false;
-  async function renderCurlPreview(n) {
-    const p = await pdf.getPage(n), box = pageBox(), nat = p.getViewport({scale:1});
-    const fit = Math.min(box.w/nat.width,box.h/nat.height)*zoom;
-    let dpr = Math.min(devicePixelRatio || 1,2);
-    while (dpr>1 && nat.width*nat.height*fit*fit*dpr*dpr>14e6) dpr=Math.max(1,dpr-.25);
-    const vp=p.getViewport({scale:fit*dpr}), cv=document.createElement('canvas');
-    cv.width=Math.max(1,Math.round(vp.width));cv.height=Math.max(1,Math.round(vp.height));
-    cv.style.width=nat.width*fit+'px';cv.style.height=nat.height*fit+'px';
-    const ctx=cv.getContext('2d',{alpha:false});ctx.fillStyle='#fff';ctx.fillRect(0,0,cv.width,cv.height);
-    await p.render({canvasContext:ctx,viewport:vp}).promise;return cv;
-  }
-  window.KKReaderCurlController = window.KKAttachReaderGestures({
-    stage:$('stage'),container:$('pageContainer'),
-    state:()=>({ready:!!pdf && !rendering && !readerCurlBusy && window.__kkTextMode==='pdf',page,pages,zoom}),
-    current:()=>cvEl(), preview:renderCurlPreview,
-    busy:value=>{readerCurlBusy=value;},
-    commit:async n=>{await renderPage(n,0);},activity:armReaderIdle
-  });
+    const dx = e.changedTouches[0].clientX - sx;
+    const dt = Date.now() - startTime;
+    const currentSlot = $('currentSlot');
+    currentSlot.style.transition = 'transform 0.3s ease, opacity 0.3s ease';
+    currentSlot.style.transform = 'translateX(0) scale(1)';
+    currentSlot.style.opacity = '1';
+    setTimeout(() => { currentSlot.style.transition = ''; }, 350);
+    if (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250)) turnPage(dx < 0 ? 1 : -1);
+  }, { passive: true });
 
   function syncReaderTheme(t) {
     const light = t !== 'dark';
@@ -935,18 +793,14 @@
     const sl = document.querySelector('input[type="range"][oninput*="setZoom"]');
     if (sl) sl.value = pct;
   }
-  function setLiveZoom(z) {
-    zoom = clampZoom(z);
-    panX = 0; panY = 0;
-    syncZoomUI();
-    $('stage').classList.toggle('is-zoomed', zoom > 1.001);
-  }
   function setZoom(v) {
-    setLiveZoom(Number(v) / 100);
-    clearTimeout(zoomCommitTimer);
+    zoom = Number(v) / 100;
+    const container = $('pageContainer');
+    if (container) container.classList.toggle('zoomed', zoom > 1.001);
+    syncZoomUI();
     if (pdf) {
-      if (rendering) pendingRender = [page, 0];
-      else renderPage(page, 0);
+      if (rendering) setTimeout(() => { if (!rendering) renderPage(page); }, 180);
+      else renderPage(page);
     }
   }
   function promptExactZoom(){
@@ -1095,26 +949,7 @@
   async function toggleReaderFavorite(){if(!readerFavoriteLoaded)await loadReaderFavorite();const token=localStorage.getItem('kk_token');if(!token){toast('Барои дӯстдошта ворид шавед');return}const id=canonicalFavoriteId();try{const r=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/favorites'+(readerFavorite?'/'+encodeURIComponent(id):''),{method:readerFavorite?'DELETE':'POST',headers:{Authorization:'Bearer '+token,...(!readerFavorite?{'Content-Type':'application/json'}:{})},body:readerFavorite?undefined:JSON.stringify({book_id:id,book_title:name,book_author:''})});if(!r.ok)throw Error('HTTP '+r.status);readerFavorite=!readerFavorite;paintReaderFavorite();toast(readerFavorite?'Ба дӯстдошта илова шуд':'Аз дӯстдошта хориҷ шуд')}catch(e){toast('Дӯстдошта нигоҳ дошта нашуд')}}
 
   async function downloadCurrent() {
-    if (!url) { toast('Файли китоб ёфт нашуд'); return; }
-    try {
-      toast('Файл омода мешавад…');
-      const response = await getOrFetchBookResponse(url, {});
-      const blob = await response.blob();
-      const fromUrl = (() => { try { return decodeURIComponent(new URL(url, location.href).pathname.split('/').pop() || ''); } catch (_) { return ''; } })();
-      const ext = (fromUrl.match(/\.[a-z0-9]{2,5}$/i) || [format === 'pdf' ? '.pdf' : ''])[0];
-      const fileName = /\.[a-z0-9]{2,5}$/i.test(name || '') ? name : ((name || 'Китоб') + ext);
-      if (window.showSaveFilePicker) {
-        const handle = await window.showSaveFilePicker({ suggestedName: fileName });
-        const writable = await handle.createWritable();
-        await writable.write(blob); await writable.close();
-      } else {
-        const a=document.createElement('a'),objectUrl=URL.createObjectURL(blob);a.href=objectUrl;a.download=fileName;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(objectUrl),1500);
-      }
-      toast('Файл сабт шуд');
-    } catch (error) {
-      if (error && error.name === 'AbortError') return;
-      toast('Файл сабт нашуд: ' + (error.message || error), 3200);
-    }
+    await downloadFile(url, name);
   }
   async function shareCurrent() {
     await shareFile(url, name);
