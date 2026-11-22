@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v172-cache-dedupe';
+const CACHE_NAME = 'kitobkhona-v174-news-audit';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -235,8 +235,8 @@ async function updateBooksJson() {
 }
 
 function scheduleBooksJsonUpdate() {
-  setTimeout(updateBooksJson, 5 * 60 * 1000);
-  setInterval(updateBooksJson, SYNC_INTERVAL);
+  // Intentionally no background timer. books.json refreshes through normal
+  // user navigation/fetch flow, so an idle or closed app never wakes a server.
 }
 
 async function cacheNewsFallbackImages(cache, response) {

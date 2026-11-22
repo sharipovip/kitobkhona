@@ -379,7 +379,7 @@ const nb=$('notifBtn');
 // v126: зангӯла барои корбарони воридшуда нишон дода мешавад; v128: бадж ҳар 15 дақиқа ва танҳо вақте ки саҳифа кушода/намоён ва онлайн аст
 // (дар замина ҳеҷ дархост ба сервер фиристода намешавад — соатҳои ройгони Render/Neon сарф намешаванд); ҳангоми бозгашт ба барнома нав мешавад
 if(nb)nb.style.display=localStorage.getItem('kk_token')?'':'none';
-updateNotifBadge();setInterval(()=>{if(document.hidden||navigator.onLine===false)return;updateNotifBadge()},15*60*1000);document.addEventListener('visibilitychange',()=>{if(!document.hidden){const c=readNotifCache();if(!c)updateNotifBadge()}});
+updateNotifBadge();document.addEventListener('visibilitychange',()=>{if(!document.hidden){const c=readNotifCache();if(!c)updateNotifBadge()}});
 if(nb)nb.addEventListener('click',()=>{const token=localStorage.getItem('kk_token');if(!token){toast('Барои дидани огоҳиҳо ворид шавед');setTimeout(()=>location.href='login.html',350);return}const cached=readNotifCache(),opened=showNotificationsModal(cached?.items||[]);if(!cached){refreshNotifCache().then(items=>{if(document.body.contains(opened))showNotificationsModal(items);else paintNotifBadge(items)}).catch(()=>{})}else paintNotifBadge(cached.items)});
 
 const oz=[ ['ideai_man.html','ideai_man_banner.jpg','Идеяи ман калиди фардо'], ['furugi_subhi_donoi.html','furugi_banner.jpg','Фурӯғи субҳи доноӣ'], ['shohnomahoni.html','shohnoma_banner.jpg','Озмуни «Шоҳномахонӣ»'], ['ilm_furugi_marifat.html','ilm_banner.jpg','Илм-фурӯғи маърифат'], ['donandai_asarho.html','donandai_banner.jpg','Донандаи асарҳо'], ['vatani_azizi_man.html','vatan_banner.jpg','Тоҷикистон — Ватани азизи ман'] ];
@@ -1816,30 +1816,9 @@ async function loadNews(){
 // аз нав кашида мешавад. Ин барои он ки суратҳо ва хабарҳои нав БЕ навсозии
 // саҳифа худашон пайдо шаванд.
 function newsAutoRefresh(){
-  setInterval(async () => {
-    try {
-      if (document.hidden) return; // ҳангоми пинҳонӣ кор намекунем
-      const r = await fetch('news.json', { cache: 'no-store' });
-      if (!r.ok) return;
-      const d = await r.json();
-      const items = Array.isArray(d.items) ? d.items : [];
-      const prepared = prepareHomeNews(items);
-      const fresh = prepared.items;
-      const sig = x => JSON.stringify((x||[]).map(n => [n.title, n.url, n.image, n.published]));
-      try { localStorage.setItem('kk_news_cache', JSON.stringify({ ts: Date.now(), items })); } catch(e) {}
-      if (!fresh.length) return;
-      if (sig(fresh) !== sig(NEWS_ITEMS) || NEWS_FROM_CACHE !== (prepared.stale || navigator.onLine===false)) {
-        const keep = newsIdx;
-        NEWS_ITEMS = fresh;
-        NEWS_FROM_CACHE = prepared.stale || navigator.onLine===false;
-        newsRender();
-        newsGoTo(Math.min(keep, NEWS_ITEMS.length - 1), false);
-      }
-    } catch(e) {}
-  }, 5*60*1000);
+  // No idle polling. The feed loads on page entry and when connectivity changes.
+  // This preserves fresh news without waking a server every five minutes.
 }
-if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', newsAutoRefresh);
-else newsAutoRefresh();
 window.addEventListener('online',()=>loadNews());
 window.addEventListener('offline',()=>loadNews());
 

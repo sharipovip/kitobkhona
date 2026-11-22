@@ -317,14 +317,9 @@
     }
     loadProfile();
     initSettings();
-    // v128: 30 с ба ҷои 10 с (танҳо дар профили каси дигар ва вақте ки саҳифа намоён аст) — камтар дархост ба Render/Neon
-    friendStatusTimer = setInterval(() => {
-      if (!document.hidden && navigator.onLine !== false && currentProfileUserId && !isOwnProfile) {
-        checkFriendStatus(currentUserId, currentProfileUserId)
-          .then(() => updateFriendButtonUI())
-          .catch(() => {});
-      }
-    }, 30000);
+    // No background friend-status polling: refresh only when the user opens or
+    // returns to this profile, avoiding idle Neon/Render wake-ups.
+    friendStatusTimer = null;
     document.addEventListener('visibilitychange', function() {
       if (!document.hidden && currentProfileUserId) {
         const seq = profileLoadSequence;
