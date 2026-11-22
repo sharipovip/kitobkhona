@@ -1052,18 +1052,23 @@
 
         try {
           var resText = await window.AliyaCore.sendMessage(prompt);
+          var renderedDictation = formatMarkdown(resText);
+          var plainDictationBox = document.createElement('div');
+          plainDictationBox.innerHTML = renderedDictation;
+          var cleanDictationText = (plainDictationBox.innerText || plainDictationBox.textContent || '')
+            .replace(/\n{3,}/g, '\n\n').trim();
           var dictData = {
             grade: document.getElementById('dGrade').value,
             quarter: document.getElementById('dQuarter').value,
             type: document.getElementById('dType').value,
             topic: document.getElementById('dTopic').value,
             difficulty: document.getElementById('dDiff').value,
-            text: resText
+            text: cleanDictationText
           };
           currentDictBlob = window.AliyaTemplates.generateDictationDocx(dictData);
           document.getElementById('dResult').style.display = 'block';
-          document.getElementById('dTextContent').textContent = resText;
-          document.getElementById('dResult').dataset.pdfText = resText;
+          document.getElementById('dTextContent').innerHTML = renderedDictation;
+          document.getElementById('dResult').dataset.pdfText = cleanDictationText;
           toast('Матни диктант омода шуд!');
         } catch (err) {
           toast('Хатогӣ: ' + err.message);

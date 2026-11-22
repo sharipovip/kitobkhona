@@ -1076,3 +1076,11 @@ html.aliya-light .bk-it{ border-color:var(--border); background:var(--card); }
 #pane-dictation{overflow:auto;overscroll-behavior:contain}.wizard-container{width:100%;max-width:none;min-height:100%;margin:0;padding:clamp(12px,3vw,28px) clamp(12px,4vw,34px) calc(30px + env(safe-area-inset-bottom,0px))}.wizard-card{width:100%;max-width:none;margin:0;padding:clamp(16px,3vw,28px);border-radius:18px}.wizard-card .form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.wizard-card .form-group.full{grid-column:1/-1}.doc-result-box{max-width:none;overflow:visible}.doc-result-head{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}.doc-export-actions{display:flex;flex-wrap:wrap;gap:7px}
 @media(max-width:560px){.chat-messages{gap:15px;padding-inline:11px}.msg-row.user+.msg-row.bot{margin-top:-5px}.wizard-container{padding:10px 10px calc(24px + env(safe-area-inset-bottom,0px))}.wizard-card{padding:15px 12px}.wizard-card .form-grid{grid-template-columns:1fr}.wizard-card .form-group.full{grid-column:auto}.doc-export-actions{width:100%}.doc-export-actions .export-btn{flex:1;min-width:92px}}
 @media(prefers-reduced-motion:reduce){.msg-bubble.is-waiting .at-dots i{animation:none;opacity:.8}}
+
+/* Shared Aliya identity and sidebar spacing correction. */
+.history-new-chat{margin-bottom:10px}.history-search-wrap{margin-bottom:9px}
+.aliya-avatar-3d,.at-emblem{position:relative;overflow:visible;isolation:isolate}
+.aliya-avatar-3d::before,.aliya-avatar-3d::after,.at-emblem::before,.at-emblem::after{content:"";position:absolute;inset:-4px;border-radius:50%;border:1px dashed color-mix(in srgb,var(--gold) 70%,transparent);pointer-events:none;z-index:-1;animation:aliyaIdentityOrbit 4.8s cubic-bezier(.45,.05,.55,.95) infinite}
+.aliya-avatar-3d::after,.at-emblem::after{inset:-7px;border-style:solid;border-color:color-mix(in srgb,var(--gold) 24%,transparent);animation-duration:7.3s;animation-direction:reverse}
+@keyframes aliyaIdentityOrbit{0%{transform:rotate(0deg) scale(.97)}30%{transform:rotate(155deg) scale(1.04)}65%{transform:rotate(242deg) scale(.99)}100%{transform:rotate(360deg) scale(.97)}}
+@media(prefers-reduced-motion:reduce){.aliya-avatar-3d::before,.aliya-avatar-3d::after,.at-emblem::before,.at-emblem::after{animation:none}}

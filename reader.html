@@ -86,8 +86,6 @@
         <div class="page-slot hidden" id="nextSlot"></div>
       </div>
     </div>
-    <div class="page-nav-area page-nav-left" onclick="turnPage(-1)"></div>
-    <div class="page-nav-area page-nav-right" onclick="turnPage(1)"></div>
     <div class="loading on" id="loading">
       <div class="progress-ring" id="progressRing" style="--p:0"><span id="loadPct">0%</span></div>
       <div class="load-status" id="loadStatus"></div>
@@ -700,7 +698,7 @@
   // EPUB вызывает это изнутри iframe: window.parent.__kkToggleBars()
   $('readerMain').addEventListener('click', e => {
     if (e.target.closest('.reader-reactions,.reader-top-bar,.reader-bottom-bar,.panel,.aliya-reader-launch')) return;
-    if (window.__kkTextMode === 'pdf') {
+    if (window.__kkTextMode === 'pdf' && zoom <= 1.01) {
       const r=$('readerMain').getBoundingClientRect(),x=(e.clientX-r.left)/r.width;
       if (x<.15) { turnPage(-1); armReaderIdle(); return; }
       if (x>.85) { turnPage(1); armReaderIdle(); return; }
@@ -746,7 +744,9 @@
       return;
     }
     if (e.touches.length !== 1 || isPinching) return;
-    if (window.KKReaderCurlController && window.__kkTextMode === 'pdf') return;
+    // Curl owns one-finger gestures only at the fitted scale. Enlarged pages must
+    // remain draggable like a gallery image.
+    if (window.KKReaderCurlController && window.__kkTextMode === 'pdf' && zoom <= 1.01) return;
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     startTime = Date.now();
