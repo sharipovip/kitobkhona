@@ -19,6 +19,10 @@
   var MAX_PAGES = 10;
   var MAX_CONTEXT = 28000;
   var TESSERACT_SRC = 'https://cdn.jsdelivr.net/npm/tesseract.js@5.1.1/dist/tesseract.min.js';
+  // v171: Умумии вақти як панели «рендер» (Хулоса / Калимаҳо / Тарҷума / Санҷиш / Нақшаи дарс / Диктант).
+  // Пеш аз ин ҳар панел то 3 тайм-аути 120 с дошт, ки дар натиҷа то ~12 дақиқа «Фикр мекунам» дида мешуд.
+  // Акнун як панел ҳеҷ гоҳ аз ин зиёд намеистад.
+  var TASK_BUDGET_MS = 240000;
 
   /* ------------------------------------------------------------------ */
   /*  Тавсифи амалҳо                                                     */
@@ -500,13 +504,16 @@
     if (opt.history) msgs = msgs.concat(opt.history);   // v161: идомаи ҷавоби нопурра
     var payload = {
       messages: msgs,
+      // v171: 'high' дар шлюзи зиндагӣ + супоти амиқро дар ҳар супориш фаъол мекард, ки натиҷаи он
+      // дар «Меҷӯям»-и бепоён мондани корбар буд. Акнун 'medium' — харитаи мушатхаб, хато надорад.
       reasoning_mode: opt.reasoning || 'medium', temperature: opt.temperature == null ? 0.4 : opt.temperature, max_tokens: opt.maxTokens || 2200
     };
     if (opt.targetLang) payload.target_language = opt.targetLang;
     var last;
-    for (var attempt = 0; attempt < 3; attempt++) {
+    // v171: то ҳадди 3 такрор (то 7.5 дақиқа «Фикр мекунам») — ҳоло то 2, ва танҳо барои хатои шабака.
+    for (var attempt = 0; attempt < 2; attempt++) {
       try {
-        var d = await postJson('/v1/chat', payload, opt.timeoutMs || 150000, opt.signal);
+        var d = await postJson('/v1/chat', payload, opt.timeoutMs || 120000, opt.signal);
         var reply = String(d.reply || (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || '').trim();
         if (d.blocked) { var be = new Error(reply || 'Дархост рад шуд.'); be.blocked = true; throw be; }
         if (reply) return reply;
@@ -515,7 +522,7 @@
         if (e && e.name === 'AbortError') throw e;
         if (e && e.blocked) throw e;
         last = e;
-        var transient = e.network || e.timeout || (e.status >= 500) || /chat_providers_unavailable|no_chat_provider_configured|rate|429/i.test(String(e.code || e.message || ''));
+        var transient = e.network || e.timeout || (e.status >= 500) || /chat_providers_unavailable|no_chat_provider_configured|chat_deadline_exceeded|rate|429/i.test(String(e.code || e.message || ''));
         if (!transient) break;
       }
       await sleep(800 * (attempt + 1), opt.signal);
@@ -525,6 +532,7 @@
   function friendlyError(err) {
     var m = String(err && err.message || err || '');
     if (/chat_providers_unavailable|no_chat_provider_configured/.test(m)) return 'Алия ҳоло банд аст. Як дақиқа баъд «Дубора»-ро пахш кунед.';
+    if (/chat_deadline_exceeded/.test(m)) return 'Сервери Алия ба ҳадди вақти ҷавоб расид. Саволро кӯтоҳтар нависед ё дубора кӯшиш кунед.';
     if (/HTTP 4\d\d/.test(m)) return 'Дархост қабул нашуд (' + m + '). Дубора кӯшиш кунед.';
     return m || 'Хатои номаълум.';
   }
@@ -1023,6 +1031,8 @@
     injectStyles();
     var task = cfg.task, d = TASKS[task], o = cfg.opts, box = cfg.box, theme = themeName();
     var ctrl = new AbortController(), timers = [], finished = false;
+    // v171: нуқтаи ибтидои банд вақти умумии ин панел.
+    var startedAt = Date.now();
     var title = taskTitle(task, o), meta = 'саҳ. ' + rangeLabel(o.from, o.to);
     var steps = d.steps.slice(), readN = d.read || 1, fin = d.fin;
     if (task === 'test' && o.material !== 'test') { steps = ['Мехонам', 'Менависам']; readN = 1; fin = 'Омода шуд'; }
@@ -1082,17 +1092,23 @@
         var target = task === 'translate' ? ({ 'Русский': 'ru', 'English': 'en', 'Тоҷикӣ': 'tg', 'فارسی': 'fa' })[o.lang] || ''
           : (task === 'lesson' ? o.docLang : (bookLang === 'tg' || bookLang === 'ru' ? bookLang : ''));
         // 'medium': дар шлюз 'high' ҷустуҷӯи интернетро фаъол мекард — барои кор бо матни китоб лозим нест
+        // v171: Умуман як банд вақти барои ҳамаи панелҳо: бе он як панели «рендер» метавонист
+        // 3 × тайм-аут (12 дақиқа) дар ҳолати «Фикр мекунам» саркашӣ карда, ки аз ҳадди катон аст.
+        var budgetLeft = function () { return TASK_BUDGET_MS - (Date.now() - startedAt); };
         output = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
-          maxTokens: maxTokens(task, o), temperature: task === 'translate' ? 0.2 : 0.45, reasoning: 'medium' });
+          maxTokens: maxTokens(task, o), temperature: task === 'translate' ? 0.2 : 0.45, reasoning: 'medium',
+          timeoutMs: Math.max(20000, Math.min(120000, budgetLeft())) });
         // v161: шлюз дарозии ҷавобро маҳдуд мекунад (2400–3072 токен) — нақшаи дарси пурра метавонад дар нима қатъ шавад.
         // Агар ҷавоб нопурра бошад, Алия худкор «идома»-ро мепурсад (то 2 бор) ва қисмҳоро пайваст мекунад.
         for (var cont = 0; cont < 2 && looksTruncated(task, output); cont++) {
+          if (budgetLeft() <= 0) break;          // вақти умумӣ тамом — қисми гирифташуда нигоҳ дошта мешавад
           var more = '';
           try { more = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
             maxTokens: maxTokens(task, o), temperature: 0.3, reasoning: 'medium',
+            timeoutMs: Math.max(20000, Math.min(120000, budgetLeft())),
             history: [{ role: 'assistant', content: output }, { role: 'user', content: bookLang === 'ru' && task !== 'translate'
-              ? 'Ответ оборвался. Продолжите ровно с того места, где остановились, без повторов и без вступления; сохраните тот же формат. В конце — строка «@@МАВЗӮЪ: …».'
-              : 'Ҷавоб нопурра монд. Аз ҳамон ҷое, ки қатъ шуд, бе такрор ва бе муқаддима идома диҳед; ҳамон форматро нигоҳ доред. Дар охир сатри «@@МАВЗӮЪ: …»-ро нависед.' }] }) } catch (ce) { if ((ce && ce.name === 'AbortError') || ctrl.signal.aborted) throw ce; break; }   // қисми гирифташуда нигоҳ дошта мешавад
+              ? 'Ответ оборвался. Продолжите ровно с того места, где остановились, без повторов и без вступления; сохраните тот же формат. В конце — строка «@@МАВЗЪ: …».'
+              : 'Ҷавоб нопурра монд. Аз ҳамон ҷое, ки қатъ шуд, бе такрор ва бе муқаддима идома диҳед; ҳамон форматро нигоҳ доред. Дар охир сатри «@@МАВЗЪ: …»-ро нависед.' }] }) } catch (ce) { if ((ce && ce.name === 'AbortError') || ctrl.signal.aborted) throw ce; break; }   // қисми гирифташуда нигоҳ дошта мешавад
           more = String(more || '').replace(/^```(?:markdown|md)?\s*/i, '').replace(/```\s*$/, '');
           if (!more.trim()) break;
           output = joinContinuation(output, more);

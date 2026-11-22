@@ -109,7 +109,9 @@ function isZipBlob(blob) { return blob && blob.size > 1000; }
   await assert.rejects(() => AliyaCore.sendMessage('Ин бояд фавран қатъ шавад',{signal:alreadyCancelled.signal}), error=>error.code==='aborted');
   simulateUnavailable = true;
   await assert.rejects(() => AliyaCore.sendMessage('Саволи санҷишӣ'), /провайдерҳои зеҳни сунъӣ ҷавоб намедиҳанд/i);
-  assert.equal(unavailableCalls, 3, 'temporary provider failure is retried only a bounded number of times');
+  // v171: такрори худкор барои хатои провайдер маҳдуд аст (2). Пеш аз ин 3 буд, ки бо тайм-аути кӯтоҳ
+  // дар як солият дубора ба шлюз меистод — натиҷа «бесконечно думает».
+  assert.equal(unavailableCalls, 2, 'temporary provider failure is retried only a bounded number of times');
   simulateUnavailable = false;
   const templates = fs.readFileSync(path.join(__dirname,'../aliya/aliya-doc-templates.js'),'utf8');
   for (const brand of ['Зеҳни сунъии Тоҷикӣ','Китобхонаи электронии Тоҷикӣ','https://play.google.com/store/apps/details?id=com.kitobkhona.app&pcampaignid=web_share']) assert.ok(templates.includes(brand));
