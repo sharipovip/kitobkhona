@@ -1465,7 +1465,13 @@ async function getCachedBookResponse(value){
   const key=canonicalBookUrl(value),cache=await caches.open(KITOB_PDF_CACHE);let hit=await cache.match(key);
   if(hit)return hit;
   for(const req of await cache.keys()){
-    if(canonicalBookUrl(req.url)===key){hit=await cache.match(req);if(hit){try{await cache.put(key,hit.clone())}catch(e){}return hit}}
+    if(canonicalBookUrl(req.url)===key){
+      hit=await cache.match(req);
+      if(hit){
+        try{await cache.put(key,hit.clone());if(req.url!==key)await cache.delete(req)}catch(e){}
+        return hit;
+      }
+    }
   }
   return null;
 }
@@ -2062,10 +2068,40 @@ function matchingCachedMeta(map,key){for(const [storedKey,value] of Object.entri
 function rememberCachedBook(url,name,blob){
   try{
     const m=readCachedBookMetaMap(),key=canonicalBookUrl(url),old=matchingCachedMeta(m,key)||{};
+    // Remove every old alias before writing the single canonical record.
+    for(const storedKey of Object.keys(m))if(canonicalBookUrl((m[storedKey]&&m[storedKey].url)||storedKey)===key)delete m[storedKey];
     m[key]={...old,url:key,name:name||old.name||'Китоб',cover:old.cover||'',ts:Date.now(),size:blob&&Number(blob.size)||old.size||0};
     localStorage.setItem('kk_cached_books',JSON.stringify(m));
   }catch(e){}
 }
+function dedupeCachedBookMetadata(){
+  try{
+    const source=readCachedBookMetaMap(),clean={};
+    for(const [storedKey,value] of Object.entries(source)){
+      if(!value)continue;
+      const key=canonicalBookUrl(value.url||storedKey),prior=clean[key];
+      if(!prior||Number(value.ts||0)>=Number(prior.ts||0))clean[key]={...prior,...value,url:key};
+    }
+    localStorage.setItem('kk_cached_books',JSON.stringify(clean));
+  }catch(e){}
+}
+dedupeCachedBookMetadata();
+async function dedupeCachedBookStorage(){
+  if(!('caches' in window))return;
+  try{
+    const cache=await caches.open(KITOB_PDF_CACHE),groups=new Map();
+    for(const req of await cache.keys()){
+      const key=canonicalBookUrl(req.url),group=groups.get(key)||[];group.push(req);groups.set(key,group);
+    }
+    for(const [key,requests] of groups){
+      if(requests.length===1&&requests[0].url===key)continue;
+      const preferred=requests.find(req=>req.url===key)||requests[0],response=await cache.match(preferred);
+      for(const req of requests)await cache.delete(req);
+      if(response)await cache.put(key,response.clone());
+    }
+  }catch(e){}
+}
+setTimeout(dedupeCachedBookStorage,800);
 function getCachedBookRetentionDays(){
   try{const value=Number(localStorage.getItem(KITOB_BOOK_RETENTION_KEY)||0);return KITOB_ALLOWED_RETENTION.has(value)?value:0}catch(e){return 0}
 }

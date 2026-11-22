@@ -932,6 +932,7 @@
     });
   }
   async function saveBlob(blob, fileName, mime) {
+    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime);
     if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime);
     if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
       window.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);

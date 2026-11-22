@@ -1678,3 +1678,7 @@ body{background:var(--home-bg);color:var(--home-text)}body:before{content:none}
 .news-external{left:10px;bottom:8px;max-width:110px;font-size:7px;z-index:3}
 .news-skel{height:108px}
 @media(max-width:350px){.news-card-v3{grid-template-columns:82px minmax(0,1fr);gap:4px 8px;padding:8px}.news-title{font-size:10.5px}.news-read{font-size:8px}.news-external{left:8px;max-width:76px}}
+
+/* Notification bell remains optically centered; badge does not shift the glyph. */
+#notifBtn{position:relative;display:grid!important;place-items:center!important;padding:0!important}
+#notifBtn>svg{position:absolute!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;margin:0!important}
