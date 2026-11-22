@@ -1,89 +1,58 @@
 <!DOCTYPE html>
+
 <html lang="tg">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-  <title>Китобхона — Ғолибон</title>
-<link rel="icon" type="image/x-icon" href="./favicon.ico">
-
-  <script src="config.js?v=75"></script>
-  <script src="cache.js?v=45"></script>
-  
-
-
-
-  <link rel="stylesheet" href="assets/css/desktop-layout.css">
-<link rel="stylesheet" href="assets/css/winners.css?v=clean-1">
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0, viewport-fit=cover" name="viewport"/>
+<title>Китобхона — Ғолибон</title>
+<link href="./favicon.ico" rel="icon" type="image/x-icon"/>
+<script src="config.js?v=75"></script>
+<script src="cache.js?v=45"></script>
+<link href="assets/css/desktop-layout.css" rel="stylesheet"/>
+<link href="assets/css/winners.css?v=clean-1" rel="stylesheet"/>
 </head>
 <body>
-  <div class="app">
-
-    
-    <div class="topbar">
-      <h2>🏆 Ғолибон</h2>
-      <span class="icon" id="themeToggle" style="display:none">🌙</span>
-    </div>
-
-    
-    <div class="content-wrapper">
-
-      
-      <div class="filters-wrap">
-        <div class="segmented" id="periodSwitch">
-          <button data-period="all" class="active"><span class="crown">👑</span>Ҳама вақт</button>
-          <button data-period="month"><span class="crown">👑</span>Моҳ</button>
-          <button data-period="week"><span class="crown">👑</span>Ҳафта</button>
-        </div>
-        <div class="chip-row">
-          <div class="select-chip">
-            <select id="ageFilter">
-              <option value="all">Синну сол: ҳама</option>
-              <option value="7-12">7–12 сола</option>
-              <option value="13-17">13–17 сола</option>
-              <option value="18-25">18–25 сола</option>
-              <option value="26-40">26–40 сола</option>
-              <option value="40+">Болои 40</option>
-            </select>
-          </div>
-          <div class="select-chip">
-            <select id="regionFilter">
-              <option value="all">Вилоят: ҳама</option>
-              <option value="Шаҳри Душанбе">Шаҳри Душанбе</option>
-              <option value="Вилояти Суғд">Вилояти Суғд</option>
-              <option value="Вилояти Хатлон">Вилояти Хатлон</option>
-              <option value="ВМКБ">ВМКБ</option>
-              <option value="Ноҳияҳои тобеи марказ">Ноҳияҳои тобеи марказ</option>
-            </select>
-          </div>
-        </div>
-      </div>
-
-      
-      <div id="winnersContent">
-        <div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>
-      </div>
-
-    </div>
-
-    
-    <div class="nav-bottom">
-    <div class="kh-nav2">
-      <a class="nav-item" href="index.html" aria-label="Асосӣ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span>Асосӣ</span>
-      </a>
-      <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
-      <a class="nav-item active" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-      
-      <!-- ЦЕНТРАЛЬНАЯ КНОПКА АЛИЯ -->
-      <a class="nav-item nav-aliya-center" href="aliya/index.html" aria-label="Алия"><div class="aliya-fab-glow">✨</div><span>Алия</span></a>
-
-      <a class="nav-item" href="dovtalab/index.html" aria-label="Довталаб"><div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center"><img src="dovtalab/assets/icon-192.png" alt="" style="width:22px;height:22px;border-radius:6px"></div><span>Довталаб</span></a>
-      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
-      <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
-    </div>
-  </div>
+<div class="app">
+<div class="topbar">
+<h2>🏆 Ғолибон</h2>
+<span class="icon" id="themeToggle" style="display:none">🌙</span>
 </div>
-
+<div class="content-wrapper">
+<div class="filters-wrap">
+<div class="segmented" id="periodSwitch">
+<button class="active" data-period="all"><span class="crown">👑</span>Ҳама вақт</button>
+<button data-period="month"><span class="crown">👑</span>Моҳ</button>
+<button data-period="week"><span class="crown">👑</span>Ҳафта</button>
+</div>
+<div class="chip-row">
+<div class="select-chip">
+<select id="ageFilter">
+<option value="all">Синну сол: ҳама</option>
+<option value="7-12">7–12 сола</option>
+<option value="13-17">13–17 сола</option>
+<option value="18-25">18–25 сола</option>
+<option value="26-40">26–40 сола</option>
+<option value="40+">Болои 40</option>
+</select>
+</div>
+<div class="select-chip">
+<select id="regionFilter">
+<option value="all">Вилоят: ҳама</option>
+<option value="Шаҳри Душанбе">Шаҳри Душанбе</option>
+<option value="Вилояти Суғд">Вилояти Суғд</option>
+<option value="Вилояти Хатлон">Вилояти Хатлон</option>
+<option value="ВМКБ">ВМКБ</option>
+<option value="Ноҳияҳои тобеи марказ">Ноҳияҳои тобеи марказ</option>
+</select>
+</div>
+</div>
+</div>
+<div id="winnersContent">
+<div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div>
+</div>
+</div>
+<nav aria-label="Менюи асосӣ" class="nav-bottom"><div class="kh-nav2"><a class="nav-item" href="index.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"></path></svg><span>Асосӣ</span></a><a class="nav-item" href="kitobho.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"></path><path d="M12 5v15M5 8h4M5 11h4M15 8h4M15 11h4"></path></svg><span>Китобҳо</span></a><a class="nav-item" href="aliya/index.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z"></path><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6Z"></path></svg><span>Алия</span></a><a class="nav-item" href="Lenta.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"></path><path d="M7 10h8M7 14h5"></path></svg><span>Ҷомеа</span></a><a aria-current="page" class="nav-item active" href="profile.html?settings=1"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="7" rx="2" width="7" x="3" y="3"></rect><rect height="7" rx="2" width="7" x="14" y="3"></rect><rect height="7" rx="2" width="7" x="3" y="14"></rect><rect height="7" rx="2" width="7" x="14" y="14"></rect></svg><span>Бештар</span></a></div></nav>
+</div>
 <script>
     document.addEventListener('DOMContentLoaded', function() {
       if (typeof CacheManager !== 'undefined') {
@@ -126,6 +95,16 @@
     // v126: аватар танҳо аз https ва бе XSS (пештар avatar_url бевосита ба innerHTML мерафт)
     function safeAvatarUrl(u){ try{ const x=new URL(String(u||''),location.href); return (x.protocol==='https:'||x.protocol==='http:')?x.href:''; }catch(e){ return ''; } }
     function escAttr(v){ return String(v==null?'':v).replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+    function getInitials(name) {
+      const parts=String(name||'Китобхон').trim().split(/\s+/).filter(Boolean);
+      return ((parts[0]?.[0]||'К')+(parts.length>1?(parts.at(-1)?.[0]||''):'')).toUpperCase();
+    }
+    function avatarMarkup(user,displayName){
+      const safe=safeAvatarUrl(user&&user.avatar_url);
+      if(safe)return `<img src="${escAttr(safe)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><span class="avatar-initials" hidden>${esc(getInitials(displayName))}</span>`;
+      return `<span class="avatar-initials">${esc(getInitials(displayName))}</span>`;
+    }
+
     function getAvatarSvg(gender) {
       if (gender === 'male') {
         return `<svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="8" r="4" stroke="var(--gold)" stroke-width="1.6"/><path d="M5 20c1.2-4 4-6 7-6s5.8 2 7 6" stroke="var(--gold)" stroke-width="1.6"/></svg>`;
@@ -208,7 +187,7 @@
           const city = user.city || '—';
           const hours = formatHours(user.total_hours);
           const books = user.total_books || 0;
-          const avatar = safeAvatarUrl(user.avatar_url) ? `<img src="${escAttr(safeAvatarUrl(user.avatar_url))}" alt="">` : getAvatarSvg(user.gender);
+          const avatar = avatarMarkup(user, displayName);
           html += `
             <div class="podium-col" onclick="openUserProfile('${user.id}')">
               ${isGold ? '<div class="podium-crown">👑</div>' : ''}
@@ -259,7 +238,7 @@
           const age = user.age !== null && user.age !== undefined ? user.age : '—';
           const hours = formatHours(user.total_hours);
           const books = user.total_books || 0;
-          const avatar = safeAvatarUrl(user.avatar_url) ? `<img src="${escAttr(safeAvatarUrl(user.avatar_url))}" alt="">` : getAvatarSvg(user.gender);
+          const avatar = avatarMarkup(user, displayName);
           html += `
             <div class="rank-row" data-age="${user.age !== null ? user.age : ''}" data-region="${user.region || ''}" onclick="openUserProfile('${user.id}')">
               <div class="rank-num-wrap"><span class="rank-num">${rank}</span></div>

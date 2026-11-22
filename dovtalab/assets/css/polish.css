@@ -1,0 +1,107 @@
+/* ММТ ТҶ — слой улучшений: полный экран, читаемость, единый вид */
+html{scroll-behavior:smooth;-webkit-text-size-adjust:100%}
+body{font-size:1rem;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+.app{max-width:none;grid-template-columns:clamp(240px,17vw,300px) minmax(0,1fr)}
+.main{padding:0 clamp(18px,3.2vw,64px) 56px}
+.main>*:not(.topbar):not(.footer){max-width:1720px;margin-left:auto;margin-right:auto}
+.topbar{position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(10px);height:68px}
+.sidebar{padding:24px 16px}
+.nav a{padding:13px 14px;border-radius:13px;font-weight:650;min-height:46px}
+.nav a[aria-current=page]{background:var(--accent);color:#fff;box-shadow:0 6px 16px rgba(0,0,0,.22)}
+.navicon{font-size:1.2rem}
+.page-title h1{font-size:clamp(1.8rem,2.6vw,2.5rem)}
+.page-title p,.hero p{max-width:78ch;line-height:1.6}
+.card{border-radius:20px;box-shadow:var(--shadow)}
+.btn{min-height:44px;padding:11px 18px;border-radius:12px}
+.btn-small{min-height:38px;padding:8px 14px}
+.field input,.field select,.search-input{min-height:48px;font-size:1rem;border-radius:12px}
+.field label{font-size:.82rem;letter-spacing:.04em}
+.badge{padding:5px 11px;font-size:.8rem}
+.icon-button{min-height:42px;padding:0 14px;border-radius:12px;font-size:.9rem}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px;border-radius:8px}
+.notice{font-size:.95rem;line-height:1.6;padding:15px 18px}
+.grid-4{grid-template-columns:repeat(auto-fit,minmax(230px,1fr))}
+.grid-3{grid-template-columns:repeat(auto-fit,minmax(330px,1fr))}
+.grid-2{grid-template-columns:repeat(auto-fit,minmax(380px,1fr))}
+.quick-card,.subject-card,.subject-material-card,.document-card{transition:transform .18s,box-shadow .18s,border-color .18s}
+.quick-card:hover,.subject-material-card:hover,.document-card:hover{transform:translateY(-3px);border-color:var(--accent)}
+.answer-option{padding:15px 16px;font-size:1.05rem;border-radius:14px}
+.quiz-card h2{font-size:clamp(1.25rem,1.8vw,1.6rem)}
+.footer{font-size:.85rem;padding:20px 0}
+/* панель размера текста и кнопка скачивания */
+.fs-box{display:inline-flex;gap:4px}.fs-box .icon-button{min-width:42px;padding:0 10px;font-weight:800}
+.btn-dl{background:var(--accent);color:#fff;border:0}
+.btn-dl:hover{background:var(--accent-strong);color:#fff}
+/* окно скачивания */
+.dx-back{position:fixed;inset:0;z-index:90;background:rgba(0,0,0,.62);display:grid;place-items:center;padding:16px}
+.dx{width:min(640px,100%);max-height:92vh;overflow:auto;background:var(--surface);color:var(--text);border:1px solid var(--line);border-radius:22px;padding:26px;box-shadow:var(--shadow)}
+.dx h2{margin:4px 0 2px;font-size:1.5rem}.dx>p{margin:0 0 14px;color:var(--muted)}
+.dx-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line)}
+.dx-row .t{flex:1;min-width:200px}.dx-row b{display:block;font-size:1.05rem}.dx-row small{color:var(--muted);font-size:.88rem}
+.dx-st{min-height:1.4em;margin-top:10px;color:var(--muted);font-size:.92rem}
+.dx-foot{display:flex;justify-content:flex-end;margin-top:12px}
+@media (max-width:900px){.app{grid-template-columns:1fr}.main{padding:0 16px 40px}}
+@media print{.sidebar,.topbar,.footer,.dx-back{display:none!important}.app{display:block}}
+/* Fixed menu button and off-canvas sidebar, with no top bar on application pages. */
+.app{display:block!important;max-width:none!important;min-height:100dvh}.main{width:100%;max-width:none!important;margin:0!important;padding:32px clamp(18px,3vw,60px) 42px 78px!important}.main>*:not(.footer){max-width:none!important}.sidebar{position:fixed!important;top:0!important;left:0!important;bottom:0!important;right:auto!important;width:280px!important;max-width:none!important;height:100dvh!important;display:block!important;transform:translateX(-105%)!important;overflow-y:auto!important;padding:76px 16px 24px!important;z-index:60;transition:transform .2s ease!important}body.sidebar-open .sidebar{transform:translateX(0)!important}.sidebar-trigger{position:fixed;left:14px;top:14px;width:48px;height:48px;border:1px solid var(--line);border-radius:14px;background:var(--surface);color:var(--text);font-size:29px;line-height:1;cursor:pointer;z-index:70;box-shadow:var(--shadow)}.sidebar .nav{display:grid!important;margin-top:20px}.sidebar .nav a{white-space:normal!important}.sidebar .navicon{display:grid!important}.sidebar-settings{border-top:1px solid var(--line);margin-top:20px;padding-top:12px;display:grid;gap:5px}.sidebar-action,.sidebar-font button{border:0;border-radius:10px;background:var(--surface-2);color:var(--text);font:inherit;padding:10px;cursor:pointer}.sidebar-action{text-align:left}.sidebar-font{display:flex;align-items:center;gap:5px;font-size:.86rem}.sidebar-font span{flex:1}.topbar{display:none!important}@media(max-width:600px){.main{padding:74px 14px 30px!important}.sidebar{padding-top:76px!important}}
+/* Compact fixed navigation: icons remain visible when the drawer opens. */
+.sidebar{width:224px!important;padding-left:12px!important;padding-right:12px!important}.sidebar .nav a{padding:10px 11px;min-height:42px;gap:10px}.sidebar .navicon{width:25px;min-width:25px;text-align:center;font-size:1.1rem}.sidebar .brandcaption{font-size:.68rem}.sidebar-trigger{width:44px;height:44px;border-radius:13px}
+.favorite-star{margin:12px 0}.favorite-star[aria-pressed=true],#favoriteFilter[aria-pressed=true]{background:#ebf7ef;color:#16633f;border-color:#88c7a1}:root[data-theme=dark] .favorite-star[aria-pressed=true],:root[data-theme=dark] #favoriteFilter[aria-pressed=true]{background:#173c2b;color:#b8e8c8}
+/* Persistent, space-sharing navigation */
+body{--sidebar-size:244px}.app{display:grid!important;grid-template-columns:var(--sidebar-size) minmax(0,1fr)!important;max-width:none!important;min-height:100dvh;transition:grid-template-columns .25s ease}.sidebar{position:sticky!important;top:0!important;left:auto!important;bottom:auto!important;transform:none!important;width:100%!important;height:100dvh!important;max-width:none!important;display:flex!important;flex-direction:column;gap:0;overflow-x:hidden;overflow-y:auto!important;padding:22px 13px 16px!important;z-index:2}.main{width:auto!important;min-width:0;margin:0!important;padding:32px clamp(18px,3vw,50px) 42px!important}.brand{padding:0 0 12px;gap:9px;white-space:nowrap;min-height:60px}.brand>div{min-width:0;flex:1;overflow:hidden}.brandmark-img{width:38px;height:38px;border-radius:11px}.brandname{font-size:1rem}.brandcaption{font-size:.65rem}.sidebar-trigger{position:static!important;flex:none;width:28px!important;height:32px!important;line-height:1;padding:0;border:1px solid #ffffff30;border-radius:8px;background:#ffffff0a;color:var(--on-nav);font-size:25px;box-shadow:none;z-index:auto}.sidebar .nav{margin-top:18px!important;gap:5px}.sidebar .nav a{min-height:46px;padding:9px 10px!important;gap:12px;white-space:nowrap!important;overflow:hidden}.sidebar .navicon{width:25px;min-width:25px;font-size:1.15rem}.sidebar-settings{margin-top:auto;padding-top:14px}.sidebar-action{display:flex;align-items:center;gap:12px;padding:9px 10px;color:var(--on-nav);background:#ffffff0c;min-height:41px;white-space:nowrap}.settings-icon{width:25px;flex:none;text-align:center;font-size:1.1rem}.sidebar-font{color:var(--on-nav);flex-wrap:wrap}.sidebar-font button{color:var(--on-nav);background:#ffffff0d;padding:7px}.sidebar-backdrop{display:none!important}body.sidebar-collapsed{--sidebar-size:72px}body.sidebar-collapsed .brand{flex-direction:column;gap:7px;padding:0 0 8px}body.sidebar-collapsed .brand>div,body.sidebar-collapsed .navlabel,body.sidebar-collapsed .settings-label{display:none}body.sidebar-collapsed .sidebar-trigger{width:38px!important;height:28px!important}body.sidebar-collapsed .sidebar .nav a,body.sidebar-collapsed .sidebar-action{justify-content:center;padding-left:0!important;padding-right:0!important}body.sidebar-collapsed .sidebar-font{display:none}.sidebar .nav a:focus-visible,.sidebar button:focus-visible{outline:2px solid #d9f27b;outline-offset:2px}.exam-session .app{display:block!important}.exam-session .sidebar{display:none!important}.exam-session .main{padding:0!important}@media(max-width:700px){body{--sidebar-size:190px}.main{padding:20px 14px 30px!important}body.sidebar-collapsed{--sidebar-size:64px}.sidebar{padding-left:9px!important;padding-right:9px!important}}@media(prefers-reduced-motion:reduce){.app{transition:none}}
+@media(max-width:500px){body:not(.sidebar-collapsed){--sidebar-size:155px}.brandname{font-size:.8rem}.brandcaption{font-size:.55rem}.sidebar .nav a{font-size:.8rem;gap:6px}.settings-label{font-size:.8rem}}
+/* The collapsed rail keeps the icon visible; its expansion control appears on hover or keyboard focus. */
+body.sidebar-collapsed .brand{position:relative;display:block;min-height:38px;padding:0;width:38px;margin:0 auto}body.sidebar-collapsed .brandmark-img{display:block}body.sidebar-collapsed .brand .sidebar-trigger{position:absolute!important;inset:0;width:38px!important;height:38px!important;border-radius:11px;opacity:0;pointer-events:none;background:#0d342bd9;transition:opacity .18s ease}body.sidebar-collapsed .brand:hover .sidebar-trigger,body.sidebar-collapsed .brand:focus-within .sidebar-trigger{opacity:1;pointer-events:auto}@media(hover:none){body.sidebar-collapsed .brand .sidebar-trigger{opacity:1;pointer-events:auto;inset:auto -4px -5px auto;width:20px!important;height:20px!important;border-radius:50%;font-size:16px;background:#255c49}}@media(prefers-reduced-motion:reduce){body.sidebar-collapsed .brand .sidebar-trigger{transition:none}}
+/* Soft page entrance instead of a bare flash between pages. */
+.main{animation:page-in .3s ease both}
+@keyframes page-in{from{opacity:0}to{opacity:1}}
+@media(prefers-reduced-motion:reduce){.main{animation:none}}
+/* Brand: shimmering name and a gently floating program icon. */
+.brandname{background:linear-gradient(100deg,#f4faf5 30%,#9fe8c4 48%,#f8e27a 56%,#f4faf5 74%);background-size:250% 100%;-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent;animation:brand-sheen 6s ease-in-out infinite}
+.brandcaption{animation:caption-breathe 6s ease-in-out infinite}
+.brandmark-img{animation:brand-float 5.5s ease-in-out infinite}
+@keyframes brand-sheen{0%,100%{background-position:0% 0}50%{background-position:100% 0}}
+@keyframes caption-breathe{0%,100%{opacity:.72}50%{opacity:1}}
+@keyframes brand-float{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-3px) rotate(-3deg)}}
+body.sidebar-collapsed .brandname{background:none;-webkit-text-fill-color:currentColor;color:var(--on-nav)}
+body.sidebar-collapsed .brandcaption{display:none}
+@media(prefers-reduced-motion:reduce){.brandname,.brandcaption,.brandmark-img{animation:none}}
+/* Flag-coloured details and a shine sweep on the big cards. */
+.tricolor{width:104px;height:5px;border-radius:99px;background:linear-gradient(90deg,#cc0000 0 33%,#f2f6f3 33% 66%,#0d7a3f 66%);box-shadow:0 1px 4px #15362722;margin:12px 0 4px}
+:root[data-theme=dark] .tricolor{background:linear-gradient(90deg,#e04b4b 0 33%,#f8c300 33% 66%,#17a05a 66%)}
+.launch-card{position:relative;overflow:hidden}
+.launch-card::before{content:'';position:absolute;top:0;left:0;right:0;height:4px;background:linear-gradient(90deg,#cc0000,#f8c300,#0d7a3f);opacity:0;transition:opacity .25s;z-index:1}
+.launch-card:hover::before,.launch-card:focus-visible::before{opacity:1}
+.launch-card::after{content:'';position:absolute;top:-60%;left:-80%;width:45%;height:220%;transform:rotate(20deg);background:linear-gradient(90deg,transparent,#ffffff45,transparent);transition:left .65s ease;pointer-events:none}
+.launch-card:hover::after{left:135%}
+.launch-card i{transition:transform .25s}
+.launch-card:hover i{transform:translate(3px,-3px)}
+.launch-foot{position:relative;overflow:hidden}
+.launch-foot::after{content:'';position:absolute;top:-60%;left:-80%;width:40%;height:220%;transform:rotate(20deg);background:linear-gradient(90deg,transparent,#ffffff3c,transparent);transition:left .65s ease;pointer-events:none}
+.launch-foot:hover::after{left:135%}
+.launch-foot b{transition:transform .25s;display:inline-block}
+.launch-foot:hover b{transform:translate(3px,-3px)}
+@media(prefers-reduced-motion:reduce){.launch-card::after,.launch-foot::after{display:none}}
+/* The wizard screens animate themselves; avoid a second offset that can momentarily exceed the viewport. */
+body[data-step] .main{animation:none}
+/* Splash overlay on app start */
+#splashOverlay{position:fixed;inset:0;z-index:200;display:grid;place-items:center;background:#0c1512;transition:opacity .55s ease,visibility .55s}
+#splashOverlay{animation:splash-fade 3.1s ease forwards}
+@keyframes splash-fade{0%,86%{opacity:1}100%{opacity:0;visibility:hidden}}
+#splashOverlay::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at 50% 60%,transparent 25%,#0c1512d9 100%)}
+.splash-center{position:relative;z-index:1;text-align:center;display:grid;justify-items:center;gap:8px;padding:24px}
+.splash-logo{width:94px;height:94px;border-radius:24px;box-shadow:0 18px 44px #00000080;animation:splash-float 3s ease-in-out infinite}
+.splash-center h1{margin:10px 0 0;font-size:clamp(2rem,6vw,2.9rem);letter-spacing:-.03em;color:#f2f8f4;opacity:0;animation:splash-rise .8s .35s ease forwards}
+.splash-center p{margin:0;color:#bcd3c5;font-size:.82rem;letter-spacing:.3em;text-transform:uppercase;opacity:0;animation:splash-rise .8s .6s ease forwards}
+.splash-bar{width:180px;height:4px;border-radius:99px;background:#ffffff22;overflow:hidden;margin-top:16px}
+.splash-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#cc0000,#f8c300,#0d7a3f);animation:splash-fill 1.9s .2s ease forwards}
+@keyframes splash-rise{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@keyframes splash-fill{to{width:100%}}
+@keyframes splash-float{0%,100%{transform:translateY(0)}50%{transform:translateY(-6px)}}
+@keyframes splash-zoom{from{transform:scale(1.06)}to{transform:scale(1)}}
+#splashOverlay.done{opacity:0;visibility:hidden}
+#splashOverlay.done .splash-center{transform:scale(1.05);transition:transform .55s ease}
+@media(prefers-reduced-motion:reduce){#splashOverlay{display:none}}
+/* Sidebar action links look like buttons */
+a.sidebar-action{width:100%;text-decoration:none;color:var(--on-nav)}
+a.sidebar-action:hover{background:var(--nav-hover)}

@@ -42,6 +42,8 @@
         }
       }
 
+      if ((content instanceof Blob && content.size === 0) || !base64) throw new Error('Файл холӣ аст');
+
       // 1. Android Native Bridge
       if (this.isAndroid()) {
         try {
@@ -67,8 +69,18 @@
         }
       }
 
-      // 2. Browser & Windows PC Download
+      // 2. Browser & Windows PC: use the native Save As picker when available.
       try {
+        var originalBlob = content instanceof Blob ? content : null;
+        if (originalBlob && originalBlob.size === 0) throw new Error('Файл холӣ аст');
+        if (window.showSaveFilePicker && originalBlob) {
+          var ext = (String(fileName).match(/\.[^.]+$/) || [''])[0];
+          var handle = await window.showSaveFilePicker({ suggestedName: fileName, types: [{ description: ext ? ext.slice(1).toUpperCase() + ' file' : 'File', accept: { [mimeType]: ext ? [ext] : [] } }] });
+          var writable = await handle.createWritable();
+          await writable.write(originalBlob);
+          await writable.close();
+          return { success: true, method: 'file_picker' };
+        }
         var byteCharacters = atob(base64);
         var byteNumbers = new Array(byteCharacters.length);
         for (var i = 0; i < byteCharacters.length; i++) {

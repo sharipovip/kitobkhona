@@ -660,16 +660,15 @@
       // v159: статуси кӯтоҳи аниматсионӣ дар дохили корт (як сатр): «Меҷӯям → Фикр мекунам → Омода мешавам»
       var CHAT_STEPS = ['Меҷӯям', 'Фикр мекунам', 'Омода мешавам'];
       function startThinking(bubble, steps) {
-        var top = bubble.parentElement.querySelector('.msg-top');
         var i = 0, timer = null;
         bubble.classList.add('is-waiting');
-        function show() { if (top) top.innerHTML = AT.emblem(true, 'aliya') + '<span class="at-think-txt swap">' + AT.esc(steps[i]) + '</span><span class="at-dots"><i></i><i></i><i></i></span>'; }
+        function show() { bubble.innerHTML = '<span class="at-think-txt swap">' + AT.esc(steps[i]) + '</span><span class="at-dots" aria-hidden="true"><i></i><i></i><i></i></span>'; }
         show();
         timer = setInterval(function () { if (i < steps.length - 1) { i++; show(); } }, 1700);
         return function stop() {
           clearInterval(timer);
+          if (bubble.classList.contains('is-waiting')) bubble.replaceChildren();
           bubble.classList.remove('is-waiting');
-          if (top) top.innerHTML = AT.emblem(false, 'aliya') + '<span class="msg-who">Алия</span>';
         };
       }
 
@@ -934,7 +933,7 @@
         var html = window.AliyaCore && typeof window.AliyaCore.formatMarkdown === 'function'
           ? window.AliyaCore.formatMarkdown(safeText) : safeText.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
         // v159: номи қаҳрамонҳо [[Ном]] — бо ҳуруф ва ранги ҷудо; маркери нопурра ҳангоми чоп пинҳон мешавад
-        return html.replace(/\[\[([^\]<>\n]{1,80}?)\]\]/g, '<span class="at-nm">$1</span>').replace(/\[\[([^\]<>]*)$/, '$1').replace(/\[\[|\]\]/g, '');
+        return html.replace(/\[\[([^\]<>\n]{1,80}?)\]\]/g, '<span class="at-nm">$1</span>').replace(/\[\[([^\]<>]*)$/, '$1').replace(/\[\[|\]\]/g, '').replace(/\*\*/g,'');
       }
 
       // Code blocks stay inert text; controls copy or download only the displayed source.

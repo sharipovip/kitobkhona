@@ -1550,8 +1550,7 @@ function newsCardHTML(n, i){
       <div class="news-body">
         <div class="news-title" data-no-translate>${esc(n.title)}</div>
         ${sub}
-        <div class="news-meta"><span>🕘</span><span>${newsTimeAgo(n.published)}</span></div>
-        <span class="news-read">Хондан →</span>
+        <div class="news-foot"><div class="news-meta"><span>🕘</span><span>${newsTimeAgo(n.published)}</span></div><span class="news-read">Хондан →</span></div>
       </div>
     </div>`;
 }

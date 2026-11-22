@@ -166,7 +166,10 @@
         var safe=escapeHtml(prepared)
           .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
           .replace(/~~(.+?)~~/g,'<del>$1</del>')
-          .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>');
+          .replace(/(^|[^*])\*([^*\n]+)\*(?!\*)/g,'$1<em>$2</em>')
+          // Streaming can temporarily leave incomplete emphasis delimiters.
+          // Suppress orphan marker runs instead of exposing ** or **** to readers.
+          .replace(/\*{2,}/g,'');
         return safe.replace(/\uE000(\d+)\uE001/g,function(_,id){return tokens[Number(id)]||'';});
       }
       function tableCells(line){return String(line||'').trim().replace(/^\|/,'').replace(/\|$/,'').split('|').map(function(cell){return cell.trim();});}

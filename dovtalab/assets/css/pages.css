@@ -1,0 +1,88 @@
+/* One-screen layouts for Ихтисосҳо, Қабул and Пешрафт: the page fits the viewport,
+   long lists scroll inside their own card, never the document itself. */
+.one-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex:none}
+.one-head h1{font-size:clamp(1.3rem,2vw,1.8rem);letter-spacing:-.03em;margin:4px 0 0}
+.one-note{margin:0;color:var(--muted);font-size:.78rem;max-width:62ch;text-align:right;line-height:1.45}
+.one-note a{font-weight:750}
+.one-note b{color:var(--warm-text)}
+.reset-link{background:none;border:0;padding:0;color:var(--accent-strong);font:750 .78rem system-ui,sans-serif;text-decoration:underline;text-underline-offset:3px;cursor:pointer;justify-self:start}
+.reset-link:hover{color:var(--text)}
+body[data-page=institutions] .main,body[data-page=admission] .main,body[data-page=progress] .main{height:100dvh;display:flex;flex-direction:column;gap:18px;overflow:hidden;padding:clamp(14px,1.6vw,24px) clamp(16px,2.4vw,40px)!important}
+body[data-page=institutions] .footer,body[data-page=admission] .footer,body[data-page=progress] .footer{display:none}
+body[data-page=institutions] .page-root,body[data-page=admission] .page-root,body[data-page=progress] .page-root{display:flex;flex-direction:column;gap:14px;flex:1;min-height:0}
+/* The generic content rule centers children; these pages must use the full width. */
+body[data-page=institutions] .page-root,body[data-page=admission] .page-root,body[data-page=progress] .page-root{max-width:none!important;width:auto;margin-left:0!important;margin-right:0!important}
+.one-head{animation:page-in .3s ease both}
+
+/* Ихтисосҳо: fixed filter column on the left, scrolling results on the right */
+.inst-layout{flex:1;min-height:0;display:grid;grid-template-columns:280px minmax(0,1fr);gap:16px}
+.inst-filters{display:flex;flex-direction:column;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px;box-shadow:var(--shadow);overflow:auto;animation:page-in .34s ease both}
+.inst-filters .field{min-width:0}
+.inst-filters .field label{font-size:.66rem}
+.inst-filters .field input,.inst-filters .field select{padding:9px 11px;font-size:.85rem}
+.fav-toggle{display:flex;align-items:center;justify-content:center;gap:8px;border:1px solid var(--line);background:var(--surface-2);color:var(--text);font:800 .85rem system-ui,sans-serif;border-radius:12px;padding:11px;transition:border-color .2s,background .2s,color .2s}
+.fav-toggle span{background:var(--accent);color:#fff;border-radius:99px;padding:1px 9px;font-size:.75rem}
+.fav-toggle:hover{border-color:var(--accent)}
+.fav-toggle[aria-pressed=true]{background:var(--accent-soft);border-color:var(--accent);color:var(--accent-strong)}
+.inst-results{display:flex;flex-direction:column;gap:8px;min-height:0}
+.inst-results-head{display:flex;align-items:center;justify-content:space-between;gap:10px;flex:none}
+.inst-results-head h2{margin:0;font-size:1rem;letter-spacing:-.02em}
+.institution-list{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;display:grid;gap:9px;align-content:start;padding:2px;scrollbar-width:thin;scrollbar-color:var(--line) transparent}
+.institution-entry{grid-column:1/-1}
+.institution-entry summary{padding:11px 15px;border-radius:15px;transition:background .18s}
+.institution-entry[open] summary,.institution-entry summary:hover{background:var(--surface-2)}
+.institution-entry summary h3{font-size:.98rem;margin:6px 0 3px}
+.institution-entry .item-row{font-size:.78rem}
+@media(max-width:800px){.inst-layout{grid-template-columns:1fr;grid-template-rows:auto minmax(0,1fr)}.inst-filters{flex-direction:row;flex-wrap:wrap;max-height:40%}.inst-filters .field{flex:1;min-width:130px}.fav-toggle,.reset-link{width:auto}}
+
+/* Қабул: three explanation cards + a compact step strip */
+.adm-grid{flex:1;min-height:0;display:grid;grid-template-columns:1.06fr 1.18fr 1.06fr;gap:12px}
+.adm-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:16px 18px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:9px;min-height:0;animation:page-in .36s ease both}
+.adm-card:nth-child(2){animation-delay:.06s}.adm-card:nth-child(3){animation-delay:.12s}
+.adm-card h2{margin:0;font-size:1.02rem;letter-spacing:-.02em}
+.adm-card>p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.45}
+.adm-links{display:flex;gap:8px;flex-wrap:wrap}
+.adm-place{margin-top:auto;border-top:1px dashed var(--line);padding-top:9px;display:grid;gap:6px}
+.adm-place h3{margin:0;font-size:.72rem;text-transform:uppercase;letter-spacing:.08em;color:var(--accent-strong)}
+.adm-place p{margin:0;font-size:.74rem;color:var(--muted);line-height:1.45}
+.adm-place p b{color:var(--text)}
+.adm-events-list{flex:1;min-height:0;overflow:auto;display:grid;gap:7px;align-content:start;overscroll-behavior:contain;padding:2px;scrollbar-width:thin}
+.adm-events-list .card{padding:9px 12px;display:grid;gap:2px;animation:none}
+.adm-events-list .card .badge{font-size:.6rem;padding:2px 8px;justify-self:start}
+.adm-events-list .card h3{font-size:.84rem;margin:3px 0 0}
+.adm-events-list .card p{font-size:.7rem;color:var(--muted);margin:0;line-height:1.4}
+.adm-docs-list{flex:1;min-height:0;overflow:auto;display:grid;gap:6px;align-content:start;overscroll-behavior:contain;padding:2px;scrollbar-width:thin}
+.adm-docs-list .answer-option{padding:8px 11px;font-size:.75rem;line-height:1.4;align-items:flex-start}
+.adm-docs-list .answer-option input{margin-top:2px}
+.adm-sub{margin:0;color:var(--muted);font-size:.7rem}
+.adm-hint{margin:auto 0 0;border-top:1px dashed var(--line);padding-top:8px;color:var(--soft);font-size:.66rem;line-height:1.45}
+.adm-steps{flex:none;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.adm-step{display:flex;gap:11px;align-items:center;background:var(--surface);border:1px solid var(--line);border-radius:15px;padding:11px 14px;box-shadow:var(--shadow);animation:page-in .4s ease both}
+.adm-step:nth-child(2){animation-delay:.07s}.adm-step:nth-child(3){animation-delay:.14s}
+.adm-step span{width:32px;height:32px;flex:none;display:grid;place-items:center;border-radius:50%;background:var(--accent);color:#fff;font-weight:900}
+.adm-step h3{margin:0;font-size:.84rem}
+.adm-step p{margin:2px 0 0;font-size:.68rem;color:var(--muted);line-height:1.4}
+@media(max-width:900px){.adm-grid{grid-template-columns:1fr;overflow:auto}.adm-card{min-height:0}.adm-steps{grid-template-columns:1fr}.one-head{flex-direction:column;align-items:flex-start}.one-note{text-align:left}}
+
+/* Пешрафт: metrics row and two internal-scroll panels */
+.prg-metrics{flex:none;display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px}
+.prg-metrics .stat-card{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:12px 16px;animation:page-in .34s ease both}
+.prg-metrics .stat-card:nth-child(2){animation-delay:.05s}.prg-metrics .stat-card:nth-child(3){animation-delay:.1s}.prg-metrics .stat-card:nth-child(4){animation-delay:.15s}
+.prg-metrics .stat-value{margin:0;font-size:1.6rem}
+.prg-grid{flex:1;min-height:0;display:grid;grid-template-columns:1fr 1.15fr;gap:14px}
+.prg-card{background:var(--surface);border:1px solid var(--line);border-radius:18px;padding:14px 17px;box-shadow:var(--shadow);display:flex;flex-direction:column;gap:10px;min-height:0;animation:page-in .38s ease both}
+.prg-card:nth-child(2){animation-delay:.08s}
+.prg-card h2{margin:0;font-size:.95rem;letter-spacing:-.02em;flex:none}
+.prg-chart #progressChart{flex:1;min-height:0;display:grid;place-items:center}
+.prg-chart svg{max-height:100%;width:100%}
+.prg-table-scroll{flex:1;min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.prg-table .data-table{font-size:.8rem}
+.prg-table td{white-space:nowrap}
+@media(max-width:900px){.prg-grid{grid-template-columns:1fr;overflow:auto}.prg-card{min-height:240px}.prg-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){.prg-metrics{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(prefers-reduced-motion:reduce){.inst-filters,.adm-card,.adm-step,.prg-metrics .stat-card,.prg-card,.one-head{animation:none}}
+/* Sessions stack (dashboard) and favourite buttons */
+.sessions li b{font-size:.68rem}
+.adm-events-list .card{background:var(--surface-2)}
+.adm-docs-list .answer-option{background:var(--surface-2)}
+.fav-toggle:disabled{opacity:.55;cursor:not-allowed}

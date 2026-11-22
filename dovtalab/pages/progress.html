@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="tg" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"><script>try{localStorage.setItem("dov.theme","dark")}catch(e){}document.documentElement.dataset.theme="dark";document.documentElement.style.colorScheme="dark";document.documentElement.style.background="#101815"</script>
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="icon" href="../assets/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="../assets/css/style.css"><link rel="stylesheet" href="../assets/css/polish.css"><link rel="stylesheet" href="../assets/css/pages.css">
+  <title>Пешрафт · Довталаб</title>
+<link rel="stylesheet" href="../assets/css/mobile-redesign.css"></head>
+<body data-base="../" data-page="progress" data-title="Пешрафт">
+<div id="page-content" class="page-root">
+  <header class="one-head">
+    <div><div class="eyebrow">Омори шахсӣ</div><h1>Пешрафти омӯзиш</h1></div>
+    <p class="one-note">Натиҷаҳо дар ҳамин браузер сабт мешаванд; баҳои санҷишӣ ҷойгузини балли расмии ММТ нест. <button class="reset-link" id="clearStats" type="button">Пок кардани омор</button></p>
+  </header>
+  <div class="prg-metrics">
+    <article class="card stat-card"><div class="stat-label">Ҷавобҳои имрӯз</div><div class="stat-value" id="todayA">0</div></article>
+    <article class="card stat-card"><div class="stat-label">Дуруст имрӯз</div><div class="stat-value" id="todayP">0%</div></article>
+    <article class="card stat-card"><div class="stat-label">Машқҳои имрӯз</div><div class="stat-value" id="todayS">0</div></article>
+    <article class="card stat-card"><div class="stat-label">Рӯзҳои пайдарпай</div><div class="stat-value" id="streakP">0</div></article>
+  </div>
+  <div class="prg-grid">
+    <section class="prg-card prg-chart"><h2>Саволҳои ҷавобдодашуда дар 7 рӯз</h2><div id="progressChart"></div></section>
+    <section class="prg-card prg-table"><h2>Ҷадвали рӯзҳо</h2><div class="prg-table-scroll"><table class="data-table"><thead><tr><th>Сана</th><th>Ҷавобҳо</th><th>Дуруст</th><th>Дурустӣ</th><th>Дақиқа</th></tr></thead><tbody id="activityRows"></tbody></table></div></section>
+  </div>
+</div>
+<script src="../data/catalog.js"></script>
+<script src="../data/app-data.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script src="../assets/js/progress.js"></script>
+</body>
+</html>

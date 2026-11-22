@@ -1,0 +1,12 @@
+window.DOV_BOOK_MAP={
+    '11-1':{tj:'A1-ALL_Tj',math:'A2-12_Math_tj',chem:'A3-15_Chemistry_tj',phys:'A4-15_Physics_tj'},
+    '11-2':{tj:'A1-ALL_Tj',math:'A2-12_Math_tj',geo:'A3-2_Geography_tj',en:'A4-234_En',de:'A4-234_De',fr:'A4-234_Fr',ar:'A4-234_Ar'},
+    '11-3':{tj:'A1-ALL_Tj',history:'A2-34_History_tj',lit:'A3-3_TjLiterature_tj',ruslit:'A3-3_RusLngLiterature_ru',en:'A4-234_En',de:'A4-234_De',fr:'A4-234_Fr',ar:'A4-234_Ar'},
+    '11-4':{tj:'A1-ALL_Tj',history:'A2-34_History_tj',law:'A3-4_Law_tj',en:'A4-234_En',de:'A4-234_De',fr:'A4-234_Fr',ar:'A4-234_Ar'},
+    '11-5':{tj:'A1-ALL_Tj',bio:'A2-5_Biology_tj',chem:'A3-15_Chemistry_tj',phys:'A4-15_Physics_tj'},
+    '9-1':{tj:'A1-ALL_Tj',math:'B-Math_tj',phys:'B-Physics_tj'},
+    '9-2':{tj:'A1-ALL_Tj',math:'B-Math_tj',geo:'B-Geography_tj'},
+    '9-3':{tj:'A1-ALL_Tj',lit:'B-TjLiterature_tj',rus:'B-RuLiterature_ru',en:'B-En_tj_ru',de:'B-De_tj_ru',fr:'B-Fr_tj_ru',ar:'B-Ar_tj_ru'},
+    '9-4':{tj:'A1-ALL_Tj',history:'B-History_tj',en:'B-En_tj_ru',de:'B-De_tj_ru',fr:'B-Fr_tj_ru',ar:'B-Ar_tj_ru'},
+    '9-5':{tj:'A1-ALL_Tj',bio:'B-Biology_tj',chem:'B-Chemistry_tj'}
+  };

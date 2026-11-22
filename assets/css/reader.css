@@ -667,3 +667,21 @@ html,body{position:fixed;inset:0;width:100%;height:100%;overflow:hidden;backgrou
 .reader-aliya-btn{right:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(50%);transition:opacity .25s;z-index:25}.reader-aliya-btn.hidden{opacity:0;pointer-events:none}
 
 .page-stage.pdf-gesture-mode{touch-action:none}
+
+/* Reader corrections after device screenshots: independent light reader, compact reactions, gallery zoom controls. */
+.size-control{flex-basis:92px}
+.size-control .zoom-exact{width:40px;height:29px;padding:0;border:0;background:none;color:var(--text);font:700 9px/1 "Segoe UI",Arial,sans-serif}
+.size-control .zoom-exact:focus-visible{outline:2px solid var(--gold);outline-offset:-2px;border-radius:7px}
+.reader-reactions{right:8px;bottom:auto;top:42%;transform:translateY(-50%);flex-direction:row;gap:5px}
+.reader-reactions.hidden{opacity:0;transform:translate(65px,-50%);pointer-events:none}
+.reader-reactions .reaction-btn{width:32px;min-height:41px;padding:4px 3px;background:color-mix(in srgb,var(--card) 82%,transparent);backdrop-filter:blur(8px)}
+.reader-aliya-btn{position:fixed;right:12px;bottom:auto;top:calc(42% + 53px);transform:none;width:44px;height:44px;border:1px solid color-mix(in srgb,var(--gold) 65%,transparent);background:color-mix(in srgb,var(--card) 76%,transparent);box-shadow:0 5px 18px #0004;color:var(--gold);font-size:21px;overflow:visible;backdrop-filter:blur(9px);animation:readerAliyaPulse 3.6s ease-in-out infinite}
+.reader-aliya-btn:before{content:"";position:absolute;inset:-5px;border-radius:50%;border:1px dashed color-mix(in srgb,var(--gold) 58%,transparent);animation:readerAliyaOrbit 8s linear infinite;pointer-events:none}
+.reader-aliya-btn:hover{transform:scale(1.08);box-shadow:0 6px 22px #0005}.reader-aliya-btn:active{transform:scale(.93)}
+.reader-aliya-btn.hidden{opacity:0;transform:translateX(65px);pointer-events:none}
+@keyframes readerAliyaOrbit{to{transform:rotate(360deg)}}
+@keyframes readerAliyaPulse{0%,100%{opacity:.8}50%{opacity:1}}
+.reader-immersive .reader-top-bar,.reader-immersive .reader-bottom-bar,.reader-immersive .reader-reactions,.reader-immersive .reader-aliya-btn{opacity:0;pointer-events:none}
+.reader-immersive .page-stage{padding:0}
+@media(max-width:380px){.reader-reactions{right:5px;gap:3px}.reader-reactions .reaction-btn{width:29px}.reader-aliya-btn{right:8px;width:41px;height:41px}}
+@media(prefers-reduced-motion:reduce){.reader-aliya-btn,.reader-aliya-btn:before{animation:none}}

@@ -73,9 +73,9 @@
     <div class="top-rating rating-stars" id="ratingStars" aria-label="Баҳодиҳӣ"><span class="rating-label">Баҳо диҳед</span><span class="star" data-rating="1">☆</span><span class="star" data-rating="2">☆</span><span class="star" data-rating="3">☆</span><span class="star" data-rating="4">☆</span><span class="star" data-rating="5">☆</span><span class="star" data-rating="6">☆</span><span class="star" data-rating="7">☆</span><span class="star" data-rating="8">☆</span><span class="star" data-rating="9">☆</span><span class="star" data-rating="10">☆</span></div>
     <button class="top-btn" onclick="toggleSearch()" aria-label="Ҷустуҷӯ">⌕</button>
     <button class="top-btn notes-btn" id="notesBtn" onclick="toggleNotes()" aria-label="Ёддоштҳо" title="Ёддоштҳо">🔖<span class="notes-badge" id="notesBadge" hidden>0</span></button>
-    <button class="top-btn pc-fullscreen-btn" onclick="if(!document.fullscreenElement){document.documentElement.requestFullscreen().catch(function(){});}else{document.exitFullscreen().catch(function(){});}" title="Экрани пурра (F)">⛶</button>
+    <button class="top-btn pc-fullscreen-btn" id="readerFullscreenBtn" onclick="toggleReaderFullscreen()" title="Экрани пурра (F)" aria-label="Экрани пурра">⛶</button>
     <button class="top-btn reader-favorite-btn" data-reader-favorite onclick="toggleReaderFavorite()" aria-label="Дӯстдошта"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.8 4.9a5.4 5.4 0 0 0-7.6 0L12 6.1l-1.2-1.2a5.4 5.4 0 0 0-7.6 7.6L12 21l8.8-8.5a5.4 5.4 0 0 0 0-7.6z"/></svg></button>
-    <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)">−</button><span>А</span><button onclick="adjustZoom(10)">＋</button></div>
+    <div class="size-control" aria-label="Андоза"><button onclick="adjustZoom(-10)" aria-label="Кам кардани андоза">−</button><button class="zoom-exact" id="zoomExactBtn" onclick="promptExactZoom()" aria-label="Фоизи дақиқи андоза">100%</button><button onclick="adjustZoom(10)" aria-label="Зиёд кардани андоза">＋</button></div>
   </div>
 
 
@@ -709,6 +709,7 @@
   });
 
       let sx = 0, sy = 0, drag = false, startTime = 0, dragged = false;
+  let zoomPanMode=false, zoomPanStart={x:0,y:0};
   let isPinching = false, pinchStartDist = 0, pinchStartZoom = 1, pinchR = 1, pinchMid0 = { x: 0, y: 0 }, pinchPan0 = { x: 0, y: 0 };
   const stageEl = $('stage');
 
@@ -749,6 +750,8 @@
     sx = e.touches[0].clientX;
     sy = e.touches[0].clientY;
     startTime = Date.now();
+    zoomPanMode=window.__kkTextMode==='pdf'&&zoom>1.01;
+    zoomPanStart={x:panX,y:panY};
     drag = true; dragged = false;
   }, { passive: true });
 
@@ -780,6 +783,11 @@
     if (window.__kkTextMode && window.__kkTextMode !== 'pdf') return;
     const dx = e.touches[0].clientX - sx;
     const dy = e.touches[0].clientY - sy;
+    if(zoomPanMode){
+      panX=zoomPanStart.x+dx;panY=zoomPanStart.y+dy;
+      applyViewTo(cvEl(),false);dragged=Math.abs(dx)>3||Math.abs(dy)>3;
+      e.preventDefault();return;
+    }
     if (Math.abs(dx) > Math.abs(dy) && Math.abs(dx) > 10) {
       const currentSlot = $('currentSlot');
       const pct = Math.min(1, Math.abs(dx) / 220);
@@ -789,7 +797,7 @@
       else { dragAngle = 0; currentSlot.style.transform = 'translateX(' + (pct * 28) + 'px)'; }
       dragged = true;
     }
-  }, { passive: true });
+  }, { passive: false });
 
   stageEl.addEventListener('touchend', e => {
     if (isPinching) {
@@ -809,7 +817,16 @@
     const dx = t.clientX - sx, dy = t.clientY - sy;
     const dt = Date.now() - startTime;
     const currentSlot = $('currentSlot');
-    // один палец — только листание (страница при этом остаётся на месте, даже при увеличении)
+    if(zoomPanMode){
+      zoomPanMode=false;
+      const cv=cvEl(),box=pageBox(),k=zoom/renderedZoom;
+      const w=(parseFloat(cv?.style.width)||box.w)*k,mx=Math.max(0,(w-box.w)/2);
+      const horizontal=Math.abs(dx)>Math.abs(dy)*1.25&&Math.abs(dx)>58;
+      const atEdge=(dx<0&&panX<=-mx+2)||(dx>0&&panX>=mx-2);
+      if(horizontal&&atEdge)turnPage(dx<0?1:-1);
+      return;
+    }
+    // один палец — листание при обычном масштабе.
     const wantTurn = Math.abs(dx) > Math.abs(dy) * 1.2 && (Math.abs(dx) > 50 || (Math.abs(dx) > 25 && dt < 250));
     if (wantTurn) {
       turnPage(dx < 0 ? 1 : -1);
@@ -825,6 +842,7 @@
     isPinching = false;
     pinchStartDist = 0;
     drag = false;
+    zoomPanMode=false;
     if (dragged) restoreSlot($('currentSlot'));
     dragged = false;
     if (hadPinch && (!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom-renderedZoom)>.002) {
@@ -887,19 +905,18 @@
     // холст теперь всегда белый, тема меняется CSS-фильтром — перерисовка не нужна (нет мерцания)
   }
   function setTheme(t) {
-    t=['light','dark','minimal'].includes(t)?t:'dark';
-    if(typeof setAppTheme==='function')setAppTheme(t);
+    // Reader appearance is intentionally independent from the application theme.
+    t=['light','dark','minimal'].includes(t)?t:'light';
     syncReaderTheme(t);
   }
-  // Shared application appearance is authoritative; retain the old reader key for compatibility.
-  document.addEventListener('kitobkhona-theme-change',e=>syncReaderTheme(e.detail));
-  const initialReaderTheme=localStorage.getItem('kk_theme')||localStorage.getItem('kk_reader_theme')||'dark';
+  const initialReaderTheme=localStorage.getItem('kk_reader_theme')||'light';
   setTheme(initialReaderTheme);
 
   function clampZoom(z) { return Math.max(Z_MIN, Math.min(Z_MAX, Math.round(z * 100) / 100)); }
   function syncZoomUI() {
     const pct = Math.round(zoom * 100);
     if ($('zoomText')) $('zoomText').textContent = pct + '%';
+    if ($('zoomExactBtn')) $('zoomExactBtn').textContent = pct + '%';
     const sl = document.querySelector('input[type="range"][oninput*="setZoom"]');
     if (sl) sl.value = pct;
   }
@@ -915,6 +932,33 @@
     clearTimeout(zoomCommitTimer);
     zoomCommitTimer = setTimeout(() => { if (pdf && Math.abs(zoom - renderedZoom) > 0.002) renderPage(page, 0); }, 220);
   }
+  function currentExactZoom(){
+    if(window.__kkTextMode==='epub')return window.__kkEpubFontPct||100;
+    if(window.__kkTextMode==='scroll')return window.__kkScrollZoomPct||100;
+    return Math.round(zoom*100);
+  }
+  function promptExactZoom(){
+    const raw=window.prompt('Фоизи андозаро ворид кунед (70–220)',String(currentExactZoom()));
+    if(raw===null)return;
+    const value=Math.max(70,Math.min(220,parseInt(String(raw).replace(/[^0-9]/g,''),10)||currentExactZoom()));
+    if(window.__kkTextMode==='epub'){window.__kkEpubFont(value);window.__kkEpubFontSave();}
+    else if(window.__kkTextMode==='scroll')setScrollZoom(value);
+    else setZoom(value,true);
+    syncZoomUI();
+  }
+  window.promptExactZoom=promptExactZoom;
+  async function toggleReaderFullscreen(){
+    const root=document.documentElement,active=document.fullscreenElement||document.webkitFullscreenElement;
+    try{
+      if(!active){const enter=root.requestFullscreen||root.webkitRequestFullscreen;if(!enter)throw new Error('unsupported');await enter.call(root);}
+      else{const exit=document.exitFullscreen||document.webkitExitFullscreen;if(exit)await exit.call(document);}
+    }catch(e){
+      document.body.classList.toggle('reader-immersive');
+      toast(document.body.classList.contains('reader-immersive')?'Экрани пурра фаъол шуд':'Экрани пурра баста шуд');
+    }
+  }
+  window.toggleReaderFullscreen=toggleReaderFullscreen;
+  document.addEventListener('fullscreenchange',()=>document.body.classList.toggle('reader-native-fullscreen',!!document.fullscreenElement));
   // v132: «Баҳо диҳед» + звёзды всегда помещаются целиком — при нехватке места слегка уменьшаются
   function fitRatingLabel() { const box=document.querySelector('.top-rating'); if(box)box.style.zoom=''; }
   window.addEventListener('resize', fitRatingLabel);
@@ -1715,11 +1759,7 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
       e.preventDefault();
       if (typeof pages !== 'undefined' && pages) renderPage(pages, 1);
     } else if (e.key === 'f' || e.key === 'F') {
-      if (!document.fullscreenElement) {
-        document.documentElement.requestFullscreen().catch(function(){});
-      } else {
-        document.exitFullscreen().catch(function(){});
-      }
+      if (typeof toggleReaderFullscreen === 'function') toggleReaderFullscreen();
     } else if (e.key === 'Escape') {
       document.querySelectorAll('.panel.open').forEach(function (el) { el.classList.remove('open'); });
     }

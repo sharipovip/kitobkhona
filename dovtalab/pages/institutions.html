@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="tg" data-theme="dark">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1"><script>try{localStorage.setItem("dov.theme","dark")}catch(e){}document.documentElement.dataset.theme="dark";document.documentElement.style.colorScheme="dark";document.documentElement.style.background="#101815"</script>
+  <link rel="manifest" href="../manifest.webmanifest">
+  <link rel="icon" href="../assets/icon-192.png" type="image/png">
+  <link rel="stylesheet" href="../assets/css/style.css"><link rel="stylesheet" href="../assets/css/polish.css"><link rel="stylesheet" href="../assets/css/pages.css">
+  <title>Ихтисосҳо · Довталаб</title>
+<link rel="stylesheet" href="../assets/css/mobile-redesign.css"></head>
+<body data-base="../" data-page="institutions" data-title="Ихтисосҳо">
+<div id="page-content" class="page-root">
+  <header class="one-head">
+    <div><div class="eyebrow">Нақшаи расмии ММТ · 2026–2027</div><h1>Муассиса ва ихтисоси худро ёбед</h1></div>
+    <p class="one-note">Бойгонӣ: нақшаи қабул барои 2026–2027. Маълумоти соли навро аз ММТ санҷед. <a href="admission.html">Санаҳо ва ҳуҷҷатҳо →</a></p>
+  </header>
+  <div class="inst-layout">
+    <aside class="inst-filters" aria-label="Филтрҳои ҷустуҷӯ">
+      <div class="field"><label for="instSearch">ҶУСТУҶӮ</label><input id="instSearch" class="search-input" placeholder="Муассиса, ихтисос, рамз ё шаҳр"></div>
+      <div class="field"><label for="instGrade">СИНФ</label><select id="instGrade"><option value="all">Ҳама</option><option value="11">Синфи 11</option><option value="9">Синфи 9</option></select></div>
+      <div class="field"><label for="instCluster">КЛАСТЕР</label><select id="instCluster"><option value="all">Ҳама</option><option value="1">1 · Табиӣ ва техникӣ</option><option value="2">2 · Иқтисод ва география</option><option value="3">3 · Филология, педагогика ва санъат</option><option value="4">4 · Ҷомеашиносӣ ва ҳуқуқ</option><option value="5">5 · Тиб, биология ва варзиш</option></select></div>
+      <div class="field"><label for="instCity">ШАҲР/НОҲИЯ</label><select id="instCity"><option value="all">Ҳама</option></select></div>
+      <div class="field"><label for="instFee">НАМУДИ ПАРДОХТ</label><select id="instFee"><option value="all">Ҳама</option><option value="ройгон">Ройгон</option><option value="пулакӣ">Пулакӣ</option></select></div>
+      <div class="field"><label for="instForm">ШАКЛИ ТАҲСИЛ</label><select id="instForm"><option value="all">Ҳама</option></select></div>
+      <button class="fav-toggle" id="favoriteFilter" type="button" aria-pressed="false">♡ Интихобшудаҳо <span id="favoriteCount">0</span></button>
+      <button class="reset-link" id="instReset" type="button">Аз нав танзим кардан</button>
+    </aside>
+    <section class="inst-results">
+      <div class="inst-results-head"><h2 id="instCount">Муассисаҳо</h2><span id="instSummary" class="badge">Нақшаи 2026–2027</span></div>
+      <div id="institutionCards" class="institution-list"></div>
+    </section>
+  </div>
+</div>
+<script src="../data/catalog.js"></script>
+<script src="../data/admission-plan-2026-27.js"></script>
+<script src="../assets/js/shell.js"></script>
+<script src="../assets/js/institutions.js"></script>
+</body>
+</html>
