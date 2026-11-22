@@ -262,8 +262,8 @@
     /* варақаи поёнӣ */
     '.at-sheet-bg{position:fixed;inset:0;background:rgba(2,6,14,.62);z-index:9000;opacity:0;pointer-events:none;transition:opacity .2s}',
     '.at-sheet-bg.on{opacity:1;pointer-events:auto}',
-    '.at-sheet{position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:min(520px,100%);z-index:9001;background:var(--at-bg2);color:var(--at-txt);border:1px solid var(--at-line);border-bottom:0;border-radius:20px 20px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);max-height:88dvh;overflow-y:auto;overflow-x:hidden;font-family:inherit}',
-    '.at-sheet.on{transform:none}',
+    '.at-sheet{pointer-events:none;position:fixed;left:0;right:0;bottom:0;margin:0 auto;width:min(520px,100%);z-index:9001;background:var(--at-bg2);color:var(--at-txt);border:1px solid var(--at-line);border-bottom:0;border-radius:20px 20px 0 0;padding:8px 16px calc(18px + env(safe-area-inset-bottom,0px));transform:translateY(105%);transition:transform .25s cubic-bezier(.2,.8,.2,1);max-height:88dvh;overflow-y:auto;overflow-x:hidden;font-family:inherit}',
+    '.at-sheet.on{transform:none;pointer-events:auto}',
     '.at-sheet .at-grab{width:38px;height:4px;border-radius:2px;background:var(--at-line);margin:2px auto 10px}',
     '.at-sheet h3{margin:0 0 12px;font-size:16px;color:var(--at-gold);display:flex;align-items:center;gap:8px}',
     '@media(min-width:700px){.at-sheet{bottom:50%;border-radius:20px;border-bottom:1px solid var(--at-line);transform:translateY(60%);opacity:0;transition:transform .25s,opacity .2s}.at-sheet.on{transform:translateY(50%);opacity:1}}',

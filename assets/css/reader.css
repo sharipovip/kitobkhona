@@ -547,8 +547,8 @@ body.light-reading .book-scroll{color:#1A1F29}
   z-index: 100;
   transition: transform 0.2s, box-shadow 0.2s;
 }
-.reader-aliya-btn:hover{ transform: scale(1.1); box-shadow: 0 0 24px rgba(232, 201, 109, 0.7); }
-.reader-aliya-btn:active{ transform: scale(0.92); }
+.reader-aliya-btn:hover{ transform: translateX(50%) scale(1.1); box-shadow: 0 0 24px rgba(232, 201, 109, 0.7); }
+.reader-aliya-btn:active{ transform: translateX(50%) scale(0.92); }
 
 /* Боковые стрелки для перелистывания на ПК */
 .pc-page-arrow{

@@ -37,6 +37,8 @@
 
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
 <link rel="stylesheet" href="assets/css/catalog.css?v=clean-catalog-1">
+<script src="assets/js/catalog-icons.js"></script>
+<link rel="stylesheet" href="assets/css/mobile-navigation.css">
 </head>
 <body>
 
@@ -46,13 +48,14 @@
   <div class="content-wrapper" id="contentWrapper">
 
     
-    <header class="catalog-heading"><a href="index.html" aria-label="Асосӣ">‹</a><div><h1>Китобҳо</h1><p>Беҳтарин ганҷи шумо</p></div></header>
+    <header class="catalog-heading"><a href="index.html" aria-label="Асосӣ">‹</a><div><h1>Китобҳо</h1><p>Беҳтарин ганҷи шумо</p></div><span class="catalog-tag">Каталог</span></header>
     <div class="sticky-header">
       <form class="catalog-search" role="search" onsubmit="event.preventDefault();document.getElementById('searchInput').dispatchEvent(new Event('input',{bubbles:true}))">
         <input type="search" id="searchInput" placeholder="Китоб ё муаллифро ҷустуҷӯ намоед" aria-label="Китоб ё муаллифро ҷустуҷӯ намоед">
-        <button type="submit" aria-label="Ҷустуҷӯ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg></button>
+        <button type="submit" aria-label="Ҷустуҷӯ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="10" cy="10" r="6"/><path d="m15 15 5 5"/></svg><span>Ҷустуҷӯ</span></button>
       </form>
       
+      <div class="catalog-categories-heading"><h2>Категорияҳо</h2><button class="catalog-category-picker" id="catalogCategoryPicker" type="button">Ҳамаи категорияҳо →</button></div>
       <div class="shelf-section">
         <div class="shelf-wrap">
           <div class="shelf-row" id="shelfRow"><div class="loader" style="margin:10px auto;"></div></div>
@@ -69,6 +72,7 @@
 
     
     <div class="books-section">
+      <div class="catalog-results-toolbar"><div class="catalog-results-copy"><h2 id="catalogResultsTitle">Китобҳо</h2><p id="catalogResultCount" class="catalog-result-count" role="status" aria-live="polite">Боргирӣ...</p></div><div class="catalog-view-switch" role="group" aria-label="Намуди китобҳо"><button type="button" data-catalog-view="grid" aria-label="Шабака" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 3h7v7H3zM14 3h7v7h-7zM3 14h7v7H3zM14 14h7v7h-7z"/></svg></button><button type="button" data-catalog-view="list" aria-label="Рӯйхат" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 5h4v4H3zM11 7h10M3 15h4v4H3zM11 17h10"/></svg></button></div></div>
       <div class="books-grid12" id="booksGrid">
         <div class="loader" style="grid-column:1/-1;"></div>
       </div>
@@ -76,22 +80,8 @@
   </div>
 
   
-  <div class="nav-bottom">
-    <div class="kh-nav2">
-      <a class="nav-item" href="index.html" aria-label="Асосӣ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span>Асосӣ</span>
-      </a>
-      <a class="nav-item active" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
-      <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-      
-      <!-- ЦЕНТРАЛЬНАЯ КНОПКА АЛИЯ -->
-      <a class="nav-item nav-aliya-center" href="aliya/index.html" aria-label="Алия"><div class="aliya-fab-glow">✨</div><span>Алия</span></a>
+  <nav class="nav-bottom" aria-label="Менюи асосӣ"><div class="kh-nav2"><a class="nav-item" href="index.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"></path></svg><span>Асосӣ</span></a><a class="nav-item active" href="kitobho.html" aria-current="page"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"></path><path d="M12 5v15M5 8h4M5 11h4M15 8h4M15 11h4"></path></svg><span>Китобҳо</span></a><a class="nav-item" href="aliya/index.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z"></path><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6Z"></path></svg><span>Алия</span></a><a class="nav-item" href="Lenta.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"></path><path d="M7 10h8M7 14h5"></path></svg><span>Ҷомеа</span></a><button type="button" class="nav-item" data-open-mobile-menu><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><rect height="7" rx="2" width="7" x="3" y="3"></rect><rect height="7" rx="2" width="7" x="14" y="3"></rect><rect height="7" rx="2" width="7" x="3" y="14"></rect><rect height="7" rx="2" width="7" x="14" y="14"></rect></svg><span>Бештар</span></button></div></nav>
 
-      <a class="nav-item" href="dovtalab/index.html" aria-label="Довталаб"><div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center"><img src="dovtalab/assets/icon-192.png" alt="" style="width:22px;height:22px;border-radius:6px"></div><span>Довталаб</span></a>
-      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
-      <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -120,6 +110,7 @@
   let DATA = null, CATS = [], cat = null, sub = null, books = [], manifestCache = new Map();
   let booksJsonLoadedAt = 0;
   let activeBookElement = null;
+  let catalogSearchSequence=0;
 
   function getCoverCacheMap() {
     try {
@@ -441,17 +432,23 @@
     for (const candidate of candidates) { const title = cleanCatalogBookTitle(candidate); if (title) return title; }
     let fileName = String(file || book?.filename || book?.file_name || '').split(/[\\/]/).pop() || '';
     try { fileName = decodeURIComponent(fileName); } catch (e) {}
-    return cleanCatalogBookTitle(fileName.replace(/\.pdf$/i, '')) || 'Китоб';
+    return cleanCatalogBookTitle(fileName.replace(/\.(?:pdf|epub|fb2|docx?|txt|mp4|m4v|webm|mp3)$/i, '')) || 'Китоб';
   }
 
+  function updateCatalogResults(count, status) {
+    const title=document.getElementById('catalogResultsTitle'),counter=document.getElementById('catalogResultCount');
+    if(title)title.textContent=document.getElementById('searchInput').value.trim()?'Натиҷаи ҷустуҷӯ':cat?displayCategoryName(cat):'Китобҳо';
+    if(counter)counter.textContent=status||(Number(count)||0)+' китоб';
+  }
   function renderBooks(list) {
     const grid = document.getElementById('booksGrid');
+    closeActiveActions();
+    if (window.__bookRenderObserver) { try { window.__bookRenderObserver.disconnect(); } catch(e) {} window.__bookRenderObserver = null; }
+    updateCatalogResults(list?.length||0);
     if (!list || !list.length) {
       grid.innerHTML = '<div class="empty">Дар ин бахш ҳоло китоб дастрас нест</div>';
       return;
     }
-    closeActiveActions();
-    if (window.__bookRenderObserver) { try { window.__bookRenderObserver.disconnect(); } catch(e) {} window.__bookRenderObserver = null; }
     grid.innerHTML = '';
     const renderList = list;
     let renderStart = 0;
@@ -481,8 +478,8 @@
       const fmt = (String(file).match(/\.([a-z0-9]+)$/i) || [])[1] || 'pdf';
 
       return `<div class="bk" data-url="${encodeURIComponent(url)}" data-name="${encodeURIComponent(name)}" data-cover="${encodeURIComponent(cover)}" data-folder="${encodeURIComponent(b.folder || sub?.folder || '')}" data-bookid="${encodeURIComponent(bookId)}" data-bookjson="${encodeURIComponent(JSON.stringify(b))}">
-        <div class="bk-cover" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
-          <img src="${coverSrc}" alt="${esc(name)}" data-no-translate loading="lazy" data-i="0" data-covers='${esc(JSON.stringify(coverList))}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none'}">
+        <div class="bk-cover" role="button" tabindex="0" aria-label="${esc(name)} — амалҳо" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleBookActions(this.closest('.bk'))}" onclick="toggleBookActions(this.closest('.bk'))" style="background:${bgColor};position:relative;">
+          <img src="${coverSrc}" alt="${esc(name)}" data-no-translate loading="lazy" data-i="0" data-covers='${esc(JSON.stringify(coverList))}' data-cover-url="${esc(cover)}" data-book-url="${esc(url)}" onload="if(this.naturalWidth>2)this.closest('.bk-cover').classList.add('has-cover')" onerror="let a=JSON.parse(this.dataset.covers||'[]'),i=(+this.dataset.i||0)+1;this.dataset.i=i;if(a[i])this.src=a[i];else{this.style.display='none';this.closest('.bk-cover').classList.remove('has-cover')}">
           <div data-book-badge style="display:${state.show ? 'flex' : 'none'};position:absolute;top:50%;left:50%;transform:translate(-50%,-50%);z-index:5;padding:6px 9px;border-radius:999px;background:${state.bg};color:#fff;font-size:12px;box-shadow:0 2px 8px rgba(0,0,0,0.2)">${state.icon}</div>
           <div class="bk-ribbon" style="${Math.random() > 0.5 ? 'background:var(--gold);' : 'background:var(--gold2);'}"></div>
           <div class="bk-foil"><span class="marquee-text" data-no-translate>${esc(name)}</span></div>
@@ -499,6 +496,11 @@
             <button class="btn btn-ghost btn-download">⬇ Скачать</button>
             <button class="btn btn-ghost btn-share">↗ Мубодила</button>
           </div>
+        </div>
+        <div class="bk-meta">
+          <button class="bk-title" type="button" onclick="toggleBookActions(this.closest('.bk'))"><span data-no-translate>${esc(name)}</span></button>
+          ${(b.author||b.book_author)?`<div class="bk-author" data-no-translate>${esc(b.author||b.book_author)}</div>`:''}
+          <div class="bk-footer"><span class="bk-file-meta">${esc(fmt.toUpperCase())}${sizeMB?' · '+esc(sizeMB)+' МБ':''}</span><button type="button" class="bk-more" aria-label="Амалҳои китоб: ${esc(name)}" onclick="toggleBookActions(this.closest('.bk'))">···</button></div>
         </div>
       </div>`;
         }).join('');
@@ -815,7 +817,7 @@
   });
 
   function displayCategoryName(c) {
-    return c.id === 'kitobhoi_darsi' ? 'Китобҳои дарсӣ' : (c.name || c.folder_raw || '');
+    return c.id === 'peshvoi_millat' ? 'Китобҳои Президент' : c.id === 'kitobhoi_darsi' ? 'Китобҳои дарсӣ' : (c.name || c.folder_raw || '');
   }
 
   // v161: тартиби категорияҳо — 1) Китобҳои Президент (Пешвои Миллат), 2) Китобҳои дарсӣ, баъд — бо алифбои тоҷикӣ
@@ -851,18 +853,12 @@
 
   function renderCategories(cats) {
     const row = document.getElementById('shelfRow');
-    const categoryIcons = {
-      adabiyoti_klassiki:'📜', adabiyoti_jahon:'🌍', adabiyoti_muosir:'✒️',
-      chiston:'❓', farhang:'🏛️', zindaginoma:'👤', zhurnalistika:'📰',
-      iqtisod:'📈', tib:'⚕️', kitobhoi_darsi:'🎓', ilmi:'⚛️',
-      peshvoi_millat:'👑', tarih:'⏳', digar:'◈'
-    };
     row.innerHTML = cats.map((c, i) => {
       const active = i === 0 ? 'active' : '';
       const subsCount = (c.subs || []).length;
       const label = esc(displayCategoryName(c));
       return `<button class="spine ${active}" data-cat-id="${esc(c.id)}">
-        <span class="icon" aria-hidden="true">${categoryIcons[c.id] || '📚'}</span><div class="label-wrap"><span class="label">${label}</span></div>
+        <span class="icon" aria-hidden="true">${catalogCategoryIcon(c.id)}</span><div class="label-wrap"><span class="label">${label}</span></div>
         <div class="count">${subsCount}</div>
       </button>`;
     }).join('');
@@ -897,8 +893,7 @@
           cat = selected;
           sub = selected.subs?.[0] || null;
           renderSubcategories(selected);
-          if (sub) loadBooksForSubcategory(sub);
-          else document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
+          if (!sub) document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
         }
       });
     });
@@ -911,8 +906,7 @@
         cat = targetCat;
         sub = targetCat.subs?.[0] || null;
         renderSubcategories(targetCat);
-        if (sub) loadBooksForSubcategory(sub);
-        else document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
+        if (!sub) document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
       }
     } else if (cats.length) {
       const first = cats[0];
@@ -922,16 +916,18 @@
         cat = first;
         sub = first.subs?.[0] || null;
         renderSubcategories(first);
-        if (sub) loadBooksForSubcategory(sub);
-        else document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
+        if (!sub) document.getElementById('booksGrid').innerHTML = '<div class="empty">Дар ин категория китоб нест</div>';
       }
     }
   }
 
   function renderSubcategories(cat) {
+    const search=document.getElementById('searchInput');
+    if(search.value){search.value='';catalogSearchSequence++;clearTimeout(searchDebounceTimer);}
     const container = document.getElementById('subcatContainer');
     container.innerHTML = '';
-    const popChip = document.createElement('span');
+    const popChip = document.createElement('button');
+    popChip.type='button';
     popChip.className = 'subcategory-chip';
     popChip.style.borderColor = 'rgba(220,181,94,0.45)';
     popChip.style.color = 'var(--gold2)';
@@ -953,7 +949,8 @@
       return number(a) - number(b);
     });
     ordered.forEach(({item: s, originalIndex: sourceIndex}, idx) => {
-      const chip = document.createElement('span');
+      const chip = document.createElement('button');
+      chip.type='button';
       chip.className = 'subcategory-chip' + (idx === activeIdx ? ' active' : '');
       chip.textContent = displaySubcategoryName(s);
       chip.dataset.subIndex = idx;
@@ -974,29 +971,35 @@
     }
   }
 
+  let catalogLoadSequence=0;
   async function loadBooksForSubcategory(sub) {
+    const requestSequence=++catalogLoadSequence;
     const grid = document.getElementById('booksGrid');
     const cacheKey = 'kk_books_' + sub.folder;
     let list = CacheManager ? CacheManager.get(cacheKey) : null;
     if (list && list.length) {
       books = list;
-      renderBooks(list);
+      if(!document.getElementById('searchInput').value.trim())renderBooks(list);
       fetchManifest(sub).then(fresh => {
-        if (Array.isArray(fresh)) {
+        if (requestSequence===catalogLoadSequence && Array.isArray(fresh)) {
           if (CacheManager) CacheManager.set(cacheKey, fresh);
           books = fresh;
-          renderBooks(fresh);
+          if(!document.getElementById('searchInput').value.trim())renderBooks(fresh);
         }
       }).catch(() => {});
       return;
     }
-    grid.innerHTML = '<div class="loader" style="grid-column:1/-1;"></div>';
+    if(!document.getElementById('searchInput').value.trim())updateCatalogResults(0,'Боргирӣ...');
+    if(!document.getElementById('searchInput').value.trim())grid.innerHTML = '<div class="loader" style="grid-column:1/-1;"></div>';
     try {
       list = await fetchManifest(sub);
+      if(requestSequence!==catalogLoadSequence)return;
       books = list;
-      renderBooks(list);
+      if(!document.getElementById('searchInput').value.trim())renderBooks(list);
       if (CacheManager) CacheManager.set(cacheKey, list);
     } catch(e) {
+      if(requestSequence!==catalogLoadSequence||document.getElementById('searchInput').value.trim())return;
+      updateCatalogResults(0,'Хатогии боргирӣ');
       grid.innerHTML = '<div class="empty">Хатогӣ: ' + esc(e.message) + '</div>';
     }
   }
@@ -1087,6 +1090,7 @@
   const searchInput = document.getElementById('searchInput');
   let searchDebounceTimer = null;
   searchInput.addEventListener('input', function() {
+    const searchSequence=++catalogSearchSequence;
     clearTimeout(searchDebounceTimer);
     searchDebounceTimer = setTimeout(async () => {
       const q = this.value.trim().toLowerCase();
@@ -1096,8 +1100,16 @@
       }
       const grid = document.getElementById('booksGrid');
       grid.innerHTML = '<div class="loader" style="grid-column:1/-1"></div>';
-      const filtered = await searchAllBooks(q);
-      renderBooks(filtered);
+      updateCatalogResults(0,'Ҷустуҷӯ...');
+      try {
+        const filtered = await searchAllBooks(q);
+        if(searchSequence!==catalogSearchSequence||searchInput.value.trim().toLowerCase()!==q)return;
+        renderBooks(filtered);
+      } catch(e) {
+        if(searchSequence!==catalogSearchSequence||searchInput.value.trim().toLowerCase()!==q)return;
+        updateCatalogResults(0,'Хатогии ҷустуҷӯ');
+        grid.innerHTML='<div class="empty">Хатогӣ: '+esc(e.message)+'</div>';
+      }
     }, 180);
   });
 
@@ -1118,5 +1130,7 @@
   }
 </script>
 <script src="desktop-sidebar.js?v=1" defer></script>
+<script src="assets/js/catalog-presentation.js"></script>
+<script src="assets/js/mobile-navigation.js"></script>
 </body>
 </html>

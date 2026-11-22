@@ -2,7 +2,7 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Китобхона — Шортс</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
@@ -24,19 +24,13 @@
 <div class="app" id="app">
 
   
+<nav aria-label="Менюи асосӣ" class="nav-bottom"><div class="kh-nav2"><a class="nav-item" href="index.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"></path></svg><span>Асосӣ</span></a><a class="nav-item" href="kitobho.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"></path><path d="M12 5v15M5 8h4M5 11h4M15 8h4M15 11h4"></path></svg><span>Китобҳо</span></a><a class="nav-item" href="aliya/index.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z"></path><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6Z"></path></svg><span>Алия</span></a><a class="nav-item active" href="Lenta.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"></path><path d="M7 10h8M7 14h5"></path></svg><span>Ҷомеа</span></a><button class="nav-item" onclick="location.href='profile.html?settings=1'" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="7" rx="2" width="7" x="3" y="3"></rect><rect height="7" rx="2" width="7" x="14" y="3"></rect><rect height="7" rx="2" width="7" x="3" y="14"></rect><rect height="7" rx="2" width="7" x="14" y="14"></rect></svg><span>Бештар</span></button></div></nav>
   <div id="shortsView">
     <div class="shorts-topbar">
-      <div class="shorts-logo" onclick="location.href='kitobho.html'">
-        <svg viewBox="0 0 48 48" fill="none">
-          <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="#C9A84C" stroke-width="3" stroke-linejoin="round"/>
-          <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="#C9A84C" stroke-width="3" stroke-linejoin="round"/>
-          <line x1="24" y1="10" x2="24" y2="36" stroke="#C9A84C" stroke-width="3"/>
-        </svg>
-        <span>Китобхона</span>
-      </div>
+      <div class="feed-headcopy"><h1>Лента</h1><p>Андешаҳо дар бораи китоб</p></div>
       <div class="top-right-btns">
-        <button class="top-icon-btn" id="btnCreatePost" title="Эҷоди пост">✏️</button>
-        <button class="top-icon-btn" id="btnOpenGrid" title="Намоиши сетка">
+        <button class="top-icon-btn" id="btnCreatePost" title="Эҷоди пост" aria-label="Эҷоди пост">＋</button>
+        <button class="top-icon-btn" id="btnOpenGrid" title="Намоиши сетка" aria-label="Намоиши сетка">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" width="18" height="18">
             <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
@@ -422,7 +416,16 @@ function parsePostContent(raw) {
   if (idx === -1) return { text: raw, style: {} };
   const text = raw.slice(0, idx);
   try {
-    const style = JSON.parse(raw.slice(idx + SEP.length));
+    const parsed = JSON.parse(raw.slice(idx + SEP.length));
+    const source=parsed&&typeof parsed==='object'&&!Array.isArray(parsed)?parsed:{};
+    const size=Number(source.size);
+    const style={
+      font:FONTS.some(f=>f.name===source.font)?source.font:'Roboto',
+      size:Number.isFinite(size)&&size>=10&&size<=72?size:14,
+      color:/^#[0-9a-f]{6}([0-9a-f]{2})?$/i.test(String(source.color||''))?source.color:'#FFFFFF',
+      animation:ANIMATIONS.some(a=>a.id===source.animation)?source.animation:'fade',
+      hashtags:Array.isArray(source.hashtags)?source.hashtags.filter(h=>typeof h==='string').slice(0,20):[]
+    };
     return { text, style };
   } catch {
     return { text: raw, style: {} };
@@ -453,6 +456,7 @@ function animateTextOverlay(el, text, style) {
   el.innerHTML = '';
 
   if (!text) return;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){el.style.animation='none';el.style.opacity='1';el.textContent=text;return;}
 
   switch (anim) {
     case 'fade': {
@@ -842,29 +846,26 @@ function buildSlide(post, idx) {
     </div>
     
     <div class="feed-book-watermark" aria-hidden="true"><small>КИТОБХОНА</small><b>${escHtml(bookTitle || 'Китобхона')}</b></div>
-    <button type="button" class="slide-cover-topright" title="${escHtml(bookTitle || 'Китоб')}" aria-label="${escHtml(bookTitle || 'Китоб')}">
-      <span class="feed-generic-cover" aria-hidden="true">❧</span>
-      ${finalCoverUrl ? `<img src="${escHtml(finalCoverUrl)}" alt="" loading="lazy" onerror="this.style.display='none'">` : ''}
-    </button>
+
 
     <div class="slide-bottom-grad"></div>
 
     
     <div class="slide-sidebar">
-      <div class="sidebar-btn" data-action="like" data-post="${post.id}">
+      <button type="button" class="sidebar-btn" data-action="like" data-post="${post.id}">
         <div class="sidebar-icon ${liked ? 'liked' : ''}" id="likeIcon_${post.id}">
-          ${liked ? '❤️' : '🤍'}
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.7l-1.1-1.1a5.5 5.5 0 0 0-7.8 7.8L12 21l8.8-8.6a5.5 5.5 0 0 0 0-7.8Z"/></svg>
         </div>
         <span class="sidebar-count" id="likeCnt_${post.id}">${likes}</span>
-      </div>
-      <div class="sidebar-btn" data-action="comment" data-post="${post.id}">
-        <div class="sidebar-icon">💬</div>
+      </button>
+      <button type="button" class="sidebar-btn" data-action="comment" data-post="${post.id}">
+        <div class="sidebar-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 11.5a8.4 8.4 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.4 8.4 0 0 1-3.8-.9L3 21l1.9-5.7a8.4 8.4 0 0 1-.9-3.8A8.5 8.5 0 0 1 8.7 4a8.4 8.4 0 0 1 3.8-.9h.5a8.5 8.5 0 0 1 8 8v.4Z"/></svg></div>
         <span class="sidebar-count">${comments}</span>
-      </div>
-      <div class="sidebar-btn" data-action="rating" data-post="${post.id}" data-book="${post.book_id || ''}">
-        <div class="sidebar-icon">⭐</div>
+      </button>
+      <button type="button" class="sidebar-btn" data-action="rating" data-post="${post.id}" data-book="${post.book_id || ''}">
+        <div class="sidebar-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m12 3 2.8 5.7 6.2.9-4.5 4.4 1.1 6.2-5.6-3-5.6 3 1.1-6.2L3 9.6l6.2-.9L12 3Z"/></svg></div>
         <span class="sidebar-count" id="ratingCnt_${post.id}">${avgRating || '—'}</span>
-      </div>
+      </button>
     </div>
 
     
@@ -897,7 +898,7 @@ function buildSlide(post, idx) {
           </div>
         </div>
         ${bookAuthor ? `<div class="info-line" data-author="${escHtml(bookAuthor)}"><span class="gold">✍️ ${escHtml(bookAuthor)}</span></div>` : ''}
-        ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(cover)}"><span class="book-title">📚 ${escHtml(bookTitle)}</span></div>` : ''}
+        ${bookTitle ? `<div class="info-line" data-bookid="${post.book_id}" data-title="${escHtml(bookTitle)}" data-pdf="${escHtml(post.pdf_url||'')}" data-cover="${escHtml(cover)}"><span class="book-title"><span class="feed-generic-cover mini-cover" aria-hidden="true"><svg viewBox="0 0 26 34"><path d="M4 2h17a3 3 0 0 1 3 3v26H5a3 3 0 0 1-3-3V5a3 3 0 0 1 2-3Z" fill="#d7bd7c"/><path d="M5 2v25h19M5 27c-4 0-4 5 0 5h19" fill="none" stroke="#74603a" stroke-width="1.1"/><path d="M9 9h10M9 12h8M9 20h10" stroke="#705c37" stroke-width="1.1"/><path d="m14 14 1 2 2 .3-1.5 1.5.4 2.1-1.9-1-1.9 1 .4-2.1-1.5-1.5 2-.3Z" fill="#806a3b"/></svg></span><span>${escHtml(bookTitle)}</span></span></div>` : ''}
       </div>
       ${isOwner ? `
       <div class="post-owner-actions">
@@ -906,6 +907,8 @@ function buildSlide(post, idx) {
     </div>
   `;
 
+  const hashtagsBlock=slide.querySelector('.slide-hashtags');
+  if(hashtagsBlock)slide.querySelector('.slide-bottom-info')?.prepend(hashtagsBlock);
   slide.querySelectorAll('.sidebar-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
@@ -1129,7 +1132,7 @@ async function handleLike(postId) {
 function updateLikeUI(postId, liked, count) {
   const icon = $('likeIcon_' + postId);
   const cnt = $('likeCnt_' + postId);
-  if (icon) { icon.textContent = liked ? '❤️' : '🤍'; icon.classList.toggle('liked', liked); }
+  if (icon) { icon.classList.toggle('liked', liked); }
   if (cnt) cnt.textContent = count;
 }
 
@@ -1146,7 +1149,9 @@ $('commentsSheet').addEventListener('click', e => {
   if (e.target === $('commentsSheet')) $('commentsSheet').classList.remove('open');
 });
 
+let commentsLoadSequence=0;
 async function loadComments(postId) {
+  const sequence=++commentsLoadSequence;
   const token = getToken(); if (!token) return;
   const list = $('commentsListInner');
   try {
@@ -1155,6 +1160,7 @@ async function loadComments(postId) {
     });
     if (!resp.ok) throw new Error();
     const comments = await resp.json();
+    if(sequence!==commentsLoadSequence||String(activePostId)!==String(postId)||!$('commentsSheet').classList.contains('open'))return;
     list.innerHTML = '';
     if (!comments.length) { list.innerHTML = '<div class="comment-empty">Шарҳе нест</div>'; return; }
     comments.forEach(c => {
@@ -1175,7 +1181,7 @@ async function loadComments(postId) {
       }
       list.appendChild(div);
     });
-  } catch { list.innerHTML = '<div class="comment-empty">Хатогӣ</div>'; }
+  } catch { if(sequence===commentsLoadSequence&&String(activePostId)===String(postId))list.innerHTML = '<div class="comment-empty">Хатогӣ</div>'; }
 }
 
 async function deleteComment(cid, postId, el) {
@@ -1190,18 +1196,25 @@ async function deleteComment(cid, postId, el) {
   } catch { showToast('Хатогӣ'); }
 }
 
+let commentSendBusy=false;
 $('commentSend').addEventListener('click', async () => {
+  if(commentSendBusy)return;
   const text = $('commentInput').value.trim();
   if (!text || !activePostId) return;
   const token = getToken(); if (!token) { showToast('Ворид шавед'); return; }
+  const submittedPostId=activePostId;
+  commentSendBusy=true;
   try {
-    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + activePostId + '/comment', {
+    const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts/' + encodeURIComponent(submittedPostId) + '/comment', {
       method: 'POST',
       headers: { 'Authorization': 'Bearer ' + token, 'Content-Type': 'application/json' },
       body: JSON.stringify({ text })
     });
     if (!resp.ok) throw new Error();
     const newC = await resp.json();
+    const post=postsData.find(p=>String(p.id)===String(submittedPostId));
+    if(post)post.comments_count=(post.comments_count||0)+1;
+    if(String(activePostId)!==String(submittedPostId)||!$('commentsSheet').classList.contains('open'))return;
     const author = newC.display_name || newC.username || 'Шумо';
     const div = document.createElement('div');
     div.className = 'comment-item';
@@ -1215,11 +1228,10 @@ $('commentSend').addEventListener('click', async () => {
     const list = $('commentsListInner');
     if (list.querySelector('.comment-empty')) list.innerHTML = '';
     list.appendChild(div);
-    $('commentInput').value = '';
+    if($('commentInput').value.trim()===text)$('commentInput').value = '';
     showToast('Шарҳ илова шуд');
-    const post = postsData.find(p => String(p.id) === String(activePostId));
-    if (post) post.comments_count = (post.comments_count || 0) + 1;
-  } catch { showToast('Хатогӣ'); }
+
+  } catch { showToast('Хатогӣ'); } finally {commentSendBusy=false;}
 });
 
 function openRating(postId, bookId) {
@@ -1283,7 +1295,7 @@ async function deletePost(postId) {
 }
 
 function goStep(n) {
-  if (n === 2) {
+  if (n === 2 || n === 3) {
     const book_id = $('postBookSelect').value;
     const author = ($('postBookAuthor').value || '').trim();
     if (!book_id || !author) {
@@ -1302,6 +1314,7 @@ function goStep(n) {
   updateSubmitButton();
 }
 
+let postPublishBusy=false;
 function updateSubmitButton() {
   const submitBtn = $('submitPostBtn');
   const nextBtn = $('step1Next');
@@ -1311,7 +1324,7 @@ function updateSubmitButton() {
   const bookReady = !!book_id && !!author;
 
   if (nextBtn) nextBtn.disabled = !bookReady;
-  if (submitBtn) submitBtn.disabled = !(bookReady && (text || book_id));
+  if (submitBtn) submitBtn.disabled = postPublishBusy || !(bookReady && (text || book_id));
 }
 
 document.addEventListener('DOMContentLoaded', function() {
@@ -1511,6 +1524,7 @@ async function openPostModal(bookId) {
 
 async function loadBooksForSelect() {
   const select = $('postBookSelect');
+  select.disabled=true;select.innerHTML='<option value="">Боргирии китобҳо...</option>';
   const token = getToken();
   if (!token) return;
   try {
@@ -1525,11 +1539,13 @@ async function loadBooksForSelect() {
         bookMap[s.book_id] = { id: s.book_id, title: s.book_title, author: s.book_author || '', folder: s.folder, file: s.file };
     });
     const books = Object.values(bookMap);
-    select.innerHTML = '<option value="">Интихоб кунед</option>';
+    select.innerHTML = '<option value="">'+(books.length?'Интихоб кунед':'Ҳоло китоби хондашуда нест')+'</option>';
+    select.disabled=!books.length;
     books.forEach(b => {
       const opt = document.createElement('option');
       opt.value = b.id;
       opt.textContent = b.title + (b.author ? ' — ' + b.author : '');
+      opt.dataset.title = b.title;
       opt.dataset.author = b.author;
       opt.dataset.folder = b.folder || '';
       opt.dataset.file = b.file || b.id;
@@ -1545,7 +1561,7 @@ async function loadBooksForSelect() {
       }
     };
     select.onchange();
-  } catch(e) { console.warn('Failed to load books for modal', e); }
+  } catch(e) {select.disabled=true;select.innerHTML='<option value="">Китобҳо бор нашуданд. Аз нав кушоед.</option>';console.warn('Failed to load books for modal', e); }
 }
 
 function closePostModal() {
@@ -1557,12 +1573,13 @@ $('postModalCancel').addEventListener('click', closePostModal);
 $('postModal').addEventListener('click', e => { if (e.target === $('postModal')) closePostModal(); });
 
 $('submitPostBtn').addEventListener('click', async function() {
+  if(postPublishBusy)return;
   const text = ($('postContent').value || '').trim();
   const book_id = $('postBookSelect').value;
   const book_author = ($('postBookAuthor').value || '').trim();
   const sel = $('postBookSelect');
   const selOpt = sel.options[sel.selectedIndex];
-  const book_title = selOpt?.value ? selOpt.text.split(' — ')[0].trim() : '';
+  const book_title = selOpt?.value ? (selOpt.dataset.title || selOpt.text).trim() : '';
 
   if (!book_id || !book_author) {
     showToast('Лутфан аввал китоб ва муаллифро пур кунед');
@@ -1579,7 +1596,7 @@ $('submitPostBtn').addEventListener('click', async function() {
   const content = buildPostContent(text, postStyle);
   const payload = { content, book_id, book_title, book_author, visibility: 'public' };
 
-  this.disabled = true; this.textContent = '...';
+  postPublishBusy=true;this.disabled = true; this.textContent = '...';
   try {
     const resp = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/posts', {
       method: 'POST',
@@ -1595,7 +1612,7 @@ $('submitPostBtn').addEventListener('click', async function() {
   } catch (e) {
     showToast('Хатогӣ: ' + e.message);
   } finally {
-    this.disabled = false; this.textContent = '📤 Интишор';
+    postPublishBusy=false;updateSubmitButton();this.textContent = '📤 Интишор';
   }
 });
 

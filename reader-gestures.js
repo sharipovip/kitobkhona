@@ -36,7 +36,11 @@ window.KKAttachReaderGestures=function(api){
  },{passive:false});
  stage.addEventListener('pointerup',e=>{pointers.delete(e.pointerId);const g=gesture;if(!g||g.id!==e.pointerId)return;if(!g.dragged){gesture=null;return;}finish(g.progress>=.24);});
  function cancel(e){pointers.delete(e.pointerId);if(gesture&&gesture.id===e.pointerId)finish(false);}
- stage.addEventListener('pointercancel',cancel);stage.addEventListener('lostpointercapture',e=>{if(pointers.has(e.pointerId))cancel(e);});
+ stage.addEventListener('pointercancel',cancel);stage.addEventListener('lostpointercapture',e=>{
+  // Touch starts with implicit capture on the canvas. Transferring capture to
+  // stage emits a bubbling loss from that canvas; it is NOT a cancelled drag.
+  if(e.target===stage && pointers.has(e.pointerId))cancel(e);
+ });
  // Block the synthetic click after a swipe, including a swipe returned to its origin.
  stage.addEventListener('click',e=>{if(performance.now()<suppressUntil){e.preventDefault();e.stopImmediatePropagation();}},true);
  window.addEventListener('resize',()=>{if(gesture)finish(false);});

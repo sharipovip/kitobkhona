@@ -6,17 +6,13 @@
 <title>Вуруд — Китобхона</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
-<script src="config.js?v=20261121-r2"></script>
+<script src="config.js?v=75"></script>
 <script src="locations.js?v=3" defer></script>
 <style>
   
-  * {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
-  }
+  
 
-  :root {
+  :root{
     --bg: #0D1B2A;
     --bg2: #142236;
     --card: #1A2D44;
@@ -36,7 +32,7 @@
     --cream-dim: #9FB0C5;
   }
 
-  .light-theme {
+  .light-theme{
     --bg: #F5F0E8;
     --bg2: #EDE6D6;
     --card: #fff;
@@ -51,240 +47,90 @@
     --cream-dim: #5C5749;
   }
 
-  html, body {
-    width: 100%;
-    height: 100%;
-    background: var(--bg);
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    color: var(--text);
-    overflow: hidden;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-
-  .app {
-    width: 430px;
-    height: 100vh;
-    max-height: 100vh;
-    background: var(--bg);
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    position: relative;
-    border-radius: 0 !important; 
-    box-shadow: 0 0 20px rgba(0,0,0,0.5);
-  }
+  
 
   
-  .top-app-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 10px 16px 8px;
-    flex: 0 0 auto;
-    border-bottom: 1px solid var(--border);
-  }
-  .brand-mini {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .brand-mini svg {
-    width: 28px;
-    height: 28px;
-  }
-  .brand-mini span {
-    font-family: 'Noto Serif', serif;
-    font-size: 20px;
-    font-weight: 700;
-    color: var(--gold);
-  }
-  .top-actions {
+
+  
+  
+  
+  
+  
+  .top-actions{
     display: flex;
     gap: 6px;
   }
-  .icon-btn {
-    width: 38px;
-    height: 38px;
-    border-radius: 50%;
-    background: var(--card);
-    border: 1px solid var(--border);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 16px;
-    color: var(--gold);
-    cursor: pointer;
-    transition: 0.15s;
-  }
-  .icon-btn:hover {
+  
+  .icon-btn:hover{
     background: var(--card2);
   }
 
   
-  .screen-area {
-    flex: 1 1 auto;
-    overflow: hidden;
-    position: relative;
-  }
-  .screen {
-    position: absolute;
-    inset: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    padding: 0 16px 12px;
-    scrollbar-width: thin;
-    scrollbar-color: rgba(201,168,76,0.2) transparent;
-  }
-  .screen::-webkit-scrollbar {
+  
+  
+  .screen::-webkit-scrollbar{
     width: 4px;
   }
-  .screen::-webkit-scrollbar-track {
+  .screen::-webkit-scrollbar-track{
     background: transparent;
   }
-  .screen::-webkit-scrollbar-thumb {
+  .screen::-webkit-scrollbar-thumb{
     background: rgba(201,168,76,0.2);
     border-radius: 2px;
   }
 
   
-  .choice-screen {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 30px 24px;
-    gap: 18px;
-    text-align: center;
-    height: 100%;
-  }
-  .choice-screen h2 {
-    font-size: 18px;
-    color: var(--text);
-  }
-  .choice-screen p {
-    font-size: 13px;
-    color: var(--dim);
-    max-width: 300px;
-    line-height: 1.5;
-  }
-  .btn-group {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-    max-width: 320px;
-  }
-  .btn {
-    width: 100%;
-    padding: 14px 18px;
-    border-radius: 14px;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 700;
-    border: none;
-    cursor: pointer;
-    text-align: center;
-    transition: transform .12s ease;
-  }
-  .btn:active {
+  
+  
+  
+  
+  
+  .btn:active{
     transform: scale(.97);
   }
-  .btn-primary {
-    background: linear-gradient(180deg, #E8C778, #B68B33);
-    color: #1A1206;
-    box-shadow: 0 10px 22px -8px rgba(220,181,94,0.55);
-  }
-  .btn-outline {
-    background: transparent;
-    color: var(--text);
-    border: 1.4px solid rgba(220,181,94,0.45);
-  }
-  .btn-ghost {
+  
+  
+  .btn-ghost{
     background: var(--gold-soft);
     color: var(--gold);
     border: 1px solid var(--border);
   }
 
-  .info-note {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 13px 14px;
-    font-size: 12.5px;
-    line-height: 1.55;
-    color: var(--dim);
-    text-align: right;
-    margin-top: 8px;
-  }
-  .info-note b {
+  
+  .info-note b{
     color: var(--gold);
     font-weight: 700;
   }
 
-  .tabs {
-    flex: none;
-    margin: 18px 0 0 0;
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    padding: 4px;
-    display: none;
-    position: relative;
-  }
-  .tabs.show {
+  
+  .tabs.show{
     display: flex;
   }
-  .tab {
-    flex: 1;
-    text-align: center;
-    padding: 11px 0;
-    font-size: 13.5px;
-    font-weight: 700;
-    color: var(--dim);
-    border-radius: 12px;
-    position: relative;
-    z-index: 2;
-    cursor: pointer;
-    transition: color .2s;
-  }
-  .tab.active {
-    color: #1c1404;
-  }
-  .tab-thumb {
-    position: absolute;
-    top: 4px;
-    left: 4px;
-    width: calc(50% - 4px);
-    height: calc(100% - 8px);
-    background: linear-gradient(135deg, var(--gold2), var(--gold));
-    border-radius: 12px;
-    z-index: 1;
-    transition: transform .28s cubic-bezier(.4,0,.2,1);
-  }
-  .tabs.reg .tab-thumb {
+  
+  
+  
+  .tabs.reg .tab-thumb{
     transform: translateX(100%);
   }
 
-  .scroll {
+  .scroll{
     flex: 1;
     overflow-y: auto;
     padding: 16px 0 8px 0;
     display: none;
   }
-  .scroll.show {
+  .scroll.show{
     display: block;
   }
 
-  .panel {
+  .panel{
     display: none;
   }
-  .panel.show {
+  .panel.show{
     display: block;
   }
 
-  .group-label {
+  .group-label{
     font-size: 11.5px;
     font-weight: 700;
     letter-spacing: 1.1px;
@@ -292,60 +138,32 @@
     color: var(--gold2);
     margin: 18px 0 10px 2px;
   }
-  .group-label:first-child {
+  .group-label:first-child{
     margin-top: 2px;
   }
 
-  .field {
+  .field{
     margin-bottom: 13px;
   }
-  .field label {
-    display: block;
-    font-size: 12.5px;
-    font-weight: 600;
-    color: var(--dim);
-    margin-bottom: 7px;
-  }
-  .field .opt {
+  
+  .field .opt{
     font-weight: 500;
     color: var(--dim);
     text-transform: none;
     letter-spacing: 0;
   }
 
-  .input-wrap {
+  .input-wrap{
     position: relative;
   }
-  input[type="text"],
-  input[type="email"],
-  input[type="password"],
-  input[type="number"],
-  select {
-    width: 100%;
-    height: 48px;
-    background: var(--field);
-    border: 1px solid var(--border);
-    border-radius: 14px;
-    padding: 0 16px;
-    color: var(--text);
-    font-family: inherit;
-    font-size: 14.5px;
-    outline: none;
-    appearance: none;
-    -webkit-appearance: none;
-  }
-  input::placeholder {
-    color: var(--dim);
-  }
-  input:focus,
-  select:focus {
+  
+  
+  input:focus,select:focus{
     border-color: var(--gold);
     background: var(--card2);
   }
-  select {
-    padding-right: 40px;
-  }
-  .input-wrap.select::after {
+  
+  .input-wrap.select::after{
     content: "";
     position: absolute;
     right: 16px;
@@ -359,36 +177,20 @@
     pointer-events: none;
   }
 
-  .eye-btn {
-    position: absolute;
-    right: 14px;
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    padding: 4px;
-    cursor: pointer;
-  }
+  
 
-  .row2 {
+  .row2{
     display: flex;
     gap: 10px;
   }
-  .row2 .field {
+  .row2 .field{
     flex: 1;
     min-width: 0;
   }
 
-  .forgot {
-    text-align: right;
-    font-size: 12.5px;
-    color: var(--gold2);
-    font-weight: 600;
-    margin: -2px 0 18px 0;
-    cursor: pointer;
-  }
+  
 
-  .notice {
+  .notice{
     display: flex;
     gap: 10px;
     background: var(--gold-soft);
@@ -397,103 +199,84 @@
     padding: 12px 14px;
     margin-top: 6px;
   }
-  .notice svg {
+  .notice svg{
     flex: none;
     margin-top: 1px;
   }
-  .notice p {
+  .notice p{
     font-size: 12px;
     line-height: 1.55;
     color: var(--gold2);
   }
-  .notice p + p {
+  .notice p + p{
     margin-top: 5px;
     color: var(--dim);
   }
 
-  .divider-row {
+  .divider-row{
     display: flex;
     align-items: center;
     gap: 12px;
     margin: 22px 0 18px 0;
   }
-  .divider-row .line {
+  .divider-row .line{
     flex: 1;
     height: 1px;
     background: var(--border);
   }
-  .divider-row span {
+  .divider-row span{
     font-size: 12px;
     color: var(--dim);
   }
 
-  .switch-line {
+  .switch-line{
     text-align: center;
     font-size: 13px;
     color: var(--dim);
     padding-bottom: 6px;
   }
-  .switch-line b {
+  .switch-line b{
     color: var(--gold2);
     font-weight: 700;
     cursor: pointer;
   }
 
-  .footer {
-    flex: none;
-    padding: 14px 16px 20px;
-    background: var(--bg);
-    border-top: 1px solid var(--border);
-    display: none;
-  }
-  .footer.show {
+  
+  .footer.show{
     display: block;
   }
 
-  .cta {
-    width: 100%;
-    height: 52px;
-    border: none;
-    border-radius: 16px;
-    background: linear-gradient(135deg, var(--gold2), var(--gold));
-    color: #1c1404;
-    font-family: inherit;
-    font-size: 15px;
-    font-weight: 800;
-    letter-spacing: 0.2px;
-    box-shadow: 0 10px 22px rgba(212,169,74,0.22);
-    cursor: pointer;
-  }
-  .cta:active {
+  
+  .cta:active{
     transform: scale(.97);
   }
-  .cta:disabled {
+  .cta:disabled{
     opacity: .5;
     cursor: not-allowed;
   }
 
-  .msg {
+  .msg{
     margin: 10px 0 0 0;
     padding: 12px 14px;
     border-radius: 14px;
     font-size: 13px;
     display: none;
   }
-  .msg.show {
+  .msg.show{
     display: block;
   }
-  .msg.error {
+  .msg.error{
     background: rgba(200,88,80,0.15);
     border: 1px solid rgba(200,88,80,0.4);
     color: #FFB4AC;
   }
-  .msg.success {
+  .msg.success{
     background: rgba(63,158,99,0.15);
     border: 1px solid rgba(63,158,99,0.4);
     color: #A6E0B5;
   }
 
-  .spinner {
+  .spinner{
     width: 30px;
     height: 30px;
     border: 3px solid var(--border);
@@ -507,7 +290,7 @@
   }
 
   
-  .reset-overlay {
+  .reset-overlay{
     position: fixed;
     inset: 0;
     background: rgba(0,0,0,0.6);
@@ -517,31 +300,24 @@
     justify-content: center;
     padding: 20px;
   }
-  .reset-overlay.open {
+  .reset-overlay.open{
     display: flex;
   }
-  .reset-card {
-    background: var(--bg2);
-    border-radius: 20px;
-    padding: 24px;
-    max-width: 380px;
-    width: 100%;
-    border: 1px solid var(--border);
-  }
-  .reset-card h3 {
+  
+  .reset-card h3{
     font-size: 17px;
     margin-bottom: 14px;
     color: var(--text);
   }
-  .reset-card .field {
+  .reset-card .field{
     margin-bottom: 10px;
   }
-  .reset-card .row-btns {
+  .reset-card .row-btns{
     display: flex;
     gap: 10px;
     margin-top: 14px;
   }
-  .reset-card .btn-row {
+  .reset-card .btn-row{
     flex: 1;
     height: 48px;
     border-radius: 12px;
@@ -550,26 +326,26 @@
     font-size: 14px;
     cursor: pointer;
   }
-  .btn-cancel {
+  .btn-cancel{
     background: var(--card);
     color: var(--text);
     border: 1px solid var(--border);
   }
-  .btn-go {
+  .btn-go{
     background: linear-gradient(135deg, var(--gold2), var(--gold));
     color: #1c1404;
   }
-  .reset-status {
-    margin-top: 10px;
-    font-size: 13px;
-    min-height: 20px;
-  }
-  .reset-status.ok {
+  
+  .reset-status.ok{
     color: var(--green);
   }
-  .reset-status.bad {
+  .reset-status.bad{
     color: var(--red);
   }
+
+html,body{width:100%;height:100%;margin:0;background:var(--bg);color:var(--text);font-family:'Segoe UI',Arial,sans-serif;overflow:hidden;display:block}.app{width:100%;min-width:0;height:100vh;height:100dvh;max-height:100dvh;background:var(--bg);display:flex;flex-direction:column;overflow:hidden;position:relative;border-radius:0;box-shadow:none}.top-app-bar{display:flex;align-items:center;justify-content:space-between;gap:10px;padding:calc(13px + env(safe-area-inset-top,0px)) 15px 13px;flex:0 0 auto;border-bottom:1px solid var(--border)}.brand-mini{display:flex;align-items:center;gap:10px}.brand-mini svg{width:37px;height:37px;border:1px solid var(--border);border-radius:11px;background:var(--card2);padding:5px}.brand-mini span{font:22px/1.2 Georgia,serif;color:var(--text);font-weight:400}.brand-mini small{display:block;font:9px/1.6 'Segoe UI',Arial,sans-serif;color:var(--muted)}.icon-btn{width:34px;height:34px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:grid;place-items:center;color:var(--gold);cursor:pointer;font-size:18px;text-decoration:none}.screen-area{flex:1;min-height:0;overflow:hidden;position:relative}.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;padding:0 18px 16px;scrollbar-width:none;scroll-padding-bottom:20px}.choice-screen{display:flex;flex-direction:column;align-items:center;justify-content:flex-start;padding:38px 0 12px;gap:0;text-align:center;min-height:100%;height:auto;max-width:440px;margin:auto}.auth-book{width:86px;height:105px;margin:0 auto 29px;display:grid;place-items:center;background:var(--gold);color:var(--bg);border-radius:3px 14px 14px 3px;box-shadow:-6px 5px 0 var(--card2),-11px 10px 0 var(--border);transform:rotate(-7deg)}.auth-book svg{width:40px;height:45px;stroke:currentColor;fill:none;stroke-width:1.2}.auth-eyebrow{font-size:8px;letter-spacing:1.6px;color:var(--muted);line-height:1.7;margin-bottom:14px}.choice-screen h2{font:28px/1.4 Georgia,'Times New Roman',serif;font-weight:400;color:var(--text);max-width:270px;margin:0 0 15px}.choice-screen p{font-size:12px;color:var(--muted);max-width:290px;line-height:1.9;margin:0 0 25px}.btn-group{width:100%;display:flex;flex-direction:column;gap:10px;max-width:none}.btn{width:100%;padding:12px 13px;border-radius:15px;font-family:inherit;font-size:13px;font-weight:600;border:1px solid var(--border);cursor:pointer;text-align:center;transition:transform .12s ease}.btn-primary{background:var(--gold);color:var(--bg);box-shadow:none}.btn-outline{background:var(--card);color:var(--text);border:1px solid var(--border)}.auth-choice{display:flex;align-items:center;gap:12px;min-height:77px;padding:13px;background:var(--card);color:var(--text);border:1px solid var(--border);box-shadow:none;text-align:left}.auth-choice-icon{display:grid;place-items:center;width:35px;height:35px;flex:0 0 35px;border-radius:11px;background:var(--card2);color:var(--gold);font-size:22px;font-weight:400}.auth-choice-text{flex:1;min-width:0}.auth-choice b{display:block;font-size:13px;line-height:1.6}.auth-choice small{display:block;font-size:10px;color:var(--muted);font-weight:400;line-height:1.7}.auth-choice-arrow{font-size:23px;color:var(--gold);font-weight:400}.info-note{width:100%;background:var(--card2);border:1px solid var(--border);border-radius:14px;padding:13px;font-size:11px;line-height:1.85;color:var(--muted);text-align:left;margin-top:18px;font-weight:400}.auth-legal{display:flex;justify-content:center;flex-wrap:wrap;gap:24px;margin-top:28px;padding:4px;font-size:9px}.auth-legal a{color:var(--muted);text-decoration:none}.tabs{flex:none;margin:19px 0 0;background:var(--card);border:1px solid var(--border);border-radius:13px;padding:4px;display:none;position:relative}.tab{flex:1;text-align:center;padding:10px 5px;font:600 12px 'Segoe UI',Arial,sans-serif;color:var(--muted);background:none;border:0;border-radius:9px;position:relative;z-index:2;cursor:pointer}.tab.active{color:var(--bg)}.tab-thumb{position:absolute;top:4px;left:4px;width:calc(50% - 4px);height:calc(100% - 8px);background:var(--gold);border-radius:9px;z-index:1;transition:transform .25s}.field label{display:block;font-size:11px;font-weight:500;color:var(--muted);margin-bottom:7px}input[type="text"],input[type="email"],input[type="password"],input[type="number"],select{width:100%;min-width:0;height:45px;background:var(--card);border:1px solid var(--border);border-radius:11px;padding:0 12px;color:var(--text);font-family:inherit;font-size:14px;outline:none;appearance:none;-webkit-appearance:none}input::placeholder{color:var(--muted)}.footer{flex:0 0 auto;padding:11px 18px calc(14px + env(safe-area-inset-bottom,0px));background:var(--bg);border-top:1px solid var(--border);display:none}.cta{width:100%;height:46px;border:0;border-radius:12px;background:var(--gold);color:var(--bg);font:600 14px 'Segoe UI',Arial,sans-serif;box-shadow:none;cursor:pointer}.reset-card{background:var(--card);color:var(--text);border-radius:18px;padding:20px;max-width:390px;width:100%;max-height:calc(100dvh - 36px);overflow-y:auto;border:1px solid var(--border)}.reset-card .btn-go{background:var(--gold);color:var(--bg)}.reset-card .btn-cancel{background:var(--card2);color:var(--text)}.reset-status{font-size:12px;line-height:1.6;margin:8px 0}.forgot{display:block;width:100%;border:0;background:none;text-align:right;font:600 12px 'Segoe UI',Arial,sans-serif;color:var(--gold);margin:0 0 16px;cursor:pointer}.auth-inline-action{padding:0;border:0;background:none;color:var(--gold);font:600 13px inherit;cursor:pointer}.input-wrap input[type="password"],.input-wrap input[type="text"]{padding-right:48px}.eye-btn{position:absolute;right:8px;top:50%;transform:translateY(-50%);display:grid;place-items:center;width:32px;height:32px;background:none;color:var(--muted);border:0;border-radius:8px;cursor:pointer}.eye-btn svg{stroke:currentColor}button:focus-visible,a:focus-visible{outline:2px solid var(--gold);outline-offset:3px}@media(min-width:700px){.screen{padding-left:max(24px,calc((100% - 600px)/2));padding-right:max(24px,calc((100% - 600px)/2))}.footer{padding-left:max(24px,calc((100% - 600px)/2));padding-right:max(24px,calc((100% - 600px)/2))}}@media(max-height:600px){.choice-screen{padding-top:22px}.auth-book{width:57px;height:70px;margin-bottom:22px}.choice-screen h2{font-size:25px}.top-app-bar{padding-top:8px;padding-bottom:8px}}@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+.auth-intro{margin:25px 0 0}.auth-intro[hidden]{display:none}.auth-intro h1{font:27px/1.35 Georgia,serif;font-weight:400;color:var(--text);margin:0 0 7px}.auth-intro p{font-size:12px;line-height:1.6;color:var(--muted);margin:0}
 </style>
 
 <style id="app-scrollbar-policy">
@@ -589,10 +365,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
         <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
         <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
       </svg>
-      <span>Китобхона</span>
+      <div><span>Китобхона</span><small>Китоб — манбаи дониш</small></div>
     </div>
     <div class="top-actions">
-      <div class="icon-btn" onclick="location.href='index.html'" title="Хона">🏠</div>
+      <a class="icon-btn" href="index.html" aria-label="Асосӣ">⌂</a>
     </div>
   </div>
 
@@ -602,41 +378,42 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
       
       <div class="choice-screen" id="choiceScreen">
-        <h2>Ба Китобхона хуш омадед! 📚</h2>
-        <p>Шумо метавонед ҳамчун <b>меҳмон</b> ворид шавед ё <b>ҳисоби шахсӣ</b> созед.</p>
+        <div class="auth-book" aria-hidden="true"><svg viewBox="0 0 48 48"><path d="M11 7h26v35H11c-3 0-5-2-5-5V12c0-3 2-5 5-5Zm0 0v35M17 16h13m-13 7h13m-13 7h9"/></svg></div><div class="auth-eyebrow">ҲАМРОҲИ ҲАРРӮЗАИ МУТОЛИА</div><h2>Ба Китобхона<br>хуш омадед!</h2>
+        <p>Ҳамчун меҳмон оғоз кунед<br>ё ба ҳисоби шахсии худ ворид шавед.</p>
         <div class="btn-group">
-          <button class="btn btn-primary" onclick="chooseGuest()">👤 Меҳмон (бе сабти ном)</button>
-          <button class="btn btn-outline" onclick="showLoginForm()">🔐 Сохтани ҳисоби худ / Ворид шудан</button>
+          <button type="button" class="btn auth-choice" onclick="chooseGuest()"><span class="auth-choice-icon" aria-hidden="true">♙</span><span class="auth-choice-text"><b>Меҳмон</b><small>Оғоз бе сабти ном</small></span><span class="auth-choice-arrow" aria-hidden="true">›</span></button>
+          <button type="button" class="btn auth-choice" onclick="showLoginForm()"><span class="auth-choice-icon" aria-hidden="true">▤</span><span class="auth-choice-text"><b>Ҳисоби шахсӣ</b><small>Ворид шудан ё бақайдгирӣ</small></span><span class="auth-choice-arrow" aria-hidden="true">›</span></button>
         </div>
         <div class="info-note">
           <b>Меҳмон:</b> маълумоти шумо дар дастгоҳ нигоҳ дошта мешавад. Барои нигоҳ доштани пешрафт ва дастрасӣ аз дастгоҳҳои дигар, ҳисоби шахсӣ созед.
-        </div>
+        </div><nav class="auth-legal" aria-label="Ҳуҷҷатҳои ҳуқуқӣ"><a href="privacy-policy.html">Сиёсати махфият</a><a href="terms.html">Шартҳои истифода</a></nav>
       </div>
 
       
+      <header class="auth-intro" id="authIntro" hidden><h1 id="authTitle">Хуш омадед!</h1><p id="authSub">Ба ҳисоби худ ворид шавед.</p></header>
       <div class="tabs" id="tabs">
         <div class="tab-thumb"></div>
-        <div class="tab active" id="tabLogin" data-mode="login">Ворид шудан</div>
-        <div class="tab" id="tabReg" data-mode="reg">Бақайдгирӣ</div>
+        <button type="button" class="tab active" id="tabLogin" data-mode="login">Ворид шудан</button>
+        <button type="button" class="tab" id="tabReg" data-mode="reg">Бақайдгирӣ</button>
       </div>
 
       <div class="msg" id="msg"></div>
 
       <div class="scroll" id="formScroll">
         <div class="panel show" id="panelLogin">
-          <div class="field"><label>Логин ё почтаи электронӣ</label><div class="input-wrap"><input type="text" id="loginIdentifier" placeholder="login ё you@example.com"></div></div>
-          <div class="field"><label>Парол</label><div class="input-wrap"><input type="password" id="pwLogin" placeholder="••••••••"><button class="eye-btn" onclick="toggleEye('pwLogin', this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-          <div class="forgot" onclick="openReset()">Рамзро фаромӯш кардед?</div>
+          <div class="field"><label for="loginIdentifier">Логин ё почтаи электронӣ</label><div class="input-wrap"><input type="text" id="loginIdentifier" autocomplete="username" autocapitalize="none" spellcheck="false" placeholder="login ё you@example.com"></div></div>
+          <div class="field"><label for="pwLogin">Парол</label><div class="input-wrap"><input type="password" id="pwLogin" autocomplete="current-password" placeholder="••••••••"><button type="button" class="eye-btn" aria-label="Нишон додани парол" aria-pressed="false" onclick="toggleEye('pwLogin', this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <button type="button" class="forgot" onclick="openReset()">Рамзро фаромӯш кардед?</button>
           <div class="divider-row"><div class="line"></div><span>ё</span><div class="line"></div></div>
-          <div class="switch-line">Ҳисоб надоред? <b onclick="setMode('reg')">Бақайдгирӣ кунед</b></div>
+          <div class="switch-line">Ҳисоб надоред? <button type="button" class="auth-inline-action" onclick="setMode('reg')">Бақайдгирӣ кунед</button></div>
           <button class="btn btn-ghost" style="width:auto;margin-top:12px;" onclick="goGuest()">⬅ Бозгашт ба меҳмон</button>
         </div>
         <div class="panel" id="panelReg">
           <div class="group-label">Маълумоти шахсӣ</div>
-          <div class="row2"><div class="field"><label>Ном</label><input type="text" id="regName" placeholder="Фарзона"></div><div class="field"><label>Насаб</label><input type="text" id="regSurname" placeholder="Қурбонова"></div></div>
-          <div class="field"><label>Соли таваллуд</label><input type="number" id="regBirthYear" placeholder="2008" min="1930" max="2008"></div>
+          <div class="row2"><div class="field"><label for="regName">Ном</label><input type="text" id="regName" placeholder="Фарзона"></div><div class="field"><label for="regSurname">Насаб</label><input type="text" id="regSurname" placeholder="Қурбонова"></div></div>
+          <div class="field"><label for="regBirthYear">Соли таваллуд</label><input type="number" id="regBirthYear" placeholder="2008" min="1930" max="2008"></div>
           <div class="field">
-            <label>Ҷинс</label>
+            <label for="regGender">Ҷинс</label>
             <select id="regGender">
               <option value="">Интихоб кунед</option>
               <option value="male">Мард</option>
@@ -644,15 +421,15 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
             </select>
           </div>
           <div class="group-label">Ҷойгиршавӣ</div>
-          <div class="field"><label>Вилоят</label><div class="input-wrap select"><select id="regRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div></div>
-          <div class="field"><label>Шаҳр / Ноҳия</label><input type="text" id="regCity" placeholder="Масалан: Истаравшан"></div>
-          <div class="row2"><div class="field"><label>Ҷамоат</label><input type="text" id="regJamoat" placeholder="Ҷамоати ..."></div><div class="field"><label>Деҳа / Маҳалла</label><input type="text" id="regVillage" placeholder="Деҳаи ..."></div></div>
+          <div class="field"><label for="regRegion">Вилоят</label><div class="input-wrap select"><select id="regRegion"><option value="">Интихоб кунед</option><option>Шаҳри Душанбе</option><option>Вилояти Суғд</option><option>Вилояти Хатлон</option><option>ВМКБ</option><option>Ноҳияҳои тобеи марказ</option></select></div></div>
+          <div class="field"><label for="regCity">Шаҳр / Ноҳия</label><input type="text" id="regCity" placeholder="Масалан: Истаравшан"></div>
+          <div class="row2"><div class="field"><label for="regJamoat">Ҷамоат</label><input type="text" id="regJamoat" placeholder="Ҷамоати ..."></div><div class="field"><label for="regVillage">Деҳа / Маҳалла</label><input type="text" id="regVillage" placeholder="Деҳаи ..."></div></div>
           <div class="group-label">Ҳисоби корбарӣ</div>
-          <div class="field"><label>Логин</label><input type="text" id="regLogin" placeholder="farzona_q"></div>
-          <div class="field"><label>Парол</label><div class="input-wrap"><input type="password" id="pwReg" placeholder="Ҳадди ақал 6 аломат"><button class="eye-btn" onclick="toggleEye('pwReg', this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
-          <div class="field" style="margin-bottom:6px;"><label>Почтаи электронӣ <span class="opt">(опционалӣ)</span></label><input type="email" id="regEmail" placeholder="you@example.com"></div>
+          <div class="field"><label for="regLogin">Логин</label><input type="text" id="regLogin" placeholder="farzona_q"></div>
+          <div class="field"><label for="pwReg">Парол</label><div class="input-wrap"><input type="password" id="pwReg" autocomplete="new-password" placeholder="Ҳадди ақал 6 аломат"><button type="button" class="eye-btn" aria-label="Нишон додани парол" aria-pressed="false" onclick="toggleEye('pwReg', this)"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#6E7F97" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z"/><circle cx="12" cy="12" r="3"/></svg></button></div></div>
+          <div class="field" style="margin-bottom:6px;"><label for="regEmail">Почтаи электронӣ <span class="opt">(опционалӣ)</span></label><input type="email" id="regEmail" placeholder="you@example.com"></div>
           <div class="notice"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="#E8C879" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="13"/><circle cx="12" cy="16.3" r="0.6" fill="#E8C879"/></svg><div><p>Барои барқарорсозии рамз почтаи электронӣ лозим аст.</p><p>Маълумоти шумо тавассути ҳисоби корбарӣ нигоҳ дошта мешавад.</p></div></div>
-          <div class="switch-line" style="margin-top:18px;">Аллакай ҳисоб доред? <b onclick="setMode('login')">Ворид шавед</b></div>
+          <div class="switch-line" style="margin-top:18px;">Аллакай ҳисоб доред? <button type="button" class="auth-inline-action" onclick="setMode('login')">Ворид шавед</button></div>
           <button class="btn btn-ghost" style="width:auto;margin-top:12px;" onclick="goGuest()">⬅ Бозгашт ба меҳмон</button>
         </div>
       </div>
@@ -668,13 +445,13 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 </div>
 
 
-<div class="reset-overlay" id="resetOverlay">
+<div class="reset-overlay" id="resetOverlay" role="dialog" aria-modal="true" aria-label="Барқарорсозии парол">
   <div class="reset-card">
     <h3>Барқарорсозии рамз</h3>
-    <div class="field"><label>Логин ё почтаи электронӣ</label><input type="text" id="resetIdentifier" placeholder="login ё email"></div>
+    <div class="field"><label for="resetIdentifier">Логин ё почтаи электронӣ</label><input type="text" id="resetIdentifier" placeholder="login ё email"></div>
     <div class="reset-status" id="resetStatus"></div>
-    <div class="field" id="codeBlock" style="display:none;"><label>Рамзи аз почта</label><input type="text" id="resetCode" placeholder="6 рақам" maxlength="6"></div>
-    <div class="field" id="newPasswordBlock" style="display:none;"><label>Пароли нав</label><div class="input-wrap"><input type="password" id="resetNewPassword" placeholder="Ҳадди ақал 6 аломат"></div></div>
+    <div class="field" id="codeBlock" style="display:none;"><label for="resetCode">Рамзи аз почта</label><input type="text" id="resetCode" inputmode="numeric" autocomplete="one-time-code" placeholder="6 рақам" maxlength="6"></div>
+    <div class="field" id="newPasswordBlock" style="display:none;"><label for="resetNewPassword">Пароли нав</label><div class="input-wrap"><input type="password" id="resetNewPassword" autocomplete="new-password" placeholder="Ҳадди ақал 6 аломат"></div></div>
     <div class="row-btns"><button class="btn-row btn-cancel" onclick="closeReset()">Бекор</button><button class="btn-row btn-go" id="resetActionBtn" onclick="checkReset()">Фиристодани рамз</button></div>
   </div>
 </div>
@@ -735,6 +512,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
 
   function showLoginForm() {
     el('choiceScreen').style.display = 'none';
+    el('authIntro').hidden=false;
     el('tabs').classList.add('show');
     el('formScroll').classList.add('show');
     el('formFooter').classList.add('show');
@@ -742,6 +520,7 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   }
 
   function goGuest() {
+    el('authIntro').hidden=true;
     el('tabs').classList.remove('show');
     el('formScroll').classList.remove('show');
     el('formFooter').classList.remove('show');
@@ -752,6 +531,10 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
   function setMode(mode) {
     clearMsg();
     const tabs = el('tabs');
+    el('authTitle').textContent=mode==='login'?'Хуш омадед!':'Ҳисоби нав созед';
+    el('authSub').textContent=mode==='login'?'Ба ҳисоби худ ворид шавед.':'Маълумоти шахсии худро пур кунед.';
+    el('tabLogin').setAttribute('aria-pressed',String(mode==='login'));
+    el('tabReg').setAttribute('aria-pressed',String(mode!=='login'));
     if (mode === 'login') {
       tabs.classList.remove('reg');
       el('tabLogin').classList.add('active'); el('tabReg').classList.remove('active');
@@ -786,6 +569,8 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     const input = el(id);
     const isPw = input.type === 'password';
     input.type = isPw ? 'text' : 'password';
+    btn.setAttribute('aria-pressed',String(isPw));
+    btn.setAttribute('aria-label',isPw?'Пинҳон кардани парол':'Нишон додани парол');
     btn.querySelector('svg').setAttribute('stroke', isPw ? '#E8C879' : '#6E7F97');
   }
 
@@ -828,7 +613,31 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     }
   }
 
+  const registrationPendingKey='kk_auth_profile_pending_v1';
+  let pendingRegistration=null,registrationProfileBusy=false;
+  try {const saved=JSON.parse(localStorage.getItem(registrationPendingKey)||'null');if(saved&&String(saved.userId)===localStorage.getItem('kk_user_id')&&localStorage.getItem('kk_token')&&saved.profile)pendingRegistration=saved;}catch(e){}
+  async function saveRegistrationProfile() {
+    if(!pendingRegistration||registrationProfileBusy)return;
+    registrationProfileBusy=true;
+    const cta=el('ctaBtn');cta.disabled=true;cta.textContent='Сабти маълумот...';
+    try {
+      const response=await fetch(KITOB_CONFIG.EDGE_API_BASE+'/api/profiles',{
+        method:'PUT',headers:{'Authorization':'Bearer '+localStorage.getItem('kk_token'),'Content-Type':'application/json'},
+        body:JSON.stringify(pendingRegistration.profile)
+      });
+      if(!response.ok)throw new Error('HTTP '+response.status);
+      pendingRegistration=null;
+      try{localStorage.removeItem(registrationPendingKey)}catch(e){}
+      showMsg('Ҳисоб сохта шуд — шумо автоматӣ ворид шудед!','success');
+      cta.textContent='Ворид шудед ✓';
+      setTimeout(()=>window.location.replace(authSuccessTarget('registered')),900);
+    } catch(e) {
+      showMsg('Ҳисоб сохта шуд, аммо маълумоти профил сабт нашуд. Дубора кӯшиш кунед: '+e.message,'error');
+      cta.disabled=false;cta.textContent='Аз нав сабт кардани маълумот';
+    } finally {registrationProfileBusy=false;}
+  }
   async function doRegister() {
+    if(pendingRegistration)return await saveRegistrationProfile();
     const name = el('regName').value.trim();
     const surname = el('regSurname').value.trim();
     const birthYear = parseInt(el('regBirthYear').value);
@@ -881,25 +690,12 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
       localStorage.removeItem('kk_device_blocked');
       try { if (typeof AndroidBridge !== 'undefined') { AndroidBridge.saveUserId(String(data.userId)); AndroidBridge.saveAuthToken(data.token); } } catch (e) {}
 
-      await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles', {
-        method: 'PUT',
-        headers: { 'Authorization': 'Bearer ' + data.token, 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          first_name: name,
-          last_name: surname,
-          birth_year: birthYear,
-          gender: gender || null,
-          region: region || null,
-          city: city || null,
-          jamoat: jamoat || null,
-          village: village || null,
-          display_name: display_name
-        })
-      });
-
-      showMsg('Ҳисоб сохта шуд — шумо автоматӣ ворид шудед!', 'success');
-      cta.textContent = 'Ворид шудед ✓';
-      setTimeout(function(){ window.location.replace(authSuccessTarget('registered')); }, 900);
+      pendingRegistration={userId:String(data.userId),profile:{
+        first_name:name,last_name:surname,birth_year:birthYear,gender:gender||null,
+        region:region||null,city:city||null,jamoat:jamoat||null,village:village||null,display_name
+      }};
+      try{localStorage.setItem(registrationPendingKey,JSON.stringify(pendingRegistration))}catch(e){}
+      await saveRegistrationProfile();
     } catch (e) {
       if (e.message.includes('409') || e.message.includes('exists')) showMsg('Ин логин ё почта аллакай истифода мешавад');
       else showMsg('Хатогӣ: ' + e.message, 'error');
@@ -926,7 +722,9 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     if (event.key === 'Enter' && el('formFooter').classList.contains('show') && !el('resetOverlay').classList.contains('open')) submitAuthForm(event);
   });
 
+  let resetBusy=false,resetSession=0;
   function openReset() {
+    resetSession++;resetBusy=false;el('resetActionBtn').disabled=false;
     el('resetOverlay').classList.add('open');
     el('resetStatus').textContent = ''; el('resetStatus').className = 'reset-status';
     el('codeBlock').style.display = 'none';
@@ -936,35 +734,44 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     el('resetActionBtn').onclick = checkReset;
   }
   function closeReset() {
+    resetSession++;resetBusy=false;el('resetActionBtn').disabled=false;
     el('resetOverlay').classList.remove('open');
     el('resetIdentifier').value = ''; el('resetCode').value = ''; el('resetNewPassword').value = '';
   }
   async function checkReset() {
+    if(resetBusy)return;
     const identifier = el('resetIdentifier').value.trim();
     if (!identifier) { el('resetStatus').textContent = 'Логин ё email-ро ворид кунед'; el('resetStatus').className = 'reset-status bad'; return; }
     const status = el('resetStatus');
     status.textContent = 'Фиристода истодааст...'; status.className = 'reset-status';
+    const session=resetSession;resetBusy=true;el('resetActionBtn').disabled=true;
     try {
       const result = await NEON_API.checkResetEligibility(identifier);
+      if(session!==resetSession)return;
       status.textContent = '✓ ' + (result.message || 'Рамз фиристода шуд'); status.className = 'reset-status ok';
       el('codeBlock').style.display = 'block';
       el('newPasswordBlock').style.display = 'block';
       el('resetActionBtn').textContent = 'Иваз кардан';
       el('resetActionBtn').onclick = doReset;
-    } catch (e) { status.textContent = 'Хатогӣ: ' + e.message; status.className = 'reset-status bad'; }
+    } catch (e) { if(session===resetSession){status.textContent = 'Хатогӣ: ' + e.message; status.className = 'reset-status bad';} }
+    finally{if(session===resetSession){resetBusy=false;el('resetActionBtn').disabled=false;}}
   }
   async function doReset() {
+    if(resetBusy)return;
     const identifier = el('resetIdentifier').value.trim();
     const code = el('resetCode').value.trim();
     const newPassword = el('resetNewPassword').value;
     if (!code) { el('resetStatus').textContent = 'Рамзи аз почта омадаро ворид кунед'; el('resetStatus').className = 'reset-status bad'; return; }
     if (!newPassword || newPassword.length < 6) { el('resetStatus').textContent = 'Пароли нав ҳадди ақал 6 аломат'; el('resetStatus').className = 'reset-status bad'; return; }
+    const session=resetSession;resetBusy=true;el('resetActionBtn').disabled=true;
     try {
       await NEON_API.resetPassword(identifier, code, newPassword);
+      if(session!==resetSession)return;
       el('resetStatus').textContent = '✓ Парол иваз шуд! Ворид шавед.'; el('resetStatus').className = 'reset-status ok';
       el('resetActionBtn').style.display = 'none';
-      setTimeout(closeReset, 1500);
-    } catch (e) { el('resetStatus').textContent = 'Хатогӣ: ' + e.message; el('resetStatus').className = 'reset-status bad'; }
+      setTimeout(()=>{if(session===resetSession)closeReset()},1500);
+    } catch (e) { if(session===resetSession){el('resetStatus').textContent = 'Хатогӣ: ' + e.message; el('resetStatus').className = 'reset-status bad';} }
+    finally{if(session===resetSession){resetBusy=false;el('resetActionBtn').disabled=false;}}
   }
 
   const requestedMode = new URLSearchParams(window.location.search).get('mode');
@@ -973,10 +780,17 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     setMode(requestedMode);
   }
 
+  if(pendingRegistration){
+    showLoginForm();setMode('reg');
+    const profile=pendingRegistration.profile;
+    for(const [id,key] of [['regName','first_name'],['regSurname','last_name'],['regBirthYear','birth_year'],['regCity','city'],['regJamoat','jamoat'],['regVillage','village']])el(id).value=profile[key]||'';
+    showMsg('Ҳисоби шумо сохта шудааст. Сабти маълумоти профилро идома диҳед.');
+    el('ctaBtn').textContent='Аз нав сабт кардани маълумот';
+  }
   (async function() {
     const token = localStorage.getItem('kk_token');
     const userId = localStorage.getItem('kk_user_id');
-    if (token && userId) {
+    if (token && userId && !pendingRegistration) {
       try {
         const r = await fetch(KITOB_CONFIG.EDGE_API_BASE + '/api/profiles/' + userId, {
           headers: { 'Authorization': 'Bearer ' + token }

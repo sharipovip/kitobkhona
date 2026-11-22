@@ -124,6 +124,7 @@
         <div class="row">
           <button class="pill" onclick="setTheme('light')">☀️ Рӯз</button>
           <button class="pill active" onclick="setTheme('dark')">🌙 Шаб</button>
+          <button class="pill" onclick="setTheme('minimal')">◇ Минимализм</button>
         </div>
       </div>
     </div>
@@ -818,6 +819,20 @@
     if (dragged) restoreSlot(currentSlot);
   }, { passive: true });
 
+  // System interruptions do not guarantee touchend (rotation, app switch, OS gesture).
+  stageEl.addEventListener('touchcancel', () => {
+    const hadPinch = isPinching;
+    isPinching = false;
+    pinchStartDist = 0;
+    drag = false;
+    if (dragged) restoreSlot($('currentSlot'));
+    dragged = false;
+    if (hadPinch && (!window.__kkTextMode || window.__kkTextMode === 'pdf') && pdf && Math.abs(zoom-renderedZoom)>.002) {
+      clearTimeout(zoomCommitTimer);
+      renderPage(page,0);
+    }
+  }, {passive:true});
+
   // A single visibility state for panels, reactions and the 15-second idle timer.
   let readerIdleTimer = null;
   function setReaderBars(visible) {
@@ -858,8 +873,8 @@
     commit:async n=>{await renderPage(n,0);},activity:armReaderIdle
   });
 
-  function setTheme(t) {
-    const light = t === 'light';
+  function syncReaderTheme(t) {
+    const light = t !== 'dark';
     document.body.classList.toggle('light-reading', light);
     document.documentElement.classList.toggle('light-reading', light);
     localStorage.setItem('kk_reader_theme', t);
@@ -867,12 +882,19 @@
       b.classList.toggle('active', (b.getAttribute('onclick') || '').indexOf("'" + t + "'") > -1);
     });
     const mt = document.querySelector('meta[name="theme-color"]');
-    if (mt) mt.setAttribute('content', light ? '#FFFFFF' : '#0C0C0C');
+    if (mt) mt.setAttribute('content', window.KKH_THEMES?.[t]?.bg || (light ? '#FFFFFF' : '#0C0C0C'));
+    if ($('readerThemeIcon')) $('readerThemeIcon').textContent=t==='light'?'☀':t==='minimal'?'◇':'🌙';
     // холст теперь всегда белый, тема меняется CSS-фильтром — перерисовка не нужна (нет мерцания)
   }
-  const initialReaderTheme=localStorage.getItem('kk_reader_theme')||'light';
+  function setTheme(t) {
+    t=['light','dark','minimal'].includes(t)?t:'dark';
+    if(typeof setAppTheme==='function')setAppTheme(t);
+    syncReaderTheme(t);
+  }
+  // Shared application appearance is authoritative; retain the old reader key for compatibility.
+  document.addEventListener('kitobkhona-theme-change',e=>syncReaderTheme(e.detail));
+  const initialReaderTheme=localStorage.getItem('kk_theme')||localStorage.getItem('kk_reader_theme')||'dark';
   setTheme(initialReaderTheme);
-  if($('readerThemeIcon')) $('readerThemeIcon').textContent=initialReaderTheme==='light'?'🌙':'☀';
 
   function clampZoom(z) { return Math.max(Z_MIN, Math.min(Z_MAX, Math.round(z * 100) / 100)); }
   function syncZoomUI() {
@@ -968,7 +990,7 @@
     $('searchPanel').classList.toggle('open', force === undefined ? !$('searchPanel').classList.contains('open') : !!force);
     $('settingsPanel').classList.remove('open');
     if ($('notesPanel')) $('notesPanel').classList.remove('open');
-    setTimeout(() => $('findInput').focus(), 80);
+    setTimeout(() => { if ($('searchPanel').classList.contains('open')) $('findInput').focus(); }, 80);
   }
 
   // (v99: старый adjustZoom только для PDF заменён на универсальный выше)
@@ -1007,7 +1029,8 @@
   function quickGoPage(){const input=$('quickPageInput');if(!input||!pages)return;const raw=input.value.trim();input.value='';if(!raw)return;const n=Math.max(1,Math.min(pages,parseInt(raw,10)||page));renderPage(n,n>=page?1:-1)}
   function jumpToPagePrompt(){document.getElementById('quickPageInput')?.focus()}
   function toggleReaderTheme(){
-    const next=document.body.classList.contains('light-reading')?'dark':'light';setTheme(next);const icon=$('readerThemeIcon');if(icon)icon.textContent=next==='light'?'🌙':'☀'
+    const themes=['dark','light','minimal'],current=document.documentElement.dataset.appTheme||'dark';
+    setTheme(themes[(themes.indexOf(current)+1)%themes.length]);
   }
   let readerFavorite=false,readerFavoriteLoaded=false;
   function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}
@@ -1022,10 +1045,12 @@
     await shareFile(url, name);
   }
 
-  let findHits = [], findIndex = -1;
+  let findHits = [], findIndex = -1, readerFindSequence = 0;
   async function findText() {
+    const request = ++readerFindSequence;
     const q = $('findInput').value.trim();
-    if (!q || !pdf) return;
+    if (!q || !pdf) { findHits=[];findIndex=-1;renderFindResults();return; }
+    const hits=[];
     $('findCount').textContent = 'Ҷустуҷӯ...';
     $('findResult').innerHTML = '<div class="find-item"><div class="find-page">Ҷустуҷӯ...</div><div class="find-snippet">Лутфан интизор шавед</div></div>';
     findHits = []; findIndex = -1;
@@ -1034,15 +1059,18 @@
       try {
         const pg = await pdf.getPage(i);
         const tc = await pg.getTextContent();
+        if(request!==readerFindSequence)return;
         const text = tc.items.map(x => x.str).join(' ');
         const pos = text.toLowerCase().indexOf(lo);
         if (pos >= 0) {
           const snip = (pos > 35 ? '…' : '') + text.slice(Math.max(0, pos - 35), Math.min(text.length, pos + q.length + 55)) + (pos + q.length + 55 < text.length ? '…' : '');
-          findHits.push({ page: i, snippet: snip });
+          hits.push({ page: i, snippet: snip });
         }
       } catch(e) {}
       if (i % 8 === 0) await new Promise(r => setTimeout(r, 1));
     }
+    if(request!==readerFindSequence)return;
+    findHits=hits;
     renderFindResults();
     if (findHits.length) { findIndex = 0; goFind(0); }
   }
@@ -1401,7 +1429,23 @@
     slot.appendChild(area);
     const book = ePub(buf);
     const rendition = book.renderTo(area, { width: '100%', height: '100%', spread: 'none' });
-    await rendition.display();
+    const epubProgressKey='kk_epub_progress_v1',epubBookKey=canonicalBookUrl(url);
+    let savedEpubCfi=null;
+    try { const entry=JSON.parse(localStorage.getItem(epubProgressKey)||'{}')[epubBookKey];if(typeof entry?.cfi==='string'&&entry.cfi.startsWith('epubcfi('))savedEpubCfi=entry.cfi; } catch(e) {}
+    // Listen before the first display; the initial relocation must update the UI too.
+    rendition.on('relocated', loc => {
+      const start=loc?.start,pctEl=$('quickPagePct');
+      if(pctEl&&start?.percentage!=null)pctEl.textContent=Math.round(start.percentage*100)+'%';
+      if(!start?.cfi)return;
+      try {
+        let all;try{all=JSON.parse(localStorage.getItem(epubProgressKey)||'{}')}catch(e){return}
+        if(!all||typeof all!=='object'||Array.isArray(all))return;
+        all[epubBookKey]={cfi:start.cfi,name,percentage:start.percentage??null,ts:Date.now()};
+        localStorage.setItem(epubProgressKey,JSON.stringify(all));
+      } catch(e) { /* Full/unavailable storage must not prevent reading. */ }
+    });
+    if(window.__kkEpubFontPct&&window.__kkEpubFontPct!==100)rendition.themes.fontSize(window.__kkEpubFontPct+'%');
+    try{await rendition.display(savedEpubCfi||undefined)}catch(e){if(!savedEpubCfi)throw e;await rendition.display()}
     // v99: EPUB мисли PDF кор мекунад:
     //   ТАП      → экрани тоза (пинҳон/намоиши панелҳо) — НА варақгардонӣ
     //   СВАЙП    → варақгардонӣ
@@ -1474,10 +1518,7 @@
         }, { passive: true });
       }, 60);
     });
-    rendition.on('relocated', loc => {
-      const pctEl = $('quickPagePct');
-      if (pctEl && loc && loc.start && loc.start.percentage != null) pctEl.textContent = Math.round(loc.start.percentage * 100) + '%';
-    });
+
   }
   // ---------- DOC (word 97-2003): намоиши дохилӣ (docx/txt нусха) ё пурсиш ----------
   // Робот (build.py v99) дар repo барои ҳар .doc нусхаи .docx (ягон формат)

@@ -21,21 +21,7 @@
 <div class="app">
 
   
-  <div class="top-app-bar">
-    <div class="brand-mini">
-      <svg viewBox="0 0 48 48" fill="none">
-        <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-        <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
-      </svg>
-      <span>Китобхона</span>
-    </div>
-    <div class="top-actions">
-      <div class="icon-btn" id="settingsBtn" title="Танзимот" onclick="openSettings()">⚙️</div>
-    </div>
-  </div>
-
-  
+  <header class="top-app-bar"><a class="icon-btn" href="index.html" aria-label="Бозгашт">‹</a><div class="profile-heading"><h1>Профили ман</h1><p>Фазои шахсии китобхон</p></div><button type="button" class="icon-btn" id="settingsBtn" title="Танзимот" aria-label="Танзимот" onclick="openSettings()">⚙</button></header>
   <div class="screen-area">
     <div class="screen" id="screen-loading"><div class="loading-screen"><div class="spinner"></div><div>Боргирӣ...</div></div></div>
     <div class="screen" id="screen-error" hidden><div class="loading-screen"><div style="font-size:48px">⚠️</div><div style="color:var(--cream);font-weight:700;font-size:15px;">Хатогӣ</div><div id="errorMsg" style="color:var(--muted);font-size:13px;max-width:300px;"></div><button class="retry-btn" onclick="location.reload()">Боз кӯшидан</button><button class="retry-btn" style="background:var(--card-soft);color:var(--cream);border:1px solid var(--line);margin-top:6px;" onclick="goLogin()">Ворид шудан</button></div></div>
@@ -51,18 +37,18 @@
           <div class="age-gender-row"><div class="sub-info" id="ownAge"></div><div class="status-chip" id="ownGender" style="display:none"></div></div>
           <div class="meta-loc" id="ownLoc">—</div>
         </div>
-      </div>
       <div class="action-row" id="actionRow">
         <button class="btn btn-ghost" id="chatBtn" onclick="goToChats()">Чат</button>
         <button class="btn btn-outline" id="friendBtn" onclick="friendAction()">➕ Дӯст кардан</button>
-        <button class="btn btn-outline" id="editBtn" style="display:none;" onclick="openEdit()">Таҳрири профил</button>
+        <button class="btn btn-primary" id="editBtn" style="display:none;" onclick="openEdit()">Таҳрири профил</button>
+      </div>
       </div>
       <!-- v126: омори графикии хониш — аз пойгоҳи маҳаллӣ (KKReadingLog), бе сервер; маълумоти ҳисоб ворид ва якҷоя мешавад -->
       <section class="rstats" id="readingStats" style="display:none" aria-label="Омори хониш"></section>
       <div class="tabs" data-group="own">
-        <div class="tab-btn active" data-tab="books">📚 Китобҳо</div>
-        <div class="tab-btn" data-tab="marks">❤️ Дӯстдошта</div>
-        <div class="tab-btn" data-tab="posts">📰 Пост</div>
+        <button type="button" class="tab-btn active" data-tab="books">Китобҳои ман</button>
+        <button type="button" class="tab-btn" data-tab="marks">Дӯстдошта</button>
+        <button type="button" class="tab-btn" data-tab="posts">Навиштаҳо</button>
       </div>
       <div class="tab-panel" data-group="own" data-panel="books" id="panelBooks"><div class="empty-state">Боргирӣ...</div></div>
       <div class="tab-panel" data-group="own" data-panel="marks" id="panelMarks" hidden><div class="empty-state">Боргирӣ...</div></div>
@@ -71,30 +57,15 @@
   </div>
 
   
-  <div class="nav-bottom">
-    <div class="kh-nav2">
-      <a class="nav-item" href="index.html" aria-label="Асосӣ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span>Асосӣ</span>
-      </a>
-      <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
-      <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-      
-      <!-- ЦЕНТРАЛЬНАЯ КНОПКА АЛИЯ -->
-      <a class="nav-item nav-aliya-center" href="aliya/index.html" aria-label="Алия"><div class="aliya-fab-glow">✨</div><span>Алия</span></a>
-
-      <a class="nav-item" href="dovtalab/index.html" aria-label="Довталаб"><div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center"><img src="dovtalab/assets/icon-192.png" alt="" style="width:22px;height:22px;border-radius:6px"></div><span>Довталаб</span></a>
-      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
-      <a class="nav-item" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
-    </div>
-  </div>
+  <nav class="nav-bottom" aria-label="Менюи асосӣ"><div class="kh-nav2"><a class="nav-item" href="index.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"></path></svg><span>Асосӣ</span></a><a class="nav-item" href="kitobho.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"></path><path d="M12 5v15M5 8h4M5 11h4M15 8h4M15 11h4"></path></svg><span>Китобҳо</span></a><a class="nav-item" href="aliya/index.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z"></path><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6Z"></path></svg><span>Алия</span></a><a class="nav-item" href="Lenta.html"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"></path><path d="M7 10h8M7 14h5"></path></svg><span>Ҷомеа</span></a><button type="button" class="nav-item" onclick="openSettings()"><svg fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" viewBox="0 0 24 24"><rect height="7" rx="2" width="7" x="3" y="3"></rect><rect height="7" rx="2" width="7" x="14" y="3"></rect><rect height="7" rx="2" width="7" x="3" y="14"></rect><rect height="7" rx="2" width="7" x="14" y="14"></rect></svg><span>Бештар</span></button></div></nav>
 </div>
 
 <div class="sheet-overlay" id="settingsOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
       <div class="sheet-head">
-        <h3>⚙️ Настройка</h3>
-        <div class="icon-btn" id="closeSettings">✕</div>
+        <h3>Танзимот</h3>
+        <button type="button" class="icon-btn" id="closeSettings" aria-label="Пӯшидан">×</button>
       </div>
       <div class="sheet-body" style="padding-bottom:24px">
 
@@ -178,7 +149,7 @@
   <div class="sheet-overlay" id="aboutOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
-      <div class="sheet-head"><h3>📚 Дар бораи барнома</h3><div class="icon-btn" id="closeAbout">✕</div></div>
+      <div class="sheet-head"><h3>📚 Дар бораи барнома</h3><button type="button" class="icon-btn" id="closeAbout" aria-label="Пӯшидан">×</button></div>
       <div class="sheet-body" id="aboutBody" style="padding-bottom:24px;text-align:left">
         <div style="text-align:center;font-size:56px;margin:8px 0">📚</div>
         <div style="text-align:center;font-size:22px;font-weight:800;color:var(--gold);margin-bottom:5px">Китобхона</div>
@@ -207,7 +178,7 @@
   <div class="sheet-overlay" id="helpOverlay">
     <div class="sheet">
       <div class="sheet-handle"></div>
-      <div class="sheet-head"><h3>❓ Ёрӣ ва истифода</h3><div class="icon-btn" id="closeHelp">✕</div></div>
+      <div class="sheet-head"><h3>❓ Ёрӣ ва истифода</h3><button type="button" class="icon-btn" id="closeHelp" aria-label="Пӯшидан">×</button></div>
       <div class="sheet-body" id="helpBody" style="padding-bottom:24px;text-align:left;font-size:13px;color:var(--cream-dim);line-height:1.65">
         <div style="background:var(--card);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px">
           <div style="color:var(--gold);font-weight:700;margin-bottom:5px">📚 Китобҳоро чӣ тавр хондан?</div>
@@ -402,6 +373,7 @@
   const qs = new URL(location.href).searchParams;
   const targetUserId = qs.get('user') || null;
   const openEditRequested = qs.get('edit') === '1';
+  let profileEntryActionConsumed=false;
   let currentProfileUserId = null;
   let isOwnProfile = false;
   let loadedProfile = null;
@@ -464,10 +436,7 @@
   async function logoutUser() {
     if (await showConfirmDialog('Шумо воқеан мехоҳед бароед?', 'Баромадан')) {
       if (typeof CacheManager !== 'undefined') {
-        const keys = Object.keys(localStorage);
-        keys.forEach(k => {
-          if (k.startsWith('kk_')) localStorage.removeItem(k);
-        });
+        // Sign out identity only. Local books, reading progress and appearance belong to this device.
         if (CacheManager._ws) {
           CacheManager._ws.close();
           CacheManager._ws = null;
@@ -498,8 +467,7 @@
         actionProgress?.done('Ҳисоб нест карда шуд');
         await new Promise(resolve=>setTimeout(resolve,500));
         await showAlertDialog('Профили шумо нест карда шуд.', 'Муваффақият');
-        Object.keys(localStorage).forEach(key=>{if(key.startsWith('kk_'))localStorage.removeItem(key)});
-        if('caches' in window)caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))).catch(()=>{});
+        // Account deletion is not an instruction to erase downloaded books or local reading progress.
         AutoLogin.logout();
         location.replace('login.html?deleted=1');
       } else {
@@ -727,7 +695,12 @@
       }
 
       showScreen('screen-own');
-      if (openEditRequested && isOwnProfile) setTimeout(() => openEdit(), 180);
+      if (!profileEntryActionConsumed && isOwnProfile) {
+        profileEntryActionConsumed=true;
+        if(openEditRequested)setTimeout(()=>openEdit(),180);
+        else if(qs.get('directory')==='1')setTimeout(()=>openUsersDirectory(),180);
+        else if(qs.get('settings')==='1')setTimeout(()=>openSettings(),180);
+      }
       renderBooks();
       renderFavorites();
       renderPosts();
@@ -1629,8 +1602,8 @@
     isTemporary = profile.is_temporary === true;
     const lockedUntil = profile.profile_edit_locked_until ? new Date(profile.profile_edit_locked_until) : null;
     profileEditLocked = !!(lockedUntil && lockedUntil > new Date());
-    if (saveBtn) saveBtn.style.display = profileEditLocked ? 'none' : '';
-    const editableFields = ['editName', 'editSurname', 'editBirthYear', 'editGender', 'editRegion', 'editCity', 'editJamoat', 'editVillage'];
+    if (saveBtn) saveBtn.style.display = '';
+    const editableFields = ['editName', 'editSurname', 'editBirthYear', 'editGender', 'editRegion', 'editCity', 'editJamoat', 'editVillage', 'editUsername'];
     editableFields.forEach(id => { if (el(id)) el(id).disabled = profileEditLocked; });
     if (profileEditNotice) {
       if (profileEditLocked) {
@@ -1678,7 +1651,9 @@
     }
   });
 
+  let profileSaveRunning=false;
   el('saveEdit').addEventListener('click', async function() {
+    if(profileSaveRunning)return;
     const firstName = el('editName').value.trim();
     const lastName = el('editSurname').value.trim();
     const birthYear = parseInt(el('editBirthYear').value) || null;
@@ -1691,18 +1666,19 @@
     const newEmail = el('editEmail').value.trim();
     const newPassword = passwordInput.value;
 
-    if (!firstName || !lastName || !birthYear || !gender || !region || !city) {
+    if (!profileEditLocked && (!firstName || !lastName || !birthYear || !gender || !region || !city)) {
       showToast('Барои нигоҳдорӣ ном, насаб, соли таваллуд, ҷинс ва суроға ҳатмист.');
       return;
     }
-    if (birthYear < 1930 || birthYear > new Date().getFullYear()) {
+    if (!profileEditLocked && (birthYear < 1930 || birthYear > new Date().getFullYear())) {
       showToast('Соли таваллуд нодуруст аст.');
       return;
     }
+    if (newPassword && newPassword.length < 4) { showToast('Парол бояд ҳадди ақал 4 аломат дошта бошад.'); return; }
     if (isTemporary && !newPassword) { showToast('Барои нигоҳ доштани профил, лутфан парол ворид кунед.'); return; }
     if (newEmail && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(newEmail)) { showToast('Формати почта нодуруст аст'); return; }
 
-    const updates = {
+    const updates = profileEditLocked ? {} : {
       first_name: firstName,
       last_name: lastName,
       birth_year: birthYear,
@@ -1713,15 +1689,18 @@
       village: village || null,
       display_name: (firstName + ' ' + lastName).trim()
     };
-    if (newUsername) updates.username = newUsername;
+    const usernameChanged=!profileEditLocked&&!!newUsername&&newUsername!==String(loadedProfile?.username||'');
+    if (usernameChanged) updates.username = newUsername;
     if (newEmail) updates.email = newEmail;
     if (newPassword) updates.password = newPassword;
+    if (!Object.keys(updates).length) { showToast('Барои нигоҳдорӣ почта ё пароли навро ворид кунед.'); return; }
 
+    profileSaveRunning=true;this.disabled=true;
     const actionProgress=beginActionProgress('Маълумоти профил нигоҳ дошта мешавад...');
     try {
       const result=await NEON_API.updateProfile(updates,(pct,msg)=>actionProgress.set(pct,msg));
       if (!result.success) throw new Error(result.error || 'Сервер қабул накард');
-      if (newUsername || newPassword) {
+      if (usernameChanged || newPassword) {
         actionProgress.done('Профил навсозӣ шуд');
         showToast('Профиль навсозӣ шуд! Лутфан аз нав ворид шавед.');
         AutoLogin.logout();
@@ -1738,7 +1717,7 @@
       actionProgress.fail(e.message);
       console.error('[Profile] Save error:', e);
       showToast('Хатогӣ: ' + e.message);
-    }
+    } finally {profileSaveRunning=false;this.disabled=false;}
   });
 
   const feedbackOverlay = el('feedbackOverlay');
@@ -1988,5 +1967,6 @@
   }
 
 </script>
+<script src="assets/js/profile-sheets.js"></script>
 </body>
 </html>

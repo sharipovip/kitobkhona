@@ -2129,7 +2129,7 @@ async function shareFile(url, name) {
     if(navigator.canShare&&navigator.share){const file=new File([blob],fileName,{type:mime});if(navigator.canShare({files:[file]})){await navigator.share({title:name,files:[file]});if(toastEl)toastEl.classList.remove('show');return}}
     const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
     if(toastEl){toastEl.textContent='Файл боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2500)}
-  }catch(e){if(e.name!=='AbortError'&&toastEl){toastEl.textContent='Мубодила нашуд: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}}
+  }catch(e){if(e.name==='AbortError'){if(toastEl)toastEl.classList.remove('show')}else if(toastEl){toastEl.textContent='Мубодила нашуд: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}}
 }
 async function downloadFile(url,name,showProgress=true){
   url=canonicalBookUrl(url);const toastEl=getToastEl();

@@ -2,7 +2,7 @@
 <html lang="tg">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
 <title>Китобхона — Чатҳо</title>
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
@@ -19,27 +19,14 @@
 
 <div class="app">
   
-  <div class="top-app-bar">
-    <div class="brand-mini">
-      <svg viewBox="0 0 48 48" fill="none">
-        <path d="M24 10C19 8 12 8 8 10v26c4-2 11-2 16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-        <path d="M24 10c5-2 12-2 16 2v26c-4-2-11-2-16 0" stroke="var(--gold)" stroke-width="3" stroke-linejoin="round"/>
-        <line x1="24" y1="10" x2="24" y2="36" stroke="var(--gold)" stroke-width="3"/>
-      </svg>
-      <span>Чатҳо</span>
-    </div>
-    <div class="top-actions">
-      <div class="icon-btn" onclick="location.href='profile.html'" title="Профил">👤</div>
-    </div>
-  </div>
+<header class="top-app-bar"><div class="headcopy"><h1>Чатҳо</h1><p>Суҳбат аз як паём оғоз мешавад</p></div><button aria-label="Ҷустуҷӯи корбарон" class="icon" onclick="location.href='profile.html?directory=1'"><svg viewBox="0 0 24 24"><circle cx="9" cy="7" r="4"></circle><path d="M2 21v-2a7 7 0 0 1 12-5M19 10v10M14 15h10"></path></svg></button><button aria-label="Профили ман" class="icon" onclick="location.href='profile.html'"><svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 22v-2a8 8 0 0 1 16 0v2"></path></svg></button></header>
 
-  
   <div class="screen-area">
     <div class="screen" id="chatsScreen">
       <div class="ornament"></div>
       <div class="search">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--dim)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.6" y2="16.6"/></svg>
-        <input type="text" id="searchInput" placeholder="Ҷустуҷӯи дӯстон ё чатҳо">
+        <input type="text" id="searchInput" aria-label="Ҷустуҷӯи дӯстон ё чатҳо" placeholder="Ҷустуҷӯи дӯстон ё чатҳо">
       </div>
       <div id="chatsScroll">
         <div class="loading-spinner"><div class="spinner"></div> Боргирӣ...</div>
@@ -48,22 +35,8 @@
   </div>
 
   
-  <div class="nav-bottom">
-    <div class="kh-nav2">
-      <a class="nav-item" href="index.html" aria-label="Асосӣ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/><path d="M9 20v-6h6v6"/></svg><span>Асосӣ</span>
-      </a>
-      <a class="nav-item" href="kitobho.html" aria-label="Китобҳо"><div class="person-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><div class="book-in-hand"></div></div><span>Китобҳо</span></a>
-      <a class="nav-item" href="winners.html" aria-label="Ғолибон"><div class="crown-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="crown-icon">👑</span></div><span>Ғолибон</span></a>
-      
-      <!-- ЦЕНТРАЛЬНАЯ КНОПКА АЛИЯ -->
-      <a class="nav-item nav-aliya-center" href="aliya/index.html" aria-label="Алия"><div class="aliya-fab-glow">✨</div><span>Алия</span></a>
+<nav aria-label="Менюи асосӣ" class="nav-bottom"><div class="kh-nav2"><a class="nav-item" href="index.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m3 10 9-7 9 7v10a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"></path></svg><span>Асосӣ</span></a><a class="nav-item" href="kitobho.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M12 5C9 3 5 3 2 4v15c3-1 7-1 10 1 3-2 7-2 10-1V4c-3-1-7-1-10 1Z"></path><path d="M12 5v15M5 8h4M5 11h4M15 8h4M15 11h4"></path></svg><span>Китобҳо</span></a><a class="nav-item" href="aliya/index.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="m12 3 2.8 6.2L21 12l-6.2 2.8L12 21l-2.8-6.2L3 12l6.2-2.8L12 3Z"></path><path d="m20 2 .6 1.4L22 4l-1.4.6L20 6l-.6-1.4L18 4l1.4-.6Z"></path></svg><span>Алия</span></a><a class="nav-item active" href="chats.html"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><path d="M20 11.5a7.5 7.5 0 0 1-7.5 7.5H5l-3 3V11.5A7.5 7.5 0 0 1 9.5 4h3a7.5 7.5 0 0 1 7.5 7.5Z"></path><path d="M7 10h8M7 14h5"></path></svg><span>Ҷомеа</span></a><button class="nav-item" onclick="location.href='profile.html?settings=1'" type="button"><svg aria-hidden="true" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" viewbox="0 0 24 24"><rect height="7" rx="2" width="7" x="3" y="3"></rect><rect height="7" rx="2" width="7" x="14" y="3"></rect><rect height="7" rx="2" width="7" x="3" y="14"></rect><rect height="7" rx="2" width="7" x="14" y="14"></rect></svg><span>Бештар</span></button></div></nav>
 
-      <a class="nav-item" href="dovtalab/index.html" aria-label="Довталаб"><div style="width:22px;height:22px;display:flex;align-items:center;justify-content:center"><img src="dovtalab/assets/icon-192.png" alt="" style="width:22px;height:22px;border-radius:6px"></div><span>Довталаб</span></a>
-      <a class="nav-item" href="Lenta.html" aria-label="Лента"><div class="person-icon like-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M5 20c0-3 3-6 7-6s7 3 7 6"/></svg><span class="like-icon heart1">❤️</span><span class="like-icon heart2">❤️</span><span class="like-icon heart3">❤️</span></div><span>Лента</span></a>
-      <a class="nav-item active" href="chats.html" aria-label="Чат"><div class="users-wrap"><div class="person p1"></div><div class="person p2"></div><span class="heart-pop">❤️</span></div><span>Чат</span></a>
-    </div>
-  </div>
 </div>
 
 <script>
@@ -185,11 +158,12 @@
   }
 
   let chatListLoadInFlight=null,chatListLastLoad=0;
-  function loadData() {
-    if(chatListLoadInFlight)return chatListLoadInFlight;
-    if(Date.now()-chatListLastLoad<1500)return Promise.resolve();
+  let chatListReloadQueued=false;
+  function loadData(force=false) {
+    if(chatListLoadInFlight){if(force)chatListReloadQueued=true;return chatListLoadInFlight;}
+    if(!force&&Date.now()-chatListLastLoad<1500)return Promise.resolve();
     chatListLastLoad=Date.now();
-    chatListLoadInFlight=loadDataOnce().finally(()=>{chatListLoadInFlight=null});
+    chatListLoadInFlight=loadDataOnce().finally(()=>{chatListLoadInFlight=null;if(chatListReloadQueued){chatListReloadQueued=false;void loadData(true)}});
     return chatListLoadInFlight;
   }
   async function loadDataOnce() {
@@ -283,8 +257,8 @@
     if (inPane && outPane) {
       inPane.style.display = tab === 'in' ? 'flex' : 'none';
       outPane.style.display = tab === 'out' ? 'flex' : 'none';
-      if (inBtn) inBtn.classList.toggle('active', tab === 'in');
-      if (outBtn) outBtn.classList.toggle('active', tab === 'out');
+      if (inBtn) {inBtn.classList.toggle('active', tab === 'in');inBtn.setAttribute('aria-pressed',String(tab==='in'))}
+      if (outBtn) {outBtn.classList.toggle('active', tab === 'out');outBtn.setAttribute('aria-pressed',String(tab==='out'))}
     }
   };
 
@@ -294,7 +268,7 @@
       if (typeof ChatAPI !== 'undefined' && ChatAPI.cancelOutgoingFriendRequest) {
         await ChatAPI.cancelOutgoingFriendRequest(reqId);
         showToast('Дархост бекор карда шуд');
-        loadData();
+        loadData(true);
       }
     } catch (e) {
       showToast('Хатогӣ: ' + e.message);
@@ -303,7 +277,9 @@
 
   let globalOutgoingRequests = [];
 
+  let chatsRenderGeneration=0;
   async function renderChats(friends, requests, scroll, summary = chatSummary) {
+    const generation=++chatsRenderGeneration;
     let html = '';
 
     const incomingReqs = Array.isArray(requests) ? requests : [];
@@ -313,10 +289,10 @@
     html += `
       <div class="requests-block-v2">
         <div class="req-header-row">
-          <div class="t">🤝 Дархостҳои дӯстӣ</div>
+          <div class="t">Дархостҳои дӯстӣ</div>
           <div class="req-tabs-switch">
-            <button type="button" class="req-tab-btn ${activeReqTab==='in'?'active':''}" id="tabIncomingBtn" onclick="switchReqTab('in')">Воридотӣ (${incomingReqs.length})</button>
-            <button type="button" class="req-tab-btn ${activeReqTab==='out'?'active':''}" id="tabOutgoingBtn" onclick="switchReqTab('out')">Фиристодашуда (${outgoingReqs.length})</button>
+            <button type="button" class="req-tab-btn ${activeReqTab==='in'?'active':''}" id="tabIncomingBtn" aria-pressed="${activeReqTab==='in'}" onclick="switchReqTab('in')">Воридотӣ (${incomingReqs.length})</button>
+            <button type="button" class="req-tab-btn ${activeReqTab==='out'?'active':''}" id="tabOutgoingBtn" aria-pressed="${activeReqTab==='out'}" onclick="switchReqTab('out')">Фиристодашуда (${outgoingReqs.length})</button>
           </div>
         </div>
 
@@ -334,8 +310,8 @@
         const cls = getCls(String(fromId).charCodeAt(0) || 0);
         const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
         html += `
-          <div class="req-v2-item" data-request-id="${req.id}" data-from-user="${fromId}">
-            <div class="req-v2-user" onclick="location.href='profile.html?user=${fromId}'">
+          <div class="req-v2-item" data-request-id="${esc(req.id)}" data-from-user="${esc(fromId)}">
+            <div class="req-v2-user" data-profile-user="${esc(fromId)}" role="link" tabindex="0">
               <div class="req-v2-avatar ${cls}">${avatarHtml}</div>
               <div class="req-v2-meta">
                 <div class="req-v2-name">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
@@ -343,8 +319,8 @@
               </div>
             </div>
             <div class="req-v2-actions">
-              <button class="btn-req-act accept" onclick="acceptRequest('${fromId}')">Қабул ✓</button>
-              <button class="btn-req-act decline" onclick="declineRequest('${req.id}')">Рад ✕</button>
+              <button class="btn-req-act accept" data-accept-request="${esc(fromId)}">Қабул ✓</button>
+              <button class="btn-req-act decline" data-decline-request="${esc(req.id)}">Рад ✕</button>
             </div>
           </div>
         `;
@@ -366,8 +342,8 @@
         const cls = getCls(String(toId).charCodeAt(0) || 0);
         const avatarHtml = profile?.avatar_url ? `<img src="${esc(profile.avatar_url)}" alt="">` : esc(initials);
         html += `
-          <div class="req-v2-item" data-request-id="${req.id}">
-            <div class="req-v2-user" onclick="location.href='profile.html?user=${toId}'">
+          <div class="req-v2-item" data-request-id="${esc(req.id)}">
+            <div class="req-v2-user" data-profile-user="${esc(toId)}" role="link" tabindex="0">
               <div class="req-v2-avatar ${cls}">${avatarHtml}</div>
               <div class="req-v2-meta">
                 <div class="req-v2-name">${esc(name)}${profile?.verified ? verifiedBadgeSvg() : ''}</div>
@@ -375,7 +351,7 @@
               </div>
             </div>
             <div class="req-v2-actions">
-              <button class="btn-req-act cancel" onclick="cancelOutgoingRequest('${req.id}')">Бекор ✕</button>
+              <button class="btn-req-act cancel" data-cancel-request="${esc(req.id)}">Бекор ✕</button>
             </div>
           </div>
         `;
@@ -385,7 +361,7 @@
 
     html += `
       <div class="section-label">
-        <div class="t">Чатҳо</div>
+        <div class="t">Паёмҳо</div>
         <div class="count" id="friendCount">${friends.length} дӯст</div>
       </div>
       <div class="chat-list" id="chatList">
@@ -415,7 +391,7 @@
               : (lastMessage.sender_name || name) + ': ' + lastMessage.text)
           : 'Паёмҳо баъди навиштан';
         html += `
-          <div class="chat-item${unreadCount > 0 ? ' has-unread' : ''}" data-chat-user="${id}" onclick="openChat('${id}','${esc(name)}')">
+          <div class="chat-item${unreadCount > 0 ? ' has-unread' : ''}" data-chat-user="${esc(id)}" data-chat-name="${esc(name)}" tabindex="0" role="link">
             <div class="avatar-wrap">
               <div class="avatar ${cls}">${avatarHtml}</div>
             </div>
@@ -429,7 +405,7 @@
                 ${unreadCount > 0 ? `<div class="chat-unread-badge">${unreadCount > 99 ? '99+' : unreadCount}</div>` : ''}
               </div>
             </div>
-            <button type="button" class="chat-delete-btn" data-delete-chat="${id}" title="Нест кардани чат" aria-label="Нест кардани чат">
+            <button type="button" class="chat-delete-btn" data-delete-chat="${esc(id)}" title="Нест кардани чат" aria-label="Нест кардани чат">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:16px;height:16px;display:block;"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </button>
           </div>
@@ -438,7 +414,14 @@
     }
     html += `</div>`;
 
+    if(generation!==chatsRenderGeneration)return;
     scroll.innerHTML = html;
+    scroll.querySelectorAll('[data-chat-user]').forEach(row=>row.addEventListener('click',event=>{if(!event.target.closest('[data-delete-chat]'))window.openChat(row.dataset.chatUser,row.dataset.chatName)}));
+    for(const [attr,handler] of [['profile-user',id=>{location.href='profile.html?user='+encodeURIComponent(id)}],['accept-request',acceptRequest],['decline-request',declineRequest],['cancel-request',window.cancelOutgoingRequest]]){
+      scroll.querySelectorAll('[data-'+attr+']').forEach(node=>node.addEventListener('click',()=>handler(node.getAttribute('data-'+attr))));
+    }
+    scroll.querySelectorAll('[role="link"]').forEach(node=>node.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();node.click()}}));
+
 
     scroll.querySelectorAll('[data-delete-chat]').forEach(button => {
       button.addEventListener('click', async (event) => {
@@ -473,13 +456,15 @@
     const searchInput = document.getElementById('searchInput');
     searchInput.removeEventListener('input', handleSearch);
     searchInput.addEventListener('input', handleSearch);
+    handleSearch.call(searchInput);
   }
 
   function handleSearch() {
     const q = this.value.trim().toLowerCase();
+    document.querySelectorAll('.req-v2-item').forEach(item=>{item.style.display=(item.querySelector('.req-v2-name')?.textContent||'').toLowerCase().includes(q)?'':'none'});
     const items = document.querySelectorAll('.chat-item');
     items.forEach(item => {
-      const name = item.querySelector('.chat-name')?.textContent?.toLowerCase() || '';
+      const name = [item.querySelector('.chat-name')?.textContent,item.querySelector('.chat-msg')?.textContent].filter(Boolean).join(' ').toLowerCase();
       item.style.display = name.includes(q) ? 'flex' : 'none';
     });
   }
@@ -492,7 +477,7 @@
         if(requestsCacheKey) CacheManager.invalidateKey(requestsCacheKey);
         if(summaryCacheKey) CacheManager.invalidateKey(summaryCacheKey);
       }
-      loadData();
+      loadData(true);
     } catch(e) {
       showToast('Хатогӣ: ' + e.message);
     }
@@ -503,7 +488,7 @@
     try {
       await ChatAPI.declineFriendRequest(requestId);
       if (typeof CacheManager !== 'undefined' && requestsCacheKey) CacheManager.invalidateKey(requestsCacheKey);
-      loadData();
+      loadData(true);
     } catch(e) {
       showToast('Хатогӣ: ' + e.message);
     }

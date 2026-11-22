@@ -22,6 +22,13 @@
   <div class="ra-scroll" id="raScroll">
     <div class="ra-inner">
       <div class="ra-load" id="raLoad" hidden><span id="raLoadTxt">Китоб боргузорӣ мешавад</span><i id="raLoadBar"></i></div>
+      <section class="ra-book-context" aria-label="Китоби кушода">
+        <div class="ra-context-eyebrow">КИТОБИ КУШОДА</div>
+        <h1 id="raBookTitle"></h1>
+        <p id="raBookPosition"></p>
+        <div class="ra-book-progress" role="progressbar" id="raBookProgress" aria-label="Пешрафти хондан" aria-valuemin="0" aria-valuemax="100"><span></span></div>
+      </section>
+      <h2 class="ra-task-heading">Бо матни китоб кор кунед</h2>
       <nav id="raTasks" aria-label="Амалҳои Алия"></nav>
       <section id="raAns" aria-live="polite"></section>
     </div>
@@ -70,6 +77,11 @@
 
   function setLabel() {
     $('raLabel').textContent = '«' + bookName + '» · саҳ. ' + curPage + (totalPages ? ' аз ' + totalPages : '');
+    $('raBookTitle').textContent=bookName;
+    $('raBookPosition').textContent=(grade?'Синфи '+grade+' · ':'')+'Саҳифаи '+curPage+(totalPages?' аз '+totalPages:'');
+    var pct=totalPages?Math.min(100,Math.round(curPage/totalPages*100)):0;
+    $('raBookProgress').setAttribute('aria-valuenow',String(pct));
+    $('raBookProgress').querySelector('span').style.width=pct+'%';
   }
   function updateCount() { $('raNotesCount').textContent = bookUrl ? AT.notes.count(bookUrl) : 0; }
   setLabel(); updateCount();

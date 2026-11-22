@@ -2,7 +2,7 @@
 <html lang="tg">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, viewport-fit=cover">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <meta name="theme-color" content="#0D1B2A">
   <title>Чат — Китобхона</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,18 +31,18 @@
       
       <div class="chat-header">
         <a class="back-btn" href="chats.html" aria-label="Бозгашт">‹</a>
-        <div class="head-avatar" id="chatAvatar">👤</div>
-        <div class="head-info">
-          <div class="head-name"><span id="headNameText">Чат</span><span id="verifiedBadge"></span></div>
-          <div class="head-status" id="headStatus">
-            <span class="online-dot"></span>
-            <span id="friendStatusLabel">Дӯст</span>
-            <span id="typingIndicator" style="display:none;color:#25D366;font-weight:700">Навишта истодааст...</span>
-            <span class="word-badge" id="wordCounter">Шумо метавонед 100 калимаи дигар фиристед</span>
-            <span class="chat-closed-badge" id="chatClosedBadge">🔒 Чат баста</span>
-          </div>
-        </div>
-        <button class="menu-btn" id="menuBtn">⋮</button>
+        <a aria-label="Профили ҳамсуҳбат" class="head-avatar" href="#" id="chatAvatar">👤</a>
+        <a aria-label="Профили ҳамсуҳбат" class="head-info" href="#">
+<div class="head-name"><span id="headNameText">Чат</span><span id="verifiedBadge"></span></div>
+<div class="head-status" id="headStatus">
+<span class="online-dot"></span>
+<span id="friendStatusLabel">Дӯст</span>
+<span id="typingIndicator" style="display:none;color:#25D366;font-weight:700">Навишта истодааст...</span>
+
+<span class="chat-closed-badge" id="chatClosedBadge">🔒 Чат баста</span>
+</div>
+</a>
+        <button class="menu-btn" id="menuBtn" aria-label="Менюи суҳбат">⋮</button>
         <div class="popup-menu" id="popupMenu">
           <div class="item" onclick="clearChatLocal()">
             <span class="icon">🧹</span>
@@ -67,13 +67,14 @@
 
       
       <div class="composer" id="composer">
+        <div class="wordcount"><span class="word-badge" id="wordCounter">Шумо метавонед 100 калимаи дигар фиристед</span></div>
         <div id="emojiPanel" class="emoji-panel"></div>
         <div class="input-row">
           <div class="input-pill">
-            <div class="emoji-btn">😊</div>
-            <textarea class="msg-input" id="msgInput" placeholder="Паём нависед..." rows="1"></textarea>
+            <button type="button" class="emoji-btn" aria-label="Эмодзи">☺</button>
+            <textarea class="msg-input" id="msgInput" aria-label="Паёми нав" placeholder="Паём нависед..." rows="1"></textarea>
           </div>
-          <button class="send-btn" id="sendBtn">➤</button>
+          <button class="send-btn" id="sendBtn" aria-label="Фиристодани паём"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 3 19 9-19 9 4-9-4-9ZM7 12h15"/></svg></button>
         </div>
       </div>
     </div>
@@ -82,6 +83,7 @@
 </div>
 
 <script>
+  document.querySelectorAll('.head-avatar,.head-info').forEach(link=>link.href='profile.html?user='+encodeURIComponent(new URL(location.href).searchParams.get('to')||''));
   document.addEventListener('DOMContentLoaded', function() {
     if (typeof CacheManager !== 'undefined') {
       CacheManager.init();
@@ -92,7 +94,7 @@
 
   const qs = new URL(location.href).searchParams;
   const peerId = qs.get('to') || '';
-  const peerName = decodeURIComponent(qs.get('name') || 'Чат');
+  const peerName = qs.get('name') || 'Чат';
 
   document.getElementById('headNameText').textContent = peerName;
 
@@ -102,6 +104,16 @@
   let typingActiveSent = false;
   let chatIsOpen = true;
   let chatAccessBlocked = false;
+  let peerIsBlocked = false;
+  let dailyWordsRemaining = null;
+  function applyPeerBlock(){
+    peerIsBlocked=true;
+    clearTimeout(typingTimer);
+    if(typingActiveSent){typingActiveSent=false;sendTypingState(false);}
+    document.getElementById('msgInput').disabled=true;
+    document.getElementById('sendBtn').disabled=true;
+    document.getElementById('msgInput').placeholder='Корбар блок карда шуд';
+  }
 
   // ===== Active-chat long polling: bounded cadence, stopped while hidden/offline =====
   let longPollingActive = false;
@@ -286,17 +298,29 @@
       const overlay = document.createElement('div');
       overlay.className = 'confirm-overlay';
       overlay.innerHTML = `
-        <div class="confirm-box">
-          <div class="confirm-title">Чат</div>
-          <div class="confirm-msg">${esc(message)}</div>
+        <div class="confirm-box" role="dialog" aria-modal="true" aria-labelledby="chatConfirmTitle" aria-describedby="chatConfirmMessage">
+          <div class="confirm-title" id="chatConfirmTitle">Чат</div>
+          <div class="confirm-msg" id="chatConfirmMessage">${esc(message)}</div>
           <div class="confirm-btns">
             <button class="confirm-cancel" id="cCancel">Не</button>
             <button class="confirm-ok${isDanger ? ' danger' : ''}" id="cOk">${esc(okText || 'Ха')}</button>
           </div>
         </div>`;
+      const opener=document.activeElement,background=document.querySelector('.phone-wrapper');
       document.body.appendChild(overlay);
-      overlay.querySelector('#cOk').onclick = () => { overlay.remove(); resolve(true); };
-      overlay.querySelector('#cCancel').onclick = () => { overlay.remove(); resolve(false); };
+      const wasInert=background?.inert;
+      if(background)background.inert=true;
+      const cancel=overlay.querySelector('#cCancel'),ok=overlay.querySelector('#cOk');
+      const finish=value=>{overlay.remove();if(background)background.inert=wasInert;if(opener?.isConnected)opener.focus({preventScroll:true});resolve(value)};
+      ok.onclick=()=>finish(true);cancel.onclick=()=>finish(false);
+      overlay.addEventListener('keydown',event=>{
+        if(event.key==='Escape'){event.preventDefault();finish(false)}
+        else if(event.key==='Tab'){
+          if(event.shiftKey&&document.activeElement===cancel){event.preventDefault();ok.focus()}
+          else if(!event.shiftKey&&document.activeElement===ok){event.preventDefault();cancel.focus()}
+        }
+      });
+      cancel.focus();
     });
   }
 
@@ -334,9 +358,7 @@
       });
       const data = await resp.json().catch(() => ({}));
       if (!resp.ok) throw new Error(data.error || 'Блокировка не удалась');
-      document.getElementById('msgInput').disabled = true;
-      document.getElementById('sendBtn').disabled = true;
-      document.getElementById('msgInput').placeholder = 'Корбар блок карда шуд';
+      applyPeerBlock();
       if (typeof CacheManager !== 'undefined') CacheManager.invalidateKey(CacheManager.KEYS.FRIENDS);
       showToast('Корбар блок карда шуд');
     } catch (e) {
@@ -369,15 +391,16 @@
       const badge = document.getElementById('chatClosedBadge');
       const input = document.getElementById('msgInput');
       const sendBtn = document.getElementById('sendBtn');
-      if (chatIsOpen) {
+      if (chatIsOpen && !peerIsBlocked && !chatAccessBlocked) {
         badge.style.display = 'none';
         input.disabled = false;
         sendBtn.disabled = false;
+        void updateWordCounter();
       } else {
         badge.style.display = 'inline-block';
         input.disabled = true;
         sendBtn.disabled = true;
-        input.placeholder = 'Чат баста шудааст';
+        input.placeholder = peerIsBlocked ? 'Корбар блок карда шуд' : 'Чат баста шудааст';
       }
     } catch (e) {
       console.warn('Не удалось получить статус чата:', e);
@@ -414,9 +437,7 @@
       if (chatAccessBlocked) return;
       void markChatRead();
       if (!msgs || msgs.length === 0) {
-        if (!cachedMsgs || cachedMsgs.length === 0) {
-          msgContainer.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
-        }
+        renderMessages([],msgContainer);
         setChatCache([]);
         return;
       }
@@ -434,7 +455,7 @@
       void markChatRead();
       const cached = getChatCache();
       if (!cached || cached.length === 0) {
-        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + esc(e.message) + '</div>';
       }
     }
   }
@@ -449,9 +470,7 @@
       });
       const data = r.ok ? await r.json() : { blocked: false };
       if (data.blocked) {
-        document.getElementById('msgInput').disabled = true;
-        document.getElementById('sendBtn').disabled = true;
-        document.getElementById('msgInput').placeholder = 'Корбар блок карда шуд';
+        applyPeerBlock();
       }
       return !!data.blocked;
     } catch (e) { return false; }
@@ -490,14 +509,16 @@
       console.error(e);
       const cached = getChatCache();
       if (!cached || cached.length === 0) {
-        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + e.message + '</div>';
+        msgContainer.innerHTML = '<div class="loading-msg">Хатогӣ: ' + esc(e.message) + '</div>';
       }
     }
   }
 
   function renderMessages(msgs, container) {
+    const transientRows=[...container.querySelectorAll('.msg-row')].filter(row=>row.querySelector('.check.pending,.check.failed'));
     if (!msgs || msgs.length === 0) {
-      container.innerHTML = '<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+      container.innerHTML = transientRows.length?'':'<div class="loading-msg">Паёмҳо нестанд. Якумро фиристед!</div>';
+      container.append(...transientRows);
       return;
     }
     let html = '';
@@ -537,6 +558,7 @@
       `;
     });
     container.innerHTML = html;
+    container.append(...transientRows);
   }
 
   // ===== УДАЛЕНИЕ ПО ДОЛГОМУ НАЖАТИЮ (3 сек), как в WhatsApp — только свои сообщения,
@@ -642,12 +664,14 @@
       });
       if (r.ok) {
         const data = await r.json();
-        const remaining = data.remaining;
+        const remaining = Number(data.remaining);
+        if(!Number.isFinite(remaining))return;
+        dailyWordsRemaining=remaining;
         const el = document.getElementById('wordCounter');
         el.textContent = 'Шумо метавонед ' + remaining + ' калимаи дигар фиристед';
         if (remaining < 10) el.classList.add('alert');
         else el.classList.remove('alert');
-        if (chatIsOpen) {
+        if (chatIsOpen && !peerIsBlocked && !chatAccessBlocked) {
           document.getElementById('sendBtn').disabled = (remaining <= 0);
         }
       }
@@ -655,7 +679,7 @@
   }
 
   async function sendTypingState(typing) {
-    if (chatAccessBlocked) return;
+    if (chatAccessBlocked || (typing && peerIsBlocked)) return;
     const token = localStorage.getItem('kk_token');
     if (!token || !peerId) return;
     try {
@@ -684,11 +708,12 @@
   }
 
   async function sendMessage() {
-    if (chatAccessBlocked) return;
+    if (chatAccessBlocked || peerIsBlocked) return;
     if (!chatIsOpen) {
       showToast('Чат баста шудааст');
       return;
     }
+    if(dailyWordsRemaining!==null&&dailyWordsRemaining<=0){showToast('Маҳдудияти рӯзонаи калимаҳо ба охир расид');return;}
     const input = document.getElementById('msgInput');
     const text = input.value.trim();
     if (!text || !currentUserId || !peerId) return;
@@ -700,7 +725,7 @@
     const time = timeLabel(new Date().toISOString());
     const msgContainer = document.getElementById('messages');
     const dateLabel = formatDate(new Date().toISOString());
-    const lastDateEl = msgContainer.querySelector('.date-sep:last-of-type');
+    const lastDateEl = [...msgContainer.querySelectorAll('.date-sep')].at(-1);
     if (!lastDateEl || lastDateEl.textContent !== dateLabel) {
       const sep = document.createElement('div');
       sep.className = 'date-sep';
@@ -752,6 +777,13 @@
         pendingCheck.title = 'Не отправлено';
         pendingCheck.textContent = '⚠';
       }
+      const recover=document.createElement('button');recover.type='button';recover.className='recover-message';recover.textContent='Ба таҳрир';recover.setAttribute('aria-label','Баргардонидани паёми норасида ба таҳрир');
+      recover.addEventListener('click',()=>{
+        if(input.value.trim()){showToast('Аввал паёми ҷории худро нигоҳ доред ё фиристед');return;}
+        input.value=text;input.dispatchEvent(new Event('input'));input.focus();row.remove();
+      });
+      meta.append(recover);
+      showToast('Паём фиристода нашуд. Ҳолати расиданро санҷед; матнро ба таҳрир баргардондан мумкин аст.');
       console.error(e);
     } finally {
       pendingOutgoingCount = Math.max(0, pendingOutgoingCount - 1);
@@ -771,8 +803,8 @@
 
   function insertEmoji(emoji) {
     const input = document.getElementById('msgInput');
-    const start = input.selectionStart || input.value.length;
-    const end = input.selectionEnd || input.value.length;
+    const start = input.selectionStart ?? input.value.length;
+    const end = input.selectionEnd ?? input.value.length;
     input.value = input.value.slice(0, start) + emoji + input.value.slice(end);
     input.selectionStart = input.selectionEnd = start + emoji.length;
     input.focus();
@@ -860,6 +892,7 @@
     // что запрос провалился, а просто потому, что он медленный (Edge пробует, потом
     // переключается на Render). Раньше в эти секунды был просто пустой спиннер.
     let stopQuoteRotation = typeof renderWisdomLoader === 'function' ? renderWisdomLoader(msgsEl) : null;
+    try {
     let { data } = await AUTH.getUser();
     if (!data.user) {
       if (stopQuoteRotation) stopQuoteRotation();
@@ -891,10 +924,16 @@
     if (isGuest||!birthYear||birthYear>new Date().getFullYear()-18) { blockChatForAge(); return; }
     const peerAllowed=await loadPeerAvatar();
     if (!peerAllowed||chatAccessBlocked) return;
-    void fetchBlockStatus();
+    await Promise.all([fetchBlockStatus(),fetchChatStatus()]);
     void markChatRead();
     void loadMessages(false);
     startLongPolling(); // instead of the legacy poller
+    } catch(error) {
+      stopLongPolling();
+      const message=document.createElement('div');message.className='loading-msg';message.setAttribute('role','alert');message.textContent='Хатогӣ: '+error.message;
+      const retry=document.createElement('button');retry.type='button';retry.className='chat-retry';retry.textContent='Аз нав кӯшиш кунед';retry.addEventListener('click',()=>location.reload());
+      message.append(document.createElement('br'),retry);msgsEl.replaceChildren(message);
+    } finally {if(stopQuoteRotation)stopQuoteRotation();}
   }
 
   document.addEventListener('visibilitychange', () => {

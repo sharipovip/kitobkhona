@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v162-clean-ui';
+const CACHE_NAME = 'kitobkhona-v163-final-integration';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -193,11 +193,16 @@ const CORE_FILES = [
   "./assets/css/documents.css",
   "./assets/css/feed.css",
   "./assets/css/home.css",
+  "./assets/css/mobile-navigation.css",
   "./assets/css/offline-books.css",
   "./assets/css/profile.css",
   "./assets/css/reader.css",
   "./assets/css/winners.css",
   "./assets/js/document-theme.js",
+  "./assets/js/catalog-icons.js",
+  "./assets/js/catalog-presentation.js",
+  "./assets/js/mobile-navigation.js",
+  "./assets/js/profile-sheets.js",
   "./chat.html",
   "./chats.html",
   "./config.js",

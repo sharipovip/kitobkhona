@@ -80,14 +80,14 @@
         </div>
         <div class="chat-messages" id="chatMsgs">
           <div class="chat-welcome-card">
-            <div class="welcome-icon">✨</div>
-            <div class="welcome-title">Салом! Ман Алия — ёвари зеҳни сунъии шумо.</div>
-            <div class="welcome-desc">Дар бораи дилхоҳ китоби Китобхона, дарсҳо, эссе, шеърҳо ва омодагӣ ба озмунҳо аз ман бипурсед ё асбобҳои болоро истифода баред:</div>
+            <div class="welcome-icon" aria-hidden="true"><svg viewBox="0 0 48 48" fill="none" stroke="currentColor" stroke-width="1.7"><path d="M24 5c2 12 7 17 19 19-12 2-17 7-19 19C22 31 17 26 5 24c12-2 17-7 19-19Z"/><path d="M24 14c2 5 5 8 10 10-5 2-8 5-10 10-2-5-5-8-10-10 5-2 8-5 10-10Z"/></svg></div><div class="welcome-eyebrow">АЛИЯ · ҲАМРОҲИ МУТОЛИА</div>
+            <div class="welcome-title">Имрӯз чиро меомӯзем?</div>
+            <div class="welcome-desc">Дар бораи китоб суҳбат кунед, савол диҳед ё яке аз абзорҳоро интихоб намоед.</div>
             <div class="quick-prompts-grid">
-              <button class="quick-prompt-btn" data-prompt="Дар бораи озмуни «Фурӯғи субҳи доноӣ китоб аст» маълумот деҳ">🏆 Фурӯғи субҳи доноӣ</button>
-              <button class="quick-prompt-btn" data-prompt="Шоҳномаи Фирдавсӣ чиро меомӯзонад? Хулосаи мухтасар">📖 Дар бораи Шоҳнома</button>
-              <button class="quick-prompt-btn" data-prompt="Барои иншои «Ватан — сарчашмаи умед» нақша ва намуна тартиб деҳ">✍️ Нақшаи иншо</button>
-              <button class="quick-prompt-btn" data-prompt="Чӣ тавр ба имтиҳонҳои ММТ беҳтар омода шавам? Маслиҳатҳо">🎓 Маслиҳати Довталаб</button>
+              <button class="quick-prompt-btn" data-prompt="Дар бораи озмуни «Фурӯғи субҳи доноӣ китоб аст» маълумот деҳ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 3h10v5c0 4-2 6-5 6S7 12 7 8V3Zm0 2H3v3c0 3 2 4 5 4m9-7h4v3c0 3-2 4-5 4m-4 2v5m-5 2h10"/></svg><b>Фурӯғи субҳи доноӣ</b><small>Омодагӣ ба озмун</small></button>
+              <button class="quick-prompt-btn" data-prompt="Шоҳномаи Фирдавсӣ чиро меомӯзонад? Хулосаи мухтасар"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3h16v18H4V3Zm3 4h10M7 11h10M7 15h10M7 18h6"/></svg><b>Дар бораи Шоҳнома</b><small>Савол дар бораи асар</small></button>
+              <button class="quick-prompt-btn" data-prompt="Барои иншои «Ватан — сарчашмаи умед» нақша ва намуна тартиб деҳ"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m4 20 4-1L21 6l-3-3L5 16l-1 4Zm10-13 3 3"/></svg><b>Нақшаи иншо</b><small>Аз андеша то матн</small></button>
+              <button class="quick-prompt-btn" data-prompt="Чӣ тавр ба имтиҳонҳои ММТ беҳтар омода шавам? Маслиҳатҳо"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 3h16v18H4V3Zm4 0v18m4-18v18m4-18v18"/></svg><b>Маслиҳати Довталаб</b><small>Омодагӣ ба имтиҳон</small></button>
             </div>
           </div>
         </div>
@@ -725,7 +725,7 @@
           botBubble.textContent=message; botBubble.classList.add('error-bubble');
           if (err.code !== 'aborted') {
             var retry=document.createElement('button');retry.type='button';retry.className='aliya-retry-message';retry.textContent='↻ Дубора фиристодан';
-            retry.addEventListener('click',function(){retry.remove(); if (isPhoto) { pendingDocument = doc; updatePendingDocument(); } handleSend(text);});
+            retry.addEventListener('click',function(){retry.remove(); if (doc) { pendingDocument = doc; updatePendingDocument(); } handleSend(text);});
             botBubble.appendChild(retry);
           }
         } finally {
