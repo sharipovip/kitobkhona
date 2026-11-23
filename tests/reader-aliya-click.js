@@ -5,10 +5,12 @@
  *
  *   node tests/reader-aliya-click.js
  *
- * The point: the reader panel is an iframe inside reader.html, so the export
- * buttons must reach the *parent* frame's AliyaBridge. This test reproduces
- * that parent/iframe relationship and asserts the file is actually handed to
- * the bridge.
+ * The point: the reader panel is an iframe inside reader.html. The export
+ * buttons must reach the bridge of the iframe's OWN frame — the Save-As
+ * picker needs the user activation of the frame that handles the click, and
+ * the parent frame does not have it. This test reproduces that
+ * parent/iframe relationship and asserts the file is actually handed to the
+ * own-frame bridge (and NOT to the parent's).
  */
 'use strict';
 
@@ -193,6 +195,18 @@ const parentBridge = {
   shareFileOrText: async () => true,
 };
 
+/* The iframe (aliya/reader-aliya.html) has its OWN bridge — that is the one
+   the export must use, because the Save-As picker needs the user activation
+   of the frame that handles the click. */
+const savedInOwn = [];
+const ownBridge = {
+  saveFile: async (content, fileName, mimeType) => {
+    savedInOwn.push({ fileName, mimeType, isBlob: content instanceof Blob });
+    return { success: true, method: 'own_bridge' };
+  },
+  shareFileOrText: async () => true,
+};
+
 const iframeWin = {};
 
 /* ------------------------------------------------------------------ */
@@ -234,7 +248,9 @@ const win = {
   btoa: (s) => Buffer.from(s, 'binary').toString('base64'),
   fetch: async () => ({ ok: false, status: 503, json: async () => ({}) }),
   indexedDB: null,
-  // The reader panel lives in an iframe: window.parent is the reader page.
+  // The iframe has its own bridge (aliya/reader-aliya.html loads
+  // aliyа-bridge.js), and the reader page is its parent.
+  AliyaBridge: ownBridge,
   parent: { AliyaBridge: parentBridge },
   addEventListener() {}, removeEventListener() {},
 };
@@ -343,9 +359,13 @@ check('AliyaTasks loaded in the iframe', !!AT);
   if (wordBtn) {
     wordBtn.click();
     await new Promise((r) => setTimeout(r, 1500));
-    check('Word export reached the parent frame bridge',
-      savedInParent.some((s) => /\.docx$/.test(s.fileName)),
-      'saved: ' + JSON.stringify(savedInParent.map((s) => s.fileName)));
+    check('Word export reached the bridge of its own frame',
+      savedInOwn.some((s) => /\.docx$/.test(s.fileName)),
+      'own: ' + JSON.stringify(savedInOwn.map((s) => s.fileName)) +
+      ' parent: ' + JSON.stringify(savedInParent.map((s) => s.fileName)));
+    check('Word export did NOT go to the parent frame bridge',
+      savedInParent.length === 0,
+      'parent: ' + JSON.stringify(savedInParent.map((s) => s.fileName)));
   }
 
   /* ---------------------------------------------------------------- */
@@ -365,5 +385,5 @@ check('AliyaTasks loaded in the iframe', !!AT);
     console.error('\n' + failures.length + ' reader Aliya click check(s) failed: ' + failures.join(', '));
     process.exit(1);
   }
-  console.log('\nPASS reader Aliya click: Word/PDF buttons are rendered and reach the parent bridge.');
+  console.log('\nPASS reader Aliya click: Word/PDF buttons are rendered and reach the own-frame bridge.');
 })().catch((e) => { console.error(e); process.exit(1); });

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v176-aliya-reader-zoom-theme';
+const CACHE_NAME = 'kitobkhona-v177-aliya-reader-save-pdf';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -98,6 +98,18 @@ const LOCAL_FILES = [
   './assets/libs/jszip.min.js',
   './assets/libs/mammoth.browser.min.js',
   './assets/libs/LICENSE-pdfjs.txt',
+  // v177: китобхонаҳо барои сохтани PDF дар дастгоҳ (Алия дар Reader).
+  // Бе инҳо тугмаи «PDF» дар Алияи дастгирӣ кор намекард — китобхонаҳо
+  // танҳо ҳангоми захираи аввалин PDF бор мешаван.
+  './assets/libs/pdf-lib.min.js',
+  './assets/libs/fontkit.umd.min.js',
+  './assets/libs/LICENSE-pdf-lib.md',
+  './assets/libs/LICENSE-fontkit.txt',
+  './assets/fonts/NotoSans-Regular.sub.ttf',
+  './assets/fonts/NotoSans-Bold.sub.ttf',
+  './assets/fonts/NotoSans-Italic.sub.ttf',
+  './assets/fonts/DejaVuSym.sub.ttf',
+  './assets/fonts/LICENSE-fonts.txt',
   './manifest.json',
   './search-index.json',
   './locations.js',

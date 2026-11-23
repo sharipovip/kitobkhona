@@ -70,17 +70,30 @@
       }
 
       // 2. Browser & Windows PC: use the native Save As picker when available.
-      try {
-        var originalBlob = content instanceof Blob ? content : null;
-        if (originalBlob && originalBlob.size === 0) throw new Error('Файл холӣ аст');
-        if (window.showSaveFilePicker && originalBlob) {
+      //    v177: агар интихоби файл сар шуда (SecurityError — истифодабаран
+      //    дар чаҳрони дигар, AbortError — корбар қатъ карда), мо ба боршаврӣ
+      //    асӣ ҳӯд мегузарда мешавад. Пеш аз ин ҳар хато ба корбар
+      //    «Ҳуҷҷат сабт нашуд» мекард ва файл ҳеҷ ҳеч ҷо намешуд.
+      var originalBlob = content instanceof Blob ? content : null;
+      if (originalBlob && originalBlob.size === 0) throw new Error('Файл холӣ аст');
+      if (window.showSaveFilePicker && originalBlob) {
+        try {
           var ext = (String(fileName).match(/\.[^.]+$/) || [''])[0];
           var handle = await window.showSaveFilePicker({ suggestedName: fileName, types: [{ description: ext ? ext.slice(1).toUpperCase() + ' file' : 'File', accept: { [mimeType]: ext ? [ext] : [] } }] });
           var writable = await handle.createWritable();
           await writable.write(originalBlob);
           await writable.close();
           return { success: true, method: 'file_picker' };
+        } catch (err) {
+          // AbortError = корбар ҳаққӣ қатъ карда; ин хато нест, амма файл
+          // ҳеҷ сабт нашудааст. SecurityError/NotAllowedError = интихоби файл
+          // иҷозат надошт — боз ҳамон файлро аз ҳамон чаҳр мефируем.
+          if (err && err.name === 'AbortError') { err.abortedByUser = true; throw err; }
+          console.warn('[AliyaBridge] Save-As picker unavailable, falling back to a normal download:', err);
         }
+      }
+      // 3. Боршаврии одӣ (гузариш аз интихоби файл) — дар ҳар браузер кор мекунад.
+      try {
         var byteCharacters = atob(base64);
         var byteNumbers = new Array(byteCharacters.length);
         for (var i = 0; i < byteCharacters.length; i++) {
@@ -96,7 +109,7 @@
         document.body.appendChild(a);
         a.click();
         setTimeout(function () {
-          document.body.removeChild(a);
+          try { document.body.removeChild(a); } catch (e) {}
           URL.revokeObjectURL(url);
         }, 1500);
         return { success: true, method: 'browser_blob' };

@@ -537,6 +537,16 @@
     if (/chat_providers_unavailable|no_chat_provider_configured/.test(m)) return 'Алия ҳоло банд аст. Як дақиқа баъд «Дубора»-ро пахш кунед.';
     if (/chat_deadline_exceeded/.test(m)) return 'Сервери Алия ба ҳадди вақти ҷавоб расид. Саволро кӯтоҳтар нависед ё дубора кӯшиш кунед.';
     if (/HTTP 4\d\d/.test(m)) return 'Дархост қабул нашуд (' + m + '). Дубора кӯшиш кунед.';
+    // v177: интихоби файл ё аз ҳамон чаҳр иҷозат надошт — файл метавонад
+    // бо роҳи одӣ (гузариш аз интихоби файл) ҳам сабт шавад.
+    if (/user gesture|showSaveFilePicker|SecurityError|NotAllowedError/i.test(m)) {
+      return 'Сохтори браузер интихоби файлиро иҷозат надод. Файл бо роҳи одӣ сабт шуд — агар нашуд, интихоби файлиро хулар кун.';
+    }
+    // v177: китобхонаҳо барои PDF (pdf-lib, fontkit, шрифтҳо) аз интернет
+    // гирифта мешаван — аз шабака сар кардан мумкин аст.
+    if (/Failed to fetch|NetworkError|Load failed|ERR_INTERNET/i.test(m)) {
+      return 'Шрифтҳои PDF аз интернет гирифта нашуданд. Интернетро санҷед ва дубора кӯшиш кунед.';
+    }
     return m || 'Хатои номаълум.';
   }
 
@@ -943,8 +953,15 @@
     });
   }
   async function saveBlob(blob, fileName, mime) {
-    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime);
+    // v177: Алия дар Reader як iframe аст. Пайваст ба мошини сабти файл
+    // (window.showSaveFilePicker) иҷозати корбар дар ҳамон чаҳр аст — агар он
+    // дар чаҳри дигар (parent) кор шуд, браузер «Must be handling a user
+    // gesture» медод ва файл аз ҳеҷ ҷо намесабт. Бо истифода аз мошини
+    // худӣ (ҳамон iframe) ҳақиқи файл дар ҳамон чаҳр сабт мешавад — чунки
+    // он ҳамон равандаи Алияи асосиро истифода мебарад.
+    // Танҳо агар мошини худӣ набошад, ба мошини parent сар мешавем.
     if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime);
+    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime);
     if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
       window.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
       return { success: true, method: 'android_bridge' };
@@ -1318,7 +1335,12 @@
         exportDoc(a, docTitle, text, meta).then(function (fn) {
           toast((a === 'pdf' ? '✓ PDF сабт шуд: ' : '✓ Word сабт шуд: ') + fn, 3200);
         }, function (err) {
-          toast('Ҳуҷҷат сабт нашуд: ' + friendlyError(err), 3200);
+          // v177: корбар агар интихоби файлро қатъ карда бошад — ин хато нест.
+          if (err && (err.abortedByUser || err.name === 'AbortError')) {
+            toast('Сабти файл бекор шуд.', 2600);
+          } else {
+            toast('Ҳуҷҷат сабт нашуд: ' + friendlyError(err), 3200);
+          }
         }).then(function () { b.disabled = false; b.innerHTML = idle; });
       } else if (a === 'save') {
         if (b.classList.contains('done')) { toast('Аллакай дар ёддоштҳо ҳаст'); return; }
