@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v175-aliya-reader-fixes';
+const CACHE_NAME = 'kitobkhona-v176-aliya-reader-zoom-theme';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [

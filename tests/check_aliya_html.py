@@ -42,6 +42,30 @@ import re as _re
 assert _re.search(r"kitobkhona-v\d+[-\w]*", sw), 'sw.js must use a versioned cache name'
 assert 'chat старй.html' not in sw and not (ROOT/'chat старй.html').exists()
 
+# v176: мёртвая копия приложения удалена (app/reader.html, app/sw.js,
+# app/aliya/*). На app/ никто не ссылался, в precache её не было — но в
+# app/reader.html оставались старые баги (Z_MAX=2.2, тема через два нажатия),
+# из-за чего легко было править не тот файл. Проверяем, что папка не вернулась
+# и что в корне лежит единственная актуальная копия.
+assert not (ROOT/'app').exists(), 'the stale app/ copy must stay deleted (see DELETE_FILES_RU.txt)'
+for stale in ('app/reader.html', 'app/sw.js', 'app/aliya/index.html', 'app/aliya/aliya-ui.css'):
+    assert stale not in sw, f'{stale} must not be referenced by the Service Worker'
+    for page in ('reader.html', 'aliya/index.html', 'aliya/reader-aliya.html', 'index.html'):
+        assert stale not in (ROOT/page).read_text(encoding='utf-8'), f'{page} must not reference {stale}'
+
+# v176: Service Worker кеширует .js/.css по ключу БЕЗ учёта query (?v=...),
+# поэтому старая версия ассета раздавалась бы из кэша. Спасает только новый
+# CACHE_NAME — поэтому его имя должно совпадать с версией в ?v= у скриптов.
+cache_name = _re.search(r"kitobkhona-v(\d+)", sw).group(1)
+assert len(cache_name) >= 3, 'cache name must carry the release version'
+for page in ('reader.html', 'aliya/index.html', 'aliya/reader-aliya.html'):
+    text = (ROOT/page).read_text(encoding='utf-8')
+    for asset in _re.findall(r'aliya-tasks\.js\?v=(\d+)', text):
+        assert asset == cache_name, (
+            f'{page}: aliya-tasks.js?v={asset} does not match CACHE_NAME v{cache_name} — '
+            'users would keep the cached copy of the previous release')
+print('PASS stale app/ copy is gone and asset versions match the Service Worker cache')
+
 desktop_css=(ROOT/'assets/css/desktop-layout.css').read_text(encoding='utf-8')
 assert '@media screen and (min-width: 1024px)' in desktop_css
 assert 'max-width: min(100%, 1720px)' in desktop_css

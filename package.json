@@ -14,7 +14,7 @@
     "test:gateway": "python3 tests/gateway_deadline.py",
     "test:html": "python3 tests/check_aliya_html.py",
     "test:fixes": "npm run test:aliya && npm run test:reader && npm run test:reader-aliya && npm run test:reader-zoom && npm run test:latency && npm run test:gateway && npm run test:html && npm run test:ui",
-    "test:reader-aliya": "node tests/reader-aliya-tools.js && node tests/reader-aliya-export-runtime.js && node tests/reader-aliya-click.js",
+    "test:reader-aliya": "node tests/reader-aliya-tools.js && node tests/reader-aliya-export-runtime.js && node tests/reader-aliya-click.js && node tests/reader-aliya-pdf-runtime.js",
     "test:reader-zoom": "node tests/reader-zoom-theme-runtime.js"
   },
   "devDependencies": {
