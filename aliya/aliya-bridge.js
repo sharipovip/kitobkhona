@@ -26,6 +26,70 @@
       return list;
     },
 
+    /**
+     * v180: Окно, дар кӯм мумкин аст "Сохранить как"-и браузерро иҷро кунем.
+     *
+     * Проблема, ки корбар гӯшт: Алия дар Reader як iframe аст ва
+     * showSaveFilePicker дар он кор намекунад — API танҳо дар болои
+     * саҳифа (top-level browsing context) кор мекунад. Бинобар ин дар
+     * iframe он ё нест, ё бо SecurityError мефавтад ва мост бе садо
+     * ба боршаврии одӣ меафтад (корбар танҳо «Загрузки»-ро мебинад).
+     *
+     * Ҳамон тарзи кор кардани «Скачать книгу» (config.js → downloadFile):
+     * он дар саҳифаи асоси кор мекунад ва ба болои оконо дастгирӣ мекунад.
+     * Аз ҳамин сабаб мо болои оконоҳоро аз худ ба нав мешӯем — на танҳо
+     * дар асоси худ.
+     */
+    pickerWindows: function () {
+      var list = [], top = null;
+      try { top = window.top; } catch (e) { top = null; }
+      // Агар болои оконо ҳаст — пеш аз он, чунки API дар он кор мекунад.
+      if (top) list.push(top);
+      try { if (window.parent && window.parent !== window && list.indexOf(window.parent) === -1) list.push(window.parent); } catch (e) {}
+      if (list.indexOf(window) === -1) list.push(window);
+      return list;
+    },
+
+    /**
+     * v180: Кӯшиши кушодани "Сохранить как" дар ҳама оконоҳо.
+     * Бозгашт: {win, handle, method} ё null, агар имконият нест.
+     *
+     * Ин функсия БОРЕ дуруст дар дастгирии корбар (user gesture) даст
+     * гирифта мешавад — барои он ки браузер имкон диҳад.
+     */
+    openSavePicker: async function (fileName, mimeType) {
+      var ext = (String(fileName || '').match(/\.([A-Za-z0-9]+)$/) || ['', ''])[1].toLowerCase();
+      var types = [];
+      if (ext) types.push({ description: ext.toUpperCase() + ' file', accept: { [mimeType || 'application/octet-stream']: [ext] } });
+      var opts = { suggestedName: fileName };
+      if (types.length) opts.types = types;
+      var wins = this.pickerWindows();
+      for (var i = 0; i < wins.length; i++) {
+        var w = wins[i];
+        try {
+          if (!w || typeof w.showSaveFilePicker !== 'function') continue;
+          var handle = await w.showSaveFilePicker(opts);
+          return { win: w, handle: handle, method: 'file_picker', fileName: fileName };
+        } catch (err) {
+          // AbortError = корбар қатъ карда — ин хато нест.
+          if (err && err.name === 'AbortError') { err.abortedByUser = true; throw err; }
+          console.warn('[AliyaBridge] Save-As picker unavailable in this window:', err);
+        }
+      }
+      return null;
+    },
+
+    /**
+     * v180: Навиштани як файли интихобшуда (handle-и showSaveFilePicker).
+     */
+    writeToPicker: async function (target, blob) {
+      if (!target || !target.handle) throw new Error('Мақсад сабт нест.');
+      var writable = await target.handle.createWritable();
+      await writable.write(blob);
+      await writable.close();
+      return { success: true, method: 'file_picker', fileName: target.fileName };
+    },
+
     isAndroid: function () {
       var list = this.hostWindows();
       for (var i = 0; i < list.length; i++) {
@@ -103,24 +167,15 @@
       //    «Ҳуҷҷат сабт нашуд» мекард ва файл ҳеҷ ҳеч ҷо намешуд.
       var originalBlob = content instanceof Blob ? content : null;
       if (originalBlob && originalBlob.size === 0) throw new Error('Файл холӣ аст');
-      if (window.showSaveFilePicker && originalBlob) {
+      // v180: интихоби файл дар БОЛОИ ОКОН кушода мешавад — чунки API
+      // танҳо дар саҳифаи асоси (top-level) кор мекунад. Дар iframe-и
+      // Алия дар Reader он кор намекунад ва мост бе садо ба боршаврии
+      // одӣ меафтад — корбар танҳо «Загрузки»-ро мебинад.
+      // Ҳамон тарзи кор кардани «Скачать книгу» (config.js → downloadFile).
+      if (originalBlob) {
         try {
-          // v179: шарти интихоби файл бояд аниқ бошад:
-          //   • accept — калид=MIME, арзиш=расширение БЕЗ нуқта («pdf», на «.pdf»);
-          //     бо нуқта Chrome TypeError медиҳад ва мост бе садо ба
-          //     боршаврии одӣ меафтад — диалог «куда сохранить» намудан
-          //     намешавад.
-          //   • types бояд ҳама вақт бо арзишҳо барои як навъ оянд.
-          var ext = (String(fileName).match(/\.([A-Za-z0-9]+)$/) || ['', ''])[1].toLowerCase();
-          var types = [];
-          if (ext) types.push({ description: ext.toUpperCase() + ' file', accept: { [mimeType]: [ext] } });
-          var opts = { suggestedName: fileName };
-          if (types.length) opts.types = types;
-          var handle = await window.showSaveFilePicker(opts);
-          var writable = await handle.createWritable();
-          await writable.write(originalBlob);
-          await writable.close();
-          return { success: true, method: 'file_picker', fileName: fileName };
+          var target = await this.openSavePicker(fileName, mimeType);
+          if (target) return await this.writeToPicker(target, originalBlob);
         } catch (err) {
           // AbortError = корбар ҳаққӣ қатъ карда; ин хато нест, амма файл
           // ҳеҷ сабт нашудааст. SecurityError/NotAllowedError = интихоби файл

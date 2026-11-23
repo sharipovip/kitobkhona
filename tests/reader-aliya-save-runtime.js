@@ -535,6 +535,12 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
   const wPicker = savedWhere({ method: 'file_picker', fileName: 'answer.pdf' }, 'PDF');
   check('savedWhere() reports that the user chose the location',
     /интихоб/.test(String(wPicker || '')), String(wPicker));
+  // v180: the toast must state where the file IS, not tell the user to
+  // choose a folder (the picker has already been shown).
+  check('savedWhere() does not tell the user to choose a folder afterwards',
+    !/интихоби папкаро гиред/.test(String(wPicker || '')), String(wPicker));
+  check('savedWhere() says the file went where the user chose',
+    /ҷои худро интихоб карда шуд/.test(String(wPicker || '')), String(wPicker));
   check('savedWhere() always includes the file name',
     /answer\.pdf/.test(String(wSilent || '')), String(wSilent));
 

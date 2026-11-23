@@ -952,8 +952,56 @@
       r.readAsDataURL(blob);
     });
   }
-  async function saveBlob(blob, fileName, mime) {
-    // v178: тартиби муҳим — аввал нативный Android-мост (ҳамон як диалог
+  /**
+   * v180: Кӯшиши кушодани "Сохранить как" пеш аз корҳои вазнин.
+   *
+   * Проблема: showSaveFilePicker танҳо дар дастгирии корбар (user
+   * gesture) кор мекунад. Агар пеш аз он ҳуҷҷати PDF тайёр кунем
+   * (download-и aliya-pdf.js, сохтни саҳифаҳо), дастгирии корбар
+   * байт мешавад ва браузер SecurityError медиҳад — на интихоби
+   * папка, танҳо боршаврии одӣ ба «Загрузки».
+   *
+   * Ҳал: аввал мақсадро интихоб мекунем (дар дастгирии корбар), баъд
+   * ҳуҷҷатро тайёр мекунем ва ба ҳамон мақсад навиштем.
+   *
+   * Натиҷа: null — интихоби файл мумкин нест (ин тиқоз нест, танҳо
+   * огоҳиш). 'cancelled' — корбар қатъ карда (хато нест).
+   */
+  async function pickSaveTarget(fileName, mime) {
+    try {
+      // Дар барномаи Android нативный диалог аст — он аслӣ кор мекунад,
+      // бинобар ин интихоби файли браузерро кушодан лозим нест.
+      if (hasNativeSaveBridge()) return null;
+      var bridge = window.AliyaBridge;
+      if (!bridge || typeof bridge.openSavePicker !== 'function') return null;
+      var target = await bridge.openSavePicker(fileName, mime);
+      return target || null;
+    } catch (e) {
+      if (e && (e.abortedByUser || e.name === 'AbortError')) return 'cancelled';
+      console.warn('[Aliya] Save-As picker unavailable:', e);
+      return null;
+    }
+  }
+  /** v180: Остонд, ки нативный мост дар яке аз оконоҳо ҳаст. */
+  function hasNativeSaveBridge() {
+    var wins = [];
+    function push(w) { if (w && wins.indexOf(w) === -1) wins.push(w); }
+    push(window);
+    try { push(window.parent); } catch (e) {}
+    try { push(window.top); } catch (e) {}
+    for (var i = 0; i < wins.length; i++) {
+      try {
+        var w = wins[i];
+        if (w && ((w.AndroidBridge && typeof w.AndroidBridge.saveFile === 'function') ||
+                  (w.AndroidBridge && typeof w.AndroidBridge.saveBase64File === 'function') ||
+                  (w.KitobkhonaNative && typeof w.KitobkhonaNative.postMessage === 'function'))) return true;
+      } catch (e) {}
+    }
+    return false;
+  }
+
+  async function saveBlob(blob, fileName, mime, pickerTarget) {
+    // v180: тартиби муҳим — аввал нативный Android-мост (ҳамон як диалог
     // «Сохранить как» медиҳад), баъд мости кадр, баъд боршаврии одӣ.
     // Алия дар Reader як iframe аст ва AndroidBridge танҳо дар reader.html
     // (родитель) ҳаст — бинобар ин бо ҳамон оконоҳо сӯҳ мешавед.
@@ -968,6 +1016,21 @@
         return { success: true, method: 'android_bridge', fileName: fileName };
       }
     } catch (e) {}
+    // v180: болои оконо низ — Алия дар Reader ба як қабат дар он аст.
+    try {
+      var topWin = window.top;
+      if (topWin && topWin !== window && topWin !== parentWin && topWin.AndroidBridge &&
+          typeof topWin.AndroidBridge.saveFile === 'function') {
+        topWin.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
+        return { success: true, method: 'android_bridge', fileName: fileName };
+      }
+    } catch (e) {}
+    // v180: агар интихоби файл пеш (дар дастгирии корбар) кушода шуда буд —
+    // ҳамон файлро ба ҳамон мақсад навишт. Ин роҳ аз нав будан дар
+    // «куҷо сабт кардан» барои Алия дар Reader кор мекунад.
+    if (pickerTarget && window.AliyaBridge && typeof window.AliyaBridge.writeToPicker === 'function') {
+      return await window.AliyaBridge.writeToPicker(pickerTarget, blob);
+    }
     // Мошини сабти файл. v177: аввал мошини СОБСТВЕННОГО чаҳр (ҳамон iframe),
     // чунки диалоги «Сохранить как» иҷозаи корбари ҳамон чаҳрро талаб мекунад.
     if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime);
@@ -1010,6 +1073,17 @@
     meta.lang = meta.lang || (detectLang(plain(text)) === 'ru' ? 'ru' : 'tg');
     var fileName = docFileName(meta, format === 'pdf' ? 'pdf' : 'docx');
     var docTitleMain = meta.title || title;
+    // v180: Аввал мақсади сабтро интихоб мекунем — дар дастгирии корбар.
+    // Баъд ҳуҷҷатро тайёр мекунем. Агар тайр карда шуд, файли сабт
+    // накарда истодааст (корбар танҳо «Сабти файл бекор шуд» мебинад).
+    var mime = format === 'pdf' ? 'application/pdf' : DOCX_MIME;
+    var pickerTarget = await pickSaveTarget(fileName, mime);
+    if (pickerTarget === 'cancelled') {
+      var cancelErr = new Error('Сабти файл бекор шуд.');
+      cancelErr.abortedByUser = true;
+      cancelErr.name = 'AbortError';
+      throw cancelErr;
+    }
     var blob;
     if (format === 'docx') {
       if (!window.AliyaTemplates) throw new Error('Қолаби Word бор нашуд.');
@@ -1035,7 +1109,7 @@
         try { blob = await P.stamp(await raw.arrayBuffer(), meta); } catch (e) { blob = raw; }
       }
     }
-    var res = await saveBlob(blob, fileName, format === 'pdf' ? 'application/pdf' : DOCX_MIME);
+    var res = await saveBlob(blob, fileName, mime, pickerTarget);
     // v178: бо якчанд маълумот ҳам — тост бояд аниқ гӯяд, ки файл дар куҷо
     // сабт шуд: дар интихоби файл, дар натиҷаи барнома ё дар «Загрузки».
     if (res && typeof res === 'object') {
@@ -1055,11 +1129,14 @@
     if (!res || typeof res !== 'object') return String(res || label);
     var fn = res.fileName || '';
     var where = '';
-    if (res.method === 'file_picker') where = ' — шута гирифта шуд (ҷои худро интихоб кунед)';
+    // v180: Тост бояд аниқ гӯяд, ки файл дар куҷо ҳаст. «Интихоби папкаро
+    // гиред» гӯёнида буд, ки корбар бояд амал кунад — агар интихоби
+    // файл аллакай кушода шуда бошад, ин забон корбарро гум мекунад.
+    if (res.method === 'file_picker') where = ' — дар ҷои худро интихоб карда шуд';
     // Нативный мост Android аз ҷой бозгашт намедиҳад — бинобар ин рост
     // намегувем, ки «сабт шуд», балки «барои захира кардан омода» (ҳамон
     // калиби ки китоб истифода мебарад).
-    else if (res.method === 'android_bridge' || res.method === 'android_base64' || res.method === 'native_post_message') where = ' — барои захира кардан омода (интихоби папкаро гиред)';
+    else if (res.method === 'android_bridge' || res.method === 'android_base64' || res.method === 'native_post_message') where = ' — барои захира кардан омода';
     else if (res.method === 'browser_blob') where = ' — дар папкаи «Загрузки» сабт шуд';
     return (fn || label) + where;
   }
@@ -1495,7 +1572,7 @@
     loadPdf: loadPdf, ensurePdfJs: ensurePdfJs, createPageReader: createPageReader,
     chat: chat, buildPrompt: buildPrompt, cleanOutput: cleanOutput,
     newState: newState, fieldsHTML: fieldsHTML, bindFields: bindFields, validate: validate,
-    run: run, abortAll: abortAll, exportDoc: exportDoc, docFileName: docFileName, prettyBookName: prettyBookName, guessTopic: guessTopic, extractTopicMarker: extractTopicMarker, saveBlob: saveBlob, copyText: copyText, friendlyError: friendlyError, savedWhere: savedWhere
+    run: run, abortAll: abortAll, exportDoc: exportDoc, docFileName: docFileName, prettyBookName: prettyBookName, guessTopic: guessTopic, extractTopicMarker: extractTopicMarker, saveBlob: saveBlob, copyText: copyText, friendlyError: friendlyError, savedWhere: savedWhere, pickSaveTarget: pickSaveTarget
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectStyles); else injectStyles();
 })(window, document);
