@@ -1,6 +1,6 @@
 {
   "name": "kitobkhona-desktop",
-  "version": "3.2.2",
+  "version": "3.2.3",
   "description": "Китобхонаи электронӣ ва ёвари Алия барои Windows",
   "main": "desktop/main.cjs",
   "private": true,

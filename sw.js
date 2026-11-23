@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v177-aliya-reader-save-pdf';
+const CACHE_NAME = 'kitobkhona-v178-aliya-save-ask-where';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -110,6 +110,9 @@ const LOCAL_FILES = [
   './assets/fonts/NotoSans-Italic.sub.ttf',
   './assets/fonts/DejaVuSym.sub.ttf',
   './assets/fonts/LICENSE-fonts.txt',
+  // v178: запасной мост к нативному каналу Android — нужен Алии внутри
+  // Reader (iframe), иначе нативный диалог «Сохранить как» не вызывается.
+  './assets/js/native-fallback.js',
   './manifest.json',
   './search-index.json',
   './locations.js',

@@ -953,24 +953,36 @@
     });
   }
   async function saveBlob(blob, fileName, mime) {
-    // v177: Алия дар Reader як iframe аст. Пайваст ба мошини сабти файл
-    // (window.showSaveFilePicker) иҷозати корбар дар ҳамон чаҳр аст — агар он
-    // дар чаҳри дигар (parent) кор шуд, браузер «Must be handling a user
-    // gesture» медод ва файл аз ҳеҷ ҷо намесабт. Бо истифода аз мошини
-    // худӣ (ҳамон iframe) ҳақиқи файл дар ҳамон чаҳр сабт мешавад — чунки
-    // он ҳамон равандаи Алияи асосиро истифода мебарад.
-    // Танҳо агар мошини худӣ набошад, ба мошини parent сар мешавем.
-    if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime);
-    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime);
+    // v178: тартиби муҳим — аввал нативный Android-мост (ҳамон як диалог
+    // «Сохранить как» медиҳад), баъд мости кадр, баъд боршаврии одӣ.
+    // Алия дар Reader як iframe аст ва AndroidBridge танҳо дар reader.html
+    // (родитель) ҳаст — бинобар ин бо ҳамон оконоҳо сӯҳ мешавед.
     if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
       window.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
-      return { success: true, method: 'android_bridge' };
+      return { success: true, method: 'android_bridge', fileName: fileName };
     }
-    var url = URL.createObjectURL(blob), a = document.createElement('a');
+    try {
+      var parentWin = window.parent;
+      if (parentWin && parentWin !== window && parentWin.AndroidBridge && typeof parentWin.AndroidBridge.saveFile === 'function') {
+        parentWin.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
+        return { success: true, method: 'android_bridge', fileName: fileName };
+      }
+    } catch (e) {}
+    // Мошини сабти файл. v177: аввал мошини СОБСТВЕННОГО чаҳр (ҳамон iframe),
+    // чунки диалоги «Сохранить как» иҷозаи корбари ҳамон чаҳрро талаб мекунад.
+    if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime);
+    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime);
+    // Боршаврии одӣ — дар болои окно, то ки браузер пурсиши «куда сохранить»
+    // -ро нишон диҳад (ҳамон тарзи боргирии китоб).
+    var url = URL.createObjectURL(blob);
+    var host = window;
+    try { if (window.top && window.top !== window) host = window.top; } catch (e) { host = window; }
+    var doc = host.document || document;
+    var a = doc.createElement('a');
     a.href = url; a.download = fileName; a.style.display = 'none';
-    document.body.appendChild(a); a.click();
-    setTimeout(function () { a.remove(); URL.revokeObjectURL(url); }, 1500);
-    return { success: true, method: 'browser_blob' };
+    doc.body.appendChild(a); a.click();
+    setTimeout(function () { try { doc.body.removeChild(a); } catch (e) {} URL.revokeObjectURL(url); }, 1500);
+    return { success: true, method: 'browser_blob', silent: true, fileName: fileName };
   }
   function safeName(s) { return String(s || 'Алия').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, '_').slice(0, 60); }
   var DOCX_MIME = 'application/vnd.openxmlformats-officedocument.wordprocessingml.document';
@@ -1023,8 +1035,30 @@
         try { blob = await P.stamp(await raw.arrayBuffer(), meta); } catch (e) { blob = raw; }
       }
     }
-    await saveBlob(blob, fileName, format === 'pdf' ? 'application/pdf' : DOCX_MIME);
+    var res = await saveBlob(blob, fileName, format === 'pdf' ? 'application/pdf' : DOCX_MIME);
+    // v178: бо якчанд маълумот ҳам — тост бояд аниқ гӯяд, ки файл дар куҷо
+    // сабт шуд: дар интихоби файл, дар натиҷаи барнома ё дар «Загрузки».
+    if (res && typeof res === 'object') {
+      res.fileName = fileName;
+      res.format = format;
+      return res;
+    }
     return fileName;
+  }
+  /**
+   * savedWhere(res, kind) — v178
+   * Текст тост: номи файл ва куҷо он сабт шуд. Корбар бояд аниқ бинад,
+   * ки файл дар интихоби файласт, дар барнома ё дар «Загрузки».
+   */
+  function savedWhere(res, kind) {
+    var label = kind || 'Файл';
+    if (!res || typeof res !== 'object') return String(res || label);
+    var fn = res.fileName || '';
+    var where = '';
+    if (res.method === 'file_picker') where = ' — шута гирифта шуд (ҷои худро интихоб кунед)';
+    else if (res.method === 'android_bridge' || res.method === 'android_base64' || res.method === 'native_post_message') where = ' — дар барнома сохта шуд';
+    else if (res.method === 'browser_blob') where = ' — дар папкаи «Загрузки» сабт шуд';
+    return (fn || label) + where;
   }
   function copyText(text) {
     var t = plain(text);
@@ -1332,8 +1366,12 @@
         copyText(text).then(function () { toast('✓ Матн нусхабардорӣ шуд'); }, function () { toast('Нусхабардорӣ нашуд. Матнро дастӣ интихоб кунед.'); });
       } else if (a === 'docx' || a === 'pdf') {
         var idle = b.innerHTML; b.disabled = true; b.textContent = '⏳';
-        exportDoc(a, docTitle, text, meta).then(function (fn) {
-          toast((a === 'pdf' ? '✓ PDF сабт шуд: ' : '✓ Word сабт шуд: ') + fn, 3200);
+        exportDoc(a, docTitle, text, meta).then(function (res) {
+          // v178: тост бояд аниқ гӯяд, ки файл дар куҷо сабт шуд.
+          // Пеш аз ин ҳамон «✓ PDF сабт шуд» мешуд, ҳатто агар файл бе
+          // пурсиш ба «Загрузки» рафта буд — корбар намедонист куҷо рафтааст.
+          var kind = a === 'pdf' ? 'PDF' : 'Word';
+          toast('✓ ' + kind + ' сабт шуд: ' + savedWhere(res, kind), 4200);
         }, function (err) {
           // v177: корбар агар интихоби файлро қатъ карда бошад — ин хато нест.
           if (err && (err.abortedByUser || err.name === 'AbortError')) {
@@ -1454,7 +1492,7 @@
     loadPdf: loadPdf, ensurePdfJs: ensurePdfJs, createPageReader: createPageReader,
     chat: chat, buildPrompt: buildPrompt, cleanOutput: cleanOutput,
     newState: newState, fieldsHTML: fieldsHTML, bindFields: bindFields, validate: validate,
-    run: run, abortAll: abortAll, exportDoc: exportDoc, docFileName: docFileName, prettyBookName: prettyBookName, guessTopic: guessTopic, extractTopicMarker: extractTopicMarker, saveBlob: saveBlob, copyText: copyText, friendlyError: friendlyError
+    run: run, abortAll: abortAll, exportDoc: exportDoc, docFileName: docFileName, prettyBookName: prettyBookName, guessTopic: guessTopic, extractTopicMarker: extractTopicMarker, saveBlob: saveBlob, copyText: copyText, friendlyError: friendlyError, savedWhere: savedWhere
   };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', injectStyles); else injectStyles();
 })(window, document);

@@ -267,7 +267,8 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
     docxName = await AT.exportDoc('docx', 'Ҷавоби Алия', answerText, meta);
   } catch (e) { docxErr = e; }
   check('Word export does not throw', !docxErr, docxErr && (docxErr.name + ': ' + docxErr.message));
-  check('Word export produces a .docx name', /\.docx$/.test(String(docxName || '')), String(docxName));
+  const docxFile = (docxName && docxName.fileName) || String(docxName || '');
+  check('Word export produces a .docx name', /\.docx$/.test(docxFile), String(docxName));
   const ownSaved = vm.runInContext('globalThis.__ownSaved', ctx);
   check('Word export reaches a saveFile() implementation', ownSaved.some((s) => /\.docx$/.test(s.fileName)),
     'saved: ' + JSON.stringify(ownSaved.map((s) => s.fileName)));
@@ -283,7 +284,8 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
     pdfName = await AT.exportDoc('pdf', 'Ҷавоби Алия', answerText, meta);
   } catch (e) { pdfErr = e; }
   check('PDF export does not throw', !pdfErr, pdfErr && (pdfErr.name + ': ' + pdfErr.message));
-  check('PDF export produces a .pdf name', /\.pdf$/.test(String(pdfName || '')), String(pdfName));
+  const pdfFile = (pdfName && pdfName.fileName) || String(pdfName || '');
+  check('PDF export produces a .pdf name', /\.pdf$/.test(pdfFile), String(pdfName));
   const pdfSaved = ownSaved.find((s) => /\.pdf$/.test(s.fileName));
   check('PDF export reaches a saveFile() implementation', !!pdfSaved,
     'saved: ' + JSON.stringify(ownSaved.map((s) => s.fileName)));
@@ -374,6 +376,125 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
   check('a cancelled Save-As picker is marked as user-cancelled',
     !!cancelErr && cancelErr.abortedByUser === true,
     cancelErr ? cancelErr.name + ': ' + cancelErr.message : 'no error raised');
+
+  /* ---------------------------------------------------------------- */
+  /* v178: the file must ASK where to be saved, not land silently     */
+  /* ---------------------------------------------------------------- */
+  // In the Android app the native bridge opens a real "Save as" dialog.
+  // That bridge lives in reader.html (the parent frame) — the Aliya iframe
+  // had none, so the export skipped the native dialog and dropped the file
+  // into "Downloads" while telling the user it had been saved.
+  const nativeCalls = [];
+  const androidApp = vm.createContext({
+    console: { log() {}, warn() {}, error() {} },
+    setTimeout, clearTimeout, Promise, Math, Date, JSON, String, Number, Array, Object,
+    RegExp, Error, Intl, Uint8Array, ArrayBuffer,
+    atob: (s) => Buffer.from(s, 'base64').toString('binary'),
+    btoa: (s) => Buffer.from(s, 'binary').toString('base64'),
+    Blob: win.Blob, FileReader: makeFileReader(),
+    URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} },
+    document: {
+      body: { appendChild() {}, removeChild() {} },
+      createElement: () => ({ style: {}, set href(v) {}, set download(v) {}, click() {} }),
+      addEventListener() {},
+    },
+  });
+  androidApp.window = androidApp; androidApp.globalThis = androidApp; androidApp.self = androidApp;
+  vm.runInContext('globalThis.addEventListener = function () {}; globalThis.removeEventListener = function () {};', androidApp);
+  // The parent frame (reader.html) carries the native bridge.
+  androidApp.parent = {
+    AndroidBridge: {
+      saveFile: (b64, name, mime) => { nativeCalls.push({ via: 'parent_android', name }); return true; },
+    },
+    document: androidApp.document,
+  };
+  androidApp.top = androidApp.parent;
+  vm.runInContext(bridgeReal, androidApp, { filename: 'aliya-bridge.js' });
+  let androidRes = null, androidErr = null;
+  try {
+    androidRes = await vm.runInContext(
+      'AliyaBridge.saveFile(new Blob([new Uint8Array([1,2,3])]), "answer.pdf", "application/pdf")', androidApp);
+  } catch (e) { androidErr = e; }
+  check('the Android native Save-As dialog is used inside the Reader',
+    nativeCalls.some((c) => c.via === 'parent_android'),
+    'native calls: ' + JSON.stringify(nativeCalls) + ' result: ' + JSON.stringify(androidRes));
+  check('the native save does not fall back to a silent download',
+    !!androidRes && androidRes.method !== 'browser_blob',
+    JSON.stringify(androidRes));
+
+  // In a plain browser (no native bridge) the download must be triggered in
+  // the TOP window — that is where the browser shows its "where to save"
+  // prompt, exactly like the book download does.
+  const topCalls = [];
+  const browserCtx = vm.createContext({
+    console: { log() {}, warn() {}, error() {} },
+    setTimeout, clearTimeout, Promise, Math, Date, JSON, String, Number, Array, Object,
+    RegExp, Error, Intl, Uint8Array, ArrayBuffer,
+    atob: (s) => Buffer.from(s, 'base64').toString('binary'),
+    btoa: (s) => Buffer.from(s, 'binary').toString('base64'),
+    Blob: win.Blob, FileReader: makeFileReader(),
+    URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} },
+    document: {
+      body: { appendChild() { topCalls.push('append_iframe'); }, removeChild() {} },
+      createElement: () => ({ style: {}, set href(v) {}, set download(v) {}, click() { topCalls.push('click_iframe'); } }),
+      addEventListener() {},
+    },
+  });
+  browserCtx.window = browserCtx; browserCtx.globalThis = browserCtx; browserCtx.self = browserCtx;
+  vm.runInContext('globalThis.addEventListener = function () {}; globalThis.removeEventListener = function () {};', browserCtx);
+  browserCtx.parent = {
+    document: {
+      body: { appendChild() { topCalls.push('append_top'); }, removeChild() {} },
+      createElement: () => ({ style: {}, set href(v) {}, set download(v) {}, click() { topCalls.push('click_top'); } }),
+    },
+  };
+  browserCtx.top = browserCtx.parent;
+  vm.runInContext(bridgeReal, browserCtx, { filename: 'aliya-bridge.js' });
+  let browserRes = null, browserErr = null;
+  try {
+    browserRes = await vm.runInContext(
+      'AliyaBridge.saveFile(new Blob([new Uint8Array([1,2,3])]), "answer.pdf", "application/pdf")', browserCtx);
+  } catch (e) { browserErr = e; }
+  check('the browser download is triggered in the TOP window',
+    topCalls.includes('click_top') && !topCalls.includes('click_iframe'),
+    'calls: ' + JSON.stringify(topCalls));
+  check('the silent download is reported as such',
+    !!browserRes && browserRes.silent === true,
+    JSON.stringify(browserRes));
+
+  // The toast must tell the user WHERE the file went. Check the real
+  // behaviour of savedWhere(), not just that the words appear somewhere.
+  const tasksReal = fs.readFileSync(path.join(ROOT, 'aliya/aliya-tasks.js'), 'utf8');
+  const whereCtx = vm.createContext(Object.assign({}, win, {
+    window: null, Blob: win.Blob, atob: win.atob, btoa: win.btoa,
+    URL: win.URL, document: win.document, FileReader: makeFileReader(),
+  }));
+  whereCtx.window = whereCtx; whereCtx.globalThis = whereCtx;
+  vm.runInContext('globalThis.addEventListener = function () {}; globalThis.removeEventListener = function () {};', whereCtx);
+  vm.runInContext(tasksReal, whereCtx, { filename: 'aliya-tasks.js' });
+  const savedWhere = vm.runInContext('AliyaTasks.savedWhere', whereCtx);
+  check('savedWhere() is exported', typeof savedWhere === 'function');
+  const wSilent = savedWhere({ method: 'browser_blob', fileName: 'answer.pdf' }, 'PDF');
+  check('savedWhere() names the Downloads folder for a silent save',
+    /«Загрузки»/.test(String(wSilent || '')), String(wSilent));
+  const wNative = savedWhere({ method: 'android_bridge', fileName: 'answer.pdf' }, 'PDF');
+  check('savedWhere() names the native save', /барнома/.test(String(wNative || '')), String(wNative));
+  const wPicker = savedWhere({ method: 'file_picker', fileName: 'answer.pdf' }, 'PDF');
+  check('savedWhere() reports that the user chose the location',
+    /интихоб/.test(String(wPicker || '')), String(wPicker));
+  check('savedWhere() always includes the file name',
+    /answer\.pdf/.test(String(wSilent || '')), String(wSilent));
+
+  // The shared native fallback must exist and be loaded by both pages.
+  check('the shared native fallback exists', fs.existsSync(path.join(ROOT, 'assets/js/native-fallback.js')));
+  const readerHtml = fs.readFileSync(path.join(ROOT, 'reader.html'), 'utf8');
+  const readerAliyaHtml = fs.readFileSync(path.join(ROOT, 'aliya/reader-aliya.html'), 'utf8');
+  check('reader.html loads the native fallback', /native-fallback\.js/.test(readerHtml));
+  check('the Aliya iframe loads the native fallback', /native-fallback\.js/.test(readerAliyaHtml));
+  check('the Aliya iframe loads the fallback BEFORE the bridge',
+    readerAliyaHtml.indexOf('native-fallback.js') < readerAliyaHtml.indexOf('aliya-bridge.js'),
+    'the fallback must be set up before the bridge reads it');
+
 
   if (failures.length) {
     console.error('\n' + failures.length + ' Reader Aliya save check(s) failed: ' + failures.join(', '));
