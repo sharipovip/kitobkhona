@@ -1,2 +1,6 @@
 Удалить из старой рабочей копии проекта после распаковки обновления:
 - chat старй.html — устаревшая дублирующая страница чата, ссылка удалена из Service Worker precache.
+- app/ — устаревшая копия приложения (app/reader.html, app/sw.js, app/aliya/index.html, app/aliya/aliya-ui.css).
+  Ни одна страница на неё не ссылается, в precache Service Worker её нет, отдельного manifest/точки входа Electron нет.
+  Актуальные версии лежат в корне: reader.html, sw.js, aliyа/index.html, aliyа/aliya-ui.css.
+  Удаление убирает риск править не тот файл (в app/reader.html оставались старые баги: Z_MAX=2.2 и переключатель темы через два нажатия).
