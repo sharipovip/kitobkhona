@@ -10,12 +10,33 @@
   'use strict';
 
   var AliyaBridge = {
+    /**
+     * Окна, ки бояд сӯҳшуд: ҳамон чаҳр, родитель ва болои он.
+     * Алия дар Reader як iframe аст, ва танҳо дар reader.html (родитель)
+     * AndroidBridge-и қуfallback аст — бинобар ин дар iframe он нест.
+     * v178: агар ин тиқоз дар як аз ин оконоҳо ҳаст, нативный диалог
+     * «Сохранить как» кор мекунад.
+     */
+    hostWindows: function () {
+      var list = [];
+      function push(w) { if (w && list.indexOf(w) === -1) list.push(w); }
+      push(window);
+      try { push(window.parent); } catch (e) {}
+      try { push(window.top); } catch (e) {}
+      return list;
+    },
+
     isAndroid: function () {
-      return !!(
-        (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') ||
-        (window.AndroidBridge && typeof window.AndroidBridge.saveBase64File === 'function') ||
-        (window.KitobkhonaNative && typeof window.KitobkhonaNative.postMessage === 'function')
-      );
+      var list = this.hostWindows();
+      for (var i = 0; i < list.length; i++) {
+        var w = list[i];
+        try {
+          if ((w.AndroidBridge && typeof w.AndroidBridge.saveFile === 'function') ||
+              (w.AndroidBridge && typeof w.AndroidBridge.saveBase64File === 'function') ||
+              (w.KitobkhonaNative && typeof w.KitobkhonaNative.postMessage === 'function')) return true;
+        } catch (e) {}
+      }
+      return false;
     },
 
     isWindowsApp: function () {
@@ -44,25 +65,31 @@
 
       if ((content instanceof Blob && content.size === 0) || !base64) throw new Error('Файл холӣ аст');
 
-      // 1. Android Native Bridge
+      // 1. Android Native Bridge — нативный диалог «Сохранить как».
+      //    v178: ищем мост во всех окнах (своё / родитель / верхнее).
+      //    В iframe Алии моста нет — он есть в reader.html.
       if (this.isAndroid()) {
         try {
-          if (window.AndroidBridge) {
-            if (typeof window.AndroidBridge.saveFile === 'function') {
-              window.AndroidBridge.saveFile(base64, fileName, mimeType);
-              return { success: true, method: 'android_bridge' };
+          var hosts = this.hostWindows(), done = false;
+          for (var hi = 0; hi < hosts.length && !done; hi++) {
+            var hw = hosts[hi];
+            if (hw.AndroidBridge) {
+              if (typeof hw.AndroidBridge.saveFile === 'function') {
+                hw.AndroidBridge.saveFile(base64, fileName, mimeType);
+                return { success: true, method: 'android_bridge' };
+              }
+              if (typeof hw.AndroidBridge.saveBase64File === 'function') {
+                hw.AndroidBridge.saveBase64File(base64, fileName, mimeType);
+                return { success: true, method: 'android_base64' };
+              }
             }
-            if (typeof window.AndroidBridge.saveBase64File === 'function') {
-              window.AndroidBridge.saveBase64File(base64, fileName, mimeType);
-              return { success: true, method: 'android_base64' };
+            if (hw.KitobkhonaNative && typeof hw.KitobkhonaNative.postMessage === 'function') {
+              hw.KitobkhonaNative.postMessage(JSON.stringify({
+                method: 'saveFile',
+                args: [base64, fileName, mimeType]
+              }));
+              return { success: true, method: 'native_post_message' };
             }
-          }
-          if (window.KitobkhonaNative && typeof window.KitobkhonaNative.postMessage === 'function') {
-            window.KitobkhonaNative.postMessage(JSON.stringify({
-              method: 'saveFile',
-              args: [base64, fileName, mimeType]
-            }));
-            return { success: true, method: 'native_post_message' };
           }
         } catch (e) {
           console.warn('[AliyaBridge] Android save error, falling back to browser download', e);
@@ -93,6 +120,10 @@
         }
       }
       // 3. Боршаврии одӣ (гузариш аз интихоби файл) — дар ҳар браузер кор мекунад.
+      //    v178: боршаврӣ дар БОЛОИ ОКНО (window.top) иҷро мешавад — ҳамон
+      //    тарзи кор кардани боргирии китоб (config.js → downloadFile).
+      //    Дар iframe Chrome метавонад диалоги «куда сохранить»-ро
+      //    нишон надиҳад, ам дар болои окно — нишон медиҳад.
       try {
         var byteCharacters = atob(base64);
         var byteNumbers = new Array(byteCharacters.length);
@@ -102,17 +133,22 @@
         var byteArray = new Uint8Array(byteNumbers);
         var blob = new Blob([byteArray], { type: mimeType });
         var url = URL.createObjectURL(blob);
-        var a = document.createElement('a');
+        // Кайд кардани равшан: файл ба «Загрузки» меравад, агар браузер
+        // пурсиш накунад — корбар бояд инро бинад.
+        var host = window;
+        try { if (window.top && window.top !== window) host = window.top; } catch (e) { host = window; }
+        var doc = host.document || document;
+        var a = host.document.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = fileName;
-        document.body.appendChild(a);
+        doc.body.appendChild(a);
         a.click();
         setTimeout(function () {
-          try { document.body.removeChild(a); } catch (e) {}
+          try { doc.body.removeChild(a); } catch (e) {}
           URL.revokeObjectURL(url);
         }, 1500);
-        return { success: true, method: 'browser_blob' };
+        return { success: true, method: 'browser_blob', silent: true, fileName: fileName };
       } catch (err) {
         console.error('[AliyaBridge] Download error:', err);
         throw err;

@@ -128,6 +128,39 @@ for asset in ('assets/libs/pdf-lib.min.js', 'assets/libs/fontkit.umd.min.js',
     assert (ROOT/asset).exists(), f'{asset} is missing from the repository'
 print('PASS the Reader Aliya saves Word/PDF in its own frame and the PDF assets are precached')
 
+# v178: корбар гӯшт, ки «сабт шуд, вале номи куҷо маълум нест». Сеанҳои:
+#   1) Алия дар Reader — iframe, ва AndroidBridge танҳо дар reader.html
+#      (родитель) ҳаст. Агар iframe таваффиқ накунад, нативный диалог
+#      «Сохранить как» даст намерасад ва файл тихӣ ба «Загрузки» меравад.
+#   2) Боршаврии одӣ бояд дар БОЛОИ ОКНО иҷро шавад — ҳамон тарзи
+#      боргирии китоб, то Chrome пурсиши «куда сохранить»-ро нишон диҳад.
+#   3) Тост бояд аниқ гӯяд, ки файл дар куҷо сабт шуд.
+tasks_src2 = (ROOT/'aliya/aliya-tasks.js').read_text(encoding='utf-8')
+bridge_src2 = (ROOT/'aliya/aliya-bridge.js').read_text(encoding='utf-8')
+
+# (1) як файли муштарики мост бояд бо ҳар як саҳфа бор бошад.
+assert (ROOT/'assets/js/native-fallback.js').exists(), 'the shared native fallback is missing'
+for page in ('reader.html', 'aliya/reader-aliya.html', 'aliya/index.html'):
+    text = (ROOT/page).read_text(encoding='utf-8')
+    assert 'native-fallback.js' in text, f'{page} must load the shared native fallback'
+reader_aliya_html = (ROOT/'aliya/reader-aliya.html').read_text(encoding='utf-8')
+assert reader_aliya_html.index('native-fallback.js') < reader_aliya_html.index('aliya-bridge.js'), (
+    'the Aliya iframe must set up the native fallback BEFORE the bridge reads it')
+
+# (2) мост бояд дар ҳамон оконоҳо (своё/родитель/болои) ёбод.
+assert 'hostWindows' in bridge_src2, 'the bridge must look for the native bridge in every host window'
+assert 'window.top' in bridge_src2, 'the browser download must be triggered in the top window'
+
+# (3) тост бояд ҷойи файлро ном бар орад.
+assert '«Загрузки»' in tasks_src2, 'the toast must name the Downloads folder'
+assert 'savedWhere' in tasks_src2, 'the toast must use the shared savedWhere() helper'
+assert 'savedWhere' in (ROOT/'aliya/index.html').read_text(encoding='utf-8'), (
+    'the main Aliya must use savedWhere() too')
+
+# Резервный мост должен быть в precache, иначе офлайн его не будет.
+assert './assets/js/native-fallback.js' in sw, 'the native fallback must be precached'
+print('PASS the export asks where to save and tells the user where the file went')
+
 desktop_css=(ROOT/'assets/css/desktop-layout.css').read_text(encoding='utf-8')
 assert '@media screen and (min-width: 1024px)' in desktop_css
 assert 'max-width: min(100%, 1720px)' in desktop_css

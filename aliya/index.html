@@ -254,10 +254,11 @@
     <div class="aliya-toast" id="aliyaToast">Паём</div>
   </div>
 
-  <script src="aliya-bridge.js?v=172"></script>
+  <script src="../assets/js/native-fallback.js?v=178"></script>
+  <script src="aliya-bridge.js?v=173"></script>
   <script src="aliya-doc-templates.js?v=161"></script>
   <script src="aliya-core.js?v=175"></script>
-  <script src="aliya-tasks.js?v=177"></script>
+  <script src="aliya-tasks.js?v=178"></script>
   <script>
     (function () {
       'use strict';
@@ -915,12 +916,12 @@
           toast('Ҷавоб нусхабардорӣ шуд.');
         });
         action('📄 Word', 'Сабт ҳамчун Word', async function () {
-          var fn = await AT.exportDoc('docx', 'Ҷавоби Алия', text, answerMeta(text));
-          toast('Word сабт шуд: ' + fn);
+          var r = await AT.exportDoc('docx', 'Ҷавоби Алия', text, answerMeta(text));
+          toast('Word сабт шуд: ' + AT.savedWhere(r, 'Word'));
         });
         action('⬇ PDF', 'Сабт ҳамчун PDF', async function () {
-          var fn = await AT.exportDoc('pdf', 'Ҷавоби Алия', text, answerMeta(text));
-          toast('PDF сабт шуд: ' + fn);
+          var r = await AT.exportDoc('pdf', 'Ҷавоби Алия', text, answerMeta(text));
+          toast('PDF сабт шуд: ' + AT.savedWhere(r, 'PDF'));
         });
         action('🔖', 'Ба ёддоштҳо', async function () {
           await window.AliyaCore.saveNote(AT.plain(text).slice(0,90).replace(/\s+/g,' ') || 'Ҷавоби Алия', AT.plain(text), ['aliya-answer']);

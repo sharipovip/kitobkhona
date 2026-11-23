@@ -123,7 +123,10 @@ check('AliyaTasks.exportDoc is a function', typeof AT.exportDoc === 'function');
     docxErr = e;
   }
   check('Word export does not throw', !docxErr, docxErr && (docxErr.name + ': ' + docxErr.message));
-  check('Word export produces a .docx file', /\.docx$/.test(String(docxName || '')), String(docxName));
+  // v178: exportDoc returns { fileName, method, ... } so the UI can say
+  // where the file was saved.
+  const docxFile = (docxName && docxName.fileName) || String(docxName || '');
+  check('Word export produces a .docx file', /\.docx$/.test(docxFile), String(docxName));
   check('Word export reaches the bridge', saved.some((s) => /\.docx$/.test(s.fileName)),
     'saved: ' + JSON.stringify(saved.map((s) => s.fileName)));
 
@@ -155,7 +158,8 @@ check('AliyaTasks.exportDoc is a function', typeof AT.exportDoc === 'function');
       pdfErr.message);
     check('PDF export failure is not a hang', pdfErr instanceof Error);
   } else {
-    check('PDF export produces a .pdf file', /\.pdf$/.test(String(pdfName || '')), String(pdfName));
+    const pdfFile = (pdfName && pdfName.fileName) || String(pdfName || '');
+    check('PDF export produces a .pdf file', /\.pdf$/.test(pdfFile), String(pdfName));
     check('PDF export reaches the bridge', saved.some((s) => /\.pdf$/.test(s.fileName)));
   }
 
