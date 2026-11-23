@@ -202,6 +202,9 @@
     '.at-task:hover{border-color:var(--at-gold)}.at-task:active{transform:scale(.97)}.at-task.on{border-color:var(--at-gold);background:var(--at-card2)}.at-task:disabled{opacity:.45;cursor:default}',
     '@media(min-width:760px){.at-tasks.at-wide{grid-template-columns:repeat(6,minmax(0,1fr))}}',
     '.at-ans{border-radius:16px;background:var(--at-card);border:1px solid var(--at-line);padding:12px 14px;color:var(--at-txt);min-width:0}',
+    // v172: якчанд ҷавоби Алия дар панели Reader — ҳар яке дар ҳудуди худ ва
+    // бо тугмаҳои «Word»/«PDF»-и худ (аз болои онҳо ҷавобҳои нав).
+    '.at-ans-wrap{margin:0 0 12px}',
     '.at-empty{color:var(--at-mut);font-size:13.5px;line-height:1.55;display:flex;gap:10px;align-items:flex-start}',
     '.at-head{display:flex;align-items:center;gap:8px;margin-bottom:6px;min-width:0}',
     '.at-head b{font-size:14px;color:var(--at-gold);min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}',
@@ -1036,9 +1039,29 @@
     var title = taskTitle(task, o), meta = 'саҳ. ' + rangeLabel(o.from, o.to);
     var steps = d.steps.slice(), readN = d.read || 1, fin = d.fin;
     if (task === 'test' && o.material !== 'test') { steps = ['Мехонам', 'Менависам']; readN = 1; fin = 'Омода шуд'; }
-    box.innerHTML = '<div class="at-ans"><div class="at-head"><b>' + d.ic + ' ' + esc(title) + '</b><small>' + esc(meta) + '</small></div>' +
-      '<div class="at-think"></div><div class="at-body"></div></div>';
-    var card = box.firstChild, think = card.querySelector('.at-think'), body = card.querySelector('.at-body'), small = card.querySelector('.at-head small');
+    // v172: cfg.append === true → ҷавоби нав ба зери ҷавобҳои қаблӣ илова мешавад
+    // (ҳар як ҷавоб худи худ тугмаҳои «Word»/«PDF»-ро дорад), на ин ки ҳамаи
+    // ҷавобҳои қаблӣро аз нав навишад. Дар Алияи асоси як хулоса аст.
+    var reuseTarget = cfg.append && cfg._appendTarget && cfg._appendTarget.parentNode === box ? cfg._appendTarget : null;
+    if (cfg.append) {
+      var emptyState = box.querySelector('.at-empty-wrap');
+      if (emptyState && emptyState.parentNode) emptyState.parentNode.removeChild(emptyState);
+      var holder = reuseTarget || document.createElement('div');
+      if (!reuseTarget) {
+        holder.className = 'at-ans-wrap';
+        box.appendChild(holder);
+      }
+      holder.innerHTML = '<div class="at-ans"><div class="at-head"><b>' + d.ic + ' ' + esc(title) + '</b><small>' + esc(meta) + '</small></div>' +
+        '<div class="at-think"></div><div class="at-body"></div></div>';
+      // v172: «Аз нав оғоз» бояд ҳамон ҷавобро боз ҷойгир кунад, на ин ки
+      // як ҷавоби дуб хосил кунад.
+      cfg._appendTarget = holder;
+    } else {
+      box.innerHTML = '<div class="at-ans"><div class="at-head"><b>' + d.ic + ' ' + esc(title) + '</b><small>' + esc(meta) + '</small></div>' +
+        '<div class="at-think"></div><div class="at-body"></div></div>';
+    }
+    var card = cfg.append ? box.lastElementChild.firstElementChild : box.firstChild;
+    var think = card.querySelector('.at-think'), body = card.querySelector('.at-body'), small = card.querySelector('.at-head small');
     var step = -1;
     function showStep(i) {
       if (i === step || !think.isConnected) return;

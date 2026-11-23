@@ -122,7 +122,6 @@
         <div class="row">
           <button class="pill" onclick="setTheme('light')">☀️ Рӯз</button>
           <button class="pill active" onclick="setTheme('dark')">🌙 Шаб</button>
-          <button class="pill" onclick="setTheme('minimal')">◇ Минимализм</button>
         </div>
       </div>
     </div>
@@ -137,7 +136,7 @@
       <div class="settings-group-title">Андоза</div>
       <div class="setting-item" style="display:block">
         <div class="setting-label">🔍 Калонсозӣ</div>
-        <input class="range" type="range" min="70" max="220" value="100" oninput="setZoom(this.value)">
+        <input class="range" type="range" min="50" max="400" value="100" oninput="setZoom(this.value)">
         <div id="zoomText" style="text-align:center;color:var(--gold2);font-weight:900">100%</div>
       </div>
     </div>
@@ -591,7 +590,10 @@
   }
 
   // ===== v131: стабильный рендер (масштаб / перелистывание / ресайз) =====
-  const Z_MIN = 0.7, Z_MAX = 2.2, FLIP_MS = 640;
+  // v172: Зум озод — андозаи страница метавонад то 400% калон шавад (то он
+  // ҳам дар бараи матн, ҳам барои муҳофитаи худуд ба танҳо). Пеш аз ин
+  // ҳадди зум аз 220% буд, ки панчаро дар бараи китоб маҳдуд мекард.
+  const Z_MIN = 0.5, Z_MAX = 4.0, FLIP_MS = 640;
   let renderedZoom = 1, renderedBoxW = 0, renderedBoxH = 0;
   let pendingRender = null, flipFinalize = null, dragAngle = 0, zoomCommitTimer = null;
 
@@ -763,6 +765,135 @@
   stageEl.addEventListener('pointerup',e=>finishReaderSwipe(e,false));
   stageEl.addEventListener('pointercancel',e=>finishReaderSwipe(e,true));
 
+  /* ------------------------------------------------------------------ */
+  /* v172: Озод будҳисти китоб — пинч (ду ангушт) ва ҳаракати озод        */
+  /*  Зум аз 50% то 400% — дар ҳар ду ҳис мешавад (уфуқ ва амуд).         */
+  /*  Анъанаи кӯҳна: як ангушт = ҳаракати саҳифа (пан), ду ангушт =     */
+  /*  пинч-зум дар атрофи нуқтаи байни ангуштҳо.                          */
+  /* ------------------------------------------------------------------ */
+  const gesture = {
+    pinch: false, dist0: 0, zoom0: 1, mid0: { x: 0, y: 0 }, pan0: { x: 0, y: 0 },
+    pan: false, panStart: { x: 0, y: 0 }, panBase: { x: 0, y: 0 },
+    pointers: new Map(), pinchCommitted: false
+  };
+  function touchDistance(e) {
+    const t = e.touches;
+    if (!t || t.length < 2) return 0;
+    return Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
+  }
+  // Нуқтаи байни ду ангушт нисбат ба маркази майдони саҳифа.
+  function touchMid(e) {
+    const r = $('pageContainer').getBoundingClientRect();
+    const t = e.touches;
+    return {
+      x: (t[0].clientX + t[1].clientX) / 2 - (r.left + r.width / 2),
+      y: (t[0].clientY + t[1].clientY) / 2 - (r.top + r.height / 2)
+    };
+  }
+  function stageIsPdf() { return !window.__kkTextMode || window.__kkTextMode === 'pdf'; }
+
+  stageEl.addEventListener('touchstart', function (e) {
+    if (!stageIsPdf() || !pdf) return;
+    if (e.touches.length === 2) {
+      gesture.pinch = true;
+      gesture.pinchCommitted = false;
+      gesture.dist0 = touchDistance(e);
+      gesture.zoom0 = zoom;
+      gesture.mid0 = touchMid(e);
+      gesture.pan0 = { x: panX, y: panY };
+      // Паншараи свайп-варақгардонро боздорем — ҳам дар зуми калон метавонид пан кард.
+      drag = false; swipePointer = null;
+      e.preventDefault();
+    } else if (e.touches.length === 1 && zoom > 1.01) {
+      // Як ангушт = озод ҳаракати кардани худуи калоншуда (барои ҳар ду ҳис).
+      gesture.pan = true;
+      gesture.panStart = { x: e.touches[0].clientX, y: e.touches[0].clientY };
+      gesture.panBase = { x: panX, y: panY };
+      e.preventDefault();
+    }
+  }, { passive: false });
+
+  stageEl.addEventListener('touchmove', function (e) {
+    if (!stageIsPdf() || !pdf) return;
+    if (gesture.pinch && e.touches.length === 2) {
+      e.preventDefault();
+      const dist = touchDistance(e);
+      if (gesture.dist0 > 0 && dist > 0) {
+        const factor = dist / gesture.dist0;
+        const z1 = clampZoom(gesture.zoom0 * factor);
+        const m = touchMid(e);
+        // Нуқтаи байни ангуштҳо ҳамон нуқтаи китобро дар экран нигоҳ медорад.
+        const k0 = gesture.zoom0 / renderedZoom, k1 = z1 / renderedZoom;
+        panX = m.x - k1 * ((gesture.mid0.x - gesture.pan0.x) / k0);
+        panY = m.y - k1 * ((gesture.mid0.y - gesture.pan0.y) / k0);
+        zoom = z1;
+        gesture.pinchCommitted = true;
+        applyViewTo(cvEl(), false);
+        syncZoomUI();
+        $('stage').classList.toggle('is-zoomed', zoom > 1.001);
+      }
+      return;
+    }
+    if (gesture.pan && e.touches.length === 1) {
+      e.preventDefault();
+      const dx = e.touches[0].clientX - gesture.panStart.x;
+      const dy = e.touches[0].clientY - gesture.panStart.y;
+      panX = gesture.panBase.x + dx;
+      panY = gesture.panBase.y + dy;
+      applyViewTo(cvEl(), false);
+      return;
+    }
+  }, { passive: false });
+
+  function endReaderGesture(e) {
+    if (gesture.pinch) {
+      if (!e.touches || e.touches.length < 2) {
+        gesture.pinch = false;
+        gesture.dist0 = 0;
+        // Пас аз пинч — аз нав дар баландӣ зур карда мешавад, то матн равшан шавад.
+        if (gesture.pinchCommitted && pdf && Math.abs(zoom - renderedZoom) > 0.002) {
+          clearTimeout(zoomCommitTimer);
+          renderPage(page, 0);
+        }
+      }
+      return;
+    }
+    gesture.pan = false;
+  }
+  stageEl.addEventListener('touchend', endReaderGesture);
+  stageEl.addEventListener('touchcancel', endReaderGesture);
+
+  // v172: зум бо чархаи муш (Ctrl/⌘ + чарх) — барои ноутбук бе сенсор.
+  stageEl.addEventListener('wheel', function (e) {
+    if (!stageIsPdf() || !pdf) return;
+    if (!(e.ctrlKey || e.metaKey)) return;
+    e.preventDefault();
+    const next = clampZoom(zoom * (e.deltaY < 0 ? 1.12 : 1 / 1.12));
+    setZoom(Math.round(next * 100), true);
+  }, { passive: false });
+
+  // v172: як ангушт ё бонус — ҳаракати озод ҳам дар муш (drag) кор мекунад.
+  stageEl.addEventListener('pointerdown', function (e) {
+    if (e.pointerType !== 'mouse' || e.button !== 0) return;
+    if (zoom <= 1.01) return;                 // дар фитшуда свайпи варақ кор мекунад
+    if (e.target.closest('.reader-reactions,.reader-top-bar,.reader-bottom-bar,.panel')) return;
+    gesture.pan = true;
+    gesture.panStart = { x: e.clientX, y: e.clientY };
+    gesture.panBase = { x: panX, y: panY };
+    drag = false; swipePointer = null;
+    try { stageEl.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  stageEl.addEventListener('pointermove', function (e) {
+    if (!gesture.pan || e.pointerType !== 'mouse') return;
+    const dx = e.clientX - gesture.panStart.x, dy = e.clientY - gesture.panStart.y;
+    if (Math.abs(dx) < 2 && Math.abs(dy) < 2) return;
+    panX = gesture.panBase.x + dx;
+    panY = gesture.panBase.y + dy;
+    applyViewTo(cvEl(), false);
+    e.preventDefault();
+  }, { passive: false });
+  ['pointerup', 'pointercancel'].forEach(t => stageEl.addEventListener(t, function () { gesture.pan = false; }));
+
   // v171: свайп-варақгардон (curl) барои PDF — reader-gestures.js пеш аз ин сарчашма бор, валеле пайваст нашуда буд.
   // Ҳамин шуд, ки ӯро метавонист. Ҳеҷ гуна свайп барои ин контроллер кор мекунад.
   async function renderCurlPreview(n) {
@@ -811,6 +942,10 @@
   window.addEventListener('pagehide',()=>clearTimeout(readerIdleTimer));
   armReaderIdle();
 
+  // v172: тема читателя — только два состояния (Рӯз / Шаб). «Минимализм» дар
+  // панели танҳум барои диққати пурра ба китоб мешавад, амо як тугмаи
+  // «Мавзӯъ» бояд дар як зерк рӯз ⇄ шаб таҳдил кунад (на ин ки ду мартиба).
+  const READER_THEMES = ['light', 'dark'];
   function syncReaderTheme(t) {
     const light = t !== 'dark';
     document.body.classList.toggle('light-reading', light);
@@ -821,15 +956,15 @@
     });
     const mt = document.querySelector('meta[name="theme-color"]');
     if (mt) mt.setAttribute('content', window.KKH_THEMES?.[t]?.bg || (light ? '#FFFFFF' : '#0C0C0C'));
-    if ($('readerThemeIcon')) $('readerThemeIcon').textContent=t==='light'?'☀':t==='minimal'?'◇':'🌙';
+    if ($('readerThemeIcon')) $('readerThemeIcon').textContent = light ? '☀' : '🌙';
     // холст теперь всегда белый, тема меняется CSS-фильтром — перерисовка не нужна (нет мерцания)
   }
   function setTheme(t) {
     // Reader appearance is intentionally independent from the application theme.
-    t=['light','dark','minimal'].includes(t)?t:'light';
+    t = READER_THEMES.includes(t) ? t : 'light';
     syncReaderTheme(t);
   }
-  const initialReaderTheme=localStorage.getItem('kk_reader_theme')||'light';
+  const initialReaderTheme = READER_THEMES.includes(localStorage.getItem('kk_reader_theme')) ? localStorage.getItem('kk_reader_theme') : 'light';
   setTheme(initialReaderTheme);
 
   function clampZoom(z) { return Math.max(Z_MIN, Math.min(Z_MAX, Math.round(z * 100) / 100)); }
@@ -841,7 +976,8 @@
     if (sl) sl.value = pct;
   }
   function setZoom(v) {
-    zoom = Number(v) / 100;
+    // v172: зум ҳамеша дар ҳудуди [Z_MIN, Z_MAX] нигоҳ дар мешавад.
+    zoom = clampZoom(Number(v) / 100);
     const container = $('pageContainer');
     if (container) container.classList.toggle('zoomed', zoom > 1.001);
     syncZoomUI();
@@ -851,9 +987,9 @@
     }
   }
   function promptExactZoom(){
-    const raw=window.prompt('Фоизи андозаро ворид кунед (70–220)',String(currentExactZoom()));
+    const raw=window.prompt('Фоизи андозаро ворид кунед (50–400)',String(currentExactZoom()));
     if(raw===null)return;
-    const value=Math.max(70,Math.min(220,parseInt(String(raw).replace(/[^0-9]/g,''),10)||currentExactZoom()));
+    const value=Math.max(50,Math.min(400,parseInt(String(raw).replace(/[^0-9]/g,''),10)||currentExactZoom()));
     if(window.__kkTextMode==='epub'){window.__kkEpubFont(value);window.__kkEpubFontSave();}
     else if(window.__kkTextMode==='scroll')setScrollZoom(value);
     else setZoom(value,true);
@@ -923,7 +1059,7 @@
     if (window.__kkTextMode === 'epub') { window.__kkEpubFont(window.__kkEpubFontPct + delta); window.__kkEpubFontSave(); return; }
     if (window.__kkTextMode === 'scroll') { setScrollZoom((window.__kkScrollZoomPct || 100) + delta); return; }
     if (!window.__kkTextMode) { toast('Барои ин намуд андоза истифода намешавад'); return; }
-    const next = Math.max(70, Math.min(220, Math.round(zoom * 100) + delta));
+    const next = Math.max(50, Math.min(400, Math.round(zoom * 100) + delta));
     setZoom(next, true);
     toast('Андоза: ' + next + '%');
   }
@@ -986,9 +1122,9 @@
   function quickGoPage(){const input=$('quickPageInput');if(!input||!pages)return;const raw=input.value.trim();input.value='';if(!raw)return;const n=Math.max(1,Math.min(pages,parseInt(raw,10)||page));renderPage(n,n>=page?1:-1)}
   function jumpToPagePrompt(){document.getElementById('quickPageInput')?.focus()}
   function toggleReaderTheme(){
-    const themes=['light','dark','minimal'];
-    const current=localStorage.getItem('kk_reader_theme')||'light';
-    setTheme(themes[(themes.indexOf(current)+1)%themes.length]);
+    // v172: як зерк — як рӯз ба шаб, як шаб ба рӯз. Ҳеҷ як дафаи дигар лозим нест.
+    const current = localStorage.getItem('kk_reader_theme');
+    setTheme(current === 'dark' ? 'light' : 'dark');
   }
   let readerFavorite=false,readerFavoriteLoaded=false;
   function canonicalFavoriteId(){try{return decodeURIComponent(getBookId()).replace(/^books\//i,'')}catch(e){return getBookId().replace(/^books\//i,'')}}

@@ -49,7 +49,7 @@
   var bookName = qs.get('name') || 'Китоб';
   var curPage = Math.max(1, parseInt(qs.get('page'), 10) || 1);
   var grade = AT.detectGrade(safeDecode(bookUrl), bookName);
-  var pdfDoc = null, reader = null, loading = null, totalPages = 0, busy = false, current = null;
+  var pdfDoc = null, reader = null, loading = null, totalPages = 0, busy = false, current = null, runCfg = null;
   // v159: дар дохили Reader (iframe) кушода шудааст — китоби аллакай кушодаи Reader истифода мешавад
   var host = null;
   try { if (qs.get('embed') === '1' && window.parent !== window && window.parent.__kkCloseAliya) host = window.parent; } catch (e) { host = null; }
@@ -87,7 +87,7 @@
   setLabel(); updateCount();
 
   function showEmpty(msg) {
-    $('raAns').innerHTML = '<div class="at-ans"><div class="at-empty">' + AT.emblem(false, 'navy') + '<span>' + AT.esc(msg) + '</span></div></div>';
+    $('raAns').innerHTML = '<div class="at-empty-wrap"><div class="at-ans"><div class="at-empty">' + AT.emblem(false, 'navy') + '<span>' + AT.esc(msg) + '</span></div></div></div>';
   }
   showEmpty('Амалро интихоб кунед. Алия бо матни ҳамин китоб кор мекунад — ҳам PDF-и матнӣ, ҳам китоби сканшуда.');
 
@@ -133,13 +133,23 @@
   function start(task, opts) {
     document.querySelectorAll('#raTasks .at-task').forEach(function (b) { b.classList.toggle('on', b.getAttribute('data-task') === task); });
     if (current) current.abort();
-    current = AT.run({
-      box: $('raAns'), task: task, opts: opts, bookName: bookName, bookUrl: bookUrl, scroller: $('raScroll'),
+    // v172: ҳар ҷавоби Алия дар панели Reader бо тугмаҳои «Word»/«PDF»-и
+    // худ меҳошид — ҷавобҳои қаблӣ ҳам дар зери онҳо мемонанд.
+    // Як объекти cfg муштарак истифода мебарем, то «Аз нав оғоз» ҳамон ҷавобро
+    // боз ҷойгир кунад (на як ҷавоби дуб).
+    runCfg = runCfg || {
+      box: $('raAns'), scroller: $('raScroll'),
       onBusy: setBusy, onSaved: updateCount,
+      append: true,
       getText: function (o, ui) {
         return ensureBook().then(function () { return reader.rangeText(o.from, o.to, ui); });
       }
-    });
+    };
+    runCfg.task = task;
+    runCfg.opts = opts;
+    runCfg.bookName = bookName;   // v172: номи китоб метавонад тағйир ёбад
+    runCfg.bookUrl = bookUrl;
+    current = AT.run(runCfg);
   }
 
   function pick(task) {
