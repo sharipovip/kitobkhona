@@ -91,6 +91,43 @@ readme = (ROOT/'README.md').read_text(encoding='utf-8')
 assert 'СБОРКА_И_ПУБЛИКАЦИЯ.md' in readme, 'README must link the build/deploy guide'
 print('PASS the repository root keeps only the three current documents')
 
+# v177: тугмаи «PDF»/«Word» дар Алияи дастгирӣ (iframe дар Reader) бояд
+# файлро ҳақиқан сабт кунад. Три сабаби асосии хато:
+#   1) сабт ба мошини ЧАҲРИ ДИГАР (window.parent.AliyaBridge) мефиристод —
+#      иҷозати корбар барои интихоби файл дар чаҳри дигар нест, браузер
+#      «Must be handling a user gesture» медиод;
+#   2) агар интихоби файли иҷозат надод, хато ба корбар «Ҳуҷҷат сабт нашуд»
+#      мекард ва файл асло сабт намешуд;
+#   3) китобхонаҳо ва шрифтҳои PDF дар precache-и SW набуданд — офлайн
+#      PDF ҳеҷ ҳеҷ сохта намешуд.
+tasks_src = (ROOT/'aliya/aliya-tasks.js').read_text(encoding='utf-8')
+bridge_src = (ROOT/'aliya/aliya-bridge.js').read_text(encoding='utf-8')
+
+# (1) мошини сабти файл бояд дар ҳамон чаҳр истифода шавад.
+own_bridge = tasks_src.find('window.AliyaBridge && typeof window.AliyaBridge.saveFile')
+parent_bridge = tasks_src.find('window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile')
+assert own_bridge != -1, 'the export must use the bridge of its own frame'
+assert parent_bridge != -1, 'the parent frame bridge must stay as a fallback'
+assert own_bridge < parent_bridge, (
+    'the own-frame bridge must be tried first — the Save-As picker needs the '
+    'user activation of the frame that handles the click')
+
+# (2) интихоби файли иҷозат надошта бояд ба боршаврии одӣ гузаранд.
+assert 'falling back to a normal download' in bridge_src, (
+    'a refused Save-As picker must fall back to a normal download instead of '
+    'failing with "Ҳуҷҷат сабт нашуд"')
+assert 'abortedByUser' in bridge_src, 'a cancelled Save-As picker must be marked as user-cancelled'
+
+# (3) китобхонаҳо ва шрифтҳои PDF бояд дар precache-и SW бошанд.
+for asset in ('./assets/libs/pdf-lib.min.js', './assets/libs/fontkit.umd.min.js',
+              './assets/fonts/NotoSans-Regular.sub.ttf', './assets/fonts/NotoSans-Bold.sub.ttf',
+              './assets/fonts/NotoSans-Italic.sub.ttf', './assets/fonts/DejaVuSym.sub.ttf'):
+    assert asset in sw, f'{asset} must be precached — otherwise the PDF export fails offline'
+for asset in ('assets/libs/pdf-lib.min.js', 'assets/libs/fontkit.umd.min.js',
+              'assets/fonts/NotoSans-Regular.sub.ttf', 'assets/fonts/DejaVuSym.sub.ttf'):
+    assert (ROOT/asset).exists(), f'{asset} is missing from the repository'
+print('PASS the Reader Aliya saves Word/PDF in its own frame and the PDF assets are precached')
+
 desktop_css=(ROOT/'assets/css/desktop-layout.css').read_text(encoding='utf-8')
 assert '@media screen and (min-width: 1024px)' in desktop_css
 assert 'max-width: min(100%, 1720px)' in desktop_css
