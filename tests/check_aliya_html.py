@@ -66,6 +66,31 @@ for page in ('reader.html', 'aliya/index.html', 'aliya/reader-aliya.html'):
             'users would keep the cached copy of the previous release')
 print('PASS stale app/ copy is gone and asset versions match the Service Worker cache')
 
+# v177: в корне репозитория было 71 .md-файл — десятки DEPLOY_v*.md и
+# ИЗМЕНЕНИЯ_v*.md с историей релизов. Они ничего не объясняли на первой
+# странице GitHub и мешали ориентироваться. Остались три: README.md (главная
+# страница), СБОРКА_И_ПУБЛИКАЦИЯ.md (сборка/проверки/публикация) и
+# MISSING_USER_ASSETS_RU.md (список файлов, которые подставляет владелец —
+# на него ссылается dovtalab/index.html). Проверяем, что новые файлы релизов
+# не заводятся снова.
+root_md = sorted(p.name for p in ROOT.glob('*.md'))
+allowed_md = {'README.md', 'СБОРКА_И_ПУБЛИКАЦИЯ.md', 'MISSING_USER_ASSETS_RU.md'}
+extra_md = [name for name in root_md if name not in allowed_md]
+assert not extra_md, (
+    'unexpected .md files in the repository root: ' + ', '.join(extra_md) +
+    ' — release notes belong in git history, not in the root')
+assert (ROOT/'README.md').exists(), 'README.md is the front page of the repository'
+assert (ROOT/'СБОРКА_И_ПУБЛИКАЦИЯ.md').exists(), 'the build/deploy guide must exist'
+assert (ROOT/'MISSING_USER_ASSETS_RU.md').exists(), 'the missing-assets list must exist'
+# Список недостающих файлов нужен рабочему «Довталабу» — ссылка не должна
+# превратиться в 404.
+dovtalab_index = (ROOT/'dovtalab/index.html').read_text(encoding='utf-8')
+assert 'MISSING_USER_ASSETS_RU.md' in dovtalab_index, 'dovtalab must keep linking the missing-assets list'
+# Сборка/публикация описана в README — иначе её не найти.
+readme = (ROOT/'README.md').read_text(encoding='utf-8')
+assert 'СБОРКА_И_ПУБЛИКАЦИЯ.md' in readme, 'README must link the build/deploy guide'
+print('PASS the repository root keeps only the three current documents')
+
 desktop_css=(ROOT/'assets/css/desktop-layout.css').read_text(encoding='utf-8')
 assert '@media screen and (min-width: 1024px)' in desktop_css
 assert 'max-width: min(100%, 1720px)' in desktop_css
