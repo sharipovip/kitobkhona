@@ -4,16 +4,16 @@
     "bytes": 69368
   },
   "aliya/aliya-bridge.js": {
-    "sha256": "8e8d8ef0dcddf0d1dca7e4a166a8dfb6ffc3c14120f4c9eba535e8ca19c665b3",
-    "bytes": 10369
+    "sha256": "6b99e9f8111166a8896ac51a1dc6c3f3201ee894d0983c63f8e58a7580b4e58b",
+    "bytes": 11077
   },
   "aliya/aliya-pdf.js": {
     "sha256": "4254ce5ce486037ff9173cce368c4bc41ec8d6915899e93d945390100210ce9a",
     "bytes": 23160
   },
   "aliya/aliya-tasks.js": {
-    "sha256": "bfe82753f93e2eaf34224a0e06017c134c955d1544439c871ffa9db2a45e1bfb",
-    "bytes": 109867
+    "sha256": "3c36c6de169863713b2be3534c2335d40a5dcde3d8b832f06398b78a0e206e09",
+    "bytes": 110238
   },
   "aliya/aliya-theme.css": {
     "sha256": "7ba93bdf1fdb87859774c1140e75df0963fd0ab7df249b82755905e0cfbb155f",
@@ -76,8 +76,8 @@
     "bytes": 30071
   },
   "assets/css/reader.css": {
-    "sha256": "2b2293b88c4a1ba58d612eb0db17430edc9bccf32b3105d9de81c933e7e24a72",
-    "bytes": 33952
+    "sha256": "b1f274810b3fd64c9645e22d710f75f0d3af936ded69fb149cd6cf0723e23be4",
+    "bytes": 34700
   },
   "assets/css/winners.css": {
     "sha256": "29a6829f706ecad753bcd28ef26fd79216ea264cffded9caf0fc73bab3779ef9",
@@ -116,7 +116,7 @@
     "bytes": 525099
   },
   "chat.html": {
-    "sha256": "a9c53458e55ea1914f7d38fae44d7873cb3e4bf767a851005be6f27ec4a70399",
+    "sha256": "c47e62637df130d9b6633dd9457a9a900a101bb919fe6c8f2b47e97f8a58f571",
     "bytes": 43576
   },
   "chats.html": {
@@ -124,8 +124,8 @@
     "bytes": 31771
   },
   "config.js": {
-    "sha256": "dc8d0a940ac431f399178edf7a162e88d2f113ff0def910bb66398bf2726c327",
-    "bytes": 223675
+    "sha256": "095ba66870fef1edbac5f77dd0621fba941d02ea210a77f4e3dba24dba5e5262",
+    "bytes": 231682
   },
   "contest-integration.js": {
     "sha256": "c9284a7e04c9f3de1c5fb3670168d5716ec0686423c188bdc122ed4e97722b42",
@@ -144,15 +144,15 @@
     "bytes": 2357
   },
   "index.html": {
-    "sha256": "49933bf9d765a9715693fe67d5dccdc1d28671836d36e4eed8e93eaa57debaf9",
-    "bytes": 168191
+    "sha256": "0705ae4368530bc958a50a9b3e3e9d8a05f9329ef6eb6e2cf9022cf23080a78b",
+    "bytes": 169086
   },
   "kitobho.html": {
     "sha256": "565f9a438312b3ffa20636c52ade63f6416b42ddd23642a4a4cee1d380c4b21e",
     "bytes": 57775
   },
   "offline-books.html": {
-    "sha256": "9acdb63bbafe7b1f24d73821fcf0ce4eaa1f7710aa70f9ede838788c9dd300fc",
+    "sha256": "7174d645d9bc53e0575e15f013310027a93295d77aac6e5df04eaedbfe888382",
     "bytes": 18398
   },
   "privacy-policy.html": {
@@ -160,7 +160,7 @@
     "bytes": 11443
   },
   "profile.html": {
-    "sha256": "46ce94b405717b49badbc4ab07b7bb1bef9cb73cfafe407b35b8780c28107a18",
+    "sha256": "3590c2adc4b888baf7db595c6ff1532b72f13f8e13916c8685e5cdfd1b744aef",
     "bytes": 140420
   },
   "reader-curl.js": {
@@ -172,12 +172,12 @@
     "bytes": 5042
   },
   "reader.html": {
-    "sha256": "1b0beb8a2b445765fb60726561e3dabaa8a3b387722a0527da4a52d2db2ae8fd",
-    "bytes": 104679
+    "sha256": "3d4c82c9c1972923d92241fa5c27700f9fd0ee73d8653edb8ef80c29afcca1d5",
+    "bytes": 105340
   },
   "sw.js": {
-    "sha256": "baed3e7bff810ba4af9dfc2dec8f5c718e44d49bf6aad18f9a8a3065eb713460",
-    "bytes": 22631
+    "sha256": "8ea000c240946a7ad93d6b003e465a9444c0aed34e4182d4f3ecb56f8d141efd",
+    "bytes": 22635
   },
   "terms.html": {
     "sha256": "fb94eba31faf717423624347d6728d7fec4701d727262e961b1e0149c4dfc812",
@@ -186,5 +186,29 @@
   "winners.html": {
     "sha256": "469e1742ee2caf0843e56573fa484899fe62fde105e2f03e349fa5206f4dadef",
     "bytes": 16117
+  },
+  "README.md": {
+    "sha256": "19f5f7d31ce48f78c1c9b372915fa97832c48a463fc53eb717abe8f87dc1702a",
+    "bytes": 24223
+  },
+  "admin.html": {
+    "sha256": "a339c5be5ba2f9b2aac72e263f0ec64bb870d9fda47a577db5636ef78445041c",
+    "bytes": 76551
+  },
+  "package.json": {
+    "sha256": "0c0fce71dbb6c10478809e376c41e4c36880abd74dad3287fc1e395c3864a4db",
+    "bytes": 2274
+  },
+  "tests/cache-control-runtime.js": {
+    "sha256": "d64d4ee1ca7c7c88d61ed79190274f86b700b4f8034e35885c314068558ecf96",
+    "bytes": 17823
+  },
+  "tests/aliya-reader-cache-e2e.js": {
+    "sha256": "ff722999427c6712ba77d04cf2e27b9d2b73e5e617ef8d9b71082f967daa2313",
+    "bytes": 13970
+  },
+  "tests/reader-aliya-save-runtime.js": {
+    "sha256": "4b31bea06118a45b69f8bc6c6b3aa4163ead376a7cdb39325d4058373cf6d9c2",
+    "bytes": 29820
   }
 }

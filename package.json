@@ -1,6 +1,6 @@
 {
   "name": "kitobkhona-desktop",
-  "version": "3.2.3",
+  "version": "3.3.0",
   "description": "Китобхонаи электронӣ ва ёвари Алия барои Windows",
   "main": "desktop/main.cjs",
   "private": true,
@@ -13,9 +13,11 @@
     "test:latency": "node tests/aliya-latency.js",
     "test:gateway": "python3 tests/gateway_deadline.py",
     "test:html": "python3 tests/check_aliya_html.py",
-    "test:fixes": "npm run test:aliya && npm run test:reader && npm run test:reader-aliya && npm run test:reader-zoom && npm run test:latency && npm run test:gateway && npm run test:html && npm run test:ui",
+    "test:fixes": "npm run test:aliya && npm run test:reader && npm run test:reader-aliya && npm run test:reader-zoom && npm run test:latency && npm run test:gateway && npm run test:cache-control && npm run test:e2e && npm run test:html && npm run test:ui",
     "test:reader-aliya": "node tests/reader-aliya-tools.js && node tests/reader-aliya-export-runtime.js && node tests/reader-aliya-click.js && node tests/reader-aliya-pdf-runtime.js && node tests/reader-aliya-save-runtime.js",
-    "test:reader-zoom": "node tests/reader-zoom-theme-runtime.js"
+    "test:reader-zoom": "node tests/reader-zoom-theme-runtime.js",
+    "test:cache-control": "node tests/cache-control-runtime.js",
+    "test:e2e": "node tests/aliya-reader-cache-e2e.js"
   },
   "devDependencies": {
     "electron": "^35.0.0",

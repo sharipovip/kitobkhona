@@ -1056,7 +1056,10 @@
     var fn = res.fileName || '';
     var where = '';
     if (res.method === 'file_picker') where = ' — шута гирифта шуд (ҷои худро интихоб кунед)';
-    else if (res.method === 'android_bridge' || res.method === 'android_base64' || res.method === 'native_post_message') where = ' — дар барнома сохта шуд';
+    // Нативный мост Android аз ҷой бозгашт намедиҳад — бинобар ин рост
+    // намегувем, ки «сабт шуд», балки «барои захира кардан омода» (ҳамон
+    // калиби ки китоб истифода мебарад).
+    else if (res.method === 'android_bridge' || res.method === 'android_base64' || res.method === 'native_post_message') where = ' — барои захира кардан омода (интихоби папкаро гиред)';
     else if (res.method === 'browser_blob') where = ' — дар папкаи «Загрузки» сабт шуд';
     return (fn || label) + where;
   }

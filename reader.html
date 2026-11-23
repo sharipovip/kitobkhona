@@ -8,7 +8,7 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="./assets/libs/pdf.min.js"></script>
-<script src="config.js?v=76"></script>
+<script src="config.js?v=77"></script>
 <script src="./assets/js/native-fallback.js?v=178"></script>
 <script src="cache.js?v=45"></script>
 
@@ -40,7 +40,7 @@
 
 <script src="./aliya/aliya-tasks.js?v=178" defer></script>
 
-<link rel="stylesheet" href="assets/css/reader.css?v=clean-1">
+<link rel="stylesheet" href="assets/css/reader.css?v=clean-2">
 <script src="reader-curl.js?v=clean-1"></script>
 <script src="reader-gestures.js?v=clean-1"></script>
 </head>
@@ -1895,6 +1895,9 @@ window.addEventListener('load', function () {
 
   <!-- Тугмаи шиновари Алия ва тирчаҳои канории ПК -->
   <button class="reader-aliya-btn" id="readerAliyaBtn" title="Алия — Ёвари зеҳни сунъии китобхон" aria-label="Алия — ёвари китобхон"><svg class="reader-aliya-mark" viewBox="0 0 32 32" aria-hidden="true"><defs><radialGradient id="readerAliyaGold" cx="42%" cy="35%" r="70%"><stop offset="0" stop-color="#FFF6D2"/><stop offset=".42" stop-color="#E8C96D"/><stop offset="1" stop-color="#B88939"/></radialGradient></defs><path d="M16 4.2c1.1 5.9 3.9 8.7 9.8 9.8-5.9 1.1-8.7 3.9-9.8 9.8-1.1-5.9-3.9-8.7-9.8-9.8 5.9-1.1 8.7-3.9 9.8-9.8Z" fill="url(#readerAliyaGold)"/><circle cx="25.7" cy="7.3" r="1.55" fill="#FFE29A"/><circle cx="7" cy="24.7" r="1.15" fill="#E8C96D"/><path d="M24.3 21.8c.45 2.05 1.45 3.05 3.5 3.5-2.05.45-3.05 1.45-3.5 3.5-.45-2.05-1.45-3.05-3.5-3.5 2.05-.45 3.05-1.45 3.5-3.5Z" fill="#FFF0B5"/></svg></button>
+  <!-- v179: тугмаи «Обновить» — очистить кэши дастӣ, агар фармони админ
+       автоматики кор накарда бошад. -->
+  <button class="reader-update-btn" id="kkUpdateBtn" type="button" title="Обновить программу и очистить кэш" aria-label="Обновить программу и очистить кэш" style="display:none"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#E8C96D" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 12a9 9 0 1 1-2.64-6.36"/><path d="M21 3v6h-6"/></svg></button>
   <div class="pc-page-arrow left" onclick="turnPage(-1)" title="Саҳифаи қаблӣ (← / PageUp)">‹</div>
   <div class="pc-page-arrow right" onclick="turnPage(1)" title="Саҳифаи навбатӣ (→ / PageDown)">›</div>
 
