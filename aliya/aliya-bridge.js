@@ -105,12 +105,22 @@
       if (originalBlob && originalBlob.size === 0) throw new Error('Файл холӣ аст');
       if (window.showSaveFilePicker && originalBlob) {
         try {
-          var ext = (String(fileName).match(/\.[^.]+$/) || [''])[0];
-          var handle = await window.showSaveFilePicker({ suggestedName: fileName, types: [{ description: ext ? ext.slice(1).toUpperCase() + ' file' : 'File', accept: { [mimeType]: ext ? [ext] : [] } }] });
+          // v179: шарти интихоби файл бояд аниқ бошад:
+          //   • accept — калид=MIME, арзиш=расширение БЕЗ нуқта («pdf», на «.pdf»);
+          //     бо нуқта Chrome TypeError медиҳад ва мост бе садо ба
+          //     боршаврии одӣ меафтад — диалог «куда сохранить» намудан
+          //     намешавад.
+          //   • types бояд ҳама вақт бо арзишҳо барои як навъ оянд.
+          var ext = (String(fileName).match(/\.([A-Za-z0-9]+)$/) || ['', ''])[1].toLowerCase();
+          var types = [];
+          if (ext) types.push({ description: ext.toUpperCase() + ' file', accept: { [mimeType]: [ext] } });
+          var opts = { suggestedName: fileName };
+          if (types.length) opts.types = types;
+          var handle = await window.showSaveFilePicker(opts);
           var writable = await handle.createWritable();
           await writable.write(originalBlob);
           await writable.close();
-          return { success: true, method: 'file_picker' };
+          return { success: true, method: 'file_picker', fileName: fileName };
         } catch (err) {
           // AbortError = корбар ҳаққӣ қатъ карда; ин хато нест, амма файл
           // ҳеҷ сабт нашудааст. SecurityError/NotAllowedError = интихоби файл

@@ -463,13 +463,18 @@ html,body,*{scrollbar-width:none!important;-ms-overflow-style:none!important}
     <section class="section" data-page="cachecontrol">
       <div class="grid grid-2">
         <div class="card"><h3>Управление кэшем пользователей</h3>
-          <p class="helper">Команда применяется при следующем открытии программы или возвращении пользователя в неё. Обновление программы сохраняет PDF-книги.</p>
+          <p class="helper">Команда применяется автоматически при следующем открытии программы. Если автоматически не получилось (нет сети, программу долго не открывали), в верхней части главной страницы появляется кнопка «Обновить» — пользователь нажимает её, и кэш очищается вручную.</p>
           <div class="field"><label>Сообщение пользователю</label><input id="cacheMessage" value="Навсозии барнома омода шуд"></div>
           <div style="display:flex;gap:9px;flex-wrap:wrap">
             <button class="btn btn-primary" id="cacheAppBtn">Обновить программу и данные</button>
             <button class="btn btn-outline" id="cachePdfBtn">Очистить только PDF</button>
             <button class="btn btn-danger" id="cacheBothBtn">Полная очистка</button>
           </div>
+          <p class="helper" style="margin-top:12px">
+            <b>Обновить программу и данные</b> — очищается кэш приложения (данные, обложки, списки), <b>загруженные PDF-книги сохраняются</b>.<br>
+            <b>Очистить только PDF</b> — удаляются только загруженные PDF-книги, всё остальное остаётся.<br>
+            <b>Полная очистка</b> — удаляется и кэш приложения, и загруженные PDF-книги.
+          </p>
         </div>
         <div class="card"><h3>Состояние команды</h3><div id="cacheStatus"><div class="empty">Загрузка…</div></div></div>
       </div>
@@ -1235,7 +1240,10 @@ loadSchedule();
 
 async function loadCacheControl(){
   const box=document.getElementById('cacheStatus');if(!box)return;box.innerHTML='<div class="empty">Загрузка…</div>';
-  try{const c=await api('/api/admin/cache-control');box.innerHTML=`<div class="list-row"><span>Версия программы</span><b>${c.app_version}</b></div><div class="list-row"><span>Версия PDF</span><b>${c.pdf_version}</b></div><div class="list-row"><span>Устройства сообщили о применении</span><b>${c.ack?.reported||0}</b></div><div class="list-row"><span>Обновили программу</span><b>${c.ack?.app_current||0}</b></div><div class="list-row"><span>Очистили PDF</span><b>${c.ack?.pdf_current||0}</b></div><div class="helper">Последняя команда: ${fmtDate(c.updated_at)}</div>`}catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>'}
+  try{const c=await api('/api/admin/cache-control');
+    const modeNames={app:'обновить программу и данные (PDF сохраняются)',pdf:'очистить только PDF-книги',both:'полная очистка (программа и PDF)'};
+    const curMode=String(c.mode||'app');
+    box.innerHTML=`<div class="list-row"><span>Действующая команда</span><b>${modeNames[curMode]||curMode}</b></div><div class="list-row"><span>Версия программы</span><b>${c.app_version}</b></div><div class="list-row"><span>Версия PDF</span><b>${c.pdf_version}</b></div><div class="list-row"><span>Устройства сообщили о применении</span><b>${c.ack?.reported||0}</b></div><div class="list-row"><span>Обновили программу</span><b>${c.ack?.app_current||0}</b></div><div class="list-row"><span>Очистили PDF</span><b>${c.ack?.pdf_current||0}</b></div><div class="helper">Последняя команда: ${fmtDate(c.updated_at)}</div><div class="helper">Устройства применяют команду сами при следующем открытии программы. Если этого не произошло — в верхней части главной страницы у пользователя появляется кнопка «Обновить».</div>`}catch(e){box.innerHTML='<div class="empty">'+escapeHtml(e.message)+'</div>'}
 }
 async function sendCacheCommand(mode){
   const labels={app:'обновить программу и данные, сохранив PDF',pdf:'удалить сохранённые PDF-книги',both:'полностью очистить программу и PDF-книги'};

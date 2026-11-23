@@ -357,6 +357,54 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
     !!refusedRes && refusedRes.success === true && refusedRes.method === 'browser_blob',
     JSON.stringify(refusedRes));
 
+  /* ---------------------------------------------------------------- */
+  /* The Save-As picker options must be valid, or Chrome rejects them  */
+  /* ---------------------------------------------------------------- */
+  // Real bug: the extension was passed as '.pdf'. The File System Access
+  // API expects the extension WITHOUT the dot ('pdf'). Chrome rejected the
+  // options with a TypeError, and the save silently fell back to a plain
+  // download — the user never got the "choose the folder" dialog.
+  let pickerOpts = null;
+  const picked = vm.createContext(Object.assign({}, win, {
+    window: null,
+    showSaveFilePicker: async (opts) => {
+      pickerOpts = JSON.parse(JSON.stringify(opts || {}));
+      const chunks = [];
+      return {
+        createWritable: async () => ({
+          write: async (b) => { chunks.push(b); },
+          close: async () => {},
+        }),
+      };
+    },
+    Blob: win.Blob, atob: win.atob, btoa: win.btoa, URL: win.URL,
+    document: win.document, FileReader: makeFileReader(),
+  }));
+  picked.window = picked;
+  picked.globalThis = picked;
+  vm.runInContext('globalThis.addEventListener = function () {}; globalThis.removeEventListener = function () {};', picked);
+  vm.runInContext(bridgeReal, picked, { filename: 'aliya-bridge.js' });
+  let pickedErr = null, pickedRes = null;
+  try {
+    pickedRes = await vm.runInContext('AliyaBridge.saveFile(new Blob([new Uint8Array([1,2,3])]), "answer.pdf", "application/pdf")', picked);
+  } catch (e) { pickedErr = e; }
+  check('a valid Save-As picker saves the file', !pickedErr, pickedErr && pickedErr.message);
+  check('the Save-As picker is reported as used',
+    !!pickedRes && pickedRes.method === 'file_picker', JSON.stringify(pickedRes));
+  check('the picker receives the suggested file name',
+    !!pickerOpts && pickerOpts.suggestedName === 'answer.pdf', JSON.stringify(pickerOpts));
+  check('the picker accept map has no leading dot in the extension',
+    !!pickerOpts && pickerOpts.types && pickerOpts.types[0] && pickerOpts.types[0].accept &&
+    Array.isArray(pickerOpts.types[0].accept['application/pdf']) &&
+    pickerOpts.types[0].accept['application/pdf'][0] === 'pdf',
+    JSON.stringify(pickerOpts));
+  check('the picker accept map never contains a dotted extension',
+    !JSON.stringify(pickerOpts || {}).includes('".pdf"') &&
+    !JSON.stringify(pickerOpts || {}).includes("'.pdf'"),
+    JSON.stringify(pickerOpts));
+  check('the saved file keeps its name', !!pickedRes && pickedRes.fileName === 'answer.pdf',
+    JSON.stringify(pickedRes));
+
   // A picker the user cancels is NOT an error — it must be marked as such so
   // the UI can say "cancelled" instead of "document not saved".
   const cancelled = vm.createContext(Object.assign({}, win, {
@@ -478,7 +526,12 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
   check('savedWhere() names the Downloads folder for a silent save',
     /«Загрузки»/.test(String(wSilent || '')), String(wSilent));
   const wNative = savedWhere({ method: 'android_bridge', fileName: 'answer.pdf' }, 'PDF');
-  check('savedWhere() names the native save', /барнома/.test(String(wNative || '')), String(wNative));
+  // The native bridge does not report back, so the message must not claim the
+  // file is saved — it says the save dialog was opened (same wording as the
+  // book download).
+  check('savedWhere() names the native save', /барои захира кардан омода/.test(String(wNative || '')), String(wNative));
+  check('savedWhere() does not falsely claim the native file is saved',
+    !/дар барнома сохта шуд/.test(String(wNative || '')), String(wNative));
   const wPicker = savedWhere({ method: 'file_picker', fileName: 'answer.pdf' }, 'PDF');
   check('savedWhere() reports that the user chose the location',
     /интихоб/.test(String(wPicker || '')), String(wPicker));

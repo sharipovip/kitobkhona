@@ -528,6 +528,27 @@ body.light-reading .book-scroll{color:#1A1F29}
 
 
 /* Кнопка Алия дар дохили хонанда (Reader) */
+/* v179: тугмаи «Обновить» — дастӣ очисти кэшҳо (фармони админ). */
+.reader-update-btn{
+  position: fixed;
+  bottom: calc(206px + env(safe-area-inset-bottom, 0px));
+  right: 16px;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #1E3350, #0D1B2A);
+  border: 2px solid #E8C96D;
+  box-shadow: 0 0 14px rgba(232, 201, 109, 0.34), 0 6px 18px rgba(0,0,0,0.55);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #E8C96D;
+  cursor: pointer;
+  z-index: 26;
+}
+.reader-update-btn:active{transform:scale(.94)}
+@media(max-width:700px){.reader-update-btn{right:50%;bottom:calc(140px + env(safe-area-inset-bottom,0px));transform:translateX(50%)}}
+
 .reader-aliya-btn{
   position: fixed;
   bottom: calc(152px + env(safe-area-inset-bottom, 0px)); /* v159: выше нижней панели, чтобы она не перекрывала кнопку */

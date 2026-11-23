@@ -2173,7 +2173,24 @@ async function downloadFile(url,name,showProgress=true){
     const already=await getCachedBookResponse(url);if(toastEl&&showProgress){toastEl.textContent=already?'✓ Аз ҳифзшуда гирифта шуд':'Ҳифз шуда истодааст... 0%';toastEl.classList.add('show')}
     const blob=await cachedBookBlob(url,(loaded,total)=>{if(toastEl&&showProgress&&total)toastEl.textContent=`Ҳифз шуда истодааст... ${Math.min(100,Math.round(loaded*100/total))}%`});rememberCachedBook(url,name,blob);
     const fileName=bookFileName(name,url);const mime=bookMime(url);if(isAndroid()&&typeof AndroidBridge.saveFile==='function'){AndroidBridge.saveFile(await blobToBase64(blob),fileName,mime);if(toastEl){toastEl.textContent='✓ Файл барои захира кардан омода';setTimeout(()=>toastEl.classList.remove('show'),2000)}return}
-    const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2000)}
+    // v179: пеш аз боршаврии одӣ мепурсиҳо шавад, ки файл дар куҷо сабт шавад —
+    // ҳамон тарзи Алия (aliya-bridge.js). Агар браузер интихоби файлиро
+    // иҷозат надод, боршаврии одӣ кор мекунад, ва корбар дар toast мебинад
+    // ки файл дар «Загрузки» рафтааст.
+    let saved=false;
+    if(typeof window.showSaveFilePicker==='function'){
+      try{
+        const ext=(String(fileName).match(/\.([A-Za-z0-9]+)$/)||[,''])[1].toLowerCase();
+        const opts={suggestedName:fileName};
+        if(ext)opts.types=[{description:ext.toUpperCase()+' file',accept:{[mime]:[ext]}}];
+        const handle=await window.showSaveFilePicker(opts);
+        const writable=await handle.createWritable();await writable.write(blob);await writable.close();saved=true;
+      }catch(e){if(e&&e.name==='AbortError'){if(toastEl){toastEl.textContent='Боргирии китоб бекор шуд';toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),2000)}return}console.warn('[downloadFile] Save-As picker unavailable:',e)}
+    }
+    if(!saved){
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
+      if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд — дар папкаи «Загрузки»';setTimeout(()=>toastEl.classList.remove('show'),2000)}
+    }else if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2000)}
   }catch(e){if(toastEl){toastEl.textContent='Хатогӣ: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}console.error('Download error:',e)}
 }
 
@@ -2956,35 +2973,147 @@ async function acknowledgeCacheControl(cfg){
 // v159: ҳар қадам бо маҳдудияти вақт — пештар reg.update()/caches дар WebView метавонист абадӣ интизор шавад
 // ва равзанаи «Навсозӣ» дар 92% меистод; ҳангоми хатогӣ равзана ҳеҷ гоҳ пӯшида намешуд.
 function kkWithTimeout(promise,ms){return Promise.race([Promise.resolve(promise).catch(()=>{}),new Promise(r=>setTimeout(r,ms))])}
-async function checkRemoteCacheControl(){
-  if(cacheControlBusy||document.hidden||navigator.onLine===false)return;const last=Number(sessionStorage.getItem('kk_cache_control_checked_at')||0);if(Date.now()-last<30*60*1000)return;sessionStorage.setItem('kk_cache_control_checked_at',String(Date.now()));cacheControlBusy=true;
-  let progress=null,finished=false,refreshApp=false;
+/* v179: идораи кэши аз панели администратора.
+   Проблема, ки корбар гӯшт: командаи админа «очистить кэш у всех
+   устройств» ҳеҷ ҷо кор намекард, зеро:
+     • checkRemoteCacheControl() ҳеҷ ҷо кор карда намешуд;
+     • clearPdf ҳама вақт false буд — режимҳои «pdf» ва «both» кор
+       намекарданд, PDFҳо ҳеҷ ҳеҷ тоза намешуданд;
+     • дар сети хато корбар аҳамият намедод.
+
+   Ҳоло:
+     • проверка баъди ҳар ворид ба барнома ба автоматики иҷро мешавад
+       (ва 30 дақиқа баъди дигар такрор намешавад);
+     • ҳар се режими админ кор мекунад: app / pdf / both;
+     • дар сети хато ё агар барнома нав небуд, дар болои асоси саҳифа
+       тугмаи «Обновить» пайдо мешавад — корбар метавонад дастӣ
+       хулар кунад ва кэшро тоза кунад.
+*/
+const KK_CACHE_CTL='kk_remote_cache_ctl';
+function readCacheCtlState(){
+  try{return JSON.parse(localStorage.getItem(KK_CACHE_CTL)||'null')||{}}catch(e){return {}}
+}
+function writeCacheCtlState(patch){
+  const next=Object.assign(readCacheCtlState(),patch||{});
+  try{localStorage.setItem(KK_CACHE_CTL,JSON.stringify(next))}catch(e){}
+  return next;
+}
+/** Нишон додани тугмаи «Обновить» дар болои саҳифа (ва ё дигар куҷо) */
+function showUpdateBanner(message){
+  try{
+    // Тугмаи «Обновить» дар болои саҳифа — ҳамон вазифа, ки хабари
+    // навозиро икшаб медиҳад.
+    const topBtn=document.getElementById('kkUpdateBtn');
+    if(topBtn){topBtn.style.display='flex';topBtn.onclick=()=>runCacheControlNow(true)}
+    if(document.getElementById('kk-update-banner'))return;
+    const el=document.createElement('div');
+    el.id='kk-update-banner';
+    el.setAttribute('role','status');
+    el.style.cssText='position:fixed;left:12px;right:12px;bottom:calc(84px + env(safe-area-inset-bottom,0px));z-index:100020;background:#0d1b2a;color:#f0ead6;border:1px solid rgba(232,201,109,.4);border-radius:16px;padding:13px 15px;box-shadow:0 14px 40px rgba(0,0,0,.42);font:inherit;font-size:14px;display:flex;gap:12px;align-items:center;box-sizing:border-box';
+    const txt=document.createElement('span');
+    txt.style.cssText='flex:1;line-height:1.4';
+    txt.textContent=message||'Навсозии нав даструд аст. Кэши барнома тоза шавад.';
+    const btn=document.createElement('button');
+    btn.type='button';
+    btn.textContent='Обновить';
+    btn.style.cssText='border:0;border-radius:11px;padding:10px 16px;background:linear-gradient(135deg,#c9a84c,#e8c96d);color:#101722;font:inherit;font-weight:800;cursor:pointer;white-space:nowrap';
+    btn.onclick=()=>{try{el.remove()}catch(e){}runCacheControlNow(true)};
+    const close=document.createElement('button');
+    close.type='button';
+    close.setAttribute('aria-label','Пӯшидан');
+    close.textContent='✕';
+    close.style.cssText='border:0;background:transparent;color:#aab8c8;font-size:17px;cursor:pointer;padding:4px';
+    close.onclick=()=>{try{el.remove()}catch(e){}};
+    el.appendChild(txt);el.appendChild(btn);el.appendChild(close);
+    document.body.appendChild(el);
+  }catch(e){}
+}
+function hideUpdateBanner(){
+  try{const el=document.getElementById('kk-update-banner');if(el)el.remove()}catch(e){}
+  try{const topBtn=document.getElementById('kkUpdateBtn');if(topBtn)topBtn.style.display='none'}catch(e){}
+}
+window.showUpdateBanner=showUpdateBanner;
+window.hideUpdateBanner=hideUpdateBanner;
+
+/**
+ * runCacheControlNow(force) — иҷрои фармони кэши аз админ.
+ * force=true — дастӣ (аз тугмаи «Обновить»).
+ * Бозгашт: {ok, reason, app, pdf}
+ */
+async function runCacheControlNow(force){
+  if(cacheControlBusy)return {ok:false,reason:'busy'};
+  if(document.hidden&&!force)return {ok:false,reason:'hidden'};
+  if(navigator.onLine===false){if(force)showUpdateBanner('Интернет нест. Баъди пайвасти шавед, «Обновить»-ро пахш кунед.');return {ok:false,reason:'offline'}}
+  // Без қуvvа — ҳар 30 дақиқа як бор. Дастӣ — ҳар вақт.
+  const last=Number(sessionStorage.getItem('kk_cache_control_checked_at')||0);
+  if(!force&&Date.now()-last<30*60*1000)return {ok:false,reason:'throttled'};
+  sessionStorage.setItem('kk_cache_control_checked_at',String(Date.now()));
+  cacheControlBusy=true;
+  let progress=null,finished=false,refreshApp=false,clearPdf=false;
   const hardStop=setTimeout(()=>{if(progress&&!finished){finished=true;progress.done('Барнома нав шуд');if(refreshApp)setTimeout(()=>location.reload(),500)}},20000);
   try{
     const ctrl=new AbortController(),t=setTimeout(()=>ctrl.abort(),10000);
-    const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store',signal:ctrl.signal}).finally(()=>clearTimeout(t));if(!r.ok)return;const cfg=await r.json();
-    const app=Number(cfg.app_version)||1,pdf=Number(cfg.pdf_version)||1,oldApp=Number(localStorage.getItem('kk_remote_app_cache_version')||1),oldPdf=Number(localStorage.getItem('kk_remote_pdf_cache_version')||1);
-    refreshApp=app>oldApp;const clearPdf=false;/* Downloaded books are user data: remote versions never erase them. */if(!refreshApp)return;
+    const r=await fetch(KITOB_CONFIG.NEON_API_BASE+'/api/cache-control?t='+Date.now(),{cache:'no-store',signal:ctrl.signal}).finally(()=>clearTimeout(t));
+    if(!r.ok)throw new Error('HTTP '+r.status);
+    const cfg=await r.json();
+    const app=Number(cfg.app_version)||1,pdf=Number(cfg.pdf_version)||1;
+    const oldApp=Number(localStorage.getItem('kk_remote_app_cache_version')||1);
+    const oldPdf=Number(localStorage.getItem('kk_remote_pdf_cache_version')||1);
+    // Режим аз фармон: 'app' (танҳо кэши барнома), 'pdf' (танҳо PDF), 'both'.
+    const mode=String(cfg.mode||'app').toLowerCase();
+    const wantApp=mode==='app'||mode==='both';
+    const wantPdf=mode==='pdf'||mode==='both';
+    refreshApp=wantApp&&app>oldApp;
+    clearPdf=wantPdf&&pdf>oldPdf;
+    if(!refreshApp&&!clearPdf){
+      hideUpdateBanner();
+      writeCacheCtlState({lastCheck:Date.now(),pending:false});
+      return {ok:true,reason:'up-to-date',app,pdf};
+    }
     progress=typeof beginActionProgress==='function'?beginActionProgress(cfg.message||'Навсозии барнома...'):null;
-    // версияҳо пеш аз ҳама сабт мешаванд — пас аз reload такрор намешавад
-    localStorage.setItem('kk_remote_app_cache_version',String(app));/* Keep the acknowledged PDF version unchanged: files were NOT erased. */
+    // Версияҳо пеш аз ҳама сабт мешаванд — пас аз reload такрор намешавад.
+    if(refreshApp)localStorage.setItem('kk_remote_app_cache_version',String(app));
+    if(clearPdf)localStorage.setItem('kk_remote_pdf_cache_version',String(pdf));
     progress?.set(25,clearPdf?'Кэш ва китобҳои захирашуда тоза мешаванд...':'Кэши кӯҳна тоза мешавад...');
     await kkWithTimeout(clearApplicationCaches({clearApp:refreshApp,clearPdfs:clearPdf}),8000);
     progress?.set(65,'Версияи нав гирифта мешавад...');
     if(navigator.serviceWorker?.getRegistration){await kkWithTimeout(navigator.serviceWorker.getRegistration().then(reg=>reg&&reg.update()),6000)}
     progress?.set(90);
-    acknowledgeCacheControl({...cfg,pdf_version:oldPdf});
+    acknowledgeCacheControl({...cfg,pdf_version:clearPdf?pdf:oldPdf});
+    writeCacheCtlState({lastCheck:Date.now(),pending:false,lastMode:mode});
+    hideUpdateBanner();
     if(!finished){finished=true;progress?.done(clearPdf?'Кэш ва китобҳои захирашуда нав шуданд':'Барнома нав шуд')}
     if(refreshApp)setTimeout(()=>{try{sessionStorage.setItem('kk_splash_seen','1')}catch(e){}location.reload()},700);
+    return {ok:true,reason:'applied',app,pdf,mode};
   }catch(e){
     console.warn('[CacheControl]',e&&e.message);
-    if(progress&&!finished){finished=true;progress.done('Барнома нав шуд');if(refreshApp)setTimeout(()=>location.reload(),700)}
+    // Шароити сети хато — корбар бояд аз навозӣ огоҳ шавад, то ки
+    // дастӣ тугмаи «Обновить»-ро пахш кунад.
+    writeCacheCtlState({lastCheck:Date.now(),pending:true,lastError:String(e&&e.message||e)});
+    showUpdateBanner('Навсозии нав даструд аст, вале пайвасти интернет мушкил аст. Базуд кӯшиш кунед.');
+    if(progress&&!finished){finished=true;progress.done('Навсозӣ иҷро нашуд')}
+    return {ok:false,reason:'error',error:String(e&&e.message||e)};
   }finally{clearTimeout(hardStop);if(!refreshApp||!progress)cacheControlBusy=false}
 }
+/** Фармон админро мебинад — барои истифодаи дастӣ аз тугмаи «Обновить». */
+async function checkRemoteCacheControl(){
+  const res=await runCacheControlNow(false);
+  return res;
+}
 window.checkRemoteCacheControl=checkRemoteCacheControl;
-// Content protection remains local. Remote cache-control is no longer polled
-// automatically: it may be called explicitly by a user-initiated update action.
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',installContentProtection,{once:true});else installContentProtection();
+window.runCacheControlNow=runCacheControlNow;
+
+/* v179: автоматики. Танҳо як бор дар як ворид (ё 30 дақиқа баъд дигар)
+   сӯҳ мешавад. Агар барнома нав бошад — кэш тоза мешавад, SW-и нав
+   гузориш мешавад ва саҳифа нав мешавад. Агар нашавад — дар болои
+   саҳифа тугмаи «Обновить» пайдо мешавад. */
+function autoCheckCacheControl(){
+  if(sessionStorage.getItem('kk_cache_control_auto_done')==='1')return;
+  try{sessionStorage.setItem('kk_cache_control_auto_done','1')}catch(e){}
+  setTimeout(()=>{runCacheControlNow(false).catch(()=>{})},1200);
+}
+window.autoCheckCacheControl=autoCheckCacheControl;
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{installContentProtection();autoCheckCacheControl()},{once:true});else{installContentProtection();autoCheckCacheControl();}
 
 
 function getChatAccessState(){
