@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v179-cache-control-aliya-save';
+const CACHE_NAME = 'kitobkhona-v180-aliya-picker-top-window';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [

@@ -4,16 +4,16 @@
     "bytes": 69368
   },
   "aliya/aliya-bridge.js": {
-    "sha256": "6b99e9f8111166a8896ac51a1dc6c3f3201ee894d0983c63f8e58a7580b4e58b",
-    "bytes": 11077
+    "sha256": "9bf454edb220520b3f884155a55f82af7266da1560d8afcd791806593fa58f34",
+    "bytes": 14124
   },
   "aliya/aliya-pdf.js": {
     "sha256": "4254ce5ce486037ff9173cce368c4bc41ec8d6915899e93d945390100210ce9a",
     "bytes": 23160
   },
   "aliya/aliya-tasks.js": {
-    "sha256": "3c36c6de169863713b2be3534c2335d40a5dcde3d8b832f06398b78a0e206e09",
-    "bytes": 110238
+    "sha256": "545864b1ebe47e96d8d172b0551ce3913e8d46ada752ab0cc797e2fe16c350f7",
+    "bytes": 114832
   },
   "aliya/aliya-theme.css": {
     "sha256": "7ba93bdf1fdb87859774c1140e75df0963fd0ab7df249b82755905e0cfbb155f",
@@ -28,7 +28,7 @@
     "bytes": 57988
   },
   "aliya/index.html": {
-    "sha256": "822c84ac352db5670ec64ba17ebf94555a34849face587eb893547dc3ccd3a33",
+    "sha256": "de233e23c10bdbefa9be43cf1aa45a635c273fc853ebb6fae217629dccbaae41",
     "bytes": 106438
   },
   "aliya/reader-aliya.css": {
@@ -36,7 +36,7 @@
     "bytes": 3514
   },
   "aliya/reader-aliya.html": {
-    "sha256": "bff3ad9c702662e53fc48e49db11d0f0c67ac9187cc735677f224e5066b3fbd8",
+    "sha256": "70a6e9cee59285b42a5e7f027e0ad12ab7212028016b73284daec4aeb4e1a9b4",
     "bytes": 10407
   },
   "assets/css/catalog.css": {
@@ -172,12 +172,12 @@
     "bytes": 5042
   },
   "reader.html": {
-    "sha256": "3d4c82c9c1972923d92241fa5c27700f9fd0ee73d8653edb8ef80c29afcca1d5",
+    "sha256": "49ec42fd091c8fb4669ea914e56871beba89b958e7abc9f65cd67f94a1dcd997",
     "bytes": 105340
   },
   "sw.js": {
-    "sha256": "8ea000c240946a7ad93d6b003e465a9444c0aed34e4182d4f3ecb56f8d141efd",
-    "bytes": 22635
+    "sha256": "2254ac0bd2280155bf95012738694e9d5a2a994b1e21efb4eaf9c81fe874695a",
+    "bytes": 22634
   },
   "terms.html": {
     "sha256": "fb94eba31faf717423624347d6728d7fec4701d727262e961b1e0149c4dfc812",
@@ -188,16 +188,16 @@
     "bytes": 16117
   },
   "README.md": {
-    "sha256": "19f5f7d31ce48f78c1c9b372915fa97832c48a463fc53eb717abe8f87dc1702a",
-    "bytes": 24223
+    "sha256": "0e2dead71fdcd18a0cdd65d3f536332dadd514554a8d77f364b59db4b5a91b68",
+    "bytes": 25198
   },
   "admin.html": {
     "sha256": "a339c5be5ba2f9b2aac72e263f0ec64bb870d9fda47a577db5636ef78445041c",
     "bytes": 76551
   },
   "package.json": {
-    "sha256": "0c0fce71dbb6c10478809e376c41e4c36880abd74dad3287fc1e395c3864a4db",
-    "bytes": 2274
+    "sha256": "d639469ed24efab6aa4d5ec5c689525419ef2b901102aaaaa11829c26268af9c",
+    "bytes": 2378
   },
   "tests/cache-control-runtime.js": {
     "sha256": "d64d4ee1ca7c7c88d61ed79190274f86b700b4f8034e35885c314068558ecf96",
@@ -208,7 +208,11 @@
     "bytes": 13970
   },
   "tests/reader-aliya-save-runtime.js": {
-    "sha256": "4b31bea06118a45b69f8bc6c6b3aa4163ead376a7cdb39325d4058373cf6d9c2",
-    "bytes": 29820
+    "sha256": "db58adad4348c1ffe0f0bee84e6f362dcbdbd5e51ccf727155a2774497fa4a37",
+    "bytes": 30292
+  },
+  "tests/aliya-reader-picker-top-window.js": {
+    "sha256": "f811bab9af9c782b36a9ef6b174216001754564cb78affa5c1b391f48e6c7c23",
+    "bytes": 19605
   }
 }
