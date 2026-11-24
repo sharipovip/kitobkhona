@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v180-aliya-picker-top-window';
+const CACHE_NAME = 'kitobkhona-v181-network-first-assets';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -210,6 +210,22 @@ self.addEventListener('install', (event) => {
     await Promise.all(Array.from({length:6},async()=>{
       while(cursor<urls.length){const i=cursor++;try{await cache.add(new Request(urls[i],{cache:'reload'}));results[i]={status:'fulfilled'}}catch(error){results[i]={status:'rejected',reason:error}}}
     }));
+    // v181: Навсозии як сабади «install» танҳо файли БЕЗ ?v-ро дар кэш мегузорад.
+    // Аммо fetch-и JS/CSS бо «ignoreSearch» ҳамон бозиро меёбад — яъне файли
+    // кӯҳна. Бинобар ин ҳар файли боз бо «?v=» ҳам сабт мекунем: икӯмӣ барои
+    // запрос бо параметр, икӯмӣ барои запрос бе параметр.
+    try{
+      await Promise.all(urls.map(async u=>{
+        try{
+          const bare=u.replace(/^\.\//,'/');
+          const res=await fetch(new Request(bare,{cache:'reload'}));
+          if(res&&res.status===200){
+            await cache.put(bare,res.clone());
+            await cache.put(new Request(bare+'?v=1',{cache:'reload'}),res.clone());
+          }
+        }catch(e){}
+      }));
+    }catch(e){}
     const missingCore=urls.filter((url,i)=>CORE_FILES.includes(url)&&results[i].status==='rejected');
     if(missingCore.length)throw new Error('[SW] Incomplete UI release; old worker remains installed: '+missingCore.join(', '));
     const failed = results.filter((result) => result.status === 'rejected').length;
@@ -398,14 +414,33 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (url.pathname.endsWith('.js') || url.pathname.endsWith('.css')) {
-    const network=fetch(event.request).then(async response=>{
-      if(response&&response.status===200){try{const cache=await caches.open(CACHE_NAME);await cache.put(event.request,response.clone())}catch(e){}}
+    // v181: NETWORK-FIRST. Пеш аз ин буд cache-first бо «ignoreSearch: true» буд:
+    //   • install сабт мекард './aliya/aliya-bridge.js' (БЕЗ ?v=);
+    //   • fetch бо «ignoreSearch» ҳамон бозиро намоёд — яъне файли КӮҲНА;
+    //   • «?v=180» барои cache-busting кор карда намекард.
+    // Натиҷа: навсозӣҳо ба корбар ҳеҷ ҷо намерасиданд — «интихоби папкаро гиред»
+    // дар Aлия дар Reader, ки аз навсозӣи v180 бояд ислоҳ мешуд.
+    // Ҳоло: аввал шабака, агар ҷавоб дод — ҷавоб дода мешавад ва кэш дар ҳАМОН
+    // кӯҳа ба нав карда мешавад (то нави дигар низ аз ҳамин нав мегирад).
+    // Агар шабака нест — аз кэш истифода мебарем (офлайн).
+    const network=fetch(event.request,{cache:'no-cache'}).then(async response=>{
+      if(response&&response.status===200){
+        try{
+          const cache=await caches.open(CACHE_NAME);
+          await cache.put(event.request,response.clone());
+          // Бояд боз бозӣ бе ?v сабт шавад — чунки lookup-и «ignoreSearch»
+          // маҳз онро меёбад.
+          try{const bare=new Request(url.pathname,{cache:'no-cache'});await cache.put(bare,response.clone())}catch(e){}
+        }catch(e){}
+      }
       return response;
     }).catch(()=>null);
-    event.waitUntil(network.then(()=>undefined));
     event.respondWith((async()=>{
-      const cache=await caches.open(CACHE_NAME),cached=await cache.match(event.request,{ignoreSearch:true});
-      return cached||await network||Response.error();
+      const fresh=await network;
+      if(fresh&&fresh.status===200)return fresh;
+      const cache=await caches.open(CACHE_NAME);
+      const cached=await cache.match(event.request,{ignoreSearch:true});
+      return cached||fresh||Response.error();
     })());
     return;
   }

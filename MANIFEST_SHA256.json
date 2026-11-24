@@ -124,8 +124,8 @@
     "bytes": 31771
   },
   "config.js": {
-    "sha256": "095ba66870fef1edbac5f77dd0621fba941d02ea210a77f4e3dba24dba5e5262",
-    "bytes": 231682
+    "sha256": "adf153565deed647b515f2b96da4f7864e92c735e1079dc74b809c27c26dd94e",
+    "bytes": 232478
   },
   "contest-integration.js": {
     "sha256": "c9284a7e04c9f3de1c5fb3670168d5716ec0686423c188bdc122ed4e97722b42",
@@ -176,8 +176,8 @@
     "bytes": 105340
   },
   "sw.js": {
-    "sha256": "2254ac0bd2280155bf95012738694e9d5a2a994b1e21efb4eaf9c81fe874695a",
-    "bytes": 22634
+    "sha256": "de93252bab1134d72e6a193c1b299ae288cb8792a97b3679be5e190cc441318c",
+    "bytes": 24889
   },
   "terms.html": {
     "sha256": "fb94eba31faf717423624347d6728d7fec4701d727262e961b1e0149c4dfc812",
@@ -188,16 +188,16 @@
     "bytes": 16117
   },
   "README.md": {
-    "sha256": "0e2dead71fdcd18a0cdd65d3f536332dadd514554a8d77f364b59db4b5a91b68",
-    "bytes": 25198
+    "sha256": "5f57ce29300855189ed354f40f7c7a8a42e64d36b4f2288dccddeb91c7e49674",
+    "bytes": 26302
   },
   "admin.html": {
     "sha256": "a339c5be5ba2f9b2aac72e263f0ec64bb870d9fda47a577db5636ef78445041c",
     "bytes": 76551
   },
   "package.json": {
-    "sha256": "d639469ed24efab6aa4d5ec5c689525419ef2b901102aaaaa11829c26268af9c",
-    "bytes": 2378
+    "sha256": "b3142f03afa04bd6da441232baefad130e877034de8e18575ef21a62c76c31fe",
+    "bytes": 2445
   },
   "tests/cache-control-runtime.js": {
     "sha256": "d64d4ee1ca7c7c88d61ed79190274f86b700b4f8034e35885c314068558ecf96",
@@ -214,5 +214,9 @@
   "tests/aliya-reader-picker-top-window.js": {
     "sha256": "f811bab9af9c782b36a9ef6b174216001754564cb78affa5c1b391f48e6c7c23",
     "bytes": 19605
+  },
+  "tests/sw-fresh-assets.js": {
+    "sha256": "c64623a7294708859f61f8d96edf9d2614c75272d81b48e053e24f8a239d551f",
+    "bytes": 6997
   }
 }

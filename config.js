@@ -3191,6 +3191,18 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
     }
     // 4) SW update toast
     if('serviceWorker' in nav){
+      // v181: Браузер танҳо ҳар 24 соат sw.js-ро сӯҳ мешавад. Агар корбар
+      // барномаро як рӯз истифода барад, навсозӣ то баъди як рӯз намерасад
+      // ва он ҳамон кӯҳнаи кэшро мебинад. Бинобар ин ҳар кушодани саҳифа
+      // ба худ мустақил reg.update()-ро чуд мекунем — то навсозӣ дар ҳамон
+      // ворид амал шавад.
+      try{
+        if(nav.serviceWorker.controller){
+          nav.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{
+            if(reg&&typeof reg.update==='function')reg.update().catch(()=>{});
+          }).catch(()=>{});
+        }
+      }catch(e){}
       let hadController=!!nav.serviceWorker.controller,shown=false;
       nav.serviceWorker.addEventListener('controllerchange',()=>{
         if(!hadController){hadController=true;return} // аввалин насб — на навсозӣ
