@@ -19,7 +19,20 @@
 (function (window) {
   'use strict';
   try {
-    if (!window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+    var nativeHost = null;
+    var candidates = [window];
+    try { if (window.parent && candidates.indexOf(window.parent) === -1) candidates.push(window.parent); } catch (e) {}
+    try { if (window.top && candidates.indexOf(window.top) === -1) candidates.push(window.top); } catch (e) {}
+    for (var i = 0; i < candidates.length; i++) {
+      try {
+        var c = candidates[i];
+        if (c && c.KitobkhonaNative && typeof c.KitobkhonaNative.postMessage === 'function') {
+          nativeHost = c;
+          break;
+        }
+      } catch (e) {}
+    }
+    if (!nativeHost) return;
     var bridge = window.AndroidBridge || {};
     var map = {
       saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile',
@@ -32,7 +45,7 @@
       if (typeof bridge[name] === 'function') return;
       bridge[name] = function () {
         try {
-          window.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) }));
+          nativeHost.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) }));
         } catch (e) {
           console.warn('Native feature is unavailable', e);
         }

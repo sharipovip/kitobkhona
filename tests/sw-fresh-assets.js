@@ -152,6 +152,41 @@ const configSrc = fs.readFileSync(path.join(ROOT, 'config.js'), 'utf8');
     'the device received: ' + served);
 }
 
+/* ------------------------------------------------------------------ */
+/* 7. Subpath precaching, HTTP cache bypass, and SW updateViaCache     */
+/* ------------------------------------------------------------------ */
+{
+  const installStart = swSrc.indexOf("self.addEventListener('install'");
+  const installEnd = swSrc.indexOf("self.addEventListener('activate'", installStart);
+  const installBlock = swSrc.slice(installStart, installEnd);
+  check('install resolves precache URLs relative to registration.scope (GitHub Pages subpath safe)',
+    /registration\.scope/.test(installBlock) && !/\.replace\(\/\^\\\.\\\/\/,/.test(installBlock),
+    'install must not rewrite ./ to / and break /kitobkhona/ subpath');
+
+  const navStart = swSrc.indexOf("event.request.mode === 'navigate'");
+  const navEnd = swSrc.indexOf('return;\n  }', navStart);
+  const navBlock = swSrc.slice(navStart, navEnd);
+  check('navigate fetch bypasses stale HTTP disk cache',
+    /fetch\(event\.request,\s*\{\s*cache:\s*'no-cache'\s*\}\)/.test(navBlock));
+  check('navigate gives reader.html and aliya/ pages enough time for fresh HTML',
+    /reader\\\.html/.test(navBlock) && /aliya/.test(navBlock));
+
+  const indexHtml = fs.readFileSync(path.join(ROOT, 'index.html'), 'utf8');
+  const readerHtml = fs.readFileSync(path.join(ROOT, 'reader.html'), 'utf8');
+  const readerAliyaHtml = fs.readFileSync(path.join(ROOT, 'aliya', 'reader-aliya.html'), 'utf8');
+  const aliyaIndexHtml = fs.readFileSync(path.join(ROOT, 'aliya', 'index.html'), 'utf8');
+  check('config.js registers sw.js with updateViaCache: none',
+    /updateViaCache:\s*'none'/.test(configSrc));
+  check('index.html registers sw.js with updateViaCache: none',
+    /updateViaCache:\s*'none'/.test(indexHtml));
+  check('reader.html cache-busts the reader-aliya.html iframe URL',
+    /reader-aliya\.html\?embed=1&v=\d+/.test(readerHtml));
+  check('aliya/reader-aliya.html checks for Service Worker updates',
+    /serviceWorker\.getRegistration/.test(readerAliyaHtml));
+  check('aliya/index.html checks for Service Worker updates',
+    /serviceWorker\.getRegistration/.test(aliyaIndexHtml));
+}
+
 if (failures.length) {
   console.error('\n' + failures.length + ' service-worker check(s) failed: ' + failures.join(', '));
   process.exit(1);
