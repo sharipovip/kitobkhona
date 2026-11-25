@@ -1005,26 +1005,32 @@
     // «Сохранить как» медиҳад), баъд мости кадр, баъд боршаврии одӣ.
     // Алия дар Reader як iframe аст ва AndroidBridge танҳо дар reader.html
     // (родитель) ҳаст — бинобар ин бо ҳамон оконоҳо сӯҳ мешавед.
-    if (window.AndroidBridge && typeof window.AndroidBridge.saveFile === 'function') {
-      window.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
-      return { success: true, method: 'android_bridge', fileName: fileName };
+    var wins = [];
+    function pushWin(w) { if (w && wins.indexOf(w) === -1) wins.push(w); }
+    pushWin(window);
+    try { pushWin(window.parent); } catch (e) {}
+    try { pushWin(window.top); } catch (e) {}
+    for (var wi = 0; wi < wins.length; wi++) {
+      try {
+        var nw = wins[wi];
+        if (!nw) continue;
+        if (nw.AndroidBridge && typeof nw.AndroidBridge.saveFile === 'function') {
+          nw.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
+          return { success: true, method: 'android_bridge', fileName: fileName };
+        }
+        if (nw.AndroidBridge && typeof nw.AndroidBridge.saveBase64File === 'function') {
+          nw.AndroidBridge.saveBase64File(await blobToBase64(blob), fileName, mime);
+          return { success: true, method: 'android_base64', fileName: fileName };
+        }
+        if (nw.KitobkhonaNative && typeof nw.KitobkhonaNative.postMessage === 'function') {
+          nw.KitobkhonaNative.postMessage(JSON.stringify({
+            method: 'saveFile',
+            args: [await blobToBase64(blob), fileName, mime]
+          }));
+          return { success: true, method: 'native_post_message', fileName: fileName };
+        }
+      } catch (e) {}
     }
-    try {
-      var parentWin = window.parent;
-      if (parentWin && parentWin !== window && parentWin.AndroidBridge && typeof parentWin.AndroidBridge.saveFile === 'function') {
-        parentWin.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
-        return { success: true, method: 'android_bridge', fileName: fileName };
-      }
-    } catch (e) {}
-    // v180: болои оконо низ — Алия дар Reader ба як қабат дар он аст.
-    try {
-      var topWin = window.top;
-      if (topWin && topWin !== window && topWin !== parentWin && topWin.AndroidBridge &&
-          typeof topWin.AndroidBridge.saveFile === 'function') {
-        topWin.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
-        return { success: true, method: 'android_bridge', fileName: fileName };
-      }
-    } catch (e) {}
     // v180: агар интихоби файл пеш (дар дастгирии корбар) кушода шуда буд —
     // ҳамон файлро ба ҳамон мақсад навишт. Ин роҳ аз нав будан дар
     // «куҷо сабт кардан» барои Алия дар Reader кор мекунад.
@@ -1033,18 +1039,20 @@
     }
     // Мошини сабти файл. v177: аввал мошини СОБСТВЕННОГО чаҳр (ҳамон iframe),
     // чунки диалоги «Сохранить как» иҷозаи корбари ҳамон чаҳрро талаб мекунад.
-    if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime);
-    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime);
+    var bridgeOpts = { skipPicker: pickerTarget === null };
+    if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime, bridgeOpts);
+    if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime, bridgeOpts);
     // Боршаврии одӣ — дар болои окно, то ки браузер пурсиши «куда сохранить»
     // -ро нишон диҳад (ҳамон тарзи боргирии китоб).
-    var url = URL.createObjectURL(blob);
     var host = window;
     try { if (window.top && window.top !== window) host = window.top; } catch (e) { host = window; }
-    var doc = host.document || document;
+    var doc = (host && host.document && host.document.body) ? host.document : document;
+    var urlHost = (host && host.URL && typeof host.URL.createObjectURL === 'function') ? host.URL : URL;
+    var url = urlHost.createObjectURL(blob);
     var a = doc.createElement('a');
     a.href = url; a.download = fileName; a.style.display = 'none';
     doc.body.appendChild(a); a.click();
-    setTimeout(function () { try { doc.body.removeChild(a); } catch (e) {} URL.revokeObjectURL(url); }, 1500);
+    setTimeout(function () { try { doc.body.removeChild(a); } catch (e) {} try { urlHost.revokeObjectURL(url); } catch (e) {} }, 15000);
     return { success: true, method: 'browser_blob', silent: true, fileName: fileName };
   }
   function safeName(s) { return String(s || 'Алия').replace(/[\\/:*?"<>|]+/g, ' ').replace(/\s+/g, '_').slice(0, 60); }
@@ -1057,7 +1065,7 @@
   var pdfModule = null;
   function ensureAliyaPdf() {
     if (window.AliyaPdf) return Promise.resolve(window.AliyaPdf);
-    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=161').then(function () {
+    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=182').then(function () {
       if (!window.AliyaPdf) throw new Error('aliya-pdf.js');
       return window.AliyaPdf;
     }).catch(function (e) { pdfModule = null; throw e; });

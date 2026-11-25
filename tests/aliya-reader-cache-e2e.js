@@ -187,8 +187,8 @@ function makeFileReader() {
       JSON.stringify(pickerOpts));
     check('the picker asks for a file name', pickerOpts && pickerOpts.suggestedName === 'kitob.pdf',
       JSON.stringify(pickerOpts));
-    check('the picker accepts the PDF type without a dotted extension',
-      pickerOpts && pickerOpts.types && pickerOpts.types[0].accept['application/pdf'][0] === 'pdf',
+    check('the picker accepts the PDF type with a dotted extension',
+      pickerOpts && pickerOpts.types && pickerOpts.types[0].accept['application/pdf'][0] === '.pdf',
       JSON.stringify(pickerOpts));
     check('the picker save is reported as a chosen location',
       res && res.method === 'file_picker' && res.success === true, JSON.stringify(res));

@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v181-network-first-assets';
+const CACHE_NAME = 'kitobkhona-v182-reader-aliya-save';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -207,25 +207,30 @@ self.addEventListener('install', (event) => {
     // entire atomic addAll() operation and leave the app with an empty offline cache.
     const urls=[...new Set([...CORE_FILES,...LOCAL_FILES])];
     const results=new Array(urls.length);let cursor=0;
+    const scope=(self.registration&&self.registration.scope)||self.location.href;
+    // v182: Resolve each asset relative to registration.scope (works under
+    // GitHub Pages /kitobkhona/ as well as root /) and store both bare URL
+    // and ?v= query key for .js/.css in a single concurrency-bounded pass.
     await Promise.all(Array.from({length:6},async()=>{
-      while(cursor<urls.length){const i=cursor++;try{await cache.add(new Request(urls[i],{cache:'reload'}));results[i]={status:'fulfilled'}}catch(error){results[i]={status:'rejected',reason:error}}}
-    }));
-    // v181: Навсозии як сабади «install» танҳо файли БЕЗ ?v-ро дар кэш мегузорад.
-    // Аммо fetch-и JS/CSS бо «ignoreSearch» ҳамон бозиро меёбад — яъне файли
-    // кӯҳна. Бинобар ин ҳар файли боз бо «?v=» ҳам сабт мекунем: икӯмӣ барои
-    // запрос бо параметр, икӯмӣ барои запрос бе параметр.
-    try{
-      await Promise.all(urls.map(async u=>{
+      while(cursor<urls.length){
+        const i=cursor++;
         try{
-          const bare=u.replace(/^\.\//,'/');
+          const bare=new URL(urls[i],scope).href;
           const res=await fetch(new Request(bare,{cache:'reload'}));
           if(res&&res.status===200){
             await cache.put(bare,res.clone());
-            await cache.put(new Request(bare+'?v=1',{cache:'reload'}),res.clone());
+            if(/\.(?:js|css)(?:$|\?)/i.test(bare)){
+              await cache.put(new Request(bare+'?v=1',{cache:'reload'}),res.clone());
+            }
+            results[i]={status:'fulfilled'};
+          }else{
+            results[i]={status:'rejected',reason:new Error('HTTP '+(res?res.status:0))};
           }
-        }catch(e){}
-      }));
-    }catch(e){}
+        }catch(error){
+          results[i]={status:'rejected',reason:error};
+        }
+      }
+    }));
     const missingCore=urls.filter((url,i)=>CORE_FILES.includes(url)&&results[i].status==='rejected');
     if(missingCore.length)throw new Error('[SW] Incomplete UI release; old worker remains installed: '+missingCore.join(', '));
     const failed = results.filter((result) => result.status === 'rejected').length;
@@ -349,11 +354,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
   if (event.request.mode === 'navigate') {
-    // v129: гузариши фаврӣ байни саҳифаҳо. Агар шабака то NAV_FRESH_MS (600 мс) ҷавоб диҳад — саҳифаи нав аз
-    // шабака (баъди нашр корбар бо интернети хуб фавран версияи навро мебинад); вагарна — нусхаи кэшшуда ФАВРАН,
-    // шабака дар замина кэшро нав мекунад (дафъаи оянда — нав). Пештар ҳар гузариш то 3.5 с интизор мешуд.
-    // Агар кэш набошад — шабака пурра интизор мешавад; офлайн ва бе кэш — offline.html.
-    const network = fetch(event.request).then(response => {
+    // v129/v182: гузариши фаврӣ байни саҳифаҳо бо ревалидацияи cache:'no-cache'.
+    // Барои reader.html ва бахши Алия (аз ҷумла iframe reader-aliya.html) то 2500 мс
+    // шабакаро интизор мешавем, то саҳифаи кӯҳна дар дастгоҳ намонад.
+    const freshWaitMs = (/\/aliya\/|\/reader\.html$/i.test(url.pathname) || url.searchParams.has('v')) ? 2500 : NAV_FRESH_MS;
+    const network = fetch(event.request, { cache: 'no-cache' }).then(response => {
       if (response && response.status === 200) {
         safeCachePut(event.request, response);
       }
@@ -366,7 +371,7 @@ self.addEventListener('fetch', (event) => {
         const net = await network;
         return net || await (await caches.open(CACHE_NAME)).match('./offline.html');
       }
-      const timer = new Promise(resolve => setTimeout(() => resolve('timeout'), NAV_FRESH_MS));
+      const timer = new Promise(resolve => setTimeout(() => resolve('timeout'), freshWaitMs));
       const first = await Promise.race([network, timer]);
       if (first && first !== 'timeout' && first.status === 200) return first;
       return cached;
@@ -430,7 +435,7 @@ self.addEventListener('fetch', (event) => {
           await cache.put(event.request,response.clone());
           // Бояд боз бозӣ бе ?v сабт шавад — чунки lookup-и «ignoreSearch»
           // маҳз онро меёбад.
-          try{const bare=new Request(url.pathname,{cache:'no-cache'});await cache.put(bare,response.clone())}catch(e){}
+          try{const bare=new Request(url.origin+url.pathname,{cache:'no-cache'});await cache.put(bare,response.clone())}catch(e){}
         }catch(e){}
       }
       return response;

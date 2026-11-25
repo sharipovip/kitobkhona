@@ -324,8 +324,8 @@ check('the cache-control block is present in config.js', !!slice);
     const body = src.slice(fnStart, fnEnd > fnStart ? fnEnd : fnStart + 4000);
     check('the book download opens the Save-As picker', /showSaveFilePicker/.test(body),
       'downloadFile does not ask where to save');
-    check('the book download passes the extension without a dot',
-      /\[mime\]:\[ext\]/.test(body), body.slice(0, 400));
+    check('the book download passes the dotted extension required by File System Access API',
+      /\[\s*cleanMime\s*\]\s*:\s*\[\s*'\.'\s*\+\s*ext\s*\]/.test(body), body.slice(0, 800));
     check('the book download falls back to a plain download',
       /a\.download=fileName/.test(body), 'downloadFile has no fallback');
     check('the book download names the Downloads folder when it falls back',

@@ -59,8 +59,9 @@
      */
     openSavePicker: async function (fileName, mimeType) {
       var ext = (String(fileName || '').match(/\.([A-Za-z0-9]+)$/) || ['', ''])[1].toLowerCase();
+      var cleanMime = String(mimeType || 'application/octet-stream').split(';')[0].trim() || 'application/octet-stream';
       var types = [];
-      if (ext) types.push({ description: ext.toUpperCase() + ' file', accept: { [mimeType || 'application/octet-stream']: [ext] } });
+      if (ext) types.push({ description: ext.toUpperCase() + ' file', accept: { [cleanMime]: ['.' + ext] } });
       var opts = { suggestedName: fileName };
       if (types.length) opts.types = types;
       var wins = this.pickerWindows();
@@ -68,7 +69,17 @@
         var w = wins[i];
         try {
           if (!w || typeof w.showSaveFilePicker !== 'function') continue;
-          var handle = await w.showSaveFilePicker(opts);
+          var handle;
+          try {
+            handle = await w.showSaveFilePicker(opts);
+          } catch (firstErr) {
+            if (firstErr && firstErr.name === 'AbortError') throw firstErr;
+            if (firstErr && firstErr.name === 'TypeError' && opts.types) {
+              handle = await w.showSaveFilePicker({ suggestedName: fileName });
+            } else {
+              throw firstErr;
+            }
+          }
           return { win: w, handle: handle, method: 'file_picker', fileName: fileName };
         } catch (err) {
           // AbortError = корбар қатъ карда — ин хато нест.
@@ -113,27 +124,32 @@
      * @param {string} fileName - Номи файл (бо пасванд, масалан "Нақшаи_дарс.docx")
      * @param {string} mimeType - MIME-навъ (масалан "application/vnd.openxmlformats-officedocument.wordprocessingml.document")
      */
-    saveFile: async function (content, fileName, mimeType) {
+    saveFile: async function (content, fileName, mimeType, opts) {
       mimeType = mimeType || 'application/octet-stream';
+      opts = opts || {};
+      var originalBlob = content instanceof Blob ? content : null;
       var base64 = '';
 
-      if (content instanceof Blob) {
-        base64 = await this.blobToBase64(content);
+      if (originalBlob) {
+        if (originalBlob.size === 0) throw new Error('Файл холӣ аст');
       } else if (typeof content === 'string') {
         if (content.indexOf('base64,') !== -1) {
           base64 = content.split('base64,')[1];
         } else {
           base64 = content;
         }
+        if (!base64) throw new Error('Файл холӣ аст');
+      } else {
+        throw new Error('Файл холӣ аст');
       }
-
-      if ((content instanceof Blob && content.size === 0) || !base64) throw new Error('Файл холӣ аст');
 
       // 1. Android Native Bridge — нативный диалог «Сохранить как».
       //    v178: ищем мост во всех окнах (своё / родитель / верхнее).
       //    В iframe Алии моста нет — он есть в reader.html.
       if (this.isAndroid()) {
         try {
+          if (!base64 && originalBlob) base64 = await this.blobToBase64(originalBlob);
+          if (!base64) throw new Error('Файл холӣ аст');
           var hosts = this.hostWindows(), done = false;
           for (var hi = 0; hi < hosts.length && !done; hi++) {
             var hw = hosts[hi];
@@ -165,14 +181,12 @@
       //    дар чаҳрони дигар, AbortError — корбар қатъ карда), мо ба боршаврӣ
       //    асӣ ҳӯд мегузарда мешавад. Пеш аз ин ҳар хато ба корбар
       //    «Ҳуҷҷат сабт нашуд» мекард ва файл ҳеҷ ҳеч ҷо намешуд.
-      var originalBlob = content instanceof Blob ? content : null;
-      if (originalBlob && originalBlob.size === 0) throw new Error('Файл холӣ аст');
       // v180: интихоби файл дар БОЛОИ ОКОН кушода мешавад — чунки API
       // танҳо дар саҳифаи асоси (top-level) кор мекунад. Дар iframe-и
       // Алия дар Reader он кор намекунад ва мост бе садо ба боршаврии
       // одӣ меафтад — корбар танҳо «Загрузки»-ро мебинад.
       // Ҳамон тарзи кор кардани «Скачать книгу» (config.js → downloadFile).
-      if (originalBlob) {
+      if (originalBlob && !opts.skipPicker) {
         try {
           var target = await this.openSavePicker(fileName, mimeType);
           if (target) return await this.writeToPicker(target, originalBlob);
@@ -190,20 +204,24 @@
       //    Дар iframe Chrome метавонад диалоги «куда сохранить»-ро
       //    нишон надиҳад, ам дар болои окно — нишон медиҳад.
       try {
-        var byteCharacters = atob(base64);
-        var byteNumbers = new Array(byteCharacters.length);
-        for (var i = 0; i < byteCharacters.length; i++) {
-          byteNumbers[i] = byteCharacters.charCodeAt(i);
+        var blob = originalBlob;
+        if (!blob) {
+          var byteCharacters = atob(base64);
+          var byteNumbers = new Array(byteCharacters.length);
+          for (var i = 0; i < byteCharacters.length; i++) {
+            byteNumbers[i] = byteCharacters.charCodeAt(i);
+          }
+          var byteArray = new Uint8Array(byteNumbers);
+          blob = new Blob([byteArray], { type: mimeType });
         }
-        var byteArray = new Uint8Array(byteNumbers);
-        var blob = new Blob([byteArray], { type: mimeType });
-        var url = URL.createObjectURL(blob);
         // Кайд кардани равшан: файл ба «Загрузки» меравад, агар браузер
         // пурсиш накунад — корбар бояд инро бинад.
         var host = window;
         try { if (window.top && window.top !== window) host = window.top; } catch (e) { host = window; }
-        var doc = host.document || document;
-        var a = host.document.createElement('a');
+        var doc = (host && host.document && host.document.body) ? host.document : document;
+        var urlHost = (host && host.URL && typeof host.URL.createObjectURL === 'function') ? host.URL : URL;
+        var url = urlHost.createObjectURL(blob);
+        var a = doc.createElement('a');
         a.style.display = 'none';
         a.href = url;
         a.download = fileName;
@@ -211,8 +229,8 @@
         a.click();
         setTimeout(function () {
           try { doc.body.removeChild(a); } catch (e) {}
-          URL.revokeObjectURL(url);
-        }, 1500);
+          try { urlHost.revokeObjectURL(url); } catch (e) {}
+        }, 15000);
         return { success: true, method: 'browser_blob', silent: true, fileName: fileName };
       } catch (err) {
         console.error('[AliyaBridge] Download error:', err);

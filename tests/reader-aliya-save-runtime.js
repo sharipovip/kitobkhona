@@ -360,10 +360,8 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
   /* ---------------------------------------------------------------- */
   /* The Save-As picker options must be valid, or Chrome rejects them  */
   /* ---------------------------------------------------------------- */
-  // Real bug: the extension was passed as '.pdf'. The File System Access
-  // API expects the extension WITHOUT the dot ('pdf'). Chrome rejected the
-  // options with a TypeError, and the save silently fell back to a plain
-  // download — the user never got the "choose the folder" dialog.
+  // Real Chromium File System Access API requires dotted extensions ('.pdf')
+  // in `types[].accept`; an extension without a dot throws TypeError.
   let pickerOpts = null;
   const picked = vm.createContext(Object.assign({}, win, {
     window: null,
@@ -393,14 +391,10 @@ check('the parent (reader.html) exposes AliyaBridge', !!(win.parent.AliyaBridge 
     !!pickedRes && pickedRes.method === 'file_picker', JSON.stringify(pickedRes));
   check('the picker receives the suggested file name',
     !!pickerOpts && pickerOpts.suggestedName === 'answer.pdf', JSON.stringify(pickerOpts));
-  check('the picker accept map has no leading dot in the extension',
+  check('the picker accept map uses a leading dot in the extension',
     !!pickerOpts && pickerOpts.types && pickerOpts.types[0] && pickerOpts.types[0].accept &&
     Array.isArray(pickerOpts.types[0].accept['application/pdf']) &&
-    pickerOpts.types[0].accept['application/pdf'][0] === 'pdf',
-    JSON.stringify(pickerOpts));
-  check('the picker accept map never contains a dotted extension',
-    !JSON.stringify(pickerOpts || {}).includes('".pdf"') &&
-    !JSON.stringify(pickerOpts || {}).includes("'.pdf'"),
+    pickerOpts.types[0].accept['application/pdf'][0] === '.pdf',
     JSON.stringify(pickerOpts));
   check('the saved file keeps its name', !!pickedRes && pickedRes.fileName === 'answer.pdf',
     JSON.stringify(pickedRes));

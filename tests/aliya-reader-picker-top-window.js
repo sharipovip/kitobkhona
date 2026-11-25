@@ -158,9 +158,9 @@ function makeReaderFrame(opts) {
     check('the picker gets the suggested name',
       pickerCalls[0] && pickerCalls[0].opts.suggestedName === 'kitob.pdf',
       JSON.stringify(pickerCalls[0]));
-    check('the picker gets the extension without a dot',
+    check('the picker gets the dotted extension required by File System Access API',
       pickerCalls[0] && pickerCalls[0].opts.types &&
-      pickerCalls[0].opts.types[0].accept['application/pdf'][0] === 'pdf',
+      pickerCalls[0].opts.types[0].accept['application/pdf'][0] === '.pdf',
       JSON.stringify(pickerCalls[0]));
     check('the save is reported through the picker',
       res && res.method === 'file_picker' && res.success === true, JSON.stringify(res));
@@ -417,6 +417,113 @@ function makeReaderFrame(opts) {
       err ? (err.name + ': ' + err.message) : JSON.stringify(res));
     check('no browser picker is opened on Android',
       !('showSaveFilePicker' in tctx), 'the Android path must not ask for a browser folder');
+  }
+
+  /* ---------------------------------------------------------------- */
+  /* 9. Top-window blob URL, TypeError retry, MIME strip, native shim */
+  /* ---------------------------------------------------------------- */
+  {
+    const { ctx, pickerCalls } = makeReaderFrame({});
+    let attempts = 0;
+    ctx.top.showSaveFilePicker = async (opts) => {
+      attempts++;
+      pickerCalls.push(JSON.parse(JSON.stringify(opts || {})));
+      if (opts && opts.types) {
+        const te = new TypeError('Unsupported accept MIME or type filter');
+        throw te;
+      }
+      return {
+        createWritable: async () => ({ write: async () => {}, close: async () => {} }),
+      };
+    };
+    const res = await vm.runInContext(
+      'AliyaBridge.saveFile(new Blob([new Uint8Array([1,2])], {type:"text/plain;charset=utf-8"}), "note.txt", "text/plain;charset=utf-8")',
+      ctx
+    );
+    check('openSavePicker strips ;charset from MIME types',
+      pickerCalls[0] && pickerCalls[0].types &&
+      Object.keys(pickerCalls[0].types[0].accept)[0] === 'text/plain',
+      JSON.stringify(pickerCalls[0]));
+    check('openSavePicker retries without types if TypeError occurs',
+      attempts === 2 && res && res.method === 'file_picker',
+      'attempts=' + attempts + ' res=' + JSON.stringify(res));
+  }
+  {
+    const log = [];
+    const { ctx } = makeReaderFrame({ topHasPicker: false });
+    let topUrlUsed = false;
+    ctx.top.URL = {
+      createObjectURL: () => { topUrlUsed = true; return 'blob:top-url'; },
+      revokeObjectURL() {},
+    };
+    const res = await vm.runInContext(
+      'AliyaBridge.saveFile(new Blob([new Uint8Array([9,8,7])]), "kitob.pdf", "application/pdf")',
+      ctx
+    );
+    check('fallback <a download> creates the blob URL on the top window when available',
+      topUrlUsed === true && res && res.method === 'browser_blob',
+      'topUrlUsed=' + topUrlUsed + ' res=' + JSON.stringify(res));
+  }
+  {
+    const nativeFallbackSrc = fs.readFileSync(path.join(ROOT, 'assets', 'js', 'native-fallback.js'), 'utf8');
+    const posted = [];
+    const topWin = {
+      KitobkhonaNative: { postMessage(msg) { posted.push(JSON.parse(msg)); } },
+    };
+    const iframeCtx = vm.createContext({
+      console: { warn() {} }, JSON, Array, Object,
+      window: null, parent: topWin, top: topWin,
+    });
+    iframeCtx.window = iframeCtx;
+    vm.runInContext(nativeFallbackSrc, iframeCtx, { filename: 'native-fallback.js' });
+    check('native-fallback.js creates AndroidBridge inside iframe from top.KitobkhonaNative',
+      !!(iframeCtx.AndroidBridge && typeof iframeCtx.AndroidBridge.saveFile === 'function'));
+    iframeCtx.AndroidBridge.saveFile('AAAA', 'doc.pdf', 'application/pdf');
+    check('bridged AndroidBridge.saveFile forwards to top.KitobkhonaNative.postMessage',
+      posted.length === 1 && posted[0].method === 'saveFile' && posted[0].args[1] === 'doc.pdf',
+      JSON.stringify(posted));
+  }
+  {
+    const tasksSrc = fs.readFileSync(path.join(ROOT, 'aliya', 'aliya-tasks.js'), 'utf8');
+    const { ctx } = makeReaderFrame({ topHasPicker: false });
+    let pickerAttempts = 0;
+    ctx.top.showSaveFilePicker = async () => {
+      pickerAttempts++;
+      const err = new Error('Must be handling a user gesture');
+      err.name = 'SecurityError';
+      throw err;
+    };
+    const tctx = vm.createContext({
+      console: { log() {}, warn() {}, error() {} },
+      setTimeout, clearTimeout, Promise, Math, Date, JSON, String, Number, Object, RegExp, Error,
+      Uint8Array, ArrayBuffer, Blob, atob, btoa,
+      URL: { createObjectURL: () => 'blob:x', revokeObjectURL() {} },
+      FileReader: makeFileReader(),
+      window: null, globalThis: null,
+      document: ctx.document, location: ctx.location,
+      top: ctx.top, parent: ctx.top,
+      addEventListener() {}, removeEventListener() {},
+      fetch: async () => ({ ok: true, status: 200, json: async () => ({}) }),
+      localStorage: { getItem: () => null, setItem() {}, removeItem() {}, key: () => null, length: 0 },
+      sessionStorage: { getItem: () => null, setItem() {}, removeItem() {}, key: () => null, length: 0 },
+      setInterval() {}, clearInterval() {},
+    });
+    tctx.window = tctx; tctx.globalThis = tctx;
+    tctx.top = ctx.top; tctx.parent = ctx.top;
+    vm.runInContext(bridgeSrc, tctx, { filename: 'aliya-bridge.js' });
+    vm.runInContext(tasksSrc, tctx, { filename: 'aliya-tasks.js' });
+    tctx.AliyaTemplates = {
+      generateMarkdownDocx: () => new Blob([new Uint8Array([1, 2, 3])], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      }),
+    };
+    const res = await vm.runInContext(
+      'AliyaTasks.exportDoc("docx", "Test", "Матни озмоишӣ", { docType: "Test" })',
+      tctx
+    );
+    check('exportDoc tries showSaveFilePicker once (not twice) before falling back to download',
+      pickerAttempts === 1 && res && res.method === 'browser_blob',
+      'attempts=' + pickerAttempts + ' res=' + JSON.stringify(res));
   }
 
   if (failures.length) {

@@ -254,14 +254,21 @@
     <div class="aliya-toast" id="aliyaToast">Паём</div>
   </div>
 
-  <script src="../assets/js/native-fallback.js?v=178"></script>
-  <script src="aliya-bridge.js?v=180"></script>
-  <script src="aliya-doc-templates.js?v=161"></script>
-  <script src="aliya-core.js?v=175"></script>
-  <script src="aliya-tasks.js?v=180"></script>
+  <script src="../assets/js/native-fallback.js?v=182"></script>
+  <script src="aliya-bridge.js?v=182"></script>
+  <script src="aliya-doc-templates.js?v=182"></script>
+  <script src="aliya-core.js?v=182"></script>
+  <script src="aliya-tasks.js?v=182"></script>
   <script>
     (function () {
       'use strict';
+      try {
+        if ('serviceWorker' in navigator && typeof navigator.serviceWorker.getRegistration === 'function') {
+          navigator.serviceWorker.getRegistration().then(function (reg) {
+            if (reg && typeof reg.update === 'function') reg.update().catch(function () {});
+          }).catch(function () {});
+        }
+      } catch (e) {}
 
       var currentDictBlob = null;
       var AT = window.AliyaTasks;

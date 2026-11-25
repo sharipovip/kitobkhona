@@ -60,10 +60,11 @@ cache_name = _re.search(r"kitobkhona-v(\d+)", sw).group(1)
 assert len(cache_name) >= 3, 'cache name must carry the release version'
 for page in ('reader.html', 'aliya/index.html', 'aliya/reader-aliya.html'):
     text = (ROOT/page).read_text(encoding='utf-8')
-    for asset in _re.findall(r'aliya-tasks\.js\?v=(\d+)', text):
-        assert asset == cache_name, (
-            f'{page}: aliya-tasks.js?v={asset} does not match CACHE_NAME v{cache_name} — '
-            'users would keep the cached copy of the previous release')
+    for asset_name in ('aliya-tasks.js', 'aliya-bridge.js', 'native-fallback.js'):
+        for asset in _re.findall(rf'{_re.escape(asset_name)}\?v=(\d+)', text):
+            assert asset == cache_name, (
+                f'{page}: {asset_name}?v={asset} does not match CACHE_NAME v{cache_name} — '
+                'users would keep the cached copy of the previous release')
 print('PASS stale app/ copy is gone and asset versions match the Service Worker cache')
 
 # v177: в корне репозитория было 71 .md-файл — десятки DEPLOY_v*.md и

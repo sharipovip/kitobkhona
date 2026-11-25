@@ -2181,14 +2181,25 @@ async function downloadFile(url,name,showProgress=true){
     if(typeof window.showSaveFilePicker==='function'){
       try{
         const ext=(String(fileName).match(/\.([A-Za-z0-9]+)$/)||[,''])[1].toLowerCase();
+        const cleanMime=String(mime||'application/octet-stream').split(';')[0].trim()||'application/octet-stream';
         const opts={suggestedName:fileName};
-        if(ext)opts.types=[{description:ext.toUpperCase()+' file',accept:{[mime]:[ext]}}];
-        const handle=await window.showSaveFilePicker(opts);
+        if(ext)opts.types=[{description:ext.toUpperCase()+' file',accept:{[cleanMime]:['.'+ext]}}];
+        let handle;
+        try{
+          handle=await window.showSaveFilePicker(opts);
+        }catch(firstErr){
+          if(firstErr&&firstErr.name==='AbortError')throw firstErr;
+          if(firstErr&&firstErr.name==='TypeError'&&opts.types){
+            handle=await window.showSaveFilePicker({suggestedName:fileName});
+          }else{
+            throw firstErr;
+          }
+        }
         const writable=await handle.createWritable();await writable.write(blob);await writable.close();saved=true;
       }catch(e){if(e&&e.name==='AbortError'){if(toastEl){toastEl.textContent='Боргирии китоб бекор шуд';toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),2000)}return}console.warn('[downloadFile] Save-As picker unavailable:',e)}
     }
     if(!saved){
-      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},5000);
+      const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=fileName;document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},15000);
       if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд — дар папкаи «Загрузки»';setTimeout(()=>toastEl.classList.remove('show'),2000)}
     }else if(toastEl){toastEl.textContent='✓ Китоб боргирӣ шуд';setTimeout(()=>toastEl.classList.remove('show'),2000)}
   }catch(e){if(toastEl){toastEl.textContent='Хатогӣ: '+e.message;toastEl.classList.add('show');setTimeout(()=>toastEl.classList.remove('show'),3000)}console.error('Download error:',e)}
@@ -2704,7 +2715,7 @@ async function registerFcmToken(recoveryAttempt = false) {
     const messagingDbReady = await inspectFirebaseMessagingDatabase();
     if (!messagingDbReady) return null;
     await loadFirebaseMessagingSdk();
-    const registration = await navigator.serviceWorker.register('./sw.js');
+    const registration = await navigator.serviceWorker.register('./sw.js', { scope: './', updateViaCache: 'none' });
     const messaging = firebase.messaging();
     const currentToken = await messaging.getToken({
       serviceWorkerRegistration: registration,
@@ -3198,7 +3209,11 @@ window.addEventListener('storage',e=>{if(e.key==='kk_profile_cache')applySocialB
       // ворид амал шавад.
       try{
         if(nav.serviceWorker.controller){
-          nav.serviceWorker.register('./sw.js',{scope:'./'}).then(reg=>{
+          nav.serviceWorker.register('./sw.js',{scope:'./',updateViaCache:'none'}).then(reg=>{
+            if(reg&&typeof reg.update==='function')reg.update().catch(()=>{});
+          }).catch(()=>{});
+        }else if(typeof nav.serviceWorker.getRegistration==='function'){
+          nav.serviceWorker.getRegistration().then(reg=>{
             if(reg&&typeof reg.update==='function')reg.update().catch(()=>{});
           }).catch(()=>{});
         }
