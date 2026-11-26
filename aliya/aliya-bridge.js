@@ -26,6 +26,15 @@
       return list;
     },
 
+    nativeWindows: function () {
+      var list = [];
+      function push(w) { if (w && list.indexOf(w) === -1) list.push(w); }
+      try { push(window.top); } catch (e) {}
+      try { push(window.parent); } catch (e) {}
+      push(window);
+      return list;
+    },
+
     /**
      * v180: Окно, дар кӯм мумкин аст "Сохранить как"-и браузерро иҷро кунем.
      *
@@ -58,6 +67,15 @@
      * гирифта мешавад — барои он ки браузер имкон диҳад.
      */
     openSavePicker: async function (fileName, mimeType) {
+      try {
+        if (window.parent && window.parent !== window && typeof window.parent.__kkOpenAliyaPicker === 'function') {
+          var parentRes = await window.parent.__kkOpenAliyaPicker(fileName, mimeType);
+          if (parentRes) return parentRes;
+        }
+      } catch (pErr) {
+        if (pErr && (pErr.abortedByUser || pErr.name === 'AbortError')) { pErr.abortedByUser = true; throw pErr; }
+        console.warn('[AliyaBridge] Host window picker unavailable:', pErr);
+      }
       var ext = (String(fileName || '').match(/\.([A-Za-z0-9]+)$/) || ['', ''])[1].toLowerCase();
       var cleanMime = String(mimeType || 'application/octet-stream').split(';')[0].trim() || 'application/octet-stream';
       var types = [];
@@ -102,12 +120,13 @@
     },
 
     isAndroid: function () {
-      var list = this.hostWindows();
+      var list = this.nativeWindows();
       for (var i = 0; i < list.length; i++) {
         var w = list[i];
         try {
           if ((w.AndroidBridge && typeof w.AndroidBridge.saveFile === 'function') ||
               (w.AndroidBridge && typeof w.AndroidBridge.saveBase64File === 'function') ||
+              (w.AndroidBridge && typeof w.AndroidBridge.saveSymbolFile === 'function') ||
               (w.KitobkhonaNative && typeof w.KitobkhonaNative.postMessage === 'function')) return true;
         } catch (e) {}
       }
@@ -127,7 +146,9 @@
     saveFile: async function (content, fileName, mimeType, opts) {
       mimeType = mimeType || 'application/octet-stream';
       opts = opts || {};
-      var originalBlob = content instanceof Blob ? content : null;
+      var isBlobLike = (typeof Blob !== 'undefined' && content instanceof Blob) ||
+        (content && typeof content === 'object' && typeof content.size === 'number' && typeof content.arrayBuffer === 'function');
+      var originalBlob = isBlobLike ? content : null;
       var base64 = '';
 
       if (originalBlob) {
@@ -143,35 +164,65 @@
         throw new Error('Файл холӣ аст');
       }
 
+      if (!opts.__fromReaderHost) {
+        try {
+          if (window.parent && window.parent !== window && typeof window.parent.__kkSaveAliyaFile === 'function') {
+            return await window.parent.__kkSaveAliyaFile(originalBlob || base64, fileName, mimeType, null, opts);
+          }
+        } catch (hostErr) {
+          if (hostErr && (hostErr.abortedByUser || hostErr.name === 'AbortError')) { hostErr.abortedByUser = true; throw hostErr; }
+          console.warn('[AliyaBridge] Host save delegate failed, continuing locally:', hostErr);
+        }
+      }
+
       // 1. Android Native Bridge — нативный диалог «Сохранить как».
-      //    v178: ищем мост во всех окнах (своё / родитель / верхнее).
-      //    В iframe Алии моста нет — он есть в reader.html.
+      //    v183: аввал пули аслии (non-fallback) AndroidBridge дар болои окно (top/parent/self),
+      //    баъд нусхаи эҳтиётӣ (KitobkhonaNative). Ҳар як кӯшиш алоҳида try/catch мешавад,
+      //    то хатои як кадр дигаронро қатъ накунад.
+      var nativeAttemptFailed = false;
       if (this.isAndroid()) {
         try {
           if (!base64 && originalBlob) base64 = await this.blobToBase64(originalBlob);
           if (!base64) throw new Error('Файл холӣ аст');
-          var hosts = this.hostWindows(), done = false;
-          for (var hi = 0; hi < hosts.length && !done; hi++) {
-            var hw = hosts[hi];
-            if (hw.AndroidBridge) {
-              if (typeof hw.AndroidBridge.saveFile === 'function') {
-                hw.AndroidBridge.saveFile(base64, fileName, mimeType);
-                return { success: true, method: 'android_bridge' };
+          var hosts = this.nativeWindows();
+          var pass;
+          for (pass = 0; pass < 2; pass++) {
+            var wantFallback = pass === 1;
+            for (var hi = 0; hi < hosts.length; hi++) {
+              var hw = hosts[hi];
+              if (!hw) continue;
+              try {
+                var ab = hw.AndroidBridge;
+                if (ab) {
+                  var isFbBridge = ab.__kkNativeFallback === true;
+                  if (typeof ab.saveFile === 'function' && ((ab.saveFile.__kkNativeFallback === true || isFbBridge) === wantFallback)) {
+                    ab.saveFile(base64, fileName, mimeType);
+                    return { success: true, method: 'android_bridge' };
+                  }
+                  if (typeof ab.saveBase64File === 'function' && ((ab.saveBase64File.__kkNativeFallback === true || isFbBridge) === wantFallback)) {
+                    ab.saveBase64File(base64, fileName, mimeType);
+                    return { success: true, method: 'android_base64' };
+                  }
+                  if (typeof ab.saveSymbolFile === 'function' && ((ab.saveSymbolFile.__kkNativeFallback === true || isFbBridge) === wantFallback)) {
+                    ab.saveSymbolFile(base64, fileName, mimeType);
+                    return { success: true, method: 'android_bridge' };
+                  }
+                }
+                if (wantFallback && hw.KitobkhonaNative && typeof hw.KitobkhonaNative.postMessage === 'function') {
+                  hw.KitobkhonaNative.postMessage(JSON.stringify({
+                    method: 'saveFile',
+                    args: [base64, fileName, mimeType]
+                  }));
+                  return { success: true, method: 'native_post_message' };
+                }
+              } catch (nativeErr) {
+                nativeAttemptFailed = true;
+                console.warn('[AliyaBridge] Android bridge candidate failed:', nativeErr);
               }
-              if (typeof hw.AndroidBridge.saveBase64File === 'function') {
-                hw.AndroidBridge.saveBase64File(base64, fileName, mimeType);
-                return { success: true, method: 'android_base64' };
-              }
-            }
-            if (hw.KitobkhonaNative && typeof hw.KitobkhonaNative.postMessage === 'function') {
-              hw.KitobkhonaNative.postMessage(JSON.stringify({
-                method: 'saveFile',
-                args: [base64, fileName, mimeType]
-              }));
-              return { success: true, method: 'native_post_message' };
             }
           }
         } catch (e) {
+          nativeAttemptFailed = true;
           console.warn('[AliyaBridge] Android save error, falling back to browser download', e);
         }
       }
@@ -186,7 +237,7 @@
       // Алия дар Reader он кор намекунад ва мост бе садо ба боршаврии
       // одӣ меафтад — корбар танҳо «Загрузки»-ро мебинад.
       // Ҳамон тарзи кор кардани «Скачать книгу» (config.js → downloadFile).
-      if (originalBlob && !opts.skipPicker) {
+      if (originalBlob && (!opts.skipPicker || nativeAttemptFailed)) {
         try {
           var target = await this.openSavePicker(fileName, mimeType);
           if (target) return await this.writeToPicker(target, originalBlob);

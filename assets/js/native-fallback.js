@@ -19,20 +19,32 @@
 (function (window) {
   'use strict';
   try {
+    var candidates = [];
+    function push(w) { if (w && candidates.indexOf(w) === -1) candidates.push(w); }
+    try { if (window.top) push(window.top); } catch (e) {}
+    try { if (window.parent) push(window.parent); } catch (e) {}
+    push(window);
+
+    var realHost = null;
     var nativeHost = null;
-    var candidates = [window];
-    try { if (window.parent && candidates.indexOf(window.parent) === -1) candidates.push(window.parent); } catch (e) {}
-    try { if (window.top && candidates.indexOf(window.top) === -1) candidates.push(window.top); } catch (e) {}
-    for (var i = 0; i < candidates.length; i++) {
+    var i, c;
+    for (i = 0; i < candidates.length; i++) {
       try {
-        var c = candidates[i];
-        if (c && c.KitobkhonaNative && typeof c.KitobkhonaNative.postMessage === 'function') {
+        c = candidates[i];
+        if (!realHost && c && c.AndroidBridge && c.AndroidBridge.__kkNativeFallback !== true &&
+            (typeof c.AndroidBridge.saveFile === 'function' ||
+             typeof c.AndroidBridge.saveBase64File === 'function' ||
+             typeof c.AndroidBridge.saveSymbolFile === 'function')) {
+          realHost = c;
+        }
+        if (!nativeHost && c && c.KitobkhonaNative && typeof c.KitobkhonaNative.postMessage === 'function') {
           nativeHost = c;
-          break;
         }
       } catch (e) {}
     }
-    if (!nativeHost) return;
+    if (!realHost && !nativeHost) return;
+
+    var hadRealOwn = !!(window.AndroidBridge && window.AndroidBridge.__kkNativeFallback !== true);
     var bridge = window.AndroidBridge || {};
     var map = {
       saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile',
@@ -41,16 +53,40 @@
       shareRemoteImages: 'shareRemoteImages', saveUserId: 'saveUserId', saveAuthToken: 'saveAuthToken',
       openExternalUrl: 'openExternalUrl', openOfficialSite: 'openOfficialSite'
     };
+    var saveMethods = { saveFile: true, saveBase64File: true, saveSymbolFile: true };
     Object.keys(map).forEach(function (name) {
       if (typeof bridge[name] === 'function') return;
-      bridge[name] = function () {
-        try {
-          nativeHost.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) }));
-        } catch (e) {
-          console.warn('Native feature is unavailable', e);
+      var hasRealFn = !!(realHost && realHost.AndroidBridge && typeof realHost.AndroidBridge[name] === 'function');
+      var fn = function () {
+        var args = Array.prototype.slice.call(arguments);
+        if (realHost && realHost.AndroidBridge && typeof realHost.AndroidBridge[name] === 'function') {
+          try {
+            return realHost.AndroidBridge[name].apply(realHost.AndroidBridge, args);
+          } catch (realErr) {
+            if (!nativeHost && saveMethods[name]) throw realErr;
+            console.warn('Real AndroidBridge call failed, trying KitobkhonaNative', realErr);
+          }
+        }
+        if (nativeHost && nativeHost.KitobkhonaNative && typeof nativeHost.KitobkhonaNative.postMessage === 'function') {
+          try {
+            nativeHost.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: args }));
+            return;
+          } catch (e) {
+            console.warn('Native feature is unavailable', e);
+            if (saveMethods[name]) throw e;
+          }
+        } else if (saveMethods[name]) {
+          throw new Error('Native save bridge unavailable');
         }
       };
+      if (!hasRealFn) {
+        try { fn.__kkNativeFallback = true; } catch (e) {}
+      }
+      bridge[name] = fn;
     });
+    if (!hadRealOwn && !realHost) {
+      try { bridge.__kkNativeFallback = true; } catch (e) {}
+    }
     window.AndroidBridge = bridge;
   } catch (e) {}
 })(window);
