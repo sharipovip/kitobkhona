@@ -8,8 +8,8 @@
 <link rel="icon" type="image/x-icon" href="./favicon.ico">
 
 <script src="./assets/libs/pdf.min.js"></script>
-<script src="config.js?v=182"></script>
-<script src="./assets/js/native-fallback.js?v=182"></script>
+<script src="config.js?v=183"></script>
+<script src="./assets/js/native-fallback.js?v=183"></script>
 <script src="cache.js?v=45"></script>
 
 
@@ -38,7 +38,7 @@
   <link rel="stylesheet" href="assets/css/desktop-layout.css">
 
 
-<script src="./aliya/aliya-tasks.js?v=182" defer></script>
+<script src="./aliya/aliya-tasks.js?v=183" defer></script>
 
 <link rel="stylesheet" href="assets/css/reader.css?v=clean-2">
 <script src="reader-curl.js?v=clean-1"></script>
@@ -1816,7 +1816,7 @@ document.addEventListener('DOMContentLoaded', function initReaderDesktopAndAliya
   // v159: Алия дар болои Reader (iframe) кушода мешавад: китоби аллакай боркардашуда истифода мешавад,
   // ҳеҷ чиз аз нав зеркашӣ намешавад. Бастани қабат саҳифаи Алияро холӣ мекунад — кори ҷорӣ худкор қатъ мешавад.
   function aliyaSrc() {
-    return 'aliya/reader-aliya.html?embed=1&v=182&url=' + encodeURIComponent(url) +
+    return 'aliya/reader-aliya.html?embed=1&v=183&url=' + encodeURIComponent(url) +
       '&name=' + encodeURIComponent(typeof name !== 'undefined' ? name : 'Китоб') + '&page=' + (typeof page !== 'undefined' ? page : 1);
   }
   function openAliyaOverlay() {
@@ -1890,6 +1890,197 @@ window.addEventListener('load', function () {
   updateNotesBadge();
   try { if (new URL(location.href).searchParams.get('notes') === '1') toggleNotes(true); } catch (e) {}
 });
+
+// v183: Сабти ягонаи файл барои Алия дар Reader дар контексти худи reader.html
+// (ҳамон равзанаи болоие, ки «Скачать книгу» бо муваффақият истифода мебарад).
+window.__kkHasNativeSaveBridge = function () {
+  try {
+    var ab = window.AndroidBridge;
+    if (ab && (typeof ab.saveFile === 'function' ||
+               typeof ab.saveBase64File === 'function' ||
+               typeof ab.saveSymbolFile === 'function')) return true;
+    if (window.KitobkhonaNative && typeof window.KitobkhonaNative.postMessage === 'function') return true;
+  } catch (e) {}
+  return false;
+};
+
+window.__kkOpenAliyaPicker = async function (fileName, mime) {
+  if (typeof window.showSaveFilePicker !== 'function') return null;
+  var ext = (String(fileName || '').match(/\.([A-Za-z0-9]+)$/) || ['', ''])[1].toLowerCase();
+  var cleanMime = String(mime || 'application/octet-stream').split(';')[0].trim() || 'application/octet-stream';
+  var opts = { suggestedName: fileName };
+  if (ext) {
+    var accept = {};
+    accept[cleanMime] = ['.' + ext];
+    opts.types = [{ description: ext.toUpperCase() + ' file', accept: accept }];
+  }
+  var handle;
+  try {
+    handle = await window.showSaveFilePicker(opts);
+  } catch (firstErr) {
+    if (firstErr && firstErr.name === 'AbortError') {
+      firstErr.abortedByUser = true;
+      throw firstErr;
+    }
+    if (firstErr && firstErr.name === 'TypeError' && opts.types) {
+      handle = await window.showSaveFilePicker({ suggestedName: fileName });
+    } else {
+      throw firstErr;
+    }
+  }
+  return { win: window, handle: handle, method: 'file_picker', fileName: fileName };
+};
+
+window.__kkSaveAliyaFile = async function (content, fileName, mime, pickerTarget, opts) {
+  opts = opts || {};
+  var cleanMime = String(mime || 'application/octet-stream').split(';')[0].trim() || 'application/octet-stream';
+  async function toLocalBlob(src) {
+    if (src && typeof src === 'object') {
+      if (src instanceof Blob) return src;
+      if (typeof src.arrayBuffer === 'function') {
+        var ab = await src.arrayBuffer();
+        return new Blob([ab], { type: cleanMime });
+      }
+      if ((typeof Uint8Array !== 'undefined' && src instanceof Uint8Array) ||
+          (typeof ArrayBuffer !== 'undefined' && src instanceof ArrayBuffer)) {
+        return new Blob([src], { type: cleanMime });
+      }
+    }
+    if (typeof src === 'string') {
+      var raw = src.indexOf('base64,') !== -1 ? src.split('base64,')[1] : src;
+      if (!raw) return null;
+      var bin = atob(raw), bytes = new Uint8Array(bin.length);
+      for (var i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+      return new Blob([bytes], { type: cleanMime });
+    }
+    return null;
+  }
+  async function toB64(b) {
+    if (typeof FileReader !== 'undefined') {
+      try {
+        var r = await new Promise(function (resolve, reject) {
+          var fr = new FileReader();
+          var settled = false;
+          function done() {
+            if (settled) return;
+            settled = true;
+            var s = String(fr.result || '');
+            var idx = s.indexOf('base64,');
+            resolve(idx !== -1 ? s.slice(idx + 7) : s);
+          }
+          function fail(e) {
+            if (settled) return;
+            settled = true;
+            reject(e || fr.error || new Error('FileReader error'));
+          }
+          fr.onload = done;
+          fr.onloadend = function () {
+            if (fr.error) fail(fr.error);
+            else done();
+          };
+          fr.onerror = function () { fail(fr.error); };
+          fr.onabort = function () { fail(new Error('FileReader aborted')); };
+          fr.readAsDataURL(b);
+        });
+        if (r) return r;
+      } catch (e) {}
+    }
+    var ab = await b.arrayBuffer();
+    var bytes = new Uint8Array(ab), chunks = [];
+    for (var i = 0; i < bytes.length; i += 0x8000) {
+      chunks.push(String.fromCharCode.apply(null, bytes.subarray(i, i + 0x8000)));
+    }
+    return btoa(chunks.join(''));
+  }
+
+  var localBlob = await toLocalBlob(content);
+  if (!localBlob || localBlob.size === 0) throw new Error('Файл холӣ аст');
+
+  var nativeThrew = false;
+  var b64 = '';
+  if (window.__kkHasNativeSaveBridge()) {
+    try {
+      b64 = await toB64(localBlob);
+      if (!b64) throw new Error('Файл холӣ аст');
+      var ab = window.AndroidBridge;
+      var isFb = !!(ab && ab.__kkNativeFallback === true);
+      var pass;
+      for (pass = 0; pass < 2; pass++) {
+        var wantFallback = pass === 1;
+        if (ab) {
+          try {
+            if (typeof ab.saveFile === 'function' && ((ab.saveFile.__kkNativeFallback === true || isFb) === wantFallback)) {
+              ab.saveFile(b64, fileName, cleanMime);
+              return { success: true, method: 'android_bridge', fileName: fileName };
+            }
+          } catch (e1) { nativeThrew = true; console.warn('[ReaderAliyaSave] saveFile failed:', e1); }
+          try {
+            if (typeof ab.saveBase64File === 'function' && ((ab.saveBase64File.__kkNativeFallback === true || isFb) === wantFallback)) {
+              ab.saveBase64File(b64, fileName, cleanMime);
+              return { success: true, method: 'android_base64', fileName: fileName };
+            }
+          } catch (e2) { nativeThrew = true; console.warn('[ReaderAliyaSave] saveBase64File failed:', e2); }
+          try {
+            if (typeof ab.saveSymbolFile === 'function' && ((ab.saveSymbolFile.__kkNativeFallback === true || isFb) === wantFallback)) {
+              ab.saveSymbolFile(b64, fileName, cleanMime);
+              return { success: true, method: 'android_bridge', fileName: fileName };
+            }
+          } catch (e3) { nativeThrew = true; console.warn('[ReaderAliyaSave] saveSymbolFile failed:', e3); }
+        }
+        if (wantFallback && window.KitobkhonaNative && typeof window.KitobkhonaNative.postMessage === 'function') {
+          try {
+            window.KitobkhonaNative.postMessage(JSON.stringify({
+              method: 'saveFile',
+              args: [b64, fileName, cleanMime]
+            }));
+            return { success: true, method: 'native_post_message', fileName: fileName };
+          } catch (e4) { nativeThrew = true; console.warn('[ReaderAliyaSave] KitobkhonaNative failed:', e4); }
+        }
+      }
+    } catch (b64Err) {
+      nativeThrew = true;
+      console.warn('[ReaderAliyaSave] Native save preparation failed:', b64Err);
+    }
+  }
+
+  if (pickerTarget && pickerTarget.handle && typeof pickerTarget.handle.createWritable === 'function') {
+    var writable = await pickerTarget.handle.createWritable();
+    await writable.write(localBlob);
+    await writable.close();
+    return { success: true, method: 'file_picker', fileName: fileName };
+  }
+
+  if ((!opts.skipPicker || nativeThrew) && typeof window.showSaveFilePicker === 'function') {
+    try {
+      var target = await window.__kkOpenAliyaPicker(fileName, cleanMime);
+      if (target && target.handle) {
+        var wr = await target.handle.createWritable();
+        await wr.write(localBlob);
+        await wr.close();
+        return { success: true, method: 'file_picker', fileName: fileName };
+      }
+    } catch (pickErr) {
+      if (pickErr && (pickErr.abortedByUser || pickErr.name === 'AbortError')) {
+        pickErr.abortedByUser = true;
+        throw pickErr;
+      }
+      console.warn('[ReaderAliyaSave] Save-As picker unavailable:', pickErr);
+    }
+  }
+
+  var blobUrl = URL.createObjectURL(localBlob);
+  var a = document.createElement('a');
+  a.style.display = 'none';
+  a.href = blobUrl;
+  a.download = fileName;
+  document.body.appendChild(a);
+  a.click();
+  setTimeout(function () {
+    try { document.body.removeChild(a); } catch (e) {}
+    try { URL.revokeObjectURL(blobUrl); } catch (e) {}
+  }, 15000);
+  return { success: true, method: 'browser_blob', silent: true, fileName: fileName };
+};
 </script>
 
 
@@ -1901,7 +2092,7 @@ window.addEventListener('load', function () {
   <div class="pc-page-arrow left" onclick="turnPage(-1)" title="Саҳифаи қаблӣ (← / PageUp)">‹</div>
   <div class="pc-page-arrow right" onclick="turnPage(1)" title="Саҳифаи навбатӣ (→ / PageDown)">›</div>
 
-<script src="./aliya/aliya-bridge.js?v=182"></script>
+<script src="./aliya/aliya-bridge.js?v=183"></script>
 <script src="./aliya/aliya-brand-animation.js?v=1" defer></script>
 </body>
 </html>

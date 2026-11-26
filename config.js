@@ -62,18 +62,28 @@
 (function installNativeBridgeFallback() {
   try {
     if (typeof window === 'undefined' || !window.KitobkhonaNative || typeof window.KitobkhonaNative.postMessage !== 'function') return;
+    var hadRealOwn = !!(window.AndroidBridge && window.AndroidBridge.__kkNativeFallback !== true);
     var bridge = window.AndroidBridge || {};
     var map = { saveBase64File: 'saveFile', saveFile: 'saveFile', saveSymbolFile: 'saveFile', openFile: 'openFile', shareFile: 'shareFile',
       shareText: 'shareText', shareTextWithWhatsAppChooser: 'shareTextWithWhatsAppChooser', shareImageWithText: 'shareImageWithText',
       shareRemoteImage: 'shareRemoteImage', shareRemoteImages: 'shareRemoteImages', saveUserId: 'saveUserId', saveAuthToken: 'saveAuthToken',
       openExternalUrl: 'openExternalUrl', openOfficialSite: 'openOfficialSite' };
+    var saveMethods = { saveFile: true, saveBase64File: true, saveSymbolFile: true };
     Object.keys(map).forEach(function (name) {
       if (typeof bridge[name] === 'function') return;
-      bridge[name] = function () {
+      var fn = function () {
         try { window.KitobkhonaNative.postMessage(JSON.stringify({ method: map[name], args: Array.prototype.slice.call(arguments) })); }
-        catch (e) { console.warn('Native feature is unavailable', e); }
+        catch (e) {
+          console.warn('Native feature is unavailable', e);
+          if (saveMethods[name]) throw e;
+        }
       };
+      try { fn.__kkNativeFallback = true; } catch (e) {}
+      bridge[name] = fn;
     });
+    if (!hadRealOwn) {
+      try { bridge.__kkNativeFallback = true; } catch (e) {}
+    }
     window.AndroidBridge = bridge;
   } catch (e) {}
 })();

@@ -308,10 +308,202 @@ function makeFileReader() {
   });
 })
 
+/* ------------------------------------------------------------------ */
+/* Scenario 5: Real reader.html top-level adapter + iframe cross-realm */
+/* ------------------------------------------------------------------ */
+.then(async function scenarioReaderHostDelegation() {
+  const readerHtml = fs.readFileSync(path.join(ROOT, 'reader.html'), 'utf8');
+  const nativeFallbackSrc = fs.readFileSync(path.join(ROOT, 'assets/js/native-fallback.js'), 'utf8');
+  const marker = '// v183: Сабти ягонаи файл барои Алия дар Reader';
+  const start = readerHtml.indexOf(marker);
+  const end = readerHtml.indexOf('</script>', start);
+  check('reader.html exposes the top-level Aliya save adapter', start > 0 && end > start);
+  const adapterCode = readerHtml.slice(start, end);
+
+  function makeReaderTop(extra) {
+    const log = [];
+    const readerCtx = vm.createContext(Object.assign({
+      console: { log() {}, warn() {}, error() {} },
+      setTimeout, clearTimeout, Promise, Math, Date, JSON, String, Number, Object, RegExp, Error,
+      Uint8Array, ArrayBuffer, atob, btoa,
+      URL: { createObjectURL: () => 'blob:reader', revokeObjectURL() {} },
+      document: makeDoc('reader', log),
+      location: { href: 'https://x.test/reader.html' },
+      FileReader: makeFileReader(),
+    }, extra || {}));
+    readerCtx.window = readerCtx;
+    readerCtx.globalThis = readerCtx;
+    readerCtx.parent = readerCtx;
+    readerCtx.top = readerCtx;
+    vm.runInContext(`
+      globalThis.Blob = class ReaderBlob {
+        constructor(parts, opts) {
+          this.parts = parts || [];
+          this.type = (opts && opts.type) || '';
+          this.size = 0;
+          for (const p of this.parts) this.size += (p && (p.byteLength || p.length || p.size)) || 0;
+        }
+        async arrayBuffer() {
+          const p = this.parts[0];
+          if (!p) return new ArrayBuffer(0);
+          if (p instanceof ArrayBuffer) return p.slice(0);
+          if (p.buffer) return p.buffer.slice(p.byteOffset, p.byteOffset + p.byteLength);
+          return new ArrayBuffer(0);
+        }
+      };
+    `, readerCtx);
+    vm.runInContext(adapterCode, readerCtx, { filename: 'reader-adapter.js' });
+    return { readerCtx, log };
+  }
+
+  function makeIframe(readerCtx, extra) {
+    const iframeLog = [];
+    const ictx = vm.createContext(Object.assign({
+      console: { log() {}, warn() {}, error() {} },
+      setTimeout, clearTimeout, Promise, Math, Date, JSON, String, Number, Object, RegExp, Error,
+      Uint8Array, ArrayBuffer, atob, btoa,
+      URL: { createObjectURL: () => 'blob:iframe', revokeObjectURL() {} },
+      FileReader: makeFileReader(),
+      document: makeDoc('iframe', iframeLog),
+      location: { href: 'https://x.test/aliya/reader-aliya.html?embed=1' },
+      top: readerCtx, parent: readerCtx,
+      window: null, globalThis: null,
+      addEventListener() {}, removeEventListener() {},
+      fetch: async () => ({ ok: true, status: 200, json: async () => ({}) }),
+      localStorage: { getItem: () => null, setItem() {}, removeItem() {}, key: () => null, length: 0 },
+      sessionStorage: { getItem: () => null, setItem() {}, removeItem() {}, key: () => null, length: 0 },
+    }, extra || {}));
+    ictx.window = ictx;
+    ictx.globalThis = ictx;
+    // Separate Blob realm inside the iframe (just like a real browser iframe!).
+    vm.runInContext(`
+      globalThis.Blob = class IframeBlob {
+        constructor(parts, opts) {
+          this.parts = parts || [];
+          this.type = (opts && opts.type) || '';
+          this.size = 0;
+          for (const p of this.parts) this.size += (p && (p.byteLength || p.length || p.size)) || 0;
+        }
+        async arrayBuffer() {
+          const p = this.parts[0];
+          if (!p) return new ArrayBuffer(0);
+          if (p instanceof ArrayBuffer) return p.slice(0);
+          if (p.buffer) return p.buffer.slice(p.byteOffset, p.byteOffset + p.byteLength);
+          return new ArrayBuffer(0);
+        }
+      };
+    `, ictx);
+    vm.runInContext(nativeFallbackSrc, ictx, { filename: 'native-fallback.js' });
+    vm.runInContext(bridgeSrc, ictx, { filename: 'aliya-bridge.js' });
+    vm.runInContext(tasksSrc, ictx, { filename: 'aliya-tasks.js' });
+    ictx.AliyaTemplates = {
+      generateMarkdownDocx: () => new ictx.Blob([new Uint8Array([80, 75, 3, 4])], {
+        type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+      }),
+    };
+    return { ictx, iframeLog };
+  }
+
+  // Case A: Android APK with real parent.AndroidBridge AND KitobkhonaNative
+  {
+    const calls = [];
+    const { readerCtx, log } = makeReaderTop({
+      AndroidBridge: {
+        saveFile(b64, fileName, mime) { calls.push({ via: 'real_AndroidBridge', b64, fileName, mime }); },
+      },
+      KitobkhonaNative: {
+        postMessage(msg) { calls.push({ via: 'KitobkhonaNative', msg }); },
+      },
+    });
+    const { ictx } = makeIframe(readerCtx);
+    const res = await vm.runInContext(
+      'AliyaTasks.exportDoc("docx", "Дарс", "Матн", { docType: "Нақшаи дарс" })',
+      ictx
+    );
+    check('real AndroidBridge on reader.html wins over KitobkhonaNative fallback in iframe',
+      calls.length === 1 && calls[0].via === 'real_AndroidBridge', JSON.stringify(calls));
+    check('cross-realm iframe Blob saves via reader.html AndroidBridge without falling back to Downloads',
+      res && res.method === 'android_bridge' && !log.some((l) => l.kind === 'click'),
+      JSON.stringify(res));
+  }
+
+  // Case B: Browser with showSaveFilePicker on reader.html (cross-realm Blob + Cancel)
+  {
+    const events = [];
+    let writtenBytes = 0;
+    const { readerCtx, log } = makeReaderTop({
+      showSaveFilePicker: async (opts) => {
+        events.push({ kind: 'picker', opts });
+        return {
+          createWritable: async () => ({
+            write: async (b) => { writtenBytes = b && b.size; events.push({ kind: 'write', size: writtenBytes }); },
+            close: async () => { events.push({ kind: 'close' }); },
+          }),
+        };
+      },
+    });
+    const { ictx } = makeIframe(readerCtx);
+    const res = await vm.runInContext(
+      'AliyaTasks.exportDoc("docx", "Дарс", "Матн", { docType: "Нақшаи дарс" })',
+      ictx
+    );
+    check('reader.html top-level picker opens and writes cross-realm iframe Blob',
+      res && res.method === 'file_picker' && writtenBytes > 0 && !log.some((l) => l.kind === 'click'),
+      JSON.stringify({ res, events }));
+
+    // User cancels in reader.html picker
+    readerCtx.showSaveFilePicker = async () => { const e = new Error('cancelled'); e.name = 'AbortError'; throw e; };
+    let cancelErr = null;
+    try {
+      await vm.runInContext(
+        'AliyaTasks.exportDoc("docx", "Дарс", "Матн", { docType: "Нақшаи дарс" })',
+        ictx
+      );
+    } catch (e) { cancelErr = e; }
+    check('Cancel in reader.html top-level picker aborts without silent download',
+      !!(cancelErr && cancelErr.abortedByUser) && !log.some((l) => l.kind === 'click'),
+      String(cancelErr));
+  }
+
+  // Case C: Broken KitobkhonaNative throwing does NOT block showSaveFilePicker via skipPicker
+  {
+    let pickerOpened = 0;
+    const { readerCtx, log } = makeReaderTop({
+      KitobkhonaNative: {
+        postMessage() { throw new Error('broken native channel'); },
+      },
+      showSaveFilePicker: async () => {
+        pickerOpened++;
+        return { createWritable: async () => ({ write: async () => {}, close: async () => {} }) };
+      },
+    });
+    const { ictx } = makeIframe(readerCtx);
+    const res = await vm.runInContext(
+      'AliyaTasks.exportDoc("docx", "Дарс", "Матн", { docType: "Нақшаи дарс" })',
+      ictx
+    );
+    check('broken native channel falls back to Save-As picker instead of skipping straight to Downloads',
+      pickerOpened === 1 && res && res.method === 'file_picker' && !log.some((l) => l.kind === 'click'),
+      JSON.stringify({ pickerOpened, res }));
+  }
+})
+
 .then(function () {
   if (failures.length) {
     console.error('\n' + failures.length + ' end-to-end check(s) failed: ' + failures.join(', '));
     process.exit(1);
   }
+  e2eDone = true;
   console.log('\nPASS end-to-end: the Aliya in the Reader saves the file, and the cache command reaches every device.');
+}).catch((err) => {
+  console.error(err);
+  process.exit(1);
+});
+
+let e2eDone = false;
+process.on('beforeExit', () => {
+  if (!e2eDone) {
+    console.error('FAIL end-to-end promise chain never settled');
+    process.exit(1);
+  }
 });

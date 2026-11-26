@@ -947,8 +947,21 @@
   function blobToBase64(blob) {
     return new Promise(function (res, rej) {
       var r = new FileReader();
-      r.onload = function () { res(String(r.result).split(',')[1] || ''); };
-      r.onerror = function () { rej(r.error); };
+      var settled = false;
+      function ok() {
+        if (settled) return;
+        settled = true;
+        res(String(r.result || '').split(',')[1] || '');
+      }
+      function fail(e) {
+        if (settled) return;
+        settled = true;
+        rej(e || r.error || new Error('FileReader error'));
+      }
+      r.onload = ok;
+      r.onloadend = function () { if (r.error) fail(r.error); else ok(); };
+      r.onerror = function () { fail(r.error); };
+      r.onabort = function () { fail(new Error('FileReader aborted')); };
       r.readAsDataURL(blob);
     });
   }
@@ -967,11 +980,23 @@
    * Натиҷа: null — интихоби файл мумкин нест (ин тиқоз нест, танҳо
    * огоҳиш). 'cancelled' — корбар қатъ карда (хато нест).
    */
+  var _lastPickerTried = false;
   async function pickSaveTarget(fileName, mime) {
+    _lastPickerTried = false;
     try {
       // Дар барномаи Android нативный диалог аст — он аслӣ кор мекунад,
       // бинобар ин интихоби файли браузерро кушодан лозим нест.
       if (hasNativeSaveBridge()) return null;
+      _lastPickerTried = true;
+      try {
+        if (window.parent && window.parent !== window && typeof window.parent.__kkOpenAliyaPicker === 'function') {
+          var hostTarget = await window.parent.__kkOpenAliyaPicker(fileName, mime);
+          if (hostTarget) return hostTarget;
+        }
+      } catch (hostErr) {
+        if (hostErr && (hostErr.abortedByUser || hostErr.name === 'AbortError')) return 'cancelled';
+        console.warn('[Aliya] Host Save-As picker unavailable:', hostErr);
+      }
       var bridge = window.AliyaBridge;
       if (!bridge || typeof bridge.openSavePicker !== 'function') return null;
       var target = await bridge.openSavePicker(fileName, mime);
@@ -984,16 +1009,22 @@
   }
   /** v180: Остонд, ки нативный мост дар яке аз оконоҳо ҳаст. */
   function hasNativeSaveBridge() {
+    try {
+      if (window.parent && window.parent !== window && typeof window.parent.__kkHasNativeSaveBridge === 'function') {
+        if (window.parent.__kkHasNativeSaveBridge()) return true;
+      }
+    } catch (e) {}
     var wins = [];
     function push(w) { if (w && wins.indexOf(w) === -1) wins.push(w); }
-    push(window);
-    try { push(window.parent); } catch (e) {}
     try { push(window.top); } catch (e) {}
+    try { push(window.parent); } catch (e) {}
+    push(window);
     for (var i = 0; i < wins.length; i++) {
       try {
         var w = wins[i];
         if (w && ((w.AndroidBridge && typeof w.AndroidBridge.saveFile === 'function') ||
                   (w.AndroidBridge && typeof w.AndroidBridge.saveBase64File === 'function') ||
+                  (w.AndroidBridge && typeof w.AndroidBridge.saveSymbolFile === 'function') ||
                   (w.KitobkhonaNative && typeof w.KitobkhonaNative.postMessage === 'function'))) return true;
       } catch (e) {}
     }
@@ -1001,35 +1032,67 @@
   }
 
   async function saveBlob(blob, fileName, mime, pickerTarget) {
-    // v180: тартиби муҳим — аввал нативный Android-мост (ҳамон як диалог
-    // «Сохранить как» медиҳад), баъд мости кадр, баъд боршаврии одӣ.
-    // Алия дар Reader як iframe аст ва AndroidBridge танҳо дар reader.html
-    // (родитель) ҳаст — бинобар ин бо ҳамон оконоҳо сӯҳ мешавед.
+    // v183: Вақте Алия дар дохили reader.html (iframe) кушода шудааст,
+    // сабти файлро тавассути функсияи болоии худи reader.html иҷро мекунем —
+    // ҳамон муҳит ва ҳамон схемае, ки «Скачать книгу» бо муваффақият истифода мебарад.
+    try {
+      if (window.parent && window.parent !== window && typeof window.parent.__kkSaveAliyaFile === 'function') {
+        return await window.parent.__kkSaveAliyaFile(blob, fileName, mime, pickerTarget, {
+          skipPicker: _lastPickerTried && pickerTarget === null
+        });
+      }
+    } catch (hostSaveErr) {
+      if (hostSaveErr && (hostSaveErr.abortedByUser || hostSaveErr.name === 'AbortError')) throw hostSaveErr;
+      console.warn('[Aliya] Host save delegate failed, trying direct bridges:', hostSaveErr);
+    }
+    // v180/v183: тартиби муҳим — аввал нативный Android-мост (аслии non-fallback дар
+    // болои окно — window.top/window.parent/window — баъд нусхаи эҳтиётии KitobkhonaNative).
     var wins = [];
     function pushWin(w) { if (w && wins.indexOf(w) === -1) wins.push(w); }
-    pushWin(window);
-    try { pushWin(window.parent); } catch (e) {}
     try { pushWin(window.top); } catch (e) {}
-    for (var wi = 0; wi < wins.length; wi++) {
-      try {
+    try { pushWin(window.parent); } catch (e) {}
+    pushWin(window);
+    var nativeThrew = false;
+    var b64Cache = null;
+    async function getB64() {
+      if (b64Cache === null) b64Cache = await blobToBase64(blob);
+      return b64Cache;
+    }
+    var pass, wi;
+    for (pass = 0; pass < 2; pass++) {
+      var wantFallback = pass === 1;
+      for (wi = 0; wi < wins.length; wi++) {
         var nw = wins[wi];
         if (!nw) continue;
-        if (nw.AndroidBridge && typeof nw.AndroidBridge.saveFile === 'function') {
-          nw.AndroidBridge.saveFile(await blobToBase64(blob), fileName, mime);
-          return { success: true, method: 'android_bridge', fileName: fileName };
+        try {
+          var ab = nw.AndroidBridge;
+          if (ab) {
+            var isFb = ab.__kkNativeFallback === true;
+            if (typeof ab.saveFile === 'function' && ((ab.saveFile.__kkNativeFallback === true || isFb) === wantFallback)) {
+              ab.saveFile(await getB64(), fileName, mime);
+              return { success: true, method: 'android_bridge', fileName: fileName };
+            }
+            if (typeof ab.saveBase64File === 'function' && ((ab.saveBase64File.__kkNativeFallback === true || isFb) === wantFallback)) {
+              ab.saveBase64File(await getB64(), fileName, mime);
+              return { success: true, method: 'android_base64', fileName: fileName };
+            }
+            if (typeof ab.saveSymbolFile === 'function' && ((ab.saveSymbolFile.__kkNativeFallback === true || isFb) === wantFallback)) {
+              ab.saveSymbolFile(await getB64(), fileName, mime);
+              return { success: true, method: 'android_bridge', fileName: fileName };
+            }
+          }
+          if (wantFallback && nw.KitobkhonaNative && typeof nw.KitobkhonaNative.postMessage === 'function') {
+            nw.KitobkhonaNative.postMessage(JSON.stringify({
+              method: 'saveFile',
+              args: [await getB64(), fileName, mime]
+            }));
+            return { success: true, method: 'native_post_message', fileName: fileName };
+          }
+        } catch (e) {
+          nativeThrew = true;
+          console.warn('[Aliya] Native save candidate failed:', e);
         }
-        if (nw.AndroidBridge && typeof nw.AndroidBridge.saveBase64File === 'function') {
-          nw.AndroidBridge.saveBase64File(await blobToBase64(blob), fileName, mime);
-          return { success: true, method: 'android_base64', fileName: fileName };
-        }
-        if (nw.KitobkhonaNative && typeof nw.KitobkhonaNative.postMessage === 'function') {
-          nw.KitobkhonaNative.postMessage(JSON.stringify({
-            method: 'saveFile',
-            args: [await blobToBase64(blob), fileName, mime]
-          }));
-          return { success: true, method: 'native_post_message', fileName: fileName };
-        }
-      } catch (e) {}
+      }
     }
     // v180: агар интихоби файл пеш (дар дастгирии корбар) кушода шуда буд —
     // ҳамон файлро ба ҳамон мақсад навишт. Ин роҳ аз нав будан дар
@@ -1039,7 +1102,7 @@
     }
     // Мошини сабти файл. v177: аввал мошини СОБСТВЕННОГО чаҳр (ҳамон iframe),
     // чунки диалоги «Сохранить как» иҷозаи корбари ҳамон чаҳрро талаб мекунад.
-    var bridgeOpts = { skipPicker: pickerTarget === null };
+    var bridgeOpts = { skipPicker: !nativeThrew && _lastPickerTried && pickerTarget === null };
     if (window.AliyaBridge && typeof window.AliyaBridge.saveFile === 'function') return window.AliyaBridge.saveFile(blob, fileName, mime, bridgeOpts);
     if (window.parent && window.parent !== window && window.parent.AliyaBridge && typeof window.parent.AliyaBridge.saveFile === 'function') return window.parent.AliyaBridge.saveFile(blob, fileName, mime, bridgeOpts);
     // Боршаврии одӣ — дар болои окно, то ки браузер пурсиши «куда сохранить»
@@ -1065,7 +1128,7 @@
   var pdfModule = null;
   function ensureAliyaPdf() {
     if (window.AliyaPdf) return Promise.resolve(window.AliyaPdf);
-    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=182').then(function () {
+    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=183').then(function () {
       if (!window.AliyaPdf) throw new Error('aliya-pdf.js');
       return window.AliyaPdf;
     }).catch(function (e) { pdfModule = null; throw e; });
@@ -1416,15 +1479,15 @@
     return n || 'Китоб';
   }
   function fileSafe(s) {
-    return String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/[·•]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/[. ]+$/, '');
+    return String(s || '').replace(/[\\/:*?"<>|\u0000-\u001f]+/g, ' ').replace(/[·•]+/g, ' ').replace(/\s+/g, ' ').trim().replace(/^[. ]+|[. ]+$/g, '');
   }
   /** Номи файл: «Мавзӯъ Навъи ҳуҷҷат Китоб», масалан «Исм Нақшаи дарси яксоата Забони тоҷикӣ синфи 5» */
   function docFileName(meta, ext) {
     var topic = fileSafe(meta.topic), type = fileSafe(meta.docType), book = fileSafe(meta.book);
     if (topic && type && topic.toLowerCase() === type.toLowerCase()) topic = '';
     if (!topic && meta.pages) topic = (meta.lang === 'ru' ? 'стр. ' : 'саҳ. ') + meta.pages;
-    var name = [topic, type, book].filter(Boolean).join(' ');
-    if (name.length > 150) name = name.slice(0, 150).replace(/\s+\S*$/, '');
+    var name = [topic, type, book].filter(Boolean).join(' ').replace(/^[. ]+|[. ]+$/g, '');
+    if (name.length > 110) name = name.slice(0, 110).replace(/\s+\S*$/, '').replace(/[. ]+$/, '');
     return (name || 'Алия') + '.' + ext;
   }
 
