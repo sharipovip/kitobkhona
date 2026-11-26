@@ -1195,7 +1195,10 @@ def _run_chat_on_cuda(messages: List[Dict[str, str]], temperature: float, max_to
     import gc
     import torch
 
+    cuda_deadline = time.monotonic() + 35.0
     with _cuda_lock:
+        if time.monotonic() >= cuda_deadline:
+            return {"reply": "", "error": "zerogpu_timeout"}
         hf_tok = os.getenv("HF_TOKEN", "").strip() or None
         use_dtype = torch.bfloat16 if torch.cuda.is_available() and torch.cuda.is_bf16_supported() else torch.float16
 
@@ -1223,6 +1226,8 @@ def _run_chat_on_cuda(messages: List[Dict[str, str]], temperature: float, max_to
         ordered_candidates = [m for m in candidates if m and not (m in seen_m or seen_m.add(m))]
 
         for teacher_id in ordered_candidates:
+            if time.monotonic() >= cuda_deadline:
+                break
             try:
                 if _zerogpu_reasoning_cache.get("model_id") and _zerogpu_reasoning_cache.get("model_id") != teacher_id:
                     if _available_ram_gb() < 22.0:
@@ -1780,6 +1785,7 @@ def _extra_openai_providers() -> List[Dict[str, str]]:
 
 
 _provider_cooldown_until: Dict[str, float] = {}
+_provider_hard_fail_keys: set = set()
 _last_healthy_provider_name: str = ""
 _gemini_cooldown_until: float = 0.0
 
@@ -1793,19 +1799,27 @@ def _is_provider_healthy(name: str, secret: str) -> bool:
     return time.time() >= exp
 
 
+def _mark_provider_error(name: str, secret: str, cooldown_s: float = 60.0) -> None:
+    key = _provider_health_key(name, secret)
+    _provider_cooldown_until[key] = max(_provider_cooldown_until.get(key, 0.0), time.time() + cooldown_s)
+
+
 def _mark_provider_http_status(name: str, secret: str, status_code: int) -> None:
     global _last_healthy_provider_name
     key = _provider_health_key(name, secret)
     now = time.time()
     if status_code == 200:
         _provider_cooldown_until.pop(key, None)
+        _provider_hard_fail_keys.discard(key)
         if "gpt-oss" not in name.lower() and "cloudflare" not in name.lower():
             _last_healthy_provider_name = name
     elif status_code in (401, 403, 404, 410):
         _provider_cooldown_until[key] = now + 21_600.0
+        _provider_hard_fail_keys.add(key)
     elif status_code == 402:
         _provider_cooldown_until[key] = now + 7_200.0
-    elif status_code in (429, 502, 503):
+        _provider_hard_fail_keys.add(key)
+    elif status_code == 429 or status_code >= 500:
         _provider_cooldown_until[key] = now + 90.0
 
 
@@ -1817,9 +1831,10 @@ def _select_healthy_providers(for_tajik: bool = False, exclude_gpt_oss: bool = F
         m_low = p["model"].lower()
         if (for_tajik or exclude_gpt_oss) and ("gpt-oss" in m_low or "llama-3.1-8b" in m_low):
             continue
+        key = _provider_health_key(p["name"], p["key"])
         if _is_provider_healthy(p["name"], p["key"]):
             healthy.append(p)
-        else:
+        elif key not in _provider_hard_fail_keys:
             cooled_fallbacks.append(p)
 
     if _last_healthy_provider_name:
@@ -2073,7 +2088,7 @@ def _short_error(exc: Exception) -> str:
 # провайдеры не ответили. Пользователь получает ошибку за секунды, а не через
 # несколько минут ожидания.
 # ---------------------------------------------------------------------------
-CHAT_DEADLINE_S = float(os.getenv("ALIYA_CHAT_DEADLINE_S", "100"))
+CHAT_DEADLINE_S = float(os.getenv("ALIYA_CHAT_DEADLINE_S", "45"))
 # Сколько времени ещё можно потратить на один конкретный HTTP-вызов.
 _PROVIDER_CALL_CAP_S = 20.0
 
@@ -2095,7 +2110,7 @@ def _call_timeout(deadline: Optional[float], requested: float) -> float:
     return max(1.0, min(float(requested), remaining))
 
 
-def _hf_router_chat(messages: List[Dict[str, Any]], temperature: float, max_tokens: int, deadline: Optional[float] = None) -> Dict[str, Any]:
+def _hf_router_chat(messages: List[Dict[str, str]], temperature: float, max_tokens: int, deadline: Optional[float] = None) -> Dict[str, Any]:
     """
     Прямой вызов HF Inference Providers через router.huggingface.co.
     В отличие от InferenceClient здесь мы видим HTTP-код КАЖДОЙ попытки и можем
@@ -2138,6 +2153,8 @@ def _hf_router_chat(messages: List[Dict[str, Any]], temperature: float, max_toke
                 attempts.append({"model": model_id, "error": "empty_reply", "status": 200})
             else:
                 attempts.append({"model": model_id, "status": r.status_code, "error": _classify_http(r.status_code)})
+                if r.status_code in (401, 402):
+                    break
         except Exception as exc:  # noqa: BLE001
             attempts.append({"model": model_id, "error": _short_error(exc)})
     return {"reply": "", "error": "chat_providers_unavailable", "attempts": attempts}
@@ -2201,6 +2218,7 @@ def _extra_provider_chat(
             else:
                 attempts.append({"provider": prov["name"], "status": r.status_code, "error": _classify_http(r.status_code)})
         except Exception as exc:  # noqa: BLE001
+            _mark_provider_error(prov["name"], prov["key"])
             attempts.append({"provider": prov["name"], "error": _short_error(exc)})
     return {"reply": "", "error": "chat_providers_unavailable", "attempts": attempts}
 
@@ -2712,6 +2730,29 @@ def _gemini_teacher_chat(
     return {"reply": ""}
 
 
+def _run_zerogpu_chat_bounded(
+    messages: List[Dict[str, Any]],
+    temperature: float,
+    max_tokens: int,
+    deadline: Optional[float] = None,
+) -> Dict[str, Any]:
+    """Запускает ZeroGPU только при достаточном остатке бюджета и не даёт ему зависнуть дольше дедлайна."""
+    if _zerogpu_chat_fn is None or _deadline_remaining(deadline) < 12.0:
+        return {"reply": "", "error": "zerogpu_skipped_low_budget"}
+    from concurrent.futures import ThreadPoolExecutor
+
+    wait_s = _call_timeout(deadline, 35.0)
+    pool = ThreadPoolExecutor(max_workers=1)
+    try:
+        fut = pool.submit(_zerogpu_chat_fn, messages, temperature, max_tokens)
+        return fut.result(timeout=wait_s)
+    except Exception as exc:  # noqa: BLE001
+        logging.warning("ZeroGPU Teacher Council bounded exit (%s)", type(exc).__name__)
+        return {"reply": "", "error": _short_error(exc)}
+    finally:
+        pool.shutdown(wait=False, cancel_futures=True)
+
+
 @router.post("/v1/chat")
 def chat(req: ChatRequest):
     rmode = (req.reasoning_mode or "medium").strip().lower()
@@ -2795,10 +2836,10 @@ def chat(req: ChatRequest):
             }
 
     # 3. Встроенный Совет Учителей на бесплатной GPU вашего Space (ZeroGPU: Gemma-3-27B + Qwen3-14B)
-    if _zerogpu_chat_fn is not None and _deadline_remaining(deadline) > 0.5:
+    if _zerogpu_chat_fn is not None and _deadline_remaining(deadline) >= 12.0:
         try:
             zg_msgs = aligned_messages if search_context else req.messages
-            zg = _zerogpu_chat_fn(zg_msgs, req.temperature, eff_max_tokens)
+            zg = _run_zerogpu_chat_bounded(zg_msgs, req.temperature, eff_max_tokens, deadline=deadline)
             if zg.get("reply"):
                 clean_reply = _sanitize_llm_reply(zg["reply"], target_lang)
                 _record_teacher_lesson_async(last_user_q, clean_reply, target_lang, grounded=bool(search_context))
@@ -3074,9 +3115,29 @@ def chat_stream(req: ChatRequest):
             except Exception:
                 continue
 
-        # Попытка 3: Надёжный синхронный резерв (ZeroGPU / не-стриминговый вызов)
-        sync_res = chat(req)
+        # Попытка 3: Резерв в пределах того же общего дедлайна (без перезапуска второго 45-сек цикла!)
+        sync_res: Dict[str, Any] = {"reply": "", "error": "chat_deadline_exceeded" if _deadline_remaining(deadline) <= 0.5 else "chat_providers_unavailable"}
+        if _deadline_remaining(deadline) >= 12.0 and _zerogpu_chat_fn is not None:
+            zg_msgs = aligned_messages if search_context else req.messages
+            zg = _run_zerogpu_chat_bounded(zg_msgs, req.temperature, eff_max_tokens, deadline=deadline)
+            if zg.get("reply"):
+                sync_res = {
+                    "reply": _sanitize_llm_reply(zg["reply"], target_lang),
+                    "model": zg.get("model"),
+                    "provider": zg.get("provider", "aliya-zerogpu"),
+                }
+        if not sync_res.get("reply") and _deadline_remaining(deadline) > 1.5:
+            hf_res = _hf_router_chat(aligned_messages, req.temperature, eff_max_tokens, deadline=deadline)
+            if hf_res.get("reply"):
+                sync_res = {
+                    "reply": _sanitize_llm_reply(hf_res["reply"], target_lang),
+                    "model": hf_res.get("model"),
+                    "provider": hf_res.get("provider", "hf-router"),
+                }
+            elif _deadline_remaining(deadline) <= 0.5:
+                sync_res["error"] = "chat_deadline_exceeded"
         if sync_res.get("reply"):
+            _record_teacher_lesson_async(last_user_q, sync_res["reply"], target_lang, grounded=bool(search_context))
             yield f"data: {json.dumps({'type': 'delta', 'delta': sync_res['reply']}, ensure_ascii=False)}\n\n"
             yield f"data: {json.dumps({'type': 'done', 'done': True, 'reply': sync_res['reply'], 'model': sync_res.get('model'), 'provider': sync_res.get('provider')}, ensure_ascii=False)}\n\n"
         else:
@@ -5441,6 +5502,16 @@ def _launch_gateway() -> None:
     # Маршруты Алии живут на том же приложении, что и страница-статус.
     fastapi_app = launched[0] if isinstance(launched, (tuple, list)) else getattr(demo, "app", app)
     try:
+        if fastapi_app is not app and getattr(fastapi_app, "middleware_stack", None) is None:
+            has_cors = any(getattr(m, "cls", None) is CORSMiddleware for m in getattr(fastapi_app, "user_middleware", []))
+            if not has_cors:
+                fastapi_app.add_middleware(
+                    CORSMiddleware,
+                    allow_origins=["*"],
+                    allow_credentials=True,
+                    allow_methods=["*"],
+                    allow_headers=["*"],
+                )
         fastapi_app.router.routes[0:0] = list(router.routes)
     except Exception as exc:  # pragma: no cover - защита от смены внутренностей gradio
         print(f"[Aliya Gateway] не удалось подключить маршруты к Gradio: {exc}", flush=True)

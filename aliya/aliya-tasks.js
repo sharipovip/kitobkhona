@@ -22,7 +22,7 @@
   // v171: Умумии вақти як панели «рендер» (Хулоса / Калимаҳо / Тарҷума / Санҷиш / Нақшаи дарс / Диктант).
   // Пеш аз ин ҳар панел то 3 тайм-аути 120 с дошт, ки дар натиҷа то ~12 дақиқа «Фикр мекунам» дида мешуд.
   // Акнун як панел ҳеҷ гоҳ аз ин зиёд намеистад.
-  var TASK_BUDGET_MS = 240000;
+  var TASK_BUDGET_MS = 150000;
 
   /* ------------------------------------------------------------------ */
   /*  Тавсифи амалҳо                                                     */
@@ -223,6 +223,7 @@
     '.at-caret{display:inline-block;width:2px;height:1.05em;background:var(--at-gold);vertical-align:-2px;margin-left:1px;animation:atBlink .8s steps(1) infinite}',
     '@keyframes atBlink{50%{opacity:0}}',
     '.at-think{display:flex;align-items:center;gap:9px;min-height:26px}',
+    '.at-think-secs{font-size:12px;color:var(--at-mut);font-variant-numeric:tabular-nums;white-space:nowrap;opacity:.85}',
     '.at-stop{margin-left:auto;flex:none;height:30px;padding:0 12px;border-radius:9px;border:1px solid rgba(238,107,103,.45);background:rgba(238,107,103,.12);color:#ffb4a6;font:inherit;font-size:12.5px;font-weight:800;cursor:pointer}',
     '.at-stop:hover{background:rgba(238,107,103,.22)}',
     '.at-errbox.at-stopped{color:var(--at-mut,#9aa7b8)}',
@@ -513,10 +514,13 @@
     };
     if (opt.targetLang) payload.target_language = opt.targetLang;
     var last;
-    // v171: то ҳадди 3 такрор (то 7.5 дақиқа «Фикр мекунам») — ҳоло то 2, ва танҳо барои хатои шабака.
+    var chatStart = Date.now(), capMs = opt.timeoutMs || 75000;
+    // v171: то ҳадди 3 такрор (то 7.5 дақиқа «Фикр мекунам») — ҳоло то 2, ва танҳо барои хатои шабакаи фаврӣ.
     for (var attempt = 0; attempt < 2; attempt++) {
+      var attemptStart = Date.now();
+      var leftMs = Math.max(5000, capMs - (attemptStart - chatStart));
       try {
-        var d = await postJson('/v1/chat', payload, opt.timeoutMs || 120000, opt.signal);
+        var d = await postJson('/v1/chat', payload, opt.timeoutMs ? Math.min(opt.timeoutMs, leftMs) : leftMs, opt.signal);
         var reply = String(d.reply || (d.choices && d.choices[0] && d.choices[0].message && d.choices[0].message.content) || '').trim();
         if (d.blocked) { var be = new Error(reply || 'Дархост рад шуд.'); be.blocked = true; throw be; }
         if (reply) return reply;
@@ -525,8 +529,11 @@
         if (e && e.name === 'AbortError') throw e;
         if (e && e.blocked) throw e;
         last = e;
-        var transient = e.network || e.timeout || (e.status >= 500) || /chat_providers_unavailable|no_chat_provider_configured|chat_deadline_exceeded|rate|429/i.test(String(e.code || e.message || ''));
-        if (!transient) break;
+        var elapsedAttempt = Date.now() - attemptStart;
+        var isDeadline = /chat_deadline_exceeded/i.test(String(e.code || e.message || ''));
+        var transient = !e.timeout && !isDeadline && elapsedAttempt < 12000 &&
+          (e.network || (e.status >= 500) || /chat_providers_unavailable|no_chat_provider_configured|rate|429/i.test(String(e.code || e.message || '')));
+        if (!transient || attempt === 1) break;
       }
       await sleep(800 * (attempt + 1), opt.signal);
     }
@@ -557,12 +564,19 @@
     var s = document.querySelector('script[src*="aliya-tasks.js"]');
     return s ? s.src.replace(/aliya-tasks\.js.*$/, '') : '';
   }
-  function loadScript(src) {
+  function loadScript(src, timeoutMs) {
     return new Promise(function (res, rej) {
       var s = document.createElement('script');
+      var done = false;
+      var t = setTimeout(function () {
+        if (done) return;
+        done = true;
+        try { s.remove(); } catch (e) {}
+        rej(new Error('Боркунии скрипт дер кашид: ' + src));
+      }, timeoutMs || 20000);
       s.src = src; s.async = true;
-      s.onload = function () { res(); };
-      s.onerror = function () { rej(new Error('Скрипт бор нашуд: ' + src)); };
+      s.onload = function () { if (done) return; done = true; clearTimeout(t); res(); };
+      s.onerror = function () { if (done) return; done = true; clearTimeout(t); try { s.remove(); } catch (e) {} rej(new Error('Скрипт бор нашуд: ' + src)); };
       document.head.appendChild(s);
     });
   }
@@ -582,8 +596,12 @@
     } catch (e) { return ''; }
   }
   /** Китобро бор мекунад: аввал аз кэши Reader ('kitobkhona-pdf-cache-v1'), баъд шабака */
-  async function loadPdf(url, onProgress) {
+  async function loadPdf(url, onProgress, opt) {
+    opt = opt || {};
+    var signal = opt.signal || null;
+    if (signal && signal.aborted) throw abortError();
     var lib = await ensurePdfJs();
+    if (signal && signal.aborted) throw abortError();
     var key = bookKey(url), buf = null;
     if ('caches' in window) {
       try {
@@ -598,25 +616,47 @@
         if (hit) { buf = await hit.arrayBuffer(); if (onProgress) onProgress(1, 1); }
       } catch (e) {}
     }
+    if (signal && signal.aborted) throw abortError();
     var fromNetwork = !buf;
     if (!buf) {
       var urls = [key, jsdelivrUrl(key), url].filter(function (x, i, a) { return x && a.indexOf(x) === i; });
       var lastErr = null;
       for (var i = 0; i < urls.length && !buf; i++) {
+        if (signal && signal.aborted) throw abortError();
+        var fCtrl = new AbortController();
+        var onExtAbort = function () { fCtrl.abort(); };
+        if (signal) signal.addEventListener('abort', onExtAbort, { once: true });
+        var stallTimer = setTimeout(function () { fCtrl.abort(); }, 25000);
+        var refreshStall = function () {
+          clearTimeout(stallTimer);
+          stallTimer = setTimeout(function () { fCtrl.abort(); }, 25000);
+        };
         try {
-          var r = await fetch(urls[i], { cache: 'force-cache' });
+          var r = await fetch(urls[i], { cache: 'force-cache', signal: fCtrl.signal });
           if (!r.ok) throw new Error('HTTP ' + r.status);
           var total = Number(r.headers.get('content-length') || 0);
           if (r.body && r.body.getReader && onProgress) {
             var reader = r.body.getReader(), chunks = [], loaded = 0;
-            for (;;) { var c = await reader.read(); if (c.done) break; chunks.push(c.value); loaded += c.value.byteLength; onProgress(loaded, total); }
+            for (;;) {
+              refreshStall();
+              var c = await reader.read();
+              if (c.done) break;
+              chunks.push(c.value); loaded += c.value.byteLength; onProgress(loaded, total);
+            }
             var all = new Uint8Array(loaded), off = 0;
             chunks.forEach(function (ch) { all.set(ch, off); off += ch.byteLength; });
             buf = all.buffer;
           } else {
+            refreshStall();
             buf = await r.arrayBuffer();
           }
-        } catch (e) { lastErr = e; }
+        } catch (e) {
+          if (signal && signal.aborted) { clearTimeout(stallTimer); throw abortError(); }
+          lastErr = (e && e.name === 'AbortError') ? new Error('Боркунии китоб дер кашид.') : e;
+        } finally {
+          clearTimeout(stallTimer);
+          if (signal) signal.removeEventListener('abort', onExtAbort);
+        }
       }
       if (!buf) throw lastErr || new Error('Китоб бор нашуд.');
     }
@@ -627,7 +667,43 @@
         return c.put(key, new Response(copy, { status: 200, headers: { 'Content-Type': 'application/pdf', 'Content-Length': String(copy.byteLength), 'X-Kitob-Canonical': encodeURIComponent(key), 'X-Kitob-Cached-At': String(Date.now()) } }));
       }).catch(function () {});
     }
-    return lib.getDocument({ data: buf }).promise;
+    var docTask = lib.getDocument({ data: buf });
+    return await new Promise(function (resolve, reject) {
+      var settled = false;
+      function cleanup() {
+        clearTimeout(docTimer);
+        if (signal) signal.removeEventListener('abort', onDocAbort);
+      }
+      function onDocAbort() {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        try { if (docTask && typeof docTask.destroy === 'function') docTask.destroy(); } catch (e) {}
+        reject(abortError());
+      }
+      if (signal) {
+        if (signal.aborted) { onDocAbort(); return; }
+        signal.addEventListener('abort', onDocAbort, { once: true });
+      }
+      var docTimer = setTimeout(function () {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        try { if (docTask && typeof docTask.destroy === 'function') docTask.destroy(); } catch (e) {}
+        reject(new Error('Кушодани китоби PDF дер кашид.'));
+      }, 25000);
+      docTask.promise.then(function (pdf) {
+        if (settled) { try { pdf.destroy && pdf.destroy(); } catch (e) {} return; }
+        settled = true;
+        cleanup();
+        resolve(pdf);
+      }, function (err) {
+        if (settled) return;
+        settled = true;
+        cleanup();
+        reject(err);
+      });
+    });
   }
 
   function goodText(t) {
@@ -652,27 +728,35 @@
     } catch (e) {}
   }
   var ocrWorker = null, ocrLoading = null;
-  function getOcr() {
+  function getOcr(signal) {
+    if (signal && signal.aborted) return Promise.reject(abortError());
     if (ocrWorker) return Promise.resolve(ocrWorker);
     if (!ocrLoading) {
       ocrLoading = (async function () {
-        if (!window.Tesseract) await loadScript(TESSERACT_SRC);
+        if (!window.Tesseract) await loadScript(TESSERACT_SRC, 18000);
         var w = await Promise.race([
           window.Tesseract.createWorker('tgk+rus', 1),
-          new Promise(function (_, rej) { setTimeout(function () { rej(new Error('OCR бор нашуд')); }, 60000); })
+          new Promise(function (_, rej) { setTimeout(function () { rej(new Error('OCR бор нашуд')); }, 25000); })
         ]);
         ocrWorker = w;
         return w;
       })().catch(function (e) { ocrLoading = null; throw e; });
     }
-    return ocrLoading;
+    if (!signal) return ocrLoading;
+    return new Promise(function (resolve, reject) {
+      var onAbort = function () { reject(abortError()); };
+      signal.addEventListener('abort', onAbort, { once: true });
+      ocrLoading.then(function (w) { signal.removeEventListener('abort', onAbort); resolve(w); },
+        function (err) { signal.removeEventListener('abort', onAbort); reject(err); });
+    });
   }
 
   function createPageReader(pdfDoc, opt) {
     opt = opt || {};
     var mem = {};
     var keyBase = bookKey(opt.bookUrl || '') || (opt.bookName || 'book');
-    async function renderCanvas(n, scale) {
+    async function renderCanvas(n, scale, signal) {
+      if (signal && signal.aborted) throw abortError();
       var p = await pdfDoc.getPage(n);
       var vp0 = p.getViewport({ scale: 1 });
       var s = Math.min(scale, 2200 / Math.max(vp0.width, 1));
@@ -681,17 +765,44 @@
       c.width = Math.round(vp.width); c.height = Math.round(vp.height);
       var ctx = c.getContext('2d');
       ctx.fillStyle = '#fff'; ctx.fillRect(0, 0, c.width, c.height);
-      await p.render({ canvasContext: ctx, viewport: vp }).promise;
+      var rTask = p.render({ canvasContext: ctx, viewport: vp });
+      await new Promise(function (resolve, reject) {
+        var settled = false;
+        function cleanup() {
+          clearTimeout(rt);
+          if (signal) signal.removeEventListener('abort', onAbort);
+        }
+        function onAbort() {
+          if (settled) return;
+          settled = true; cleanup();
+          try { if (rTask && typeof rTask.cancel === 'function') rTask.cancel(); } catch (e) {}
+          reject(abortError());
+        }
+        if (signal) signal.addEventListener('abort', onAbort, { once: true });
+        var rt = setTimeout(function () {
+          if (settled) return;
+          settled = true; cleanup();
+          try { if (rTask && typeof rTask.cancel === 'function') rTask.cancel(); } catch (e) {}
+          reject(new Error('Рендери саҳифа дер кашид'));
+        }, 15000);
+        rTask.promise.then(function () {
+          if (settled) return;
+          settled = true; cleanup(); resolve();
+        }, function (err) {
+          if (settled) return;
+          settled = true; cleanup(); reject(err);
+        });
+      });
       return c;
     }
     async function vision(n, signal) {
-      var c = await renderCanvas(n, 1.6);
+      var c = await renderCanvas(n, 1.6, signal);
       var img = c.toDataURL('image/jpeg', 0.82).replace(/^data:image\/[^;]+;base64,/i, '');
       var d = await postJson('/v1/vision', {
         image_base64: img,
         prompt: 'Матни ҳамаи саҳифаро айнан ва пурра нусхабардорӣ кунед. Ҳеҷ шарҳ ё ҷавоб илова накунед.',
         system: 'Шумо OCR ҳастед: танҳо матни намоёни саҳифаро бо ҳамон забон ва алифбо баргардонед.'
-      }, 90000, signal);
+      }, 60000, signal);
       return String(d.reply || d.analysis || '').trim();
     }
     async function pageText(n, signal) {
@@ -704,15 +815,29 @@
       var cached = ocrCacheGet(ck);
       if (cached) return (mem[n] = { text: cached, method: 'cache' });
       if (signal && signal.aborted) throw abortError();
-      // Скан → OCR дар браузер
+      // Скан → OCR дар браузер (бо тайм-аут, то дар телефони суст ё WASM муаллақ намонад)
       var ocrText = '', conf = 0;
       try {
-        var w = await getOcr();
-        var canvas = await renderCanvas(n, 2);
-        var r = await w.recognize(canvas);
+        var w = await getOcr(signal);
+        var canvas = await renderCanvas(n, 2, signal);
+        var ocrTimer = null;
+        var r = await Promise.race([
+          w.recognize(canvas),
+          new Promise(function (_, rej) {
+            ocrTimer = setTimeout(function () { rej(new Error('OCR дер кашид')); }, 25000);
+          })
+        ]);
+        clearTimeout(ocrTimer);
         ocrText = String(r.data.text || '').replace(/[ \t]+/g, ' ').trim();
         conf = Number(r.data.confidence) || 0;
-      } catch (e) { ocrText = ''; conf = 0; }
+      } catch (e) {
+        if (e && e.name === 'AbortError') throw e;
+        if (/дер кашид/i.test(String(e && e.message || ''))) {
+          try { if (ocrWorker && ocrWorker.terminate) ocrWorker.terminate(); } catch (te) {}
+          ocrWorker = null; ocrLoading = null;
+        }
+        ocrText = ''; conf = 0;
+      }
       if (signal && signal.aborted) throw abortError();
       if (goodText(ocrText) && conf >= 55) { ocrCacheSet(ck, ocrText); return (mem[n] = { text: ocrText, method: 'ocr' }); }
       // OCR суст → модели визуалӣ
@@ -728,6 +853,7 @@
       var parts = [], total = Math.min(t - f + 1, MAX_PAGES);
       for (var n = f, i = 0; n <= t && i < total; n++, i++) {
         if (o.signal && o.signal.aborted) throw abortError();
+        if (o.deadlineAt && i > 0 && Date.now() >= o.deadlineAt) break;
         if (o.onPage) o.onPage(i + 1, total, n);
         var r = await pageText(n, o.signal);
         if (r.text) parts.push('[САҲИФАИ ' + n + ']\n' + r.text);
@@ -1128,7 +1254,7 @@
   var pdfModule = null;
   function ensureAliyaPdf() {
     if (window.AliyaPdf) return Promise.resolve(window.AliyaPdf);
-    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=183').then(function () {
+    if (!pdfModule) pdfModule = loadScript(scriptBase() + 'aliya-pdf.js?v=184').then(function () {
       if (!window.AliyaPdf) throw new Error('aliya-pdf.js');
       return window.AliyaPdf;
     }).catch(function (e) { pdfModule = null; throw e; });
@@ -1262,13 +1388,15 @@
       box.innerHTML = '<div class="at-ans"><div class="at-head"><b>' + d.ic + ' ' + esc(title) + '</b><small>' + esc(meta) + '</small></div>' +
         '<div class="at-think"></div><div class="at-body"></div></div>';
     }
-    var card = cfg.append ? box.lastElementChild.firstElementChild : box.firstChild;
+    var card = cfg.append ? holder.firstElementChild : box.firstChild;
     var think = card.querySelector('.at-think'), body = card.querySelector('.at-body'), small = card.querySelector('.at-head small');
-    var step = -1;
+    var step = -1, budgetExpired = false, elapsedInterval = null, hardDeadlineTimer = null, rejectBudget = null;
+    function elapsedText() { return Math.max(0, Math.floor((Date.now() - startedAt) / 1000)) + ' с'; }
     function showStep(i) {
       if (i === step || !think.isConnected) return;
       step = i;
       think.innerHTML = emblem(true, theme) + '<span class="at-think-txt swap">' + esc(steps[i]) + '</span><span class="at-dots"><i></i><i></i><i></i></span>' +
+        '<span class="at-think-secs">' + elapsedText() + '</span>' +
         '<button type="button" class="at-stop" title="Қатъ кардан" aria-label="Қатъ кардан">■ Бас</button>';
       think.querySelector('.at-stop').onclick = function () { stop(true); };
     }
@@ -1286,12 +1414,32 @@
       }
     }
     function later(fn, ms) { var t = setTimeout(fn, ms); timers.push(t); return t; }
-    function clearTimers() { timers.forEach(clearTimeout); timers = []; }
+    function clearTimers() {
+      timers.forEach(clearTimeout); timers = [];
+      if (elapsedInterval) { clearInterval(elapsedInterval); elapsedInterval = null; }
+      if (hardDeadlineTimer) { clearTimeout(hardDeadlineTimer); hardDeadlineTimer = null; }
+    }
+    // v184: Ҳамаи панели «Фикр мекунам» нишондиҳандаи зиндаи сонияҳо ва ҳифзи ҳатмии TASK_BUDGET_MS дорад
+    var budgetPromise = new Promise(function (_, rej) { rejectBudget = rej; });
+    hardDeadlineTimer = setTimeout(function () {
+      if (finished || ctrl.signal.aborted) return;
+      budgetExpired = true;
+      ctrl.abort();
+      if (rejectBudget) rejectBudget(new Error('Вақти интизорӣ ба анҷом расид. Савол ё саҳифаҳои камтарро санҷед.'));
+    }, TASK_BUDGET_MS);
+    elapsedInterval = setInterval(function () {
+      if (finished || ctrl.signal.aborted || !think.isConnected) { clearInterval(elapsedInterval); elapsedInterval = null; return; }
+      var secEl = think.querySelector('.at-think-secs');
+      if (secEl) secEl.textContent = elapsedText();
+      if (Date.now() - startedAt >= 25000 && small && small.textContent.indexOf('интизор') === -1) {
+        small.textContent = meta + ' · сервер банд аст, интизор шавед ё ■ Бас';
+      }
+    }, 1000);
     // Марҳилаи хондан: steps[0..readN-1]
     showStep(0);
     (function rotateRead(i) { if (i < readN - 1) later(function () { if (step < readN) { showStep(i + 1); rotateRead(i + 1); } }, 1800); })(0);
     function genPhase() {
-      clearTimers();
+      timers.forEach(clearTimeout); timers = [];
       if (readN < steps.length) showStep(readN);
       (function rotate(i) { if (i < steps.length - 1) later(function () { showStep(i + 1); rotate(i + 1); }, 2600); })(readN);
     }
@@ -1301,7 +1449,14 @@
     (async function () {
       var output = '';
       try {
-        var text = await cfg.getText(o, { signal: ctrl.signal, onPage: function (i, n) { if (n > 1) small.textContent = meta + ' · ' + i + '/' + n; } });
+        var text = await Promise.race([
+          cfg.getText(o, {
+            signal: ctrl.signal,
+            deadlineAt: startedAt + Math.min(TASK_BUDGET_MS - 30000, 90000),
+            onPage: function (i, n) { if (n > 1) small.textContent = meta + ' · ' + i + '/' + n; }
+          }),
+          budgetPromise
+        ]);
         small.textContent = meta;
         if (!text || text.replace(/\[САҲИФАИ \d+\]/g, '').trim().length < 15) throw new Error('Матни ин саҳифаҳо хонда нашуд. Саҳифаи дигарро интихоб кунед ё баъдтар кӯшиш кунед.');
         var bookLang = detectLang(text, (cfg.bookName || '') + ' ' + safeDecode(cfg.bookUrl || ''));
@@ -1320,20 +1475,22 @@
         // v171: Умуман як банд вақти барои ҳамаи панелҳо: бе он як панели «рендер» метавонист
         // 3 × тайм-аут (12 дақиқа) дар ҳолати «Фикр мекунам» саркашӣ карда, ки аз ҳадди катон аст.
         var budgetLeft = function () { return TASK_BUDGET_MS - (Date.now() - startedAt); };
+        if (budgetLeft() <= 4000) throw new Error('Вақти амал ба охир расид. Саҳифаҳои камтар интихоб кунед ё дубора кӯшиш кунед.');
         output = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
           maxTokens: maxTokens(task, o), temperature: task === 'translate' ? 0.2 : 0.45, reasoning: 'medium',
-          timeoutMs: Math.max(20000, Math.min(120000, budgetLeft())) });
+          timeoutMs: Math.max(5000, Math.min(75000, budgetLeft())) });
         // v161: шлюз дарозии ҷавобро маҳдуд мекунад (2400–3072 токен) — нақшаи дарси пурра метавонад дар нима қатъ шавад.
         // Агар ҷавоб нопурра бошад, Алия худкор «идома»-ро мепурсад (то 2 бор) ва қисмҳоро пайваст мекунад.
         for (var cont = 0; cont < 2 && looksTruncated(task, output); cont++) {
           if (budgetLeft() <= 0) break;          // вақти умумӣ тамом — қисми гирифташуда нигоҳ дошта мешавад
+          if (budgetLeft() < 8000) break;
           var more = '';
           try { more = await chat(pr.system, user, { signal: ctrl.signal, material: material, materialAck: bookLang === 'ru' ? 'Текст получен.' : 'Матн қабул шуд.', targetLang: target,
             maxTokens: maxTokens(task, o), temperature: 0.3, reasoning: 'medium',
-            timeoutMs: Math.max(20000, Math.min(120000, budgetLeft())),
+            timeoutMs: Math.max(5000, Math.min(60000, budgetLeft())),
             history: [{ role: 'assistant', content: output }, { role: 'user', content: bookLang === 'ru' && task !== 'translate'
               ? 'Ответ оборвался. Продолжите ровно с того места, где остановились, без повторов и без вступления; сохраните тот же формат. В конце — строка «@@МАВЗЪ: …».'
-              : 'Ҷавоб нопурра монд. Аз ҳамон ҷое, ки қатъ шуд, бе такрор ва бе муқаддима идома диҳед; ҳамон форматро нигоҳ доред. Дар охир сатри «@@МАВЗЪ: …»-ро нависед.' }] }) } catch (ce) { if ((ce && ce.name === 'AbortError') || ctrl.signal.aborted) throw ce; break; }   // қисми гирифташуда нигоҳ дошта мешавад
+              : 'Ҷавоб нопурра монд. Аз ҳамон ҷое, ки қатъ шуд, бе такрор ва бе муқаддима идома диҳед; ҳамон форматро нигоҳ доред. Дар охир сатри «@@МАВЗЪ: …»-ро нависед.' }] }) } catch (ce) { if ((ce && ce.name === 'AbortError') || (ctrl.signal.aborted && !budgetExpired)) throw ce; break; }   // қисми гирифташуда нигоҳ дошта мешавад
           more = String(more || '').replace(/^```(?:markdown|md)?\s*/i, '').replace(/```\s*$/, '');
           if (!more.trim()) break;
           output = joinContinuation(output, more);
@@ -1343,15 +1500,18 @@
         o.topic = tp.topic || guessTopic(task, output);
         o.docLang = o.docLang || (task === 'translate' ? (target || 'tg') : (bookLang === 'ru' ? 'ru' : 'tg'));
       } catch (err) {
+        clearTimeout(hardDeadlineTimer);
         clearTimers();
         if (cfg.onBusy) cfg.onBusy(false);
-        if ((err && err.name === 'AbortError') || ctrl.signal.aborted) return;
+        if (!budgetExpired && ((err && err.name === 'AbortError') || ctrl.signal.aborted)) return;
         ACTIVE_RUNS.delete(handle);
-        think.remove();
-        body.innerHTML = '<div class="at-errbox"><span>⚠️ ' + esc(friendlyError(err)) + '</span><button type="button">↻ Дубора</button></div>';
+        if (think.isConnected) think.remove();
+        var showErr = budgetExpired ? new Error('Вақти интизорӣ ба анҷом расид. Савол ё саҳифаҳои камтарро санҷед.') : err;
+        body.innerHTML = '<div class="at-errbox"><span>⚠️ ' + esc(friendlyError(showErr)) + '</span><button type="button">↻ Дубора</button></div>';
         body.querySelector('button').onclick = function () { run(cfg); };
         return;
       }
+      clearTimeout(hardDeadlineTimer);
       clearTimers();
       if (ctrl.signal.aborted) return;
       ACTIVE_RUNS.delete(handle);
