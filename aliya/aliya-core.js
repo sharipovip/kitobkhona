@@ -80,24 +80,35 @@
           resolve(null);
           return;
         }
-        var request = window.indexedDB.open(DB_NAME, DB_VERSION);
-        request.onupgradeneeded = function (e) {
-          var db = e.target.result;
-          if (!db.objectStoreNames.contains('notes')) {
-            var store = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
-            store.createIndex('updatedAt', 'updatedAt', { unique: false });
-          }
-          if (!db.objectStoreNames.contains('chat_history')) {
-            db.createObjectStore('chat_history', { keyPath: 'id', autoIncrement: true });
-          }
-        };
-        request.onsuccess = function (e) {
-          self.state.db = e.target.result;
-          resolve(self.state.db);
-        };
-        request.onerror = function () {
-          resolve(null);
-        };
+        var settled = false;
+        function done(db) {
+          if (settled) return;
+          settled = true;
+          clearTimeout(guard);
+          resolve(db || null);
+        }
+        var guard = setTimeout(function () { done(null); }, 2500);
+        try {
+          var request = window.indexedDB.open(DB_NAME, DB_VERSION);
+          request.onupgradeneeded = function (e) {
+            var db = e.target.result;
+            if (!db.objectStoreNames.contains('notes')) {
+              var store = db.createObjectStore('notes', { keyPath: 'id', autoIncrement: true });
+              store.createIndex('updatedAt', 'updatedAt', { unique: false });
+            }
+            if (!db.objectStoreNames.contains('chat_history')) {
+              db.createObjectStore('chat_history', { keyPath: 'id', autoIncrement: true });
+            }
+          };
+          request.onsuccess = function (e) {
+            self.state.db = e.target.result;
+            done(self.state.db);
+          };
+          request.onerror = function () { done(null); };
+          request.onblocked = function () { done(null); };
+        } catch (err) {
+          done(null);
+        }
       });
     },
 
@@ -437,23 +448,45 @@
         max_tokens: this.state.depth === 'deep' ? DEEP_MAX_TOKENS : 1400
       };
       var result, lastError;
+      var overallCapMs = options.timeoutMs || Math.min(REQUEST_TIMEOUT_MS, options.documentText ? 90000 : 75000);
+      var startedAt = Date.now();
       for (var attempt = 0; attempt < MAX_ATTEMPTS; attempt++) {
+        var attemptStartedAt = Date.now();
+        var attemptTimeoutMs = options.timeoutMs
+          ? options.timeoutMs
+          : Math.max(15000, overallCapMs - (attemptStartedAt - startedAt));
         try {
-          result = await this.requestJson('/v1/chat', payload, options.timeoutMs || REQUEST_TIMEOUT_MS, options.signal);
+          result = await this.requestJson('/v1/chat', payload, attemptTimeoutMs, options.signal);
           lastError = null;
           break;
         } catch (requestError) {
           lastError = requestError;
-          // v171: Ҳамаи хатоҳое, ки метавонанд худи харои шабака дошта бошанд, такроф мешаванд
-          // (тайм-аут, пайваст нашуд, 5xx). Хатои «провайдер ҳаст, вале ҳамаашон хаст» (chat_providers_unavailable)
-          // бо назардошт 1 танҳо як бор такроф мешавад — шлюз аллакай ҳамаи маршрутҳояшро тафтиш кардааст.
+          var attemptElapsed = Date.now() - attemptStartedAt;
+          // v184: Never repeat a request that already timed out, hit the gateway deadline,
+          // or waited >= 12s — retrying only doubles the hang from 75–150s to 150–300s.
+          // Fast glitches (<12s, e.g. immediate 5xx/network/provider hiccup) still retry once.
           var msg = String(requestError.message || '');
           var transient = requestError.code === 'chat_providers_unavailable'
-            || requestError.code === 'chat_deadline_exceeded'
             || requestError.transient === true
-            || /пайваст нашуд|дер ҷавоб дод|HTTP 5\d\d/i.test(msg);
-          if (requestError.code === 'aborted' || !transient || attempt === MAX_ATTEMPTS - 1) break;
-          await new Promise(function (resolve) { setTimeout(resolve, 700 * (attempt + 1)); });
+            || /пайваст нашуд|HTTP 5\d\d/i.test(msg);
+          if (requestError.code === 'aborted'
+              || requestError.code === 'timeout'
+              || requestError.code === 'chat_deadline_exceeded'
+              || attemptElapsed >= 12000
+              || !transient
+              || attempt === MAX_ATTEMPTS - 1) break;
+          await new Promise(function (resolve, reject) {
+            var delayTimer = setTimeout(resolve, 700 * (attempt + 1));
+            if (options.signal) {
+              if (options.signal.aborted) { clearTimeout(delayTimer); var ab = new Error('Дархост бо амри корбар қатъ карда шуд.'); ab.code = 'aborted'; reject(ab); return; }
+              options.signal.addEventListener('abort', function () {
+                clearTimeout(delayTimer);
+                var ab2 = new Error('Дархост бо амри корбар қатъ карда шуд.');
+                ab2.code = 'aborted';
+                reject(ab2);
+              }, { once: true });
+            }
+          });
         }
       }
       if (lastError) throw lastError;
@@ -474,12 +507,28 @@
       script.async = true;
       script.dataset.aliyaLib = globalName;
       script._aliyaPromise = new Promise(function (resolve, reject) {
+        var settled = false;
+        var timer = setTimeout(function () {
+          if (settled) return;
+          settled = true;
+          try { script.remove(); } catch (e) {}
+          reject(new Error('Боркунии китобхонаи хондани ҳуҷҷат дер кашид.'));
+        }, 20000);
         script.onload = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
           script.dataset.loaded = 'true';
           if (window[globalName]) resolve(window[globalName]);
           else reject(new Error('Номаи китобхона бор шуд, аммо API ёфт нашуд.'));
         };
-        script.onerror = function () { reject(new Error('Китобхонаи хондани ҳуҷҷат бор нашуд.')); };
+        script.onerror = function () {
+          if (settled) return;
+          settled = true;
+          clearTimeout(timer);
+          try { script.remove(); } catch (e) {}
+          reject(new Error('Китобхонаи хондани ҳуҷҷат бор нашуд.'));
+        };
       });
       if (!existing) document.head.appendChild(script);
       return script._aliyaPromise;
@@ -501,7 +550,16 @@
       } else if (ext === 'pdf') {
         var pdfjs = await this.loadDocumentLibrary('pdfjsLib', '../assets/libs/pdf.min.js');
         if (pdfjs.GlobalWorkerOptions) pdfjs.GlobalWorkerOptions.workerSrc = '../assets/libs/pdf.worker.min.js';
-        var pdf = await pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise;
+        var docTask = pdfjs.getDocument({ data: new Uint8Array(await file.arrayBuffer()) });
+        var pdf = await Promise.race([
+          docTask.promise,
+          new Promise(function (_, reject) {
+            setTimeout(function () {
+              try { if (docTask && typeof docTask.destroy === 'function') docTask.destroy(); } catch (e) {}
+              reject(new Error('Хондани файли PDF дер кашид.'));
+            }, 30000);
+          })
+        ]);
         var pages = [];
         var maxPages = Math.min(pdf.numPages, 30);
         for (var pageNo = 1; pageNo <= maxPages; pageNo++) {
@@ -552,7 +610,7 @@
         image_base64: cleanImage,
         prompt: question || 'Матни аксро хонда, мазмунашро шарҳ деҳ. Агар қисми матн норавшан бошад, қайд кун.',
         system: options.system || 'Шумо ёвари таълимӣ ҳастед. Матни дар акс намоёнро бодиққат хонед; чизҳои норавшанро тахмин накунед.'
-      }, options.timeoutMs || REQUEST_TIMEOUT_MS, options.signal);
+      }, options.timeoutMs || Math.min(REQUEST_TIMEOUT_MS, 90000), options.signal);
       var reply = String(result.reply || result.analysis || '').trim();
       if (!reply) throw new Error('Алия натавонист матни аксро хонда тавонад. Сурати равшантар фиристед.');
       var streamed = await this.streamTextToUi(reply, options.onToken, options.signal);

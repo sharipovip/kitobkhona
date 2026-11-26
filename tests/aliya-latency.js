@@ -67,6 +67,9 @@ global.fetch = async (url, options) => {
     if (mode === 'unavailable') {
       return { ok: true, status: 200, json: async () => ({ reply: '', error: 'chat_providers_unavailable' }) };
     }
+    if (mode === 'deadline') {
+      return { ok: true, status: 200, json: async () => ({ reply: '', error: 'chat_deadline_exceeded' }) };
+    }
     return { ok: true, status: 200, json: async () => ({ reply: 'Ҷавоби Алия.' }) };
   }
   return { ok: true, status: 200, json: async () => ({ reply: 'ok' }) };
@@ -142,9 +145,24 @@ function check(name, cond, detail) {
   );
   check(
     'hanging request is not retried endlessly',
-    calls.length <= 2,
+    calls.length === 1,
     'attempts=' + calls.length
   );
+
+  /* ---------------------------------------------------------------- */
+  /* 3b. Gateway chat_deadline_exceeded must not trigger a retry.       */
+  /* ---------------------------------------------------------------- */
+  calls.length = 0;
+  mode = 'deadline';
+  let deadlineErr = null;
+  try {
+    await AliyaCore.sendMessage('Саволи дедлайн');
+  } catch (e) {
+    deadlineErr = e;
+  }
+  check('gateway deadline error is reported', !!deadlineErr && deadlineErr.code === 'chat_deadline_exceeded',
+    deadlineErr && (deadlineErr.code + ': ' + deadlineErr.message));
+  check('gateway deadline error is NOT retried', calls.length === 1, 'attempts=' + calls.length);
 
   /* ---------------------------------------------------------------- */
   /* 4. Network failure must be reported, not swallowed.                */
@@ -197,10 +215,22 @@ function check(name, cond, detail) {
   check('continuation loop respects the budget', /budgetLeft\(\)\s*<=\s*0\)\s*break/.test(tasksSrc));
 
   /* ---------------------------------------------------------------- */
-  /* 7. The thinking indicator must show elapsed time.                 */
+  /* 7. The thinking indicator must show elapsed time & hard watchdogs. */
   /* ---------------------------------------------------------------- */
   const aliyaHtml = fs.readFileSync(path.join(ROOT, 'aliya/index.html'), 'utf8');
+  const readerAliyaHtml = fs.readFileSync(path.join(ROOT, 'aliya/reader-aliya.html'), 'utf8');
   check('thinking indicator shows elapsed seconds', /at-think-secs/.test(aliyaHtml));
+  check('task runner also shows elapsed seconds', /at-think-secs/.test(tasksSrc));
+  check('task runner arms a hard deadline timer and budget race',
+    /hardDeadlineTimer/.test(tasksSrc) && /budgetPromise/.test(tasksSrc));
+  check('task runner binds card from holder.firstElementChild in append mode',
+    /cfg\.append\s*\?\s*holder\.firstElementChild\s*:\s*box\.firstChild/.test(tasksSrc));
+  check('loadPdf enforces a fetch stall timeout and getDocument timeout',
+    /stallTimer/.test(tasksSrc) && /docTimer/.test(tasksSrc));
+  check('reader-aliya resets _appendTarget across new tasks and rejects non-PDF books',
+    /delete runCfg\._appendTarget/.test(readerAliyaHtml) && /epub\|fb2\|djvu/.test(readerAliyaHtml));
+  check('aliya/index.html arms a chatWatchdog and passes ui.signal to ensureTaskBook',
+    /chatWatchdog/.test(aliyaHtml) && /ensureTaskBook\(null,\s*ui\)/.test(aliyaHtml));
   const css = fs.readFileSync(path.join(ROOT, 'aliya/aliya-ui.css'), 'utf8');
   check('elapsed-seconds style exists', /\.at-think-secs/.test(css));
 

@@ -64,6 +64,11 @@ const configSrc = fs.readFileSync(path.join(ROOT, 'config.js'), 'utf8');
   check('the JS/CSS handler refreshes the cache under the bare URL too',
     /url\.pathname/.test(block) && /cache\.put\(bare/.test(block),
     'the no-query cache entry is never refreshed');
+  check('the JS/CSS handler falls back to cached assets if network stalls',
+    /Promise\.race/.test(block) && /setTimeout/.test(block) && /if\(cached\)return cached/.test(block),
+    'slow network on JS/CSS could hang page startup forever');
+  check('the JS/CSS handler clones the response before awaiting cache.put',
+    /copy1=response\.clone\(\),copy2=response\.clone\(\)/.test(block));
 }
 
 /* ------------------------------------------------------------------ */

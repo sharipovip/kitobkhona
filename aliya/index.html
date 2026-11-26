@@ -254,11 +254,11 @@
     <div class="aliya-toast" id="aliyaToast">Паём</div>
   </div>
 
-  <script src="../assets/js/native-fallback.js?v=183"></script>
-  <script src="aliya-bridge.js?v=183"></script>
-  <script src="aliya-doc-templates.js?v=183"></script>
-  <script src="aliya-core.js?v=183"></script>
-  <script src="aliya-tasks.js?v=183"></script>
+  <script src="../assets/js/native-fallback.js?v=184"></script>
+  <script src="aliya-bridge.js?v=184"></script>
+  <script src="aliya-doc-templates.js?v=184"></script>
+  <script src="aliya-core.js?v=184"></script>
+  <script src="aliya-tasks.js?v=184"></script>
   <script>
     (function () {
       'use strict';
@@ -651,7 +651,7 @@
             try {
               var sdoc = await AT.loadPdf(blobUrl);
               var srd = AT.createPageReader(sdoc, { bookUrl: 'local:' + file.name + ':' + file.size, bookName: file.name });
-              extracted = String(await srd.rangeText(1, Math.min(5, sdoc.numPages), {}) || '').trim().slice(0, 26000);
+              extracted = String(await srd.rangeText(1, Math.min(5, sdoc.numPages), { deadlineAt: Date.now() + 75000 }) || '').trim().slice(0, 26000);
             } finally { URL.revokeObjectURL(blobUrl); }
             if (!extracted) throw firstError;
           }
@@ -710,6 +710,11 @@
         var botBubble = appendMsg('bot', '');
         var stopThinking = startThinking(botBubble, isPhoto ? ['Аксро мехонам', 'Фикр мекунам', 'Омода мешавам'] : CHAT_STEPS);
         activeRequestController = new AbortController();
+        var chatBudgetExpired = false;
+        var chatWatchdog = setTimeout(function () {
+          chatBudgetExpired = true;
+          if (activeRequestController) activeRequestController.abort();
+        }, (doc || isPhoto) ? 110000 : 95000);
         sendBtn.disabled = false;
         sendBtn.classList.add('is-loading', 'is-cancel');
         sendBtn.title = 'Қатъ кардани ҷавоб';
@@ -739,14 +744,20 @@
           addMessageActions(botBubble, reply);
         } catch (err) {
           stopThinking();
-          var message=err.code === 'aborted' ? 'Ҷавоб қатъ карда шуд.' : 'Алия ҳоло ҷавоб гирифта натавонист. Паёми шумо дар таърихи чат нигоҳ дошта шуд. ' + (err.message || 'Пайвастро санҷида, дубора фиристед.');
+          var userCancelled = err && err.code === 'aborted' && !chatBudgetExpired;
+          var message = userCancelled
+            ? 'Ҷавоб қатъ карда шуд.'
+            : (chatBudgetExpired
+                ? 'Сервери Алия дер ҷавоб дод. Саволро кӯтоҳтар нависед ё дубора фиристед.'
+                : 'Алия ҳоло ҷавоб гирифта натавонист. Паёми шумо дар таърихи чат нигоҳ дошта шуд. ' + ((err && err.message) || 'Пайвастро санҷида, дубора фиристед.'));
           botBubble.textContent=message; botBubble.classList.add('error-bubble');
-          if (err.code !== 'aborted') {
+          if (!userCancelled) {
             var retry=document.createElement('button');retry.type='button';retry.className='aliya-retry-message';retry.textContent='↻ Дубора фиристодан';
             retry.addEventListener('click',function(){retry.remove(); if (doc) { pendingDocument = doc; updatePendingDocument(); } handleSend(text);});
             botBubble.appendChild(retry);
           }
         } finally {
+          clearTimeout(chatWatchdog);
           activeRequestController = null;
           sendBtn.disabled = false;
           sendBtn.classList.remove('is-loading', 'is-cancel');
@@ -1069,8 +1080,10 @@
           '" матни ' + (isBayon ? 'баёни хаттӣ' : 'диктант') + ' тартиб деҳ (сатҳи ' + document.getElementById('dDiff').value + ', чоряки ' + document.getElementById('dQuarter').value +
           '). Ҳаҷмро ба синф мувофиқ соз (тахминан: 1–4 синф 25–55 калима, 5–7 синф 60–110, 8–9 синф 110–150, 10–11 синф 150–200; ин меъёри тавсиявӣ аст, на меъёри расмии ҳатмӣ). 3 супориши грамматикӣ ва меъёри баҳогузориро илова кун.';
 
+        var dictCtrl = new AbortController();
+        var dictTimer = setTimeout(function () { dictCtrl.abort(); }, 95000);
         try {
-          var resText = await window.AliyaCore.sendMessage(prompt);
+          var resText = await window.AliyaCore.sendMessage(prompt, { signal: dictCtrl.signal });
           // Dictation/bayon is a finished school document, not a Markdown editor:
           // remove every asterisk delimiter (including escaped \* and *** runs)
           // before rendering so no service-specific markers can leak to the screen.
@@ -1096,6 +1109,7 @@
         } catch (err) {
           toast('Хатогӣ: ' + err.message);
         } finally {
+          clearTimeout(dictTimer);
           btn.disabled = false;
           btn.textContent = '✨ Омода кардани матни диктант';
         }
@@ -1204,7 +1218,16 @@
           var urls = ['../search-index.json', 'https://raw.githubusercontent.com/sharipovip/books/main/search-index.json', 'https://cdn.jsdelivr.net/gh/sharipovip/books@main/search-index.json'];
           bookIndexLoading = (async function () {
             for (var i = 0; i < urls.length; i++) {
-              try { var r = await fetch(urls[i], { cache: 'force-cache' }); if (!r.ok) continue; var d = await r.json(); if (d && Array.isArray(d.items)) { bookIndex = d.items.filter(function (b) { return /\.pdf$/i.test(b.file || ''); }); return bookIndex; } } catch (e) {}
+              var idxCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+              var idxTimer = idxCtrl ? setTimeout(function () { try { idxCtrl.abort(); } catch (e) {} }, 12000) : null;
+              try {
+                var r = await fetch(urls[i], { cache: 'force-cache', signal: idxCtrl ? idxCtrl.signal : undefined });
+                if (!r.ok) continue;
+                var d = await r.json();
+                if (d && Array.isArray(d.items)) { bookIndex = d.items.filter(function (b) { return /\.pdf$/i.test(b.file || ''); }); return bookIndex; }
+              } catch (e) {} finally {
+                if (idxTimer) clearTimeout(idxTimer);
+              }
             }
             bookIndexLoading = null;
             throw new Error('Рӯйхати китобҳо бор нашуд.');
@@ -1282,18 +1305,22 @@
         sh.querySelectorAll('[data-g]').forEach(function (b) { b.onclick = function () { taskCtx.grade = Number(b.dataset.g); saveCtx(); AT.closeSheet(); renderTaskPane(currentTask); }; });
         sh.querySelector('#grCancel').onclick = AT.closeSheet;
       }
-      function ensureTaskBook(onProgress) {
+      function ensureTaskBook(onProgress, ui) {
         if (bookDoc.url === taskCtx.url && bookDoc.doc) return Promise.resolve(bookDoc);
         if (bookDoc.url === taskCtx.url && bookDoc.loading) return bookDoc.loading;
         var url = taskCtx.url;
         bookDoc = { url: url, doc: null, reader: null, loading: null };
-        bookDoc.loading = AT.loadPdf(url, onProgress).then(function (doc) {
+        bookDoc.loading = AT.loadPdf(url, onProgress, { signal: ui && ui.signal }).then(function (doc) {
           if (bookDoc.url !== url) return bookDoc;
           bookDoc.doc = doc; bookDoc.reader = AT.createPageReader(doc, { bookUrl: url, bookName: taskCtx.name });
           bookDoc.loading = null;
           if (document.getElementById('pane-task').classList.contains('active') && !taskBusy) renderTaskPane(currentTask, true);
           return bookDoc;
-        }, function (err) { bookDoc.loading = null; bookDoc.url = ''; throw new Error('Китоб бор нашуд (' + (err && err.message || err) + ').'); });
+        }, function (err) {
+          bookDoc.loading = null; bookDoc.url = '';
+          if (err && err.name === 'AbortError') throw err;
+          throw new Error('Китоб бор нашуд (' + (err && err.message || err) + ').');
+        });
         return bookDoc.loading;
       }
       function taskFormCtx() {
@@ -1332,7 +1359,7 @@
           scroller: document.getElementById('pane-task'),
           onBusy: function (v) { taskBusy = v; var go = document.getElementById('taskGo'); if (go) go.disabled = v; },
           getText: function (o, ui) {
-            return ensureTaskBook().then(function (b) {
+            return ensureTaskBook(null, ui).then(function (b) {
               var total = b.doc.numPages;
               if (o.to > total) throw new Error('Китоб ҳамагӣ ' + total + ' саҳифа дорад.');
               return b.reader.rangeText(o.from, o.to, ui);

@@ -35,10 +35,10 @@
   </div>
 </div>
 
-<script src="../assets/js/native-fallback.js?v=183"></script>
-<script src="aliya-bridge.js?v=183"></script>
-<script src="aliya-doc-templates.js?v=183"></script>
-<script src="aliya-tasks.js?v=183"></script>
+<script src="../assets/js/native-fallback.js?v=184"></script>
+<script src="aliya-bridge.js?v=184"></script>
+<script src="aliya-doc-templates.js?v=184"></script>
+<script src="aliya-tasks.js?v=184"></script>
 <script>
 (function () {
   'use strict';
@@ -100,10 +100,13 @@
   showEmpty('Амалро интихоб кунед. Алия бо матни ҳамин китоб кор мекунад — ҳам PDF-и матнӣ, ҳам китоби сканшуда.');
 
   // Китоб дар замина бор мешавад (аз кэши Reader — фавран)
-  function ensureBook() {
+  function ensureBook(ui) {
     if (pdfDoc) return Promise.resolve(pdfDoc);
     if (!bookUrl) return Promise.reject(new Error('Китоб интихоб нашудааст. Китобро аз Китобхона кушоед.'));
     var shared = hostDoc();
+    if (!shared && /\.(epub|fb2|djvu?|docx?|txt|rtf|html?)(\?|#|$)/i.test(bookUrl)) {
+      return Promise.reject(new Error('Ин амалҳои саҳифавӣ ҳоло танҳо барои китобҳои PDF кор мекунанд.'));
+    }
     if (shared && !loading) {
       loading = Promise.resolve(shared).then(function (doc) {
         pdfDoc = doc; totalPages = doc.numPages; curPage = Math.min(curPage, totalPages);
@@ -117,7 +120,7 @@
       loading = AT.loadPdf(bookUrl, function (loaded, total) {
         if (total) $('raLoadBar').style.setProperty('--p', Math.round(loaded / total * 100) + '%');
         $('raLoadTxt').textContent = (loaded === 1 && total === 1) ? 'Китоб аз хотираи дастгоҳ кушода мешавад…' : 'Китоб боргузорӣ мешавад' + (total ? ' · ' + Math.round(loaded / total * 100) + '%' : '');
-      }).then(function (doc) {
+      }, { signal: ui && ui.signal }).then(function (doc) {
         clearTimeout(timer); $('raLoad').hidden = true;
         pdfDoc = doc; totalPages = doc.numPages; curPage = Math.min(curPage, totalPages);
         reader = AT.createPageReader(doc, { bookUrl: bookUrl, bookName: bookName });
@@ -125,12 +128,19 @@
         return doc;
       }, function (err) {
         clearTimeout(timer); $('raLoad').hidden = true; loading = null;
+        if (err && err.name === 'AbortError') throw err;
         throw new Error('Китоб боргузорӣ нашуд (' + (err && err.message || err) + '). Интернетро санҷед ва дубора кӯшиш кунед.');
       });
     }
     return loading;
   }
   ensureBook().catch(function (e) { showEmpty(e.message); });
+  // v184: Бедор кардани шлюзи Алия дар замина (Space-и HF дар хоб намонад)
+  try {
+    var warmCtrl = typeof AbortController === 'function' ? new AbortController() : null;
+    if (warmCtrl) setTimeout(function () { try { warmCtrl.abort(); } catch (e) {} }, 9000);
+    fetch('https://sharipovip-aliya-gateway.hf.space/health', { mode: 'cors', cache: 'no-store', signal: warmCtrl ? warmCtrl.signal : undefined }).catch(function () {});
+  } catch (e) {}
 
   function setBusy(v) {
     busy = v;
@@ -150,9 +160,10 @@
       onBusy: setBusy, onSaved: updateCount,
       append: true,
       getText: function (o, ui) {
-        return ensureBook().then(function () { return reader.rangeText(o.from, o.to, ui); });
+        return ensureBook(ui).then(function () { return reader.rangeText(o.from, o.to, ui); });
       }
     };
+    delete runCfg._appendTarget;
     runCfg.task = task;
     runCfg.opts = opts;
     runCfg.bookName = bookName;   // v172: номи китоб метавонад тағйир ёбад

@@ -106,7 +106,12 @@ deadline_remaining = namespace["_deadline_remaining"]
 call_timeout = namespace["_call_timeout"]
 CHAT_DEADLINE_S = namespace["CHAT_DEADLINE_S"]
 
-check("CHAT_DEADLINE_S is a sane positive number", 10 <= CHAT_DEADLINE_S <= 300, str(CHAT_DEADLINE_S))
+check("CHAT_DEADLINE_S is a sane positive number", 10 <= CHAT_DEADLINE_S <= 60, str(CHAT_DEADLINE_S))
+check("ZeroGPU calls are bounded by _run_zerogpu_chat_bounded", "_run_zerogpu_chat_bounded(" in chat_handler)
+stream_handler = src.split("def chat_stream(", 1)[-1].split("\ndef ", 1)[0]
+check("stream fallback does not restart a second chat(req) cycle", "sync_res = chat(req)" not in stream_handler)
+check("hf router stops looping models on 401/402", "if r.status_code in (401, 402):" in src)
+check("hard-failed keys are not retried in cooled_fallbacks", "_provider_hard_fail_keys" in src)
 
 # No deadline -> fall back to the per-call cap.
 check("no deadline returns the per-call cap", deadline_remaining(None) == namespace["_PROVIDER_CALL_CAP_S"])

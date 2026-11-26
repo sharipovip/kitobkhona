@@ -1,4 +1,4 @@
-const CACHE_NAME = 'kitobkhona-v183-reader-aliya-top-save';
+const CACHE_NAME = 'kitobkhona-v184-aliya-no-hang';
 const RUNTIME_CACHE = 'kitobkhona-runtime-v1';   // JSON/API/суратҳои берунӣ (stale-while-revalidate, маҳдуд)
 const RUNTIME_LIMIT = 400;
 const LOCAL_FILES = [
@@ -431,21 +431,25 @@ self.addEventListener('fetch', (event) => {
     const network=fetch(event.request,{cache:'no-cache'}).then(async response=>{
       if(response&&response.status===200){
         try{
+          const copy1=response.clone(),copy2=response.clone();
           const cache=await caches.open(CACHE_NAME);
-          await cache.put(event.request,response.clone());
+          await cache.put(event.request,copy1);
           // Бояд боз бозӣ бе ?v сабт шавад — чунки lookup-и «ignoreSearch»
           // маҳз онро меёбад.
-          try{const bare=new Request(url.origin+url.pathname,{cache:'no-cache'});await cache.put(bare,response.clone())}catch(e){}
+          try{const bare=new Request(url.origin+url.pathname,{cache:'no-cache'});await cache.put(bare,copy2)}catch(e){}
         }catch(e){}
       }
       return response;
     }).catch(()=>null);
     event.respondWith((async()=>{
-      const fresh=await network;
+      const fresh=await Promise.race([network,new Promise(r=>setTimeout(()=>r(null),4500))]);
       if(fresh&&fresh.status===200)return fresh;
       const cache=await caches.open(CACHE_NAME);
       const cached=await cache.match(event.request,{ignoreSearch:true});
-      return cached||fresh||Response.error();
+      if(cached)return cached;
+      const late=await network;
+      if(late)return late;
+      return fresh||Response.error();
     })());
     return;
   }
